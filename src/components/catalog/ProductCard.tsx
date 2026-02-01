@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { Product } from "@/hooks/useProducts";
 
 interface ProductCardProps {
@@ -117,13 +118,13 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             )}
           </div>
 
-          <Button
-            size="icon"
+          <AddToCartButton
+            productId={product.id}
+            productName={product.name}
+            iconOnly
             className="h-10 w-10 rounded-full bg-gold hover:bg-gold/90 text-black"
             disabled={product.stock_quantity <= 0}
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </Button>
+          />
         </div>
 
         {/* Origin & Volume */}

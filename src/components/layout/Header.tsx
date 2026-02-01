@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingCart, User, Search, Wine, LogOut, LogIn } from "lucide-react";
+import { Menu, X, User, Search, Wine, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 import { toast } from "@/hooks/use-toast";
 
 const Header = () => {
@@ -60,16 +61,7 @@ const Header = () => {
             </Button>
 
             {/* Cart */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-cream hover:text-primary hover:bg-cream/10 relative"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-primary text-noir text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                0
-              </span>
-            </Button>
+            <CartDrawer />
 
             {/* User Account */}
             {isAuthenticated ? (
