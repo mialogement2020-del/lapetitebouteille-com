@@ -40,11 +40,17 @@ export function LoginForm() {
     setIsLoading(false);
 
     if (error) {
+      let errorMessage = error.message;
+      
+      if (error.message === "Invalid login credentials") {
+        errorMessage = "Email ou mot de passe incorrect.";
+      } else if (error.message === "Email not confirmed") {
+        errorMessage = "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.";
+      }
+      
       toast({
         title: "Erreur de connexion",
-        description: error.message === "Invalid login credentials"
-          ? "Email ou mot de passe incorrect."
-          : error.message,
+        description: errorMessage,
         variant: "destructive",
       });
       return;
