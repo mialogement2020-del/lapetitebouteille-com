@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingCart, User, Search, Wine } from "lucide-react";
+import { Menu, X, ShoppingCart, User, Search, Wine, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 const Header = () => {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, signOut } = useAuthContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -67,13 +72,61 @@ const Header = () => {
             </Button>
 
             {/* User Account */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-cream hover:text-primary hover:bg-cream/10"
-            >
-              <User className="h-5 w-5" />
-            </Button>
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-cream hover:text-primary hover:bg-cream/10"
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-noir border-gold/30">
+                  <DropdownMenuItem className="text-cream/80 focus:text-cream focus:bg-cream/10">
+                    <span className="text-cream/60 text-xs truncate max-w-[180px]">
+                      {user?.email}
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gold/20" />
+                  <DropdownMenuItem 
+                    className="text-cream/80 focus:text-cream focus:bg-cream/10 cursor-pointer"
+                    onClick={() => navigate("/compte")}
+                  >
+                    Mon compte
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="text-cream/80 focus:text-cream focus:bg-cream/10 cursor-pointer"
+                    onClick={() => navigate("/mes-commandes")}
+                  >
+                    Mes commandes
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gold/20" />
+                  <DropdownMenuItem 
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                    onClick={async () => {
+                      await signOut();
+                      toast({ title: "Déconnexion réussie" });
+                      navigate("/");
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Se déconnecter
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/connexion">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-cream hover:text-primary hover:bg-cream/10"
+                >
+                  <LogIn className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
 
             {/* Mobile Menu Toggle */}
             <Button
@@ -139,10 +192,48 @@ const Header = () => {
                   </Link>
                 </motion.div>
               ))}
-              <div className="pt-4 border-t border-gold/20">
-                <Button className="w-full bg-gradient-gold text-noir font-semibold hover:opacity-90">
-                  Devenir Ambassadeur
-                </Button>
+              <div className="pt-4 border-t border-gold/20 space-y-3">
+                {isAuthenticated ? (
+                  <>
+                    <p className="text-cream/60 text-sm truncate">{user?.email}</p>
+                    <Button 
+                      variant="outline"
+                      className="w-full border-gold/30 text-cream hover:bg-cream/10"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate("/compte");
+                      }}
+                    >
+                      Mon compte
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="w-full border-destructive/50 text-destructive hover:bg-destructive/10"
+                      onClick={async () => {
+                        await signOut();
+                        toast({ title: "Déconnexion réussie" });
+                        setIsMenuOpen(false);
+                        navigate("/");
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Se déconnecter
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/connexion" onClick={() => setIsMenuOpen(false)}>
+                      <Button className="w-full bg-gradient-gold text-noir font-semibold hover:opacity-90">
+                        Se connecter
+                      </Button>
+                    </Link>
+                    <Link to="/inscription" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full border-gold/30 text-cream hover:bg-cream/10">
+                        Créer un compte
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.nav>
