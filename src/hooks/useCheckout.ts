@@ -19,29 +19,7 @@ export function useCheckout() {
 
   const handleAddressSubmit = async (data: AddressFormData) => {
     setAddressData(data);
-
-    // Save address for authenticated users
-    if (user?.id) {
-      try {
-        const cityLabel = data.city === "yaounde" ? "Yaoundé" : "Douala";
-        
-        await supabase.from("addresses").upsert({
-          user_id: user.id,
-          full_name: data.fullName,
-          phone: data.phone,
-          city: cityLabel,
-          neighborhood: data.neighborhood,
-          street_address: data.streetAddress,
-          additional_info: data.additionalInfo || null,
-          is_default: true,
-        }, {
-          onConflict: "user_id,is_default",
-        });
-      } catch (error) {
-        console.error("Failed to save address:", error);
-      }
-    }
-
+    // Address saving is now handled in the AddressForm component
     setStep("payment");
   };
 
@@ -58,7 +36,8 @@ export function useCheckout() {
     setIsLoading(true);
 
     try {
-      const cityLabel = addressData.city === "yaounde" ? "Yaoundé" : "Douala";
+      // Use city directly as it's now stored with proper capitalization
+      const cityLabel = addressData.city;
       const total = subtotal + deliveryFee;
 
       // Generate order number
