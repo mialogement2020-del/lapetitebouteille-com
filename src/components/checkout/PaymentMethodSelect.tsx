@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CreditCard, Smartphone, Wallet, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +45,17 @@ export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelect
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [mobilePhone, setMobilePhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-scroll to phone input when it appears
+  useEffect(() => {
+    if (selectedMethod && PAYMENT_METHODS.find(m => m.id === selectedMethod)?.requiresPhone) {
+      setTimeout(() => {
+        phoneInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        phoneInputRef.current?.focus();
+      }, 100);
+    }
+  }, [selectedMethod]);
 
   const handleSubmit = () => {
     if (!selectedMethod) return;
@@ -106,28 +117,33 @@ export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelect
 
       {/* Mobile Money Phone Input */}
       {selectedPayment?.requiresPhone && (
-        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-          <Label htmlFor="mobilePhone" className="text-cream/80">
+        <div className="space-y-2 animate-in fade-in slide-in-from-top-2 pt-2">
+          <Label htmlFor="mobilePhone" className="text-cream/80 font-medium">
             Numéro {selectedPayment.name}
           </Label>
           <div className="relative">
             <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
             <Input
+              ref={phoneInputRef}
               id="mobilePhone"
+              name="mobilePhone"
               type="tel"
+              inputMode="numeric"
+              autoComplete="tel"
               value={mobilePhone}
               onChange={(e) => {
                 setMobilePhone(e.target.value);
                 setPhoneError("");
               }}
               placeholder="6 XX XX XX XX"
-              className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
+              className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary focus:ring-primary"
+              aria-describedby="phone-hint"
             />
           </div>
           {phoneError && (
-            <p className="text-destructive text-sm">{phoneError}</p>
+            <p className="text-destructive text-sm" role="alert">{phoneError}</p>
           )}
-          <p className="text-xs text-cream/50">
+          <p id="phone-hint" className="text-xs text-cream/50">
             Vous recevrez une demande de paiement sur ce numéro
           </p>
         </div>
