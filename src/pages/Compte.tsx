@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Loader2 } from "lucide-react";
+import { ArrowLeft, User, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +9,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { ProfileForm } from "@/components/account/ProfileForm";
 import { OrderHistory } from "@/components/account/OrderHistory";
+import { AddressManager } from "@/components/account/AddressManager";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -87,12 +88,19 @@ export default function Compte() {
 
           {/* Tabs */}
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="bg-cream/5 border border-gold/20 p-1">
+            <TabsList className="bg-cream/5 border border-gold/20 p-1 flex-wrap h-auto">
               <TabsTrigger
                 value="profile"
                 className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
               >
                 Mon profil
+              </TabsTrigger>
+              <TabsTrigger
+                value="addresses"
+                className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
+              >
+                <MapPin className="h-4 w-4 mr-1.5" />
+                Mes adresses
               </TabsTrigger>
               <TabsTrigger
                 value="orders"
@@ -113,6 +121,10 @@ export default function Compte() {
               ) : (
                 <Skeleton className="h-96 w-full bg-cream/10" />
               )}
+            </TabsContent>
+
+            <TabsContent value="addresses">
+              <AddressManager />
             </TabsContent>
 
             <TabsContent value="orders">
