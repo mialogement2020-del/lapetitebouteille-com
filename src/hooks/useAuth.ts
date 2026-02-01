@@ -56,9 +56,18 @@ export function useAuth() {
       referralCode?: string;
     }
   ) => {
-    // Verify age if date of birth is provided
+    // Convert DD/MM/YYYY to YYYY-MM-DD for storage
+    let isoDateOfBirth: string | undefined;
     if (options?.dateOfBirth) {
-      const birthDate = new Date(options.dateOfBirth);
+      const parts = options.dateOfBirth.split("/");
+      if (parts.length === 3) {
+        isoDateOfBirth = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+    }
+
+    // Verify age if date of birth is provided
+    if (isoDateOfBirth) {
+      const birthDate = new Date(isoDateOfBirth);
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -79,7 +88,7 @@ export function useAuth() {
           first_name: options?.firstName,
           last_name: options?.lastName,
           phone: options?.phone,
-          date_of_birth: options?.dateOfBirth,
+          date_of_birth: isoDateOfBirth,
           referral_code_used: options?.referralCode,
         },
       },
@@ -97,8 +106,8 @@ export function useAuth() {
         first_name: options?.firstName ?? null,
         last_name: options?.lastName ?? null,
         phone: options?.phone ?? null,
-        date_of_birth: options?.dateOfBirth ?? null,
-        is_age_verified: !!options?.dateOfBirth,
+        date_of_birth: isoDateOfBirth ?? null,
+        is_age_verified: !!isoDateOfBirth,
       });
 
       if (profileError) {

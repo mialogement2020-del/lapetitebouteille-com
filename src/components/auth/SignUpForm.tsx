@@ -31,8 +31,23 @@ export function SignUpForm() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const parseDate = (dateStr: string): Date | null => {
+    // Parse DD/MM/YYYY format
+    const parts = dateStr.split("/");
+    if (parts.length !== 3) return null;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+    if (year < 1900 || year > new Date().getFullYear()) return null;
+    if (month < 0 || month > 11) return null;
+    if (day < 1 || day > 31) return null;
+    return new Date(year, month, day);
+  };
+
   const calculateAge = (dateOfBirth: string): number => {
-    const birthDate = new Date(dateOfBirth);
+    const birthDate = parseDate(dateOfBirth);
+    if (!birthDate) return 0;
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -40,6 +55,24 @@ export function SignUpForm() {
       age--;
     }
     return age;
+  };
+
+  const formatDateInput = (value: string): string => {
+    // Remove non-numeric characters
+    const numbers = value.replace(/\D/g, "");
+    // Format as DD/MM/YYYY
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 4) return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+    return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatDateInput(e.target.value);
+    setFormData((prev) => ({ ...prev, dateOfBirth: formatted }));
+  };
+
+  const isValidDateFormat = (dateStr: string): boolean => {
+    return /^\d{2}\/\d{2}\/\d{4}$/.test(dateStr) && parseDate(dateStr) !== null;
   };
 
   const isOver18 = formData.dateOfBirth ? calculateAge(formData.dateOfBirth) >= 18 : false;
@@ -53,10 +86,10 @@ export function SignUpForm() {
     e.preventDefault();
 
     // Validations
-    if (!formData.dateOfBirth) {
+    if (!formData.dateOfBirth || !isValidDateFormat(formData.dateOfBirth)) {
       toast({
         title: "Date de naissance requise",
-        description: "Veuillez entrer votre date de naissance.",
+        description: "Veuillez entrer une date valide au format JJ/MM/AAAA.",
         variant: "destructive",
       });
       return;
@@ -222,15 +255,21 @@ export function SignUpForm() {
           <Input
             id="dateOfBirth"
             name="dateOfBirth"
-            type="date"
+            type="text"
+            placeholder="JJ/MM/AAAA"
             value={formData.dateOfBirth}
-            onChange={handleChange}
+            onChange={handleDateChange}
             required
-            max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split("T")[0]}
-            className="pl-10 bg-cream/10 border-gold/30 text-cream focus:border-primary [color-scheme:dark]"
+            maxLength={10}
+            className="pl-10 bg-cream/10 border-gold/30 text-cream placeholder:text-cream/40 focus:border-primary"
           />
         </div>
-        {formData.dateOfBirth && !isOver18 && (
+        {formData.dateOfBirth && formData.dateOfBirth.length === 10 && !isValidDateFormat(formData.dateOfBirth) && (
+          <p className="text-destructive text-sm">
+            Format invalide. Utilisez JJ/MM/AAAA.
+          </p>
+        )}
+        {formData.dateOfBirth && isValidDateFormat(formData.dateOfBirth) && !isOver18 && (
           <p className="text-destructive text-sm">
             Vous devez avoir au moins 18 ans pour vous inscrire.
           </p>
