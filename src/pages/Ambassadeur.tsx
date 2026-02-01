@@ -1,0 +1,199 @@
+import { useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { 
+  LayoutDashboard, 
+  Users, 
+  Wallet, 
+  TrendingUp,
+  ArrowLeft,
+  Settings
+} from "lucide-react";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { 
+  useAmbassadorStats, 
+  useCommissions, 
+  useReferrals, 
+  useWalletTransactions,
+  useReferralCode
+} from "@/hooks/useAmbassador";
+import { StatsOverview } from "@/components/ambassador/StatsOverview";
+import { CommissionHistory } from "@/components/ambassador/CommissionHistory";
+import { ReferralTree } from "@/components/ambassador/ReferralTree";
+import { WalletManager } from "@/components/ambassador/WalletManager";
+import { ReferralLink } from "@/components/ambassador/ReferralLink";
+
+export default function Ambassadeur() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuthContext();
+
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useAmbassadorStats();
+  const { data: commissions, isLoading: commissionsLoading } = useCommissions();
+  const { data: referrals, isLoading: referralsLoading } = useReferrals();
+  const { data: transactions, isLoading: transactionsLoading } = useWalletTransactions();
+  const { data: referralCode, isLoading: referralCodeLoading } = useReferralCode();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/connexion?redirect=/ambassadeur");
+    }
+  }, [user, authLoading, navigate]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-noir flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return (
+    <div className="min-h-screen bg-noir">
+      <Header />
+
+      <main className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          {/* Back Link */}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-cream/60 hover:text-primary transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour à l'accueil
+          </Link>
+
+          {/* Page Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-gradient-gold flex items-center justify-center">
+                <LayoutDashboard className="h-7 w-7 text-noir" />
+              </div>
+              <div>
+                <h1 className="font-display text-3xl text-cream">Espace Ambassadeur</h1>
+                <p className="text-cream/60">Gérez votre réseau et vos gains</p>
+              </div>
+            </div>
+            <Button variant="outline" className="border-gold/30 text-cream hover:bg-cream/10">
+              <Settings className="h-4 w-4 mr-2" />
+              Paramètres
+            </Button>
+          </motion.div>
+
+          {/* Main Content */}
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Left Column - Referral Link */}
+            <div className="lg:col-span-1 order-2 lg:order-1">
+              {referralCodeLoading ? (
+                <div className="h-80 rounded-xl bg-noir-light/50 animate-pulse" />
+              ) : referralCode ? (
+                <ReferralLink
+                  code={referralCode.code}
+                  customCode={referralCode.custom_code}
+                  stats={{
+                    total_clicks: referralCode.total_clicks || 0,
+                    total_signups: referralCode.total_signups || 0,
+                    total_orders: referralCode.total_orders || 0,
+                  }}
+                />
+              ) : null}
+            </div>
+
+            {/* Right Column - Dashboard Tabs */}
+            <div className="lg:col-span-2 order-1 lg:order-2">
+              <Tabs defaultValue="overview" className="space-y-6">
+                <TabsList className="bg-noir-light/50 border border-gold/10 p-1 w-full justify-start overflow-x-auto">
+                  <TabsTrigger
+                    value="overview"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Vue d'ensemble
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="commissions"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Commissions
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="network"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Réseau
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="wallet"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                  >
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Portefeuille
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-6">
+                  <StatsOverview 
+                    stats={stats!} 
+                    isLoading={statsLoading} 
+                  />
+                </TabsContent>
+
+                <TabsContent value="commissions">
+                  <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
+                    <h3 className="font-display text-xl text-cream mb-6">
+                      Historique des commissions
+                    </h3>
+                    <CommissionHistory
+                      commissions={commissions || []}
+                      isLoading={commissionsLoading}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="network">
+                  <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
+                    <h3 className="font-display text-xl text-cream mb-6">
+                      Arbre de parrainage
+                    </h3>
+                    <ReferralTree
+                      referrals={referrals || []}
+                      isLoading={referralsLoading}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="wallet">
+                  <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
+                    <h3 className="font-display text-xl text-cream mb-6">
+                      Gestion du portefeuille
+                    </h3>
+                    <WalletManager
+                      stats={stats!}
+                      transactions={transactions || []}
+                      isLoading={transactionsLoading || statsLoading}
+                      refetchStats={refetchStats}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
