@@ -75,32 +75,25 @@ const Header = () => {
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-noir border-gold/30">
-                  <DropdownMenuItem className="text-cream/80 focus:text-cream focus:bg-cream/10">
-                    <span className="text-cream/60 text-xs truncate max-w-[180px]">
+                <DropdownMenuContent align="end" className="w-56 bg-noir border-gold/30 z-50">
+                  <div className="px-3 py-2 border-b border-gold/20">
+                    <p className="text-cream/60 text-xs truncate">
                       {user?.email}
-                    </span>
+                    </p>
+                  </div>
+                  <DropdownMenuItem 
+                    className="text-cream/80 focus:text-cream focus:bg-cream/10 cursor-pointer"
+                    onClick={() => navigate("/compte")}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Mon Compte
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-gold/20" />
                   <DropdownMenuItem 
                     className="text-primary focus:text-primary focus:bg-primary/10 cursor-pointer"
                     onClick={() => navigate("/ambassadeur")}
                   >
                     <Users className="mr-2 h-4 w-4" />
                     Espace Ambassadeur
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-gold/20" />
-                  <DropdownMenuItem 
-                    className="text-cream/80 focus:text-cream focus:bg-cream/10 cursor-pointer"
-                    onClick={() => navigate("/compte")}
-                  >
-                    Mon compte
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    className="text-cream/80 focus:text-cream focus:bg-cream/10 cursor-pointer"
-                    onClick={() => navigate("/mes-commandes")}
-                  >
-                    Mes commandes
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gold/20" />
                   <DropdownMenuItem 
