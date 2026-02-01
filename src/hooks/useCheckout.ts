@@ -88,6 +88,45 @@ export function useCheckout() {
 
       if (itemsError) throw itemsError;
 
+      // Send confirmation email if email is provided
+      const customerEmail = addressData.email?.trim();
+      if (customerEmail) {
+        try {
+          const emailResponse = await supabase.functions.invoke('send-order-confirmation', {
+            body: {
+              email: customerEmail,
+              orderNumber,
+              customerName: addressData.fullName,
+              items: orderItems.map(item => ({
+                product_name: item.product_name,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                total_price: item.total_price,
+              })),
+              subtotal,
+              deliveryFee,
+              total,
+              shippingAddress: {
+                city: cityLabel,
+                neighborhood: addressData.neighborhood || '',
+                street: addressData.streetAddress,
+                phone: addressData.phone,
+              },
+              paymentMethod: method,
+            },
+          });
+          
+          if (emailResponse.error) {
+            console.warn('Email confirmation failed:', emailResponse.error);
+          } else {
+            console.log('Confirmation email sent successfully');
+          }
+        } catch (emailError) {
+          console.warn('Failed to send confirmation email:', emailError);
+          // Don't fail the order if email fails
+        }
+      }
+
       // Clear cart
       await clearCart();
 

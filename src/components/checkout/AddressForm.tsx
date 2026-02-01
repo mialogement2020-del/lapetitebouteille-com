@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { MapPin, User, Phone, Plus, Check } from "lucide-react";
+import { MapPin, User, Phone, Plus, Check, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,7 @@ type Address = Tables<"addresses">;
 
 const addressSchema = z.object({
   fullName: z.string().trim().min(2, "Nom complet requis").max(100),
+  email: z.string().email("Email invalide").optional().or(z.literal("")),
   phone: z.string().trim().min(9, "Numéro de téléphone invalide").max(20),
   city: z.string().min(1, "Ville requise"),
   neighborhood: z.string().trim().max(100).optional(),
@@ -71,6 +72,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
     resolver: zodResolver(addressSchema),
     defaultValues: {
       fullName: "",
+      email: "",
       phone: "",
       city: "",
       neighborhood: "",
@@ -137,6 +139,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
     setShowNewAddressForm(true);
     reset({
       fullName: "",
+      email: "",
       phone: "",
       city: "Douala",
       neighborhood: "",
@@ -294,6 +297,26 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
             </div>
             {errors.fullName && (
               <p className="text-destructive text-sm">{errors.fullName.message}</p>
+            )}
+          </div>
+
+          {/* Email */}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-cream/80">
+              Email (pour recevoir la confirmation)
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
+              <Input
+                id="email"
+                type="email"
+                {...register("email")}
+                placeholder="votre@email.com"
+                className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
+              />
+            </div>
+            {errors.email && (
+              <p className="text-destructive text-sm">{errors.email.message}</p>
             )}
           </div>
 
