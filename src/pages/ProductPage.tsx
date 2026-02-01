@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Heart,
-  ShoppingCart,
   Share2,
   Minus,
   Plus,
@@ -22,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { toast } from "sonner";
 
@@ -37,12 +37,6 @@ const ProductPage = () => {
     product?.category_id || null
   );
   const [quantity, setQuantity] = useState(1);
-
-  const handleAddToCart = () => {
-    toast.success(`${product?.name} ajouté au panier`, {
-      description: `Quantité: ${quantity}`,
-    });
-  };
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -272,15 +266,14 @@ const ProductPage = () => {
                   </Button>
                 </div>
 
-                <Button
+                <AddToCartButton
+                  productId={product.id}
+                  productName={product.name}
+                  quantity={quantity}
                   size="lg"
                   className="flex-1 bg-gold hover:bg-gold/90 text-black font-semibold gap-2"
-                  onClick={handleAddToCart}
                   disabled={product.stock_quantity <= 0}
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  Ajouter au panier
-                </Button>
+                />
               </div>
 
               {/* Secondary Actions */}
