@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, Search, Wine, LogOut, LogIn } from "lucide-react";
+import { Menu, X, User, Search, Wine, LogOut, LogIn, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -80,6 +80,14 @@ const Header = () => {
                     <span className="text-cream/60 text-xs truncate max-w-[180px]">
                       {user?.email}
                     </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gold/20" />
+                  <DropdownMenuItem 
+                    className="text-primary focus:text-primary focus:bg-primary/10 cursor-pointer"
+                    onClick={() => navigate("/ambassadeur")}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Espace Ambassadeur
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gold/20" />
                   <DropdownMenuItem 
@@ -188,6 +196,16 @@ const Header = () => {
                 {isAuthenticated ? (
                   <>
                     <p className="text-cream/60 text-sm truncate">{user?.email}</p>
+                    <Button 
+                      className="w-full bg-gradient-gold text-noir font-semibold hover:opacity-90"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate("/ambassadeur");
+                      }}
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      Espace Ambassadeur
+                    </Button>
                     <Button 
                       variant="outline"
                       className="w-full border-gold/30 text-cream hover:bg-cream/10"
