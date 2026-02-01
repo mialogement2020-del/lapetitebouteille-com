@@ -11,10 +11,10 @@ const Header = () => {
 
   const navLinks = [
     { href: "/catalogue", label: "Catalogue" },
-    { href: "/vins", label: "Vins" },
-    { href: "/champagnes", label: "Champagnes" },
-    { href: "/spiritueux", label: "Spiritueux" },
-    { href: "/coffrets", label: "Coffrets" },
+    { href: "/catalogue?category=vins", label: "Vins" },
+    { href: "/catalogue?category=champagnes", label: "Champagnes" },
+    { href: "/catalogue?category=spiritueux", label: "Spiritueux" },
+    { href: "/catalogue?category=coffrets", label: "Coffrets" },
   ];
 
   return (
