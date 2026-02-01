@@ -13,6 +13,7 @@ import Connexion from "./pages/Connexion";
 import MotDePasseOublie from "./pages/MotDePasseOublie";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import Ambassadeur from "./pages/Ambassadeur";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/commande-confirmee" element={<OrderConfirmation />} />
+              <Route path="/ambassadeur" element={<Ambassadeur />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
