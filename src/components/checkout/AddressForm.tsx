@@ -127,6 +127,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
     setSelectedAddressId(address.id);
     setShowNewAddressForm(false);
     setValue("fullName", address.full_name);
+    setValue("email", ""); // Reset email to prompt user to enter it
     setValue("phone", address.phone);
     setValue("city", address.city);
     setValue("neighborhood", address.neighborhood || "");
@@ -432,7 +433,27 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
 
       {/* Submit Button for Selected Saved Address */}
       {!showNewAddressForm && selectedAddressId && (
-        <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+          {/* Email field for confirmation */}
+          <div className="space-y-2">
+            <Label htmlFor="email-saved" className="text-cream/80">
+              Email (pour recevoir la confirmation de commande)
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
+              <Input
+                id="email-saved"
+                type="email"
+                {...register("email")}
+                placeholder="votre@email.com"
+                className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
+              />
+            </div>
+            {errors.email && (
+              <p className="text-destructive text-sm">{errors.email.message}</p>
+            )}
+          </div>
+
           <Button
             type="submit"
             disabled={isLoading}
