@@ -188,7 +188,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "PrestigeVins <onboarding@resend.dev>",
+      from: "La Petite Bouteille <commandes@lapetitebouteille.com>",
       to: [email],
       subject: `Confirmation de commande ${orderNumber}`,
       html: emailHtml,
