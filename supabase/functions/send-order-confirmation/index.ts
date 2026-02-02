@@ -74,10 +74,11 @@ const handler = async (req: Request): Promise<Response> => {
       .map(
         (item) => `
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">${item.product_name}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${item.quantity}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right;">${formatPrice(item.unit_price)}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right;">${formatPrice(item.total_price)}</td>
+          <td style="padding: 16px 20px; border-bottom: 1px solid rgba(212,175,55,0.15);">
+            <span style="color: #1a1a1a; font-weight: 500;">${item.product_name}</span>
+          </td>
+          <td style="padding: 16px 12px; border-bottom: 1px solid rgba(212,175,55,0.15); text-align: center; color: #666;">×${item.quantity}</td>
+          <td style="padding: 16px 20px; border-bottom: 1px solid rgba(212,175,55,0.15); text-align: right; color: #1a1a1a; font-weight: 600;">${formatPrice(item.total_price)}</td>
         </tr>
       `
       )
@@ -89,99 +90,134 @@ const handler = async (req: Request): Promise<Response> => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       </head>
-      <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+      <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #0a0a0a; margin: 0; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto;">
           
-          <!-- Header -->
-          <div style="background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); padding: 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">La Petite Bouteille</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0;">Votre cave à vins & spiritueux</p>
-          </div>
+          <!-- Decorative top border -->
+          <div style="height: 4px; background: linear-gradient(90deg, #D4AF37 0%, #F4E4BC 50%, #D4AF37 100%); border-radius: 2px 2px 0 0;"></div>
           
-          <!-- Content -->
-          <div style="padding: 30px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 8px;">
-                <h2 style="margin: 0; font-size: 20px;">✓ Commande confirmée !</h2>
+          <div style="background-color: #1a1a1a; border-radius: 0 0 16px 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); padding: 50px 40px; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.2);">
+              <div style="margin-bottom: 20px;">
+                <span style="display: inline-block; width: 60px; height: 60px; background: linear-gradient(135deg, #D4AF37 0%, #F4E4BC 100%); border-radius: 50%; line-height: 60px; font-size: 28px;">🍷</span>
               </div>
+              <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #D4AF37; margin: 0; font-size: 32px; font-weight: 600; letter-spacing: 1px;">La Petite Bouteille</h1>
+              <p style="color: rgba(255,255,255,0.5); margin: 12px 0 0; font-size: 13px; text-transform: uppercase; letter-spacing: 3px;">Vins & Spiritueux d'Exception</p>
             </div>
             
-            <p style="color: #333; font-size: 16px; line-height: 1.6;">
-              Bonjour <strong>${customerName}</strong>,
-            </p>
-            <p style="color: #666; font-size: 15px; line-height: 1.6;">
-              Nous avons bien reçu votre commande <strong style="color: #8B4513;">${orderNumber}</strong>. 
-              Voici le récapitulatif de votre achat :
-            </p>
-            
-            <!-- Order Items -->
-            <table style="width: 100%; border-collapse: collapse; margin: 25px 0;">
-              <thead>
-                <tr style="background-color: #f8f9fa;">
-                  <th style="padding: 12px; text-align: left; font-weight: 600; color: #333;">Produit</th>
-                  <th style="padding: 12px; text-align: center; font-weight: 600; color: #333;">Qté</th>
-                  <th style="padding: 12px; text-align: right; font-weight: 600; color: #333;">Prix unit.</th>
-                  <th style="padding: 12px; text-align: right; font-weight: 600; color: #333;">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsHtml}
-              </tbody>
-            </table>
-            
-            <!-- Totals -->
-            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span style="color: #666;">Sous-total:</span>
-                <span style="color: #333;">${formatPrice(subtotal)}</span>
+            <!-- Success Banner -->
+            <div style="background: linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.05) 100%); padding: 30px 40px; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.1);">
+              <div style="display: inline-block; background: linear-gradient(135deg, #D4AF37 0%, #C4A030 100%); color: #0a0a0a; padding: 8px 24px; border-radius: 50px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">
+                ✓ Commande Confirmée
               </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                <span style="color: #666;">Livraison:</span>
-                <span style="color: #333;">${deliveryFee === 0 ? 'Gratuite' : formatPrice(deliveryFee)}</span>
-              </div>
-              <div style="border-top: 2px solid #8B4513; padding-top: 12px; display: flex; justify-content: space-between;">
-                <span style="font-weight: 700; font-size: 18px; color: #333;">Total:</span>
-                <span style="font-weight: 700; font-size: 18px; color: #8B4513;">${formatPrice(total)}</span>
-              </div>
+              <p style="color: #D4AF37; margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 600;">${orderNumber}</p>
             </div>
             
-            <!-- Shipping & Payment Info -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 25px 0;">
-              <div style="background-color: #fff8f0; padding: 15px; border-radius: 8px; border-left: 4px solid #D2691E;">
-                <h3 style="margin: 0 0 10px; color: #8B4513; font-size: 14px; text-transform: uppercase;">Adresse de livraison</h3>
-                <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.5;">
-                  ${shippingAddress.city}<br>
-                  ${shippingAddress.neighborhood}<br>
-                  ${shippingAddress.street}<br>
-                  Tél: ${shippingAddress.phone}
+            <!-- Content -->
+            <div style="padding: 40px;">
+              <p style="color: #ffffff; font-size: 18px; line-height: 1.6; margin: 0 0 8px;">
+                Bonjour <strong style="color: #D4AF37;">${customerName}</strong>,
+              </p>
+              <p style="color: rgba(255,255,255,0.6); font-size: 15px; line-height: 1.7; margin: 0 0 35px;">
+                Merci pour votre confiance. Votre commande a été enregistrée avec succès et sera bientôt préparée avec le plus grand soin.
+              </p>
+              
+              <!-- Order Items -->
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.15); border-radius: 12px; overflow: hidden; margin-bottom: 30px;">
+                <div style="background: rgba(212,175,55,0.1); padding: 16px 20px; border-bottom: 1px solid rgba(212,175,55,0.15);">
+                  <h3 style="margin: 0; color: #D4AF37; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">Détail de votre commande</h3>
+                </div>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tbody>
+                    ${itemsHtml}
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Totals -->
+              <div style="background: linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%); border: 1px solid rgba(212,175,55,0.2); border-radius: 12px; padding: 24px; margin-bottom: 30px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 6px 0; color: rgba(255,255,255,0.6); font-size: 14px;">Sous-total</td>
+                    <td style="padding: 6px 0; color: #ffffff; font-size: 14px; text-align: right;">${formatPrice(subtotal)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: rgba(255,255,255,0.6); font-size: 14px;">Livraison</td>
+                    <td style="padding: 6px 0; color: ${deliveryFee === 0 ? '#4ade80' : '#ffffff'}; font-size: 14px; text-align: right;">${deliveryFee === 0 ? '✓ Gratuite' : formatPrice(deliveryFee)}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding-top: 16px;">
+                      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 16px 0 0; color: #ffffff; font-size: 18px; font-weight: 600;">Total</td>
+                    <td style="padding: 16px 0 0; text-align: right;">
+                      <span style="color: #D4AF37; font-size: 26px; font-weight: 700; font-family: 'Playfair Display', Georgia, serif;">${formatPrice(total)}</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              
+              <!-- Shipping & Payment Cards -->
+              <div style="display: flex; gap: 16px; margin-bottom: 35px;">
+                <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px;">
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <span style="font-size: 18px;">📍</span>
+                    <h3 style="margin: 0; color: #D4AF37; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Livraison</h3>
+                  </div>
+                  <p style="margin: 0; color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6;">
+                    ${shippingAddress.city}<br>
+                    <span style="color: rgba(255,255,255,0.5);">${shippingAddress.neighborhood}</span><br>
+                    <span style="color: rgba(255,255,255,0.5);">${shippingAddress.street}</span>
+                  </p>
+                  <p style="margin: 12px 0 0; color: rgba(255,255,255,0.6); font-size: 13px;">
+                    📱 ${shippingAddress.phone}
+                  </p>
+                </div>
+                <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px;">
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <span style="font-size: 18px;">💳</span>
+                    <h3 style="margin: 0; color: #D4AF37; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Paiement</h3>
+                  </div>
+                  <p style="margin: 0; color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 500;">
+                    ${getPaymentMethodLabel(paymentMethod)}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Info Banner -->
+              <div style="background: rgba(139,69,19,0.15); border: 1px solid rgba(139,69,19,0.3); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px;">
+                <p style="color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.6; margin: 0;">
+                  🚚 Nous vous contacterons sous <strong style="color: #D4AF37;">24h</strong> pour confirmer la livraison
                 </p>
               </div>
-              <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #4a90d9;">
-                <h3 style="margin: 0 0 10px; color: #2c5aa0; font-size: 14px; text-transform: uppercase;">Mode de paiement</h3>
-                <p style="margin: 0; color: #666; font-size: 14px;">
-                  ${getPaymentMethodLabel(paymentMethod)}
-                </p>
+              
+              <!-- Signature -->
+              <div style="text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <p style="color: rgba(255,255,255,0.5); font-size: 14px; margin: 0 0 8px;">À très bientôt,</p>
+                <p style="color: #D4AF37; font-size: 16px; margin: 0; font-family: 'Playfair Display', Georgia, serif; font-style: italic;">L'équipe La Petite Bouteille</p>
               </div>
             </div>
             
-            <p style="color: #666; font-size: 14px; line-height: 1.6; margin-top: 30px;">
-              Nous vous contacterons bientôt pour confirmer la livraison. 
-              Pour toute question, n'hésitez pas à nous contacter.
-            </p>
-            
-            <p style="color: #333; font-size: 14px; margin-top: 20px;">
-              À bientôt,<br>
-              <strong>L'équipe La Petite Bouteille</strong>
-            </p>
+            <!-- Footer -->
+            <div style="background: #0f0f0f; padding: 30px 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05);">
+              <p style="color: rgba(255,255,255,0.3); font-size: 11px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 1px;">
+                © 2025 La Petite Bouteille
+              </p>
+              <p style="color: rgba(255,255,255,0.2); font-size: 11px; margin: 0;">
+                Yaoundé & Douala, Cameroun
+              </p>
+            </div>
           </div>
           
-          <!-- Footer -->
-          <div style="background-color: #2d2d2d; padding: 20px; text-align: center;">
-            <p style="color: #999; font-size: 12px; margin: 0;">
-              © 2025 La Petite Bouteille - Cameroun<br>
-              Cet email a été envoyé automatiquement, merci de ne pas y répondre.
-            </p>
+          <!-- Bottom decorative element -->
+          <div style="text-align: center; padding-top: 30px;">
+            <span style="color: rgba(212,175,55,0.3); font-size: 20px;">✦</span>
           </div>
         </div>
       </body>
