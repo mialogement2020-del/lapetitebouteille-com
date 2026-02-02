@@ -8,7 +8,8 @@ import {
   Loader2,
   ArrowLeft,
   Wine,
-  FolderOpen
+  FolderOpen,
+  BarChart3
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -23,6 +24,7 @@ import { ProductsTable } from "@/components/admin/ProductsTable";
 import { ProductFormDialog } from "@/components/admin/ProductFormDialog";
 import { CategoriesTable } from "@/components/admin/CategoriesTable";
 import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
+import { PerformanceCharts } from "@/components/admin/PerformanceCharts";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -261,8 +263,15 @@ const Admin = () => {
             transition={{ delay: 0.2 }}
             className="mt-8"
           >
-            <Tabs defaultValue="orders" className="space-y-6">
+            <Tabs defaultValue="performance" className="space-y-6">
               <TabsList className="bg-noir/50 border border-gold/20">
+                <TabsTrigger 
+                  value="performance"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Performance
+                </TabsTrigger>
                 <TabsTrigger 
                   value="orders"
                   className="data-[state=active]:bg-primary data-[state=active]:text-noir"
@@ -285,6 +294,10 @@ const Admin = () => {
                   Catégories
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="performance">
+                <PerformanceCharts orders={orders} products={products} />
+              </TabsContent>
 
               <TabsContent value="orders">
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
