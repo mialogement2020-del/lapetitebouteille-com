@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const OWNER_EMAIL = Deno.env.get("OWNER_EMAIL");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -195,6 +196,122 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Order confirmation email sent successfully:", emailResponse);
+
+    // Send notification to owner
+    if (OWNER_EMAIL) {
+      const ownerEmailHtml = `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 25px; text-align: center;">
+              <h1 style="color: #D4AF37; margin: 0; font-size: 24px;">🔔 Nouvelle Commande</h1>
+              <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0; font-size: 14px;">${orderNumber}</p>
+            </div>
+            
+            <!-- Content -->
+            <div style="padding: 25px;">
+              <div style="background-color: #fff8e1; border-left: 4px solid #D4AF37; padding: 15px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #333; font-weight: 600;">
+                  💰 Total: <span style="color: #D4AF37; font-size: 20px;">${formatPrice(total)}</span>
+                </p>
+              </div>
+              
+              <!-- Customer Info -->
+              <div style="margin-bottom: 20px;">
+                <h3 style="color: #333; margin: 0 0 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                  👤 Client
+                </h3>
+                <p style="margin: 5px 0; color: #555;">
+                  <strong>${customerName}</strong><br>
+                  📧 ${email}<br>
+                  📱 ${shippingAddress.phone}
+                </p>
+              </div>
+              
+              <!-- Shipping -->
+              <div style="margin-bottom: 20px;">
+                <h3 style="color: #333; margin: 0 0 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                  📍 Livraison
+                </h3>
+                <p style="margin: 5px 0; color: #555;">
+                  ${shippingAddress.city}, ${shippingAddress.neighborhood}<br>
+                  ${shippingAddress.street}
+                </p>
+              </div>
+              
+              <!-- Payment -->
+              <div style="margin-bottom: 20px;">
+                <h3 style="color: #333; margin: 0 0 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                  💳 Paiement
+                </h3>
+                <p style="margin: 5px 0; color: #555;">
+                  ${getPaymentMethodLabel(paymentMethod)}
+                </p>
+              </div>
+              
+              <!-- Items -->
+              <div>
+                <h3 style="color: #333; margin: 0 0 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                  🛒 Articles (${items.length})
+                </h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  ${items.map(item => `
+                    <tr>
+                      <td style="padding: 8px 0; color: #555; border-bottom: 1px solid #f0f0f0;">
+                        ${item.product_name} × ${item.quantity}
+                      </td>
+                      <td style="padding: 8px 0; color: #333; text-align: right; border-bottom: 1px solid #f0f0f0; font-weight: 500;">
+                        ${formatPrice(item.total_price)}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </table>
+              </div>
+              
+              <!-- Summary -->
+              <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #D4AF37;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                  <span style="color: #666;">Sous-total:</span>
+                  <span style="color: #333;">${formatPrice(subtotal)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: #666;">Livraison:</span>
+                  <span style="color: #333;">${deliveryFee === 0 ? 'Gratuite' : formatPrice(deliveryFee)}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background-color: #f8f9fa; padding: 15px; text-align: center;">
+              <p style="color: #999; font-size: 11px; margin: 0;">
+                Email automatique - La Petite Bouteille
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      try {
+        const ownerEmailResponse = await resend.emails.send({
+          from: "La Petite Bouteille <commandes@lapetitebouteille.com>",
+          to: [OWNER_EMAIL],
+          subject: `🔔 Nouvelle commande ${orderNumber} - ${formatPrice(total)}`,
+          html: ownerEmailHtml,
+        });
+        console.log("Owner notification email sent successfully:", ownerEmailResponse);
+      } catch (ownerError) {
+        console.error("Failed to send owner notification:", ownerError);
+        // Don't fail the whole request if owner notification fails
+      }
+    }
 
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,
