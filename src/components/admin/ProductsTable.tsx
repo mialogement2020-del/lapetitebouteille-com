@@ -9,7 +9,9 @@ import {
   Wine,
   Package,
   Star,
-  AlertTriangle
+  AlertTriangle,
+  Filter,
+  X
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -64,7 +66,10 @@ export function ProductsTable({
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priceMin, setPriceMin] = useState<string>("");
+  const [priceMax, setPriceMax] = useState<string>("");
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState<AdminProduct | null>(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = 
@@ -80,8 +85,22 @@ export function ProductsTable({
       (statusFilter === "featured" && product.is_featured) ||
       (statusFilter === "low_stock" && (product.stock_quantity || 0) <= 5);
 
-    return matchesSearch && matchesCategory && matchesStatus;
+    const minPrice = priceMin ? parseFloat(priceMin) : 0;
+    const maxPrice = priceMax ? parseFloat(priceMax) : Infinity;
+    const matchesPrice = product.price >= minPrice && product.price <= maxPrice;
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesPrice;
   });
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+    setPriceMin("");
+    setPriceMax("");
+  };
+
+  const hasActiveFilters = searchQuery || categoryFilter !== "all" || statusFilter !== "all" || priceMin || priceMax;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
@@ -106,7 +125,7 @@ export function ProductsTable({
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
+      {/* Main Filters Row */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
@@ -145,6 +164,14 @@ export function ProductsTable({
         <Button
           variant="outline"
           size="icon"
+          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          className={`border-gold/20 text-cream hover:bg-cream/10 ${showAdvancedFilters ? 'bg-cream/10' : ''}`}
+        >
+          <Filter className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
           onClick={onRefresh}
           className="border-gold/20 text-cream hover:bg-cream/10"
         >
@@ -158,6 +185,81 @@ export function ProductsTable({
           Ajouter
         </Button>
       </div>
+
+      {/* Advanced Filters */}
+      {showAdvancedFilters && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="flex flex-wrap gap-4 p-4 bg-cream/5 rounded-lg border border-gold/20"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-cream/60 text-sm whitespace-nowrap">Prix min:</span>
+            <Input
+              type="number"
+              placeholder="0"
+              value={priceMin}
+              onChange={(e) => setPriceMin(e.target.value)}
+              className="w-28 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
+            />
+            <span className="text-cream/40 text-xs">FCFA</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-cream/60 text-sm whitespace-nowrap">Prix max:</span>
+            <Input
+              type="number"
+              placeholder="∞"
+              value={priceMax}
+              onChange={(e) => setPriceMax(e.target.value)}
+              className="w-28 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
+            />
+            <span className="text-cream/40 text-xs">FCFA</span>
+          </div>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-cream/60 hover:text-cream hover:bg-cream/10 ml-auto"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Réinitialiser les filtres
+            </Button>
+          )}
+        </motion.div>
+      )}
+
+      {/* Active Filters Summary */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap gap-2 text-xs">
+          {searchQuery && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Recherche: "{searchQuery}"
+            </Badge>
+          )}
+          {categoryFilter !== "all" && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Catégorie: {categories.find(c => c.id === categoryFilter)?.name}
+            </Badge>
+          )}
+          {statusFilter !== "all" && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Statut: {statusFilter === "active" ? "Actifs" : statusFilter === "inactive" ? "Inactifs" : statusFilter === "featured" ? "En vedette" : "Stock faible"}
+            </Badge>
+          )}
+          {priceMin && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Prix min: {new Intl.NumberFormat("fr-FR").format(parseFloat(priceMin))} FCFA
+            </Badge>
+          )}
+          {priceMax && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Prix max: {new Intl.NumberFormat("fr-FR").format(parseFloat(priceMax))} FCFA
+            </Badge>
+          )}
+        </div>
+      )}
 
       {/* Table */}
       {filteredProducts.length === 0 ? (
