@@ -6,6 +6,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { AddressFormData } from "@/components/checkout/AddressForm";
 import type { PaymentMethod } from "@/components/checkout/PaymentMethodSelect";
+import type { AppliedPromoCode } from "@/components/checkout/PromoCodeInput";
 
 export function useCheckout() {
   const navigate = useNavigate();
@@ -14,8 +15,18 @@ export function useCheckout() {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"address" | "payment" | "confirmation">("address");
   const [addressData, setAddressData] = useState<AddressFormData | null>(null);
+  const [appliedPromoCode, setAppliedPromoCode] = useState<AppliedPromoCode | null>(null);
 
   const deliveryFee = subtotal >= 50000 ? 0 : 2000;
+  const discountAmount = appliedPromoCode?.discountAmount || 0;
+
+  const handlePromoCodeApply = (promoCode: AppliedPromoCode) => {
+    setAppliedPromoCode(promoCode);
+  };
+
+  const handlePromoCodeRemove = () => {
+    setAppliedPromoCode(null);
+  };
 
   const handleAddressSubmit = async (data: AddressFormData) => {
     setAddressData(data);
@@ -38,7 +49,7 @@ export function useCheckout() {
     try {
       // Use city directly as it's now stored with proper capitalization
       const cityLabel = addressData.city;
-      const total = subtotal + deliveryFee;
+      const total = subtotal - discountAmount + deliveryFee;
 
       // Generate order number
       const { data: orderNumberData } = await supabase
@@ -54,6 +65,7 @@ export function useCheckout() {
           order_number: orderNumber,
           subtotal,
           delivery_fee: deliveryFee,
+          discount_amount: discountAmount,
           total,
           status: "pending",
           payment_method: method,
@@ -65,11 +77,28 @@ export function useCheckout() {
           shipping_street: addressData.streetAddress,
           shipping_notes: addressData.additionalInfo || null,
           guest_phone: !user?.id ? addressData.phone : null,
+          referral_code_used: appliedPromoCode?.code || null,
         })
         .select()
         .single();
 
       if (orderError) throw orderError;
+
+      // Increment promo code usage count if applied
+      if (appliedPromoCode) {
+        const { data: promoData } = await supabase
+          .from("promo_codes")
+          .select("used_count")
+          .eq("code", appliedPromoCode.code)
+          .single();
+        
+        if (promoData) {
+          await supabase
+            .from("promo_codes")
+            .update({ used_count: (promoData.used_count || 0) + 1 })
+            .eq("code", appliedPromoCode.code);
+        }
+      }
 
       // Create order items
       const orderItems = items.map((item) => ({
@@ -104,6 +133,8 @@ export function useCheckout() {
                 total_price: item.total_price,
               })),
               subtotal,
+              discountAmount,
+              promoCode: appliedPromoCode?.code,
               deliveryFee,
               total,
               shippingAddress: {
@@ -118,8 +149,6 @@ export function useCheckout() {
           
           if (emailResponse.error) {
             console.warn('Email confirmation failed:', emailResponse.error);
-          } else {
-            console.log('Confirmation email sent successfully');
           }
         } catch (emailError) {
           console.warn('Failed to send confirmation email:', emailError);
@@ -157,6 +186,9 @@ export function useCheckout() {
     setStep,
     addressData,
     isLoading,
+    appliedPromoCode,
+    handlePromoCodeApply,
+    handlePromoCodeRemove,
     handleAddressSubmit,
     handlePaymentSubmit,
   };
