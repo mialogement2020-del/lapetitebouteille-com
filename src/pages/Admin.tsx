@@ -9,13 +9,14 @@ import {
   ArrowLeft,
   Wine,
   FolderOpen,
-  BarChart3
+  BarChart3,
+  Ticket
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAdmin, type AdminOrder, type AdminProduct, type AdminCategory, type ProductFormData, type CategoryFormData } from "@/hooks/useAdmin";
+import { useAdmin, type AdminOrder, type AdminProduct, type AdminCategory, type AdminPromoCode, type ProductFormData, type CategoryFormData, type PromoCodeFormData } from "@/hooks/useAdmin";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { OrdersTable } from "@/components/admin/OrdersTable";
@@ -25,6 +26,8 @@ import { ProductFormDialog } from "@/components/admin/ProductFormDialog";
 import { CategoriesTable } from "@/components/admin/CategoriesTable";
 import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
 import { PerformanceCharts } from "@/components/admin/PerformanceCharts";
+import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
+import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -53,6 +56,12 @@ const Admin = () => {
     createCategory,
     updateCategory,
     deleteCategory,
+    promoCodes,
+    isLoadingPromoCodes,
+    refetchPromoCodes,
+    createPromoCode,
+    updatePromoCode,
+    deletePromoCode,
     stats 
   } = useAdmin();
   
@@ -62,6 +71,8 @@ const Admin = () => {
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<AdminCategory | null>(null);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [selectedPromoCode, setSelectedPromoCode] = useState<AdminPromoCode | null>(null);
+  const [isPromoCodeDialogOpen, setIsPromoCodeDialogOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -173,6 +184,51 @@ const Admin = () => {
       toast({
         title: "Erreur",
         description: "Impossible de supprimer la catégorie",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle promo code save (create or update)
+  const handleSavePromoCode = async (data: PromoCodeFormData, id?: string) => {
+    try {
+      if (id) {
+        await updatePromoCode.mutateAsync({ id, data });
+        toast({
+          title: "Code promo modifié",
+          description: `Le code "${data.code}" a été mis à jour.`,
+        });
+      } else {
+        await createPromoCode.mutateAsync(data);
+        toast({
+          title: "Code promo créé",
+          description: `Le code "${data.code}" a été ajouté.`,
+        });
+      }
+      setIsPromoCodeDialogOpen(false);
+      setSelectedPromoCode(null);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: id ? "Impossible de modifier le code promo" : "Impossible de créer le code promo",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Handle promo code delete
+  const handleDeletePromoCode = async (promoCode: AdminPromoCode) => {
+    try {
+      await deletePromoCode.mutateAsync(promoCode.id);
+      toast({
+        title: "Code promo supprimé",
+        description: `Le code "${promoCode.code}" a été supprimé.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le code promo",
         variant: "destructive",
       });
     }
@@ -293,6 +349,13 @@ const Admin = () => {
                   <FolderOpen className="h-4 w-4 mr-2" />
                   Catégories
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="promo-codes"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                >
+                  <Ticket className="h-4 w-4 mr-2" />
+                  Codes Promo
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="performance">
@@ -351,6 +414,25 @@ const Admin = () => {
                   />
                 </div>
               </TabsContent>
+
+              <TabsContent value="promo-codes">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <PromoCodesTable
+                    promoCodes={promoCodes}
+                    isLoading={isLoadingPromoCodes}
+                    onAddPromoCode={() => {
+                      setSelectedPromoCode(null);
+                      setIsPromoCodeDialogOpen(true);
+                    }}
+                    onEditPromoCode={(promoCode) => {
+                      setSelectedPromoCode(promoCode);
+                      setIsPromoCodeDialogOpen(true);
+                    }}
+                    onDeletePromoCode={handleDeletePromoCode}
+                    onRefresh={() => refetchPromoCodes()}
+                  />
+                </div>
+              </TabsContent>
             </Tabs>
           </motion.div>
         </div>
@@ -382,6 +464,15 @@ const Admin = () => {
         onOpenChange={setIsCategoryDialogOpen}
         onSave={handleSaveCategory}
         isSaving={createCategory.isPending || updateCategory.isPending}
+      />
+
+      {/* Promo Code Form Dialog */}
+      <PromoCodeFormDialog
+        promoCode={selectedPromoCode}
+        open={isPromoCodeDialogOpen}
+        onOpenChange={setIsPromoCodeDialogOpen}
+        onSave={handleSavePromoCode}
+        isSaving={createPromoCode.isPending || updatePromoCode.isPending}
       />
 
       <Footer />

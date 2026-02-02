@@ -73,12 +73,41 @@ export interface AdminCategory {
   created_at: string | null;
 }
 
+export interface AdminPromoCode {
+  id: string;
+  code: string;
+  description: string | null;
+  discount_type: string;
+  discount_value: number;
+  min_order_amount: number | null;
+  max_discount_amount: number | null;
+  usage_limit: number | null;
+  used_count: number;
+  is_active: boolean | null;
+  valid_from: string | null;
+  valid_until: string | null;
+  created_at: string | null;
+}
+
 export interface CategoryFormData {
   name: string;
   slug: string;
   description?: string;
   image_url?: string;
   display_order?: number;
+  is_active?: boolean;
+}
+
+export interface PromoCodeFormData {
+  code: string;
+  description?: string;
+  discount_type: "percentage" | "fixed";
+  discount_value: number;
+  min_order_amount?: number;
+  max_discount_amount?: number;
+  usage_limit?: number;
+  valid_from?: string;
+  valid_until?: string;
   is_active?: boolean;
 }
 
@@ -208,6 +237,21 @@ export function useAdmin() {
 
       if (error) throw error;
       return data;
+    },
+    enabled: isAdmin === true,
+  });
+
+  // Fetch all promo codes (admin only)
+  const { data: promoCodes = [], isLoading: isLoadingPromoCodes, refetch: refetchPromoCodes } = useQuery({
+    queryKey: ["admin-promo-codes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("promo_codes")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as AdminPromoCode[];
     },
     enabled: isAdmin === true,
   });
@@ -374,6 +418,72 @@ export function useAdmin() {
     },
   });
 
+  // Create promo code mutation
+  const createPromoCode = useMutation({
+    mutationFn: async (data: PromoCodeFormData) => {
+      const { error } = await supabase
+        .from("promo_codes")
+        .insert([{
+          code: data.code,
+          description: data.description || null,
+          discount_type: data.discount_type,
+          discount_value: data.discount_value,
+          min_order_amount: data.min_order_amount || 0,
+          max_discount_amount: data.max_discount_amount || null,
+          usage_limit: data.usage_limit || null,
+          valid_from: data.valid_from || null,
+          valid_until: data.valid_until || null,
+          is_active: data.is_active ?? true,
+        }]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-promo-codes"] });
+    },
+  });
+
+  // Update promo code mutation
+  const updatePromoCode = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<PromoCodeFormData> }) => {
+      const { error } = await supabase
+        .from("promo_codes")
+        .update({
+          code: data.code,
+          description: data.description,
+          discount_type: data.discount_type,
+          discount_value: data.discount_value,
+          min_order_amount: data.min_order_amount,
+          max_discount_amount: data.max_discount_amount,
+          usage_limit: data.usage_limit,
+          valid_from: data.valid_from,
+          valid_until: data.valid_until,
+          is_active: data.is_active,
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-promo-codes"] });
+    },
+  });
+
+  // Delete promo code mutation
+  const deletePromoCode = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("promo_codes")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-promo-codes"] });
+    },
+  });
+
   // Get order statistics
   const stats = {
     total: orders.length,
@@ -391,6 +501,8 @@ export function useAdmin() {
     lowStock: products.filter((p) => (p.stock_quantity || 0) <= 5).length,
     totalCategories: allCategories.length,
     activeCategories: allCategories.filter((c) => c.is_active).length,
+    totalPromoCodes: promoCodes.length,
+    activePromoCodes: promoCodes.filter((p) => p.is_active).length,
   };
 
   return {
@@ -413,6 +525,12 @@ export function useAdmin() {
     createCategory,
     updateCategory,
     deleteCategory,
+    promoCodes,
+    isLoadingPromoCodes,
+    refetchPromoCodes,
+    createPromoCode,
+    updatePromoCode,
+    deletePromoCode,
     stats,
   };
 }
