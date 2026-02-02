@@ -36,6 +36,55 @@ export interface AdminOrder {
   }[];
 }
 
+export interface AdminProduct {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  short_description: string | null;
+  price: number;
+  original_price: number | null;
+  stock_quantity: number | null;
+  category_id: string | null;
+  image_url: string | null;
+  is_active: boolean | null;
+  is_featured: boolean | null;
+  alcohol_percentage: number | null;
+  volume_ml: number | null;
+  vintage_year: number | null;
+  origin_country: string | null;
+  region: string | null;
+  grape_variety: string | null;
+  tasting_notes: string | null;
+  food_pairing: string | null;
+  serving_temperature: string | null;
+  created_at: string | null;
+  category?: { id: string; name: string } | null;
+}
+
+export interface ProductFormData {
+  name: string;
+  slug: string;
+  description?: string;
+  short_description?: string;
+  price: number;
+  original_price?: number;
+  stock_quantity?: number;
+  category_id?: string;
+  image_url?: string;
+  is_active?: boolean;
+  is_featured?: boolean;
+  alcohol_percentage?: number;
+  volume_ml?: number;
+  vintage_year?: number;
+  origin_country?: string;
+  region?: string;
+  grape_variety?: string;
+  tasting_notes?: string;
+  food_pairing?: string;
+  serving_temperature?: string;
+}
+
 export function useAdmin() {
   const { user } = useAuthContext();
   const queryClient = useQueryClient();
@@ -94,6 +143,40 @@ export function useAdmin() {
     enabled: isAdmin === true,
   });
 
+  // Fetch all products (admin only)
+  const { data: products = [], isLoading: isLoadingProducts, refetch: refetchProducts } = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          category:categories(id, name)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as AdminProduct[];
+    },
+    enabled: isAdmin === true,
+  });
+
+  // Fetch categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ["admin-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name, slug")
+        .eq("is_active", true)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin === true,
+  });
+
   // Update order status mutation
   const updateOrderStatus = useMutation({
     mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: OrderStatus }) => {
@@ -109,6 +192,92 @@ export function useAdmin() {
     },
   });
 
+  // Create product mutation
+  const createProduct = useMutation({
+    mutationFn: async (data: ProductFormData) => {
+      const { error } = await supabase
+        .from("products")
+        .insert([{
+          name: data.name,
+          slug: data.slug,
+          description: data.description || null,
+          short_description: data.short_description || null,
+          price: data.price,
+          original_price: data.original_price || null,
+          stock_quantity: data.stock_quantity || 0,
+          category_id: data.category_id || null,
+          image_url: data.image_url || null,
+          is_active: data.is_active ?? true,
+          is_featured: data.is_featured ?? false,
+          alcohol_percentage: data.alcohol_percentage || null,
+          volume_ml: data.volume_ml || null,
+          vintage_year: data.vintage_year || null,
+          origin_country: data.origin_country || null,
+          region: data.region || null,
+          grape_variety: data.grape_variety || null,
+          tasting_notes: data.tasting_notes || null,
+          food_pairing: data.food_pairing || null,
+          serving_temperature: data.serving_temperature || null,
+        }]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    },
+  });
+
+  // Update product mutation
+  const updateProduct = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ProductFormData> }) => {
+      const { error } = await supabase
+        .from("products")
+        .update({
+          name: data.name,
+          slug: data.slug,
+          description: data.description,
+          short_description: data.short_description,
+          price: data.price,
+          original_price: data.original_price,
+          stock_quantity: data.stock_quantity,
+          category_id: data.category_id,
+          image_url: data.image_url,
+          is_active: data.is_active,
+          is_featured: data.is_featured,
+          alcohol_percentage: data.alcohol_percentage,
+          volume_ml: data.volume_ml,
+          vintage_year: data.vintage_year,
+          origin_country: data.origin_country,
+          region: data.region,
+          grape_variety: data.grape_variety,
+          tasting_notes: data.tasting_notes,
+          food_pairing: data.food_pairing,
+          serving_temperature: data.serving_temperature,
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    },
+  });
+
+  // Delete product mutation
+  const deleteProduct = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    },
+  });
+
   // Get order statistics
   const stats = {
     total: orders.length,
@@ -121,6 +290,9 @@ export function useAdmin() {
     totalRevenue: orders
       .filter((o) => o.status !== "cancelled")
       .reduce((sum, o) => sum + o.total, 0),
+    totalProducts: products.length,
+    activeProducts: products.filter((p) => p.is_active).length,
+    lowStock: products.filter((p) => (p.stock_quantity || 0) <= 5).length,
   };
 
   return {
@@ -130,6 +302,13 @@ export function useAdmin() {
     isLoadingOrders,
     refetchOrders,
     updateOrderStatus,
+    products,
+    isLoadingProducts,
+    refetchProducts,
+    categories,
+    createProduct,
+    updateProduct,
+    deleteProduct,
     stats,
   };
 }

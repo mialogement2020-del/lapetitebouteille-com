@@ -6,17 +6,20 @@ import {
   Package, 
   ShieldCheck,
   Loader2,
-  ArrowLeft
+  ArrowLeft,
+  Wine
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAdmin, type AdminOrder } from "@/hooks/useAdmin";
+import { useAdmin, type AdminOrder, type AdminProduct, type ProductFormData } from "@/hooks/useAdmin";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { OrdersTable } from "@/components/admin/OrdersTable";
 import { OrderStatusDialog } from "@/components/admin/OrderStatusDialog";
+import { ProductsTable } from "@/components/admin/ProductsTable";
+import { ProductFormDialog } from "@/components/admin/ProductFormDialog";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -25,10 +28,27 @@ type OrderStatus = Database["public"]["Enums"]["order_status"];
 const Admin = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuthContext();
-  const { isAdmin, isCheckingAdmin, orders, isLoadingOrders, refetchOrders, updateOrderStatus, stats } = useAdmin();
+  const { 
+    isAdmin, 
+    isCheckingAdmin, 
+    orders, 
+    isLoadingOrders, 
+    refetchOrders, 
+    updateOrderStatus, 
+    products,
+    isLoadingProducts,
+    refetchProducts,
+    categories,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    stats 
+  } = useAdmin();
   
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(null);
+  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -52,6 +72,51 @@ const Admin = () => {
         variant: "destructive",
       });
       throw error;
+    }
+  };
+
+  // Handle product save (create or update)
+  const handleSaveProduct = async (data: ProductFormData, id?: string) => {
+    try {
+      if (id) {
+        await updateProduct.mutateAsync({ id, data });
+        toast({
+          title: "Produit modifié",
+          description: `Le produit "${data.name}" a été mis à jour.`,
+        });
+      } else {
+        await createProduct.mutateAsync(data);
+        toast({
+          title: "Produit créé",
+          description: `Le produit "${data.name}" a été ajouté au catalogue.`,
+        });
+      }
+      setIsProductDialogOpen(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: id ? "Impossible de modifier le produit" : "Impossible de créer le produit",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Handle product delete
+  const handleDeleteProduct = async (product: AdminProduct) => {
+    try {
+      await deleteProduct.mutateAsync(product.id);
+      toast({
+        title: "Produit supprimé",
+        description: `Le produit "${product.name}" a été supprimé.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le produit",
+        variant: "destructive",
+      });
     }
   };
 
@@ -124,7 +189,7 @@ const Admin = () => {
                   Administration
                 </h1>
                 <p className="text-cream/60">
-                  Gérez les commandes et suivez les performances
+                  Gérez les commandes, produits et suivez les performances
                 </p>
               </div>
             </div>
@@ -149,6 +214,13 @@ const Admin = () => {
                   <Package className="h-4 w-4 mr-2" />
                   Commandes
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="products"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                >
+                  <Wine className="h-4 w-4 mr-2" />
+                  Produits
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="orders">
@@ -164,6 +236,26 @@ const Admin = () => {
                   />
                 </div>
               </TabsContent>
+
+              <TabsContent value="products">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <ProductsTable
+                    products={products}
+                    categories={categories}
+                    isLoading={isLoadingProducts}
+                    onAddProduct={() => {
+                      setSelectedProduct(null);
+                      setIsProductDialogOpen(true);
+                    }}
+                    onEditProduct={(product) => {
+                      setSelectedProduct(product);
+                      setIsProductDialogOpen(true);
+                    }}
+                    onDeleteProduct={handleDeleteProduct}
+                    onRefresh={() => refetchProducts()}
+                  />
+                </div>
+              </TabsContent>
             </Tabs>
           </motion.div>
         </div>
@@ -176,6 +268,16 @@ const Admin = () => {
         onOpenChange={setIsStatusDialogOpen}
         onUpdateStatus={handleUpdateStatus}
         isUpdating={updateOrderStatus.isPending}
+      />
+
+      {/* Product Form Dialog */}
+      <ProductFormDialog
+        product={selectedProduct}
+        open={isProductDialogOpen}
+        onOpenChange={setIsProductDialogOpen}
+        categories={categories}
+        onSave={handleSaveProduct}
+        isSaving={createProduct.isPending || updateProduct.isPending}
       />
 
       <Footer />
