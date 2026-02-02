@@ -1,19 +1,37 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, Search, Wine, LogOut, LogIn, Users } from "lucide-react";
+import { Menu, X, User, Search, Wine, LogOut, LogIn, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { toast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, signOut } = useAuthContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Check if user is admin
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return false;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!user?.id,
+  });
 
   const navLinks = [
     { href: "/catalogue", label: "Catalogue" },
@@ -95,6 +113,15 @@ const Header = () => {
                     <Users className="mr-2 h-4 w-4" />
                     Espace Ambassadeur
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem 
+                      className="text-cream/80 focus:text-cream focus:bg-cream/10 cursor-pointer"
+                      onClick={() => navigate("/admin")}
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      Administration
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator className="bg-gold/20" />
                   <DropdownMenuItem 
                     className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
@@ -199,6 +226,19 @@ const Header = () => {
                       <Users className="mr-2 h-4 w-4" />
                       Espace Ambassadeur
                     </Button>
+                    {isAdmin && (
+                      <Button 
+                        variant="outline"
+                        className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          navigate("/admin");
+                        }}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        Administration
+                      </Button>
+                    )}
                     <Button 
                       variant="outline"
                       className="w-full border-gold/30 text-cream hover:bg-cream/10"
