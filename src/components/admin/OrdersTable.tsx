@@ -10,7 +10,9 @@ import {
   Filter,
   RefreshCw,
   Eye,
-  Download
+  Download,
+  Calendar,
+  X
 } from "lucide-react";
 import { convertToCSV, downloadCSV, formatDateForCSV, formatPriceForCSV } from "@/lib/csvExport";
 import { toast } from "sonner";
@@ -32,7 +34,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import type { AdminOrder } from "@/hooks/useAdmin";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -57,6 +67,11 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; icon: an
 export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: OrdersTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  const [amountMin, setAmountMin] = useState<string>("");
+  const [amountMax, setAmountMax] = useState<string>("");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
@@ -71,6 +86,49 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
       minute: "2-digit",
     });
   };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setDateFrom(undefined);
+    setDateTo(undefined);
+    setAmountMin("");
+    setAmountMax("");
+  };
+
+  const hasActiveFilters = searchQuery || statusFilter !== "all" || dateFrom || dateTo || amountMin || amountMax;
+
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch = 
+      order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.shipping_full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.shipping_phone?.includes(searchQuery);
+    
+    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+    
+    // Date filter
+    let matchesDate = true;
+    if (order.created_at) {
+      const orderDate = new Date(order.created_at);
+      if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        fromDate.setHours(0, 0, 0, 0);
+        matchesDate = matchesDate && orderDate >= fromDate;
+      }
+      if (dateTo) {
+        const toDate = new Date(dateTo);
+        toDate.setHours(23, 59, 59, 999);
+        matchesDate = matchesDate && orderDate <= toDate;
+      }
+    }
+
+    // Amount filter
+    const minAmount = amountMin ? parseFloat(amountMin) : 0;
+    const maxAmount = amountMax ? parseFloat(amountMax) : Infinity;
+    const matchesAmount = order.total >= minAmount && order.total <= maxAmount;
+    
+    return matchesSearch && matchesStatus && matchesDate && matchesAmount;
+  });
 
   const exportToCSV = () => {
     const columns = [
@@ -111,17 +169,6 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
     toast.success(`${filteredOrders.length} commande(s) exportée(s)`);
   };
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = 
-      order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.shipping_full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.shipping_phone?.includes(searchQuery);
-    
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -138,7 +185,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
+      {/* Main Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
@@ -151,7 +198,6 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-48 bg-cream/5 border-gold/30 text-cream">
-            <Filter className="h-4 w-4 mr-2 text-cream/50" />
             <SelectValue placeholder="Filtrer par statut" />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/30">
@@ -163,6 +209,15 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          className={`border-gold/30 text-cream hover:bg-cream/10 ${showAdvancedFilters ? 'bg-cream/10' : ''}`}
+          title="Filtres avancés"
+        >
+          <Filter className="h-4 w-4" />
+        </Button>
         <Button
           variant="outline"
           size="icon"
@@ -181,6 +236,161 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Advanced Filters */}
+      {showAdvancedFilters && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="flex flex-wrap gap-4 p-4 bg-cream/5 rounded-lg border border-gold/20"
+        >
+          {/* Date From */}
+          <div className="flex items-center gap-2">
+            <span className="text-cream/60 text-sm whitespace-nowrap">Du:</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-40 justify-start text-left font-normal bg-cream/5 border-gold/20 text-cream hover:bg-cream/10"
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : <span className="text-cream/40">Date début</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-noir border-gold/20" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={dateFrom}
+                  onSelect={setDateFrom}
+                  locale={fr}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            {dateFrom && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-cream/40 hover:text-cream"
+                onClick={() => setDateFrom(undefined)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Date To */}
+          <div className="flex items-center gap-2">
+            <span className="text-cream/60 text-sm whitespace-nowrap">Au:</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-40 justify-start text-left font-normal bg-cream/5 border-gold/20 text-cream hover:bg-cream/10"
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {dateTo ? format(dateTo, "dd/MM/yyyy") : <span className="text-cream/40">Date fin</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-noir border-gold/20" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={dateTo}
+                  onSelect={setDateTo}
+                  locale={fr}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            {dateTo && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-cream/40 hover:text-cream"
+                onClick={() => setDateTo(undefined)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Amount Min */}
+          <div className="flex items-center gap-2">
+            <span className="text-cream/60 text-sm whitespace-nowrap">Montant min:</span>
+            <Input
+              type="number"
+              placeholder="0"
+              value={amountMin}
+              onChange={(e) => setAmountMin(e.target.value)}
+              className="w-28 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
+            />
+            <span className="text-cream/40 text-xs">FCFA</span>
+          </div>
+
+          {/* Amount Max */}
+          <div className="flex items-center gap-2">
+            <span className="text-cream/60 text-sm whitespace-nowrap">Montant max:</span>
+            <Input
+              type="number"
+              placeholder="∞"
+              value={amountMax}
+              onChange={(e) => setAmountMax(e.target.value)}
+              className="w-28 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
+            />
+            <span className="text-cream/40 text-xs">FCFA</span>
+          </div>
+
+          {/* Clear Filters */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-cream/60 hover:text-cream hover:bg-cream/10 ml-auto"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Réinitialiser les filtres
+            </Button>
+          )}
+        </motion.div>
+      )}
+
+      {/* Active Filters Summary */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap gap-2 text-xs">
+          {searchQuery && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Recherche: "{searchQuery}"
+            </Badge>
+          )}
+          {statusFilter !== "all" && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Statut: {statusConfig[statusFilter as OrderStatus]?.label}
+            </Badge>
+          )}
+          {dateFrom && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Du: {format(dateFrom, "dd/MM/yyyy")}
+            </Badge>
+          )}
+          {dateTo && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Au: {format(dateTo, "dd/MM/yyyy")}
+            </Badge>
+          )}
+          {amountMin && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Min: {new Intl.NumberFormat("fr-FR").format(parseFloat(amountMin))} FCFA
+            </Badge>
+          )}
+          {amountMax && (
+            <Badge variant="outline" className="border-gold/30 text-cream/70">
+              Max: {new Intl.NumberFormat("fr-FR").format(parseFloat(amountMax))} FCFA
+            </Badge>
+          )}
+        </div>
+      )}
 
       {/* Results count */}
       <p className="text-cream/60 text-sm">
