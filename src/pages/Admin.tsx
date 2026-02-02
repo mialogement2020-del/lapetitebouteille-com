@@ -7,19 +7,22 @@ import {
   ShieldCheck,
   Loader2,
   ArrowLeft,
-  Wine
+  Wine,
+  FolderOpen
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAdmin, type AdminOrder, type AdminProduct, type ProductFormData } from "@/hooks/useAdmin";
+import { useAdmin, type AdminOrder, type AdminProduct, type AdminCategory, type ProductFormData, type CategoryFormData } from "@/hooks/useAdmin";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { OrdersTable } from "@/components/admin/OrdersTable";
 import { OrderStatusDialog } from "@/components/admin/OrderStatusDialog";
 import { ProductsTable } from "@/components/admin/ProductsTable";
 import { ProductFormDialog } from "@/components/admin/ProductFormDialog";
+import { CategoriesTable } from "@/components/admin/CategoriesTable";
+import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -39,9 +42,15 @@ const Admin = () => {
     isLoadingProducts,
     refetchProducts,
     categories,
+    allCategories,
+    isLoadingCategories,
+    refetchCategories,
     createProduct,
     updateProduct,
     deleteProduct,
+    createCategory,
+    updateCategory,
+    deleteCategory,
     stats 
   } = useAdmin();
   
@@ -49,6 +58,8 @@ const Admin = () => {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(null);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<AdminCategory | null>(null);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -115,6 +126,51 @@ const Admin = () => {
       toast({
         title: "Erreur",
         description: "Impossible de supprimer le produit",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle category save (create or update)
+  const handleSaveCategory = async (data: CategoryFormData, id?: string) => {
+    try {
+      if (id) {
+        await updateCategory.mutateAsync({ id, data });
+        toast({
+          title: "Catégorie modifiée",
+          description: `La catégorie "${data.name}" a été mise à jour.`,
+        });
+      } else {
+        await createCategory.mutateAsync(data);
+        toast({
+          title: "Catégorie créée",
+          description: `La catégorie "${data.name}" a été ajoutée.`,
+        });
+      }
+      setIsCategoryDialogOpen(false);
+      setSelectedCategory(null);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: id ? "Impossible de modifier la catégorie" : "Impossible de créer la catégorie",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Handle category delete
+  const handleDeleteCategory = async (category: AdminCategory) => {
+    try {
+      await deleteCategory.mutateAsync(category.id);
+      toast({
+        title: "Catégorie supprimée",
+        description: `La catégorie "${category.name}" a été supprimée.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la catégorie",
         variant: "destructive",
       });
     }
@@ -221,6 +277,13 @@ const Admin = () => {
                   <Wine className="h-4 w-4 mr-2" />
                   Produits
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="categories"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                >
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Catégories
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="orders">
@@ -256,6 +319,25 @@ const Admin = () => {
                   />
                 </div>
               </TabsContent>
+
+              <TabsContent value="categories">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <CategoriesTable
+                    categories={allCategories}
+                    isLoading={isLoadingCategories}
+                    onAddCategory={() => {
+                      setSelectedCategory(null);
+                      setIsCategoryDialogOpen(true);
+                    }}
+                    onEditCategory={(category) => {
+                      setSelectedCategory(category);
+                      setIsCategoryDialogOpen(true);
+                    }}
+                    onDeleteCategory={handleDeleteCategory}
+                    onRefresh={() => refetchCategories()}
+                  />
+                </div>
+              </TabsContent>
             </Tabs>
           </motion.div>
         </div>
@@ -278,6 +360,15 @@ const Admin = () => {
         categories={categories}
         onSave={handleSaveProduct}
         isSaving={createProduct.isPending || updateProduct.isPending}
+      />
+
+      {/* Category Form Dialog */}
+      <CategoryFormDialog
+        category={selectedCategory}
+        open={isCategoryDialogOpen}
+        onOpenChange={setIsCategoryDialogOpen}
+        onSave={handleSaveCategory}
+        isSaving={createCategory.isPending || updateCategory.isPending}
       />
 
       <Footer />

@@ -62,6 +62,26 @@ export interface AdminProduct {
   category?: { id: string; name: string } | null;
 }
 
+export interface AdminCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  display_order: number | null;
+  is_active: boolean | null;
+  created_at: string | null;
+}
+
+export interface CategoryFormData {
+  name: string;
+  slug: string;
+  description?: string;
+  image_url?: string;
+  display_order?: number;
+  is_active?: boolean;
+}
+
 export interface ProductFormData {
   name: string;
   slug: string;
@@ -161,7 +181,22 @@ export function useAdmin() {
     enabled: isAdmin === true,
   });
 
-  // Fetch categories
+  // Fetch all categories (admin only - includes inactive)
+  const { data: allCategories = [], isLoading: isLoadingCategories, refetch: refetchCategories } = useQuery({
+    queryKey: ["admin-all-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+      return data as AdminCategory[];
+    },
+    enabled: isAdmin === true,
+  });
+
+  // Fetch active categories for product form
   const { data: categories = [] } = useQuery({
     queryKey: ["admin-categories"],
     queryFn: async () => {
@@ -278,6 +313,67 @@ export function useAdmin() {
     },
   });
 
+  // Create category mutation
+  const createCategory = useMutation({
+    mutationFn: async (data: CategoryFormData) => {
+      const { error } = await supabase
+        .from("categories")
+        .insert([{
+          name: data.name,
+          slug: data.slug,
+          description: data.description || null,
+          image_url: data.image_url || null,
+          display_order: data.display_order || 0,
+          is_active: data.is_active ?? true,
+        }]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-all-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+    },
+  });
+
+  // Update category mutation
+  const updateCategory = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CategoryFormData> }) => {
+      const { error } = await supabase
+        .from("categories")
+        .update({
+          name: data.name,
+          slug: data.slug,
+          description: data.description,
+          image_url: data.image_url,
+          display_order: data.display_order,
+          is_active: data.is_active,
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-all-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+    },
+  });
+
+  // Delete category mutation
+  const deleteCategory = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("categories")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-all-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+    },
+  });
+
   // Get order statistics
   const stats = {
     total: orders.length,
@@ -293,6 +389,8 @@ export function useAdmin() {
     totalProducts: products.length,
     activeProducts: products.filter((p) => p.is_active).length,
     lowStock: products.filter((p) => (p.stock_quantity || 0) <= 5).length,
+    totalCategories: allCategories.length,
+    activeCategories: allCategories.filter((c) => c.is_active).length,
   };
 
   return {
@@ -306,9 +404,15 @@ export function useAdmin() {
     isLoadingProducts,
     refetchProducts,
     categories,
+    allCategories,
+    isLoadingCategories,
+    refetchCategories,
     createProduct,
     updateProduct,
     deleteProduct,
+    createCategory,
+    updateCategory,
+    deleteCategory,
     stats,
   };
 }
