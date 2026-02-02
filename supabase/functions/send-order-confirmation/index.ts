@@ -235,100 +235,155 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification to owner
     if (OWNER_EMAIL) {
+      const ownerItemsHtml = items
+        .map(
+          (item) => `
+          <tr>
+            <td style="padding: 14px 20px; border-bottom: 1px solid rgba(212,175,55,0.15);">
+              <span style="color: #ffffff; font-weight: 500;">${item.product_name}</span>
+            </td>
+            <td style="padding: 14px 12px; border-bottom: 1px solid rgba(212,175,55,0.15); text-align: center; color: rgba(255,255,255,0.6);">×${item.quantity}</td>
+            <td style="padding: 14px 20px; border-bottom: 1px solid rgba(212,175,55,0.15); text-align: right; color: #D4AF37; font-weight: 600;">${formatPrice(item.total_price)}</td>
+          </tr>
+        `
+        )
+        .join("");
+
       const ownerEmailHtml = `
         <!DOCTYPE html>
         <html lang="fr">
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
         </head>
-        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #0a0a0a; margin: 0; padding: 40px 20px;">
+          <div style="max-width: 600px; margin: 0 auto;">
             
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 25px; text-align: center;">
-              <h1 style="color: #D4AF37; margin: 0; font-size: 24px;">🔔 Nouvelle Commande</h1>
-              <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0; font-size: 14px;">${orderNumber}</p>
-            </div>
+            <!-- Decorative top border -->
+            <div style="height: 4px; background: linear-gradient(90deg, #D4AF37 0%, #F4E4BC 50%, #D4AF37 100%); border-radius: 2px 2px 0 0;"></div>
             
-            <!-- Content -->
-            <div style="padding: 25px;">
-              <div style="background-color: #fff8e1; border-left: 4px solid #D4AF37; padding: 15px; margin-bottom: 20px;">
-                <p style="margin: 0; color: #333; font-weight: 600;">
-                  💰 Total: <span style="color: #D4AF37; font-size: 20px;">${formatPrice(total)}</span>
-                </p>
+            <div style="background-color: #1a1a1a; border-radius: 0 0 16px 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+              
+              <!-- Header -->
+              <div style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); padding: 40px; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.2);">
+                <div style="margin-bottom: 16px;">
+                  <span style="display: inline-block; width: 50px; height: 50px; background: linear-gradient(135deg, #D4AF37 0%, #F4E4BC 100%); border-radius: 50%; line-height: 50px; font-size: 24px;">🔔</span>
+                </div>
+                <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #D4AF37; margin: 0; font-size: 28px; font-weight: 600;">Nouvelle Commande</h1>
+                <p style="color: rgba(255,255,255,0.5); margin: 10px 0 0; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Dashboard Administrateur</p>
               </div>
               
-              <!-- Customer Info -->
-              <div style="margin-bottom: 20px;">
-                <h3 style="color: #333; margin: 0 0 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-                  👤 Client
-                </h3>
-                <p style="margin: 5px 0; color: #555;">
-                  <strong>${customerName}</strong><br>
-                  📧 ${email}<br>
-                  📱 ${shippingAddress.phone}
-                </p>
+              <!-- Order Badge & Total -->
+              <div style="background: linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.05) 100%); padding: 30px 40px; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.1);">
+                <div style="display: inline-block; background: linear-gradient(135deg, #D4AF37 0%, #C4A030 100%); color: #0a0a0a; padding: 8px 24px; border-radius: 50px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">
+                  ${orderNumber}
+                </div>
+                <div style="margin-bottom: 8px;">
+                  <span style="color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Montant Total</span>
+                </div>
+                <div style="color: #D4AF37; font-size: 36px; font-weight: 700; font-family: 'Playfair Display', Georgia, serif;">
+                  ${formatPrice(total)}
+                </div>
               </div>
               
-              <!-- Shipping -->
-              <div style="margin-bottom: 20px;">
-                <h3 style="color: #333; margin: 0 0 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-                  📍 Livraison
-                </h3>
-                <p style="margin: 5px 0; color: #555;">
-                  ${shippingAddress.city}, ${shippingAddress.neighborhood}<br>
-                  ${shippingAddress.street}
-                </p>
-              </div>
-              
-              <!-- Payment -->
-              <div style="margin-bottom: 20px;">
-                <h3 style="color: #333; margin: 0 0 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-                  💳 Paiement
-                </h3>
-                <p style="margin: 5px 0; color: #555;">
-                  ${getPaymentMethodLabel(paymentMethod)}
-                </p>
-              </div>
-              
-              <!-- Items -->
-              <div>
-                <h3 style="color: #333; margin: 0 0 10px; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-                  🛒 Articles (${items.length})
-                </h3>
-                <table style="width: 100%; border-collapse: collapse;">
-                  ${items.map(item => `
+              <!-- Content -->
+              <div style="padding: 35px 40px;">
+                
+                <!-- Customer Card -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.2); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                    <span style="font-size: 18px;">👤</span>
+                    <h3 style="margin: 0; color: #D4AF37; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">Informations Client</h3>
+                  </div>
+                  <p style="margin: 0 0 8px; color: #ffffff; font-size: 18px; font-weight: 600;">${customerName}</p>
+                  <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.8;">
+                    📧 <a href="mailto:${email}" style="color: #D4AF37; text-decoration: none;">${email}</a><br>
+                    📱 <a href="tel:${shippingAddress.phone}" style="color: rgba(255,255,255,0.8); text-decoration: none;">${shippingAddress.phone}</a>
+                  </p>
+                </div>
+                
+                <!-- Shipping & Payment Grid -->
+                <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+                  <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                      <span style="font-size: 16px;">📍</span>
+                      <h3 style="margin: 0; color: #D4AF37; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Livraison</h3>
+                    </div>
+                    <p style="margin: 0; color: #ffffff; font-size: 15px; font-weight: 500;">${shippingAddress.city}</p>
+                    <p style="margin: 6px 0 0; color: rgba(255,255,255,0.5); font-size: 13px; line-height: 1.5;">
+                      ${shippingAddress.neighborhood}<br>
+                      ${shippingAddress.street}
+                    </p>
+                  </div>
+                  <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                      <span style="font-size: 16px;">💳</span>
+                      <h3 style="margin: 0; color: #D4AF37; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Paiement</h3>
+                    </div>
+                    <p style="margin: 0; color: #ffffff; font-size: 15px; font-weight: 500;">
+                      ${getPaymentMethodLabel(paymentMethod)}
+                    </p>
+                    <p style="margin: 8px 0 0; color: ${paymentMethod === 'cash_on_delivery' ? '#f59e0b' : '#4ade80'}; font-size: 12px; font-weight: 500;">
+                      ${paymentMethod === 'cash_on_delivery' ? '⏳ À encaisser' : '✓ Mobile Money'}
+                    </p>
+                  </div>
+                </div>
+                
+                <!-- Order Items -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.15); border-radius: 12px; overflow: hidden; margin-bottom: 20px;">
+                  <div style="background: rgba(212,175,55,0.1); padding: 14px 20px; border-bottom: 1px solid rgba(212,175,55,0.15); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; color: #D4AF37; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">Articles commandés</h3>
+                    <span style="color: rgba(255,255,255,0.5); font-size: 12px;">${items.length} article${items.length > 1 ? 's' : ''}</span>
+                  </div>
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tbody>
+                      ${ownerItemsHtml}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <!-- Totals Summary -->
+                <div style="background: linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%); border: 1px solid rgba(212,175,55,0.2); border-radius: 12px; padding: 20px;">
+                  <table style="width: 100%; border-collapse: collapse;">
                     <tr>
-                      <td style="padding: 8px 0; color: #555; border-bottom: 1px solid #f0f0f0;">
-                        ${item.product_name} × ${item.quantity}
-                      </td>
-                      <td style="padding: 8px 0; color: #333; text-align: right; border-bottom: 1px solid #f0f0f0; font-weight: 500;">
-                        ${formatPrice(item.total_price)}
+                      <td style="padding: 4px 0; color: rgba(255,255,255,0.6); font-size: 13px;">Sous-total</td>
+                      <td style="padding: 4px 0; color: #ffffff; font-size: 13px; text-align: right;">${formatPrice(subtotal)}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 4px 0; color: rgba(255,255,255,0.6); font-size: 13px;">Livraison</td>
+                      <td style="padding: 4px 0; color: ${deliveryFee === 0 ? '#4ade80' : '#ffffff'}; font-size: 13px; text-align: right;">${deliveryFee === 0 ? '✓ Gratuite' : formatPrice(deliveryFee)}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" style="padding-top: 12px;">
+                        <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);"></div>
                       </td>
                     </tr>
-                  `).join('')}
-                </table>
+                    <tr>
+                      <td style="padding: 12px 0 0; color: #ffffff; font-size: 16px; font-weight: 600;">Total à encaisser</td>
+                      <td style="padding: 12px 0 0; text-align: right;">
+                        <span style="color: #D4AF37; font-size: 22px; font-weight: 700; font-family: 'Playfair Display', Georgia, serif;">${formatPrice(total)}</span>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+                
               </div>
               
-              <!-- Summary -->
-              <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #D4AF37;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                  <span style="color: #666;">Sous-total:</span>
-                  <span style="color: #333;">${formatPrice(subtotal)}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: #666;">Livraison:</span>
-                  <span style="color: #333;">${deliveryFee === 0 ? 'Gratuite' : formatPrice(deliveryFee)}</span>
-                </div>
+              <!-- Footer -->
+              <div style="background: #0f0f0f; padding: 25px 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05);">
+                <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 1px;">
+                  Notification automatique
+                </p>
+                <p style="color: rgba(255,255,255,0.25); font-size: 11px; margin: 0;">
+                  La Petite Bouteille • ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
               </div>
             </div>
             
-            <!-- Footer -->
-            <div style="background-color: #f8f9fa; padding: 15px; text-align: center;">
-              <p style="color: #999; font-size: 11px; margin: 0;">
-                Email automatique - La Petite Bouteille
-              </p>
+            <!-- Bottom decorative element -->
+            <div style="text-align: center; padding-top: 25px;">
+              <span style="color: rgba(212,175,55,0.3); font-size: 18px;">✦</span>
             </div>
           </div>
         </body>
