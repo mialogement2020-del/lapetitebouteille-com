@@ -28,6 +28,7 @@ import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
 import { PerformanceCharts } from "@/components/admin/PerformanceCharts";
 import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
 import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
+import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -35,6 +36,7 @@ type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 const Admin = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("performance");
   const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { 
     isAdmin, 
@@ -294,18 +296,33 @@ const Admin = () => {
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-14 h-14 rounded-full bg-gradient-gold flex items-center justify-center">
-                <LayoutDashboard className="h-7 w-7 text-noir" />
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-gold flex items-center justify-center">
+                  <LayoutDashboard className="h-7 w-7 text-noir" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-display font-bold text-cream">
+                    Administration
+                  </h1>
+                  <p className="text-cream/60">
+                    Gérez les commandes, produits et suivez les performances
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-display font-bold text-cream">
-                  Administration
-                </h1>
-                <p className="text-cream/60">
-                  Gérez les commandes, produits et suivez les performances
-                </p>
-              </div>
+              <OrderNotifications
+                enabled={isAdmin}
+                onOrderClick={(orderId) => {
+                  setActiveTab("orders");
+                  // Find and select the order
+                  const order = orders.find((o) => o.id === orderId);
+                  if (order) {
+                    setSelectedOrder(order);
+                    setIsStatusDialogOpen(true);
+                  }
+                  refetchOrders();
+                }}
+              />
             </div>
           </motion.div>
 
@@ -319,7 +336,7 @@ const Admin = () => {
             transition={{ delay: 0.2 }}
             className="mt-8"
           >
-            <Tabs defaultValue="performance" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsList className="bg-noir/50 border border-gold/20">
                 <TabsTrigger 
                   value="performance"
