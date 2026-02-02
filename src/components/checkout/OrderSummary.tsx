@@ -1,20 +1,27 @@
 import { Link } from "react-router-dom";
-import { ShoppingBag, Truck, Tag, ChevronRight } from "lucide-react";
+import { ShoppingBag, Truck, ChevronRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useCartContext } from "@/contexts/CartContext";
+import { PromoCodeInput, AppliedPromoCode } from "./PromoCodeInput";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("fr-FR").format(price);
 };
 
 interface OrderSummaryProps {
-  promoCode?: string;
-  discountAmount?: number;
+  appliedPromoCode?: AppliedPromoCode | null;
+  onPromoCodeApply?: (promoCode: AppliedPromoCode) => void;
+  onPromoCodeRemove?: () => void;
 }
 
-export function OrderSummary({ promoCode, discountAmount = 0 }: OrderSummaryProps) {
+export function OrderSummary({ 
+  appliedPromoCode = null,
+  onPromoCodeApply,
+  onPromoCodeRemove,
+}: OrderSummaryProps) {
   const { items, subtotal, itemCount } = useCartContext();
 
+  const discountAmount = appliedPromoCode?.discountAmount || 0;
   const deliveryFee = subtotal >= 50000 ? 0 : 2000;
   const total = subtotal - discountAmount + deliveryFee;
 
@@ -53,6 +60,18 @@ export function OrderSummary({ promoCode, discountAmount = 0 }: OrderSummaryProp
 
       <Separator className="bg-gold/20 mb-4" />
 
+      {/* Promo Code Input */}
+      {onPromoCodeApply && onPromoCodeRemove && (
+        <div className="mb-4">
+          <PromoCodeInput
+            subtotal={subtotal}
+            appliedCode={appliedPromoCode}
+            onApply={onPromoCodeApply}
+            onRemove={onPromoCodeRemove}
+          />
+        </div>
+      )}
+
       {/* Totals */}
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
@@ -60,11 +79,10 @@ export function OrderSummary({ promoCode, discountAmount = 0 }: OrderSummaryProp
           <span className="text-cream">{formatPrice(subtotal)} FCFA</span>
         </div>
 
-        {discountAmount > 0 && (
+        {discountAmount > 0 && appliedPromoCode && (
           <div className="flex justify-between text-sm">
             <span className="text-cream/70 flex items-center gap-1">
-              <Tag className="h-3 w-3" />
-              Réduction {promoCode && `(${promoCode})`}
+              Réduction ({appliedPromoCode.code})
             </span>
             <span className="text-green-500">-{formatPrice(discountAmount)} FCFA</span>
           </div>

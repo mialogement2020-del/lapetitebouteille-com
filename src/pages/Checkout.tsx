@@ -23,6 +23,9 @@ export default function Checkout() {
     step,
     setStep,
     isLoading,
+    appliedPromoCode,
+    handlePromoCodeApply,
+    handlePromoCodeRemove,
     handleAddressSubmit,
     handlePaymentSubmit,
   } = useCheckout();
@@ -144,7 +147,11 @@ export default function Checkout() {
 
             {/* Order Summary Column */}
             <div className="lg:col-span-1">
-              <OrderSummary />
+              <OrderSummary 
+                appliedPromoCode={appliedPromoCode}
+                onPromoCodeApply={handlePromoCodeApply}
+                onPromoCodeRemove={handlePromoCodeRemove}
+              />
             </div>
           </div>
         </div>
