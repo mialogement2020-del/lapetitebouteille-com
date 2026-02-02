@@ -9,8 +9,11 @@ import {
   Search,
   Filter,
   RefreshCw,
-  Eye
+  Eye,
+  Download
 } from "lucide-react";
+import { convertToCSV, downloadCSV, formatDateForCSV, formatPriceForCSV } from "@/lib/csvExport";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -69,6 +72,45 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
     });
   };
 
+  const exportToCSV = () => {
+    const columns = [
+      { key: "order_number" as const, header: "N° Commande" },
+      { key: "shipping_full_name" as const, header: "Client" },
+      { key: "shipping_phone" as const, header: "Téléphone" },
+      { key: "shipping_city" as const, header: "Ville" },
+      { key: "shipping_neighborhood" as const, header: "Quartier" },
+      { key: "shipping_street" as const, header: "Adresse" },
+      { key: "statusLabel" as const, header: "Statut" },
+      { key: "payment_method" as const, header: "Mode de paiement" },
+      { key: "payment_status" as const, header: "Statut paiement" },
+      { key: "subtotal" as const, header: "Sous-total" },
+      { key: "delivery_fee" as const, header: "Livraison" },
+      { key: "discount_amount" as const, header: "Réduction" },
+      { key: "total" as const, header: "Total" },
+      { key: "itemsCount" as const, header: "Nb articles" },
+      { key: "itemsList" as const, header: "Articles" },
+      { key: "created_at" as const, header: "Date" },
+      { key: "notes" as const, header: "Notes" },
+    ];
+
+    const exportData = filteredOrders.map((o) => ({
+      ...o,
+      statusLabel: o.status ? statusConfig[o.status].label : "En attente",
+      subtotal: formatPriceForCSV(o.subtotal),
+      delivery_fee: o.delivery_fee ? formatPriceForCSV(o.delivery_fee) : "0 FCFA",
+      discount_amount: o.discount_amount ? formatPriceForCSV(o.discount_amount) : "0 FCFA",
+      total: formatPriceForCSV(o.total),
+      itemsCount: o.items.length,
+      itemsList: o.items.map(i => `${i.product_name} (x${i.quantity})`).join("; "),
+      created_at: formatDateForCSV(o.created_at),
+    }));
+
+    const csv = convertToCSV(exportData, columns);
+    const date = new Date().toISOString().split("T")[0];
+    downloadCSV(csv, `commandes-${date}.csv`);
+    toast.success(`${filteredOrders.length} commande(s) exportée(s)`);
+  };
+
   const filteredOrders = orders.filter((order) => {
     const matchesSearch = 
       order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -121,6 +163,15 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          size="icon"
+          className="border-gold/30 text-cream hover:bg-cream/10"
+          onClick={exportToCSV}
+          title="Exporter en CSV"
+        >
+          <Download className="h-4 w-4" />
+        </Button>
         <Button
           variant="outline"
           size="icon"

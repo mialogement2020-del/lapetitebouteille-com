@@ -11,8 +11,11 @@ import {
   Star,
   AlertTriangle,
   Filter,
-  X
+  X,
+  Download
 } from "lucide-react";
+import { convertToCSV, downloadCSV, formatPriceForCSV } from "@/lib/csvExport";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -106,6 +109,39 @@ export function ProductsTable({
     return new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
   };
 
+  const exportToCSV = () => {
+    const columns = [
+      { key: "name" as const, header: "Nom" },
+      { key: "slug" as const, header: "Slug" },
+      { key: "categoryName" as const, header: "Catégorie" },
+      { key: "price" as const, header: "Prix" },
+      { key: "original_price" as const, header: "Prix original" },
+      { key: "stock_quantity" as const, header: "Stock" },
+      { key: "is_active" as const, header: "Actif" },
+      { key: "is_featured" as const, header: "En vedette" },
+      { key: "origin_country" as const, header: "Pays d'origine" },
+      { key: "region" as const, header: "Région" },
+      { key: "grape_variety" as const, header: "Cépage" },
+      { key: "alcohol_percentage" as const, header: "Alcool %" },
+      { key: "volume_ml" as const, header: "Volume (ml)" },
+      { key: "vintage_year" as const, header: "Millésime" },
+    ];
+
+    const exportData = filteredProducts.map((p) => ({
+      ...p,
+      categoryName: p.category?.name || "",
+      price: formatPriceForCSV(p.price),
+      original_price: p.original_price ? formatPriceForCSV(p.original_price) : "",
+      is_active: p.is_active ? "Oui" : "Non",
+      is_featured: p.is_featured ? "Oui" : "Non",
+    }));
+
+    const csv = convertToCSV(exportData, columns);
+    const date = new Date().toISOString().split("T")[0];
+    downloadCSV(csv, `produits-${date}.csv`);
+    toast.success(`${filteredProducts.length} produit(s) exporté(s)`);
+  };
+
   const handleDeleteConfirm = () => {
     if (deleteConfirmProduct) {
       onDeleteProduct(deleteConfirmProduct);
@@ -168,6 +204,15 @@ export function ProductsTable({
           className={`border-gold/20 text-cream hover:bg-cream/10 ${showAdvancedFilters ? 'bg-cream/10' : ''}`}
         >
           <Filter className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={exportToCSV}
+          className="border-gold/20 text-cream hover:bg-cream/10"
+          title="Exporter en CSV"
+        >
+          <Download className="h-4 w-4" />
         </Button>
         <Button
           variant="outline"
