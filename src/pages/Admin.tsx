@@ -39,6 +39,7 @@ import { StockAlertsHistory } from "@/components/admin/StockAlertsHistory";
 import { StockAlertsChart } from "@/components/admin/StockAlertsChart";
 import { StockAlertSettings } from "@/components/admin/StockAlertSettings";
 import { StockAlertsPDFExport } from "@/components/admin/StockAlertsPDFExport";
+import { WeeklyReportSettings } from "@/components/admin/WeeklyReportSettings";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -574,7 +575,10 @@ const Admin = () => {
                   <h2 className="text-xl font-semibold text-cream">Gestion des Alertes de Stock</h2>
                   <StockAlertsPDFExport chartRef={stockAlertsChartRef} period={stockAlertPeriod} />
                 </div>
-                <StockAlertSettings onSettingsApplied={() => refetchProducts()} />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <StockAlertSettings onSettingsApplied={() => refetchProducts()} />
+                  <WeeklyReportSettings />
+                </div>
                 <div ref={stockAlertsChartRef}>
                   <StockAlertsChart />
                 </div>
