@@ -89,6 +89,24 @@ export interface AdminPromoCode {
   created_at: string | null;
 }
 
+export interface AdminReview {
+  id: string;
+  product_id: string;
+  user_id: string | null;
+  rating: number;
+  title: string | null;
+  comment: string | null;
+  is_approved: boolean | null;
+  is_verified_purchase: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  product?: {
+    id: string;
+    name: string;
+    image_url: string | null;
+  } | null;
+}
+
 export interface CategoryFormData {
   name: string;
   slug: string;
@@ -254,6 +272,54 @@ export function useAdmin() {
       return data as AdminPromoCode[];
     },
     enabled: isAdmin === true,
+  });
+
+  // Fetch all reviews (admin only)
+  const { data: reviews = [], isLoading: isLoadingReviews, refetch: refetchReviews } = useQuery({
+    queryKey: ["admin-reviews"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select(`
+          *,
+          product:products(id, name, image_url)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as AdminReview[];
+    },
+    enabled: isAdmin === true,
+  });
+
+  // Approve review mutation
+  const approveReview = useMutation({
+    mutationFn: async (reviewId: string) => {
+      const { error } = await supabase
+        .from("reviews")
+        .update({ is_approved: true })
+        .eq("id", reviewId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
+    },
+  });
+
+  // Reject/delete review mutation
+  const deleteReview = useMutation({
+    mutationFn: async (reviewId: string) => {
+      const { error } = await supabase
+        .from("reviews")
+        .delete()
+        .eq("id", reviewId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
+    },
   });
 
   // Update order status mutation
@@ -524,6 +590,8 @@ export function useAdmin() {
     activeCategories: allCategories.filter((c) => c.is_active).length,
     totalPromoCodes: promoCodes.length,
     activePromoCodes: promoCodes.filter((p) => p.is_active).length,
+    totalReviews: reviews.length,
+    pendingReviews: reviews.filter((r) => !r.is_approved).length,
   };
 
   return {
@@ -552,6 +620,11 @@ export function useAdmin() {
     createPromoCode,
     updatePromoCode,
     deletePromoCode,
+    reviews,
+    isLoadingReviews,
+    refetchReviews,
+    approveReview,
+    deleteReview,
     stats,
   };
 }

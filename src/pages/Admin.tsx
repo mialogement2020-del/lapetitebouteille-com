@@ -10,13 +10,14 @@ import {
   Wine,
   FolderOpen,
   BarChart3,
-  Ticket
+  Ticket,
+  MessageSquare
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAdmin, type AdminOrder, type AdminProduct, type AdminCategory, type AdminPromoCode, type ProductFormData, type CategoryFormData, type PromoCodeFormData } from "@/hooks/useAdmin";
+import { useAdmin, type AdminOrder, type AdminProduct, type AdminCategory, type AdminPromoCode, type AdminReview, type ProductFormData, type CategoryFormData, type PromoCodeFormData } from "@/hooks/useAdmin";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { OrdersTable } from "@/components/admin/OrdersTable";
@@ -28,6 +29,8 @@ import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
 import { PerformanceCharts } from "@/components/admin/PerformanceCharts";
 import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
 import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
+import { ReviewsTable } from "@/components/admin/ReviewsTable";
+import { ReviewModerationDialog } from "@/components/admin/ReviewModerationDialog";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -64,6 +67,11 @@ const Admin = () => {
     createPromoCode,
     updatePromoCode,
     deletePromoCode,
+    reviews,
+    isLoadingReviews,
+    refetchReviews,
+    approveReview,
+    deleteReview,
     stats 
   } = useAdmin();
   
@@ -75,6 +83,8 @@ const Admin = () => {
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [selectedPromoCode, setSelectedPromoCode] = useState<AdminPromoCode | null>(null);
   const [isPromoCodeDialogOpen, setIsPromoCodeDialogOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<AdminReview | null>(null);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -238,6 +248,44 @@ const Admin = () => {
     }
   };
 
+  // Handle review approval
+  const handleApproveReview = async (review: AdminReview) => {
+    try {
+      await approveReview.mutateAsync(review.id);
+      toast({
+        title: "Avis approuvé",
+        description: "L'avis a été publié avec succès.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'approuver l'avis",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Handle review rejection/deletion
+  const handleRejectReview = async (review: AdminReview) => {
+    try {
+      await deleteReview.mutateAsync(review.id);
+      toast({
+        title: review.is_approved ? "Avis désapprouvé" : "Avis supprimé",
+        description: review.is_approved 
+          ? "L'avis n'est plus visible."
+          : "L'avis a été supprimé.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer l'avis",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   // Loading state
   if (authLoading || isCheckingAdmin) {
     return (
@@ -375,6 +423,18 @@ const Admin = () => {
                   <Ticket className="h-4 w-4 mr-2" />
                   Codes Promo
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="reviews"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Avis
+                  {stats.pendingReviews > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-orange-500 text-white rounded-full">
+                      {stats.pendingReviews}
+                    </span>
+                  )}
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="performance">
@@ -452,6 +512,22 @@ const Admin = () => {
                   />
                 </div>
               </TabsContent>
+
+              <TabsContent value="reviews">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <ReviewsTable
+                    reviews={reviews}
+                    isLoading={isLoadingReviews}
+                    onViewReview={(review) => {
+                      setSelectedReview(review);
+                      setIsReviewDialogOpen(true);
+                    }}
+                    onApproveReview={handleApproveReview}
+                    onRejectReview={handleRejectReview}
+                    onRefresh={() => refetchReviews()}
+                  />
+                </div>
+              </TabsContent>
             </Tabs>
           </motion.div>
         </div>
@@ -492,6 +568,16 @@ const Admin = () => {
         onOpenChange={setIsPromoCodeDialogOpen}
         onSave={handleSavePromoCode}
         isSaving={createPromoCode.isPending || updatePromoCode.isPending}
+      />
+
+      {/* Review Moderation Dialog */}
+      <ReviewModerationDialog
+        review={selectedReview}
+        open={isReviewDialogOpen}
+        onOpenChange={setIsReviewDialogOpen}
+        onApprove={handleApproveReview}
+        onReject={handleRejectReview}
+        isUpdating={approveReview.isPending || deleteReview.isPending}
       />
 
       <Footer />
