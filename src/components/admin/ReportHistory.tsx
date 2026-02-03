@@ -1,16 +1,32 @@
 import { useState, useEffect } from "react";
-import { History, CheckCircle, XCircle, Clock, Mail, Users, AlertTriangle, RefreshCw } from "lucide-react";
+import { History, CheckCircle, XCircle, Clock, Mail, Users, AlertTriangle, RefreshCw, Calendar, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
+import { format, subDays, startOfDay, endOfDay, startOfWeek, startOfMonth, subMonths } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface ReportHistoryItem {
   id: string;
@@ -27,21 +43,73 @@ interface ReportHistoryItem {
   email_id: string | null;
 }
 
+// Preset filter options
+const DATE_PRESETS = [
+  { value: "all", label: "Tout l'historique" },
+  { value: "7days", label: "7 derniers jours" },
+  { value: "30days", label: "30 derniers jours" },
+  { value: "thisMonth", label: "Ce mois-ci" },
+  { value: "lastMonth", label: "Mois dernier" },
+  { value: "custom", label: "Période personnalisée" },
+];
+
 export function ReportHistory() {
   const [history, setHistory] = useState<ReportHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [datePreset, setDatePreset] = useState("all");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [filteredCount, setFilteredCount] = useState(0);
+
+  // Calculate date range based on preset
+  const getDateRange = () => {
+    const now = new Date();
+    
+    switch (datePreset) {
+      case "7days":
+        return { start: startOfDay(subDays(now, 7)), end: endOfDay(now) };
+      case "30days":
+        return { start: startOfDay(subDays(now, 30)), end: endOfDay(now) };
+      case "thisMonth":
+        return { start: startOfMonth(now), end: endOfDay(now) };
+      case "lastMonth":
+        const lastMonth = subMonths(now, 1);
+        return { start: startOfMonth(lastMonth), end: endOfDay(subDays(startOfMonth(now), 1)) };
+      case "custom":
+        return { 
+          start: startDate ? startOfDay(startDate) : undefined, 
+          end: endDate ? endOfDay(endDate) : undefined 
+        };
+      default:
+        return { start: undefined, end: undefined };
+    }
+  };
 
   const fetchHistory = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      const { start, end } = getDateRange();
+      
+      let query = supabase
         .from("report_history")
         .select("*")
-        .order("sent_at", { ascending: false })
-        .limit(20);
+        .order("sent_at", { ascending: false });
+
+      if (start) {
+        query = query.gte("sent_at", start.toISOString());
+      }
+      if (end) {
+        query = query.lte("sent_at", end.toISOString());
+      }
+
+      // Always limit to reasonable number
+      query = query.limit(100);
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setHistory(data || []);
+      setFilteredCount(data?.length || 0);
     } catch (error) {
       console.error("Error fetching report history:", error);
     } finally {
@@ -51,7 +119,7 @@ export function ReportHistory() {
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [datePreset, startDate, endDate]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -105,20 +173,120 @@ export function ReportHistory() {
     );
   }
 
-  if (history.length === 0) {
+  // Filter controls UI component
+  const FilterControls = () => (
+    <div className="bg-cream/5 border border-gold/10 rounded-lg p-4 space-y-4">
+      <div className="flex items-center gap-2 text-sm text-cream font-medium">
+        <Filter className="h-4 w-4 text-primary" />
+        Filtrer par période
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Preset selector */}
+        <div className="space-y-2">
+          <Label className="text-cream text-xs">Période</Label>
+          <Select value={datePreset} onValueChange={setDatePreset}>
+            <SelectTrigger className="bg-noir border-gold/30 text-cream">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-noir border-gold/30">
+              {DATE_PRESETS.map((preset) => (
+                <SelectItem 
+                  key={preset.value} 
+                  value={preset.value}
+                  className="text-cream hover:bg-cream/10"
+                >
+                  {preset.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Custom date range */}
+        {datePreset === "custom" && (
+          <>
+            <div className="space-y-2">
+              <Label className="text-cream text-xs">Date de début</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start bg-noir border-gold/30 text-cream hover:bg-cream/5"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {startDate ? format(startDate, "d MMM yyyy", { locale: fr }) : "Sélectionner"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-noir border-gold/30" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    disabled={(date) => date > new Date() || (endDate ? date > endDate : false)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-cream text-xs">Date de fin</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start bg-noir border-gold/30 text-cream hover:bg-cream/5"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {endDate ? format(endDate, "d MMM yyyy", { locale: fr }) : "Sélectionner"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-noir border-gold/30" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    disabled={(date) => date > new Date() || (startDate ? date < startDate : false)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Results info */}
+      {datePreset !== "all" && (
+        <div className="text-xs text-cream/50">
+          {filteredCount} rapport(s) trouvé(s) pour cette période
+        </div>
+      )}
+    </div>
+  );
+
+  if (history.length === 0 && datePreset === "all") {
     return (
-      <div className="bg-cream/5 border border-gold/10 rounded-lg p-6 text-center">
-        <History className="h-10 w-10 text-cream/30 mx-auto mb-3" />
-        <p className="text-cream/60">Aucun rapport envoyé pour le moment</p>
-        <p className="text-sm text-cream/40 mt-1">
-          Les rapports apparaîtront ici après leur premier envoi
-        </p>
+      <div className="space-y-4">
+        <FilterControls />
+        <div className="bg-cream/5 border border-gold/10 rounded-lg p-6 text-center">
+          <History className="h-10 w-10 text-cream/30 mx-auto mb-3" />
+          <p className="text-cream/60">Aucun rapport envoyé pour le moment</p>
+          <p className="text-sm text-cream/40 mt-1">
+            Les rapports apparaîtront ici après leur premier envoi
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      <FilterControls />
+      
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-cream flex items-center gap-2">
           <History className="h-4 w-4 text-primary" />
@@ -134,6 +302,15 @@ export function ReportHistory() {
         </Button>
       </div>
 
+      {history.length === 0 ? (
+        <div className="bg-cream/5 border border-gold/10 rounded-lg p-6 text-center">
+          <Calendar className="h-10 w-10 text-cream/30 mx-auto mb-3" />
+          <p className="text-cream/60">Aucun rapport pour cette période</p>
+          <p className="text-sm text-cream/40 mt-1">
+            Essayez de sélectionner une autre plage de dates
+          </p>
+        </div>
+      ) : (
       <ScrollArea className="max-h-[400px]">
         <Accordion type="single" collapsible className="space-y-2">
           {history.map((item, index) => (
@@ -241,6 +418,7 @@ export function ReportHistory() {
           ))}
         </Accordion>
       </ScrollArea>
+      )}
     </div>
   );
 }
