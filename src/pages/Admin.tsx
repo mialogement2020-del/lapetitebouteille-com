@@ -36,6 +36,7 @@ import { LowStockDashboard } from "@/components/admin/LowStockDashboard";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { StockNotifications } from "@/components/admin/StockNotifications";
 import { StockAlertsHistory } from "@/components/admin/StockAlertsHistory";
+import { StockAlertsChart } from "@/components/admin/StockAlertsChart";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -564,7 +565,8 @@ const Admin = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="stock-alerts">
+              <TabsContent value="stock-alerts" className="space-y-6">
+                <StockAlertsChart />
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <StockAlertsHistory />
                 </div>
