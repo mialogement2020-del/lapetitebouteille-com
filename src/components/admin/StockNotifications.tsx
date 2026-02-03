@@ -1,0 +1,215 @@
+import { useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
+import { AlertTriangle, XCircle, Check, CheckCheck, Package, Trash2, Bell } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { useStockNotifications, StockNotification } from "@/hooks/useStockNotifications";
+
+interface StockNotificationsProps {
+  enabled?: boolean;
+  onProductClick?: (productId: string) => void;
+}
+
+export function StockNotifications({ enabled = true, onProductClick }: StockNotificationsProps) {
+  const [open, setOpen] = useState(false);
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    clearAll,
+  } = useStockNotifications(enabled);
+
+  const handleNotificationClick = (notification: StockNotification) => {
+    markAsRead(notification.id);
+    if (onProductClick && notification.productId) {
+      onProductClick(notification.productId);
+      setOpen(false);
+    }
+  };
+
+  const isOutOfStock = (title: string) => title.includes("Rupture");
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className="relative border-orange-500/30 hover:bg-orange-500/10 hover:border-orange-500/50"
+        >
+          <Package className="h-5 w-5 text-orange-400" />
+          <AnimatePresence>
+            {unreadCount > 0 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                className="absolute -top-1 -right-1"
+              >
+                <Badge
+                  className="h-5 w-5 p-0 flex items-center justify-center text-xs bg-orange-500 hover:bg-orange-600"
+                >
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </Badge>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent
+        className="w-96 p-0 bg-noir border-gold/20"
+        align="end"
+        sideOffset={8}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gold/20">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-orange-400" />
+            <h3 className="font-semibold text-cream">Alertes Stock</h3>
+            {unreadCount > 0 && (
+              <Badge variant="secondary" className="text-xs bg-orange-500/20 text-orange-400">
+                {unreadCount} nouvelle{unreadCount > 1 ? "s" : ""}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={markAllAsRead}
+                className="h-8 px-2 text-xs text-cream/60 hover:text-orange-400"
+              >
+                <CheckCheck className="h-3 w-3 mr-1" />
+                Tout lire
+              </Button>
+            )}
+            {notifications.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAll}
+                className="h-8 px-2 text-xs text-cream/60 hover:text-destructive"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Notifications List */}
+        <ScrollArea className="max-h-[400px]">
+          {isLoading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-orange-500 mx-auto mb-3" />
+              <p className="text-cream/60 text-sm">Chargement...</p>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="p-8 text-center">
+              <Package className="h-10 w-10 text-cream/20 mx-auto mb-3" />
+              <p className="text-cream/60 text-sm">Aucune alerte de stock</p>
+              <p className="text-cream/40 text-xs mt-1">
+                Les alertes de stock critique apparaîtront ici en temps réel
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gold/10">
+              {notifications.map((notification) => (
+                <motion.div
+                  key={notification.id}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`p-4 cursor-pointer transition-colors hover:bg-cream/5 ${
+                    !notification.isRead ? "bg-orange-500/5" : ""
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                        isOutOfStock(notification.title)
+                          ? "bg-destructive/20 text-destructive"
+                          : "bg-orange-500/20 text-orange-400"
+                      }`}
+                    >
+                      {isOutOfStock(notification.title) ? (
+                        <XCircle className="h-5 w-5" />
+                      ) : (
+                        <AlertTriangle className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className={`font-medium text-sm truncate ${
+                          isOutOfStock(notification.title) ? "text-destructive" : "text-orange-400"
+                        }`}>
+                          {isOutOfStock(notification.title) ? "Rupture de stock" : "Stock faible"}
+                        </p>
+                        {!notification.isRead && (
+                          <div className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs text-cream/80 mt-0.5 line-clamp-2">
+                        {notification.message}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            isOutOfStock(notification.title) 
+                              ? "border-destructive/50 text-destructive" 
+                              : "border-orange-500/50 text-orange-400"
+                          }`}
+                        >
+                          {isOutOfStock(notification.title) ? "Urgent" : "Attention"}
+                        </Badge>
+                        <span className="text-xs text-cream/40">
+                          {formatDistanceToNow(new Date(notification.createdAt), {
+                            addSuffix: true,
+                            locale: fr,
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-cream/40 hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNotification(notification.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+
+        {/* Footer */}
+        {notifications.length > 0 && (
+          <div className="p-2 border-t border-gold/20">
+            <p className="text-xs text-center text-cream/40">
+              {notifications.length} alerte{notifications.length > 1 ? "s" : ""} de stock
+            </p>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}

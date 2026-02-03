@@ -34,6 +34,7 @@ import { ReviewsTable } from "@/components/admin/ReviewsTable";
 import { ReviewModerationDialog } from "@/components/admin/ReviewModerationDialog";
 import { LowStockDashboard } from "@/components/admin/LowStockDashboard";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
+import { StockNotifications } from "@/components/admin/StockNotifications";
 import { StockAlertsHistory } from "@/components/admin/StockAlertsHistory";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -363,19 +364,34 @@ const Admin = () => {
                   </p>
                 </div>
               </div>
-              <OrderNotifications
-                enabled={isAdmin}
-                onOrderClick={(orderId) => {
-                  setActiveTab("orders");
-                  // Find and select the order
-                  const order = orders.find((o) => o.id === orderId);
-                  if (order) {
-                    setSelectedOrder(order);
-                    setIsStatusDialogOpen(true);
-                  }
-                  refetchOrders();
-                }}
-              />
+              <div className="flex items-center gap-2">
+                <StockNotifications
+                  enabled={isAdmin}
+                  onProductClick={(productId) => {
+                    setActiveTab("products");
+                    // Find and select the product
+                    const product = products.find((p) => p.id === productId);
+                    if (product) {
+                      setSelectedProduct(product);
+                      setIsProductDialogOpen(true);
+                    }
+                    refetchProducts();
+                  }}
+                />
+                <OrderNotifications
+                  enabled={isAdmin}
+                  onOrderClick={(orderId) => {
+                    setActiveTab("orders");
+                    // Find and select the order
+                    const order = orders.find((o) => o.id === orderId);
+                    if (order) {
+                      setSelectedOrder(order);
+                      setIsStatusDialogOpen(true);
+                    }
+                    refetchOrders();
+                  }}
+                />
+              </div>
             </div>
           </motion.div>
 

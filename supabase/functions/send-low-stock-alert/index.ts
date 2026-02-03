@@ -40,6 +40,50 @@ const handler = async (req: Request): Promise<Response> => {
     const urgencyColor = currentStock === 0 ? "#DC2626" : "#F59E0B";
     const alertType = currentStock === 0 ? "out_of_stock" : "low_stock";
 
+    // Create in-app notifications for all admin users
+    try {
+      // Get all admin user IDs
+      const { data: adminRoles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+
+      if (rolesError) {
+        console.error("Error fetching admin roles:", rolesError);
+      } else if (adminRoles && adminRoles.length > 0) {
+        // Create notification for each admin
+        const notificationTitle = currentStock === 0 
+          ? `🚨 Rupture de stock: ${productName}`
+          : `⚠️ Stock faible: ${productName}`;
+        
+        const notificationMessage = currentStock === 0
+          ? `Le produit "${productName}" est en rupture de stock (0 unités).`
+          : `Le produit "${productName}" n'a plus que ${currentStock} unités (seuil: ${threshold}).`;
+
+        const notifications = adminRoles.map((role) => ({
+          user_id: role.user_id,
+          title: notificationTitle,
+          message: notificationMessage,
+          type: "stock_alert",
+          reference_type: "product",
+          reference_id: productId,
+          is_read: false,
+        }));
+
+        const { error: notifError } = await supabase
+          .from("user_notifications")
+          .insert(notifications);
+
+        if (notifError) {
+          console.error("Error creating admin notifications:", notifError);
+        } else {
+          console.log(`Created ${notifications.length} admin notification(s)`);
+        }
+      }
+    } catch (notifErr) {
+      console.error("Error in notification creation:", notifErr);
+    }
+
     const emailHtml = `
 <!DOCTYPE html>
 <html>
