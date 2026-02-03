@@ -10,6 +10,47 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper to send push notifications to admins
+async function sendPushNotificationToAdmins(
+  supabaseUrl: string,
+  anonKey: string,
+  title: string,
+  body: string,
+  data?: Record<string, any>
+): Promise<void> {
+  try {
+    const pushFunctionUrl = `${supabaseUrl}/functions/v1/send-stock-push-notification`;
+    
+    const response = await fetch(pushFunctionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${anonKey}`,
+      },
+      body: JSON.stringify({
+        title,
+        body,
+        icon: "/favicon.ico",
+        tag: `stock-alert-${Date.now()}`,
+        data: {
+          ...data,
+          url: "/admin?tab=stock",
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Push notification failed:", errorText);
+    } else {
+      const result = await response.json();
+      console.log("Push notification result:", result);
+    }
+  } catch (error) {
+    console.error("Error sending push notification:", error);
+  }
+}
+
 interface LowStockAlertRequest {
   productName: string;
   productId: string;
@@ -79,6 +120,16 @@ const handler = async (req: Request): Promise<Response> => {
         } else {
           console.log(`Created ${notifications.length} admin notification(s)`);
         }
+
+        // Send push notifications to admins
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaHRnbXJsYmF4dHB3emJ4aGRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NjQyMTQsImV4cCI6MjA4NTQ0MDIxNH0.2CE8-Bzu3s5Iilg0t776Cthws75ve-xjmHwBgFsIQEc";
+        await sendPushNotificationToAdmins(
+          supabaseUrl,
+          anonKey,
+          notificationTitle,
+          notificationMessage,
+          { productId, productName, currentStock, threshold }
+        );
       }
     } catch (notifErr) {
       console.error("Error in notification creation:", notifErr);

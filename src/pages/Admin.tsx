@@ -35,6 +35,7 @@ import { ReviewModerationDialog } from "@/components/admin/ReviewModerationDialo
 import { LowStockDashboard } from "@/components/admin/LowStockDashboard";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { StockNotifications } from "@/components/admin/StockNotifications";
+import { PushNotificationToggle } from "@/components/admin/PushNotificationToggle";
 import { StockAlertsHistory } from "@/components/admin/StockAlertsHistory";
 import { StockAlertsChart } from "@/components/admin/StockAlertsChart";
 import { StockAlertSettings } from "@/components/admin/StockAlertSettings";
@@ -371,6 +372,7 @@ const Admin = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <PushNotificationToggle />
                 <StockNotifications
                   enabled={isAdmin}
                   onProductClick={(productId) => {
