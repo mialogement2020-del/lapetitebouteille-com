@@ -11,7 +11,8 @@ import {
   FolderOpen,
   BarChart3,
   Ticket,
-  MessageSquare
+  MessageSquare,
+  Bell
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -33,6 +34,7 @@ import { ReviewsTable } from "@/components/admin/ReviewsTable";
 import { ReviewModerationDialog } from "@/components/admin/ReviewModerationDialog";
 import { LowStockDashboard } from "@/components/admin/LowStockDashboard";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
+import { StockAlertsHistory } from "@/components/admin/StockAlertsHistory";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -436,6 +438,13 @@ const Admin = () => {
                     </span>
                   )}
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="stock-alerts"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Alertes Stock
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="performance" className="space-y-8">
@@ -536,6 +545,12 @@ const Admin = () => {
                     onRejectReview={handleRejectReview}
                     onRefresh={() => refetchReviews()}
                   />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="stock-alerts">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <StockAlertsHistory />
                 </div>
               </TabsContent>
             </Tabs>

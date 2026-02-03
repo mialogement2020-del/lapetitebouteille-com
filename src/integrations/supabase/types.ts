@@ -820,6 +820,53 @@ export type Database = {
           },
         ]
       }
+      stock_alerts_history: {
+        Row: {
+          alert_type: string
+          email_sent_to: string | null
+          email_status: string | null
+          id: string
+          product_id: string | null
+          product_name: string
+          product_sku: string | null
+          sent_at: string
+          stock_quantity: number
+          threshold: number
+        }
+        Insert: {
+          alert_type?: string
+          email_sent_to?: string | null
+          email_status?: string | null
+          id?: string
+          product_id?: string | null
+          product_name: string
+          product_sku?: string | null
+          sent_at?: string
+          stock_quantity: number
+          threshold: number
+        }
+        Update: {
+          alert_type?: string
+          email_sent_to?: string | null
+          email_status?: string | null
+          id?: string
+          product_id?: string | null
+          product_name?: string
+          product_sku?: string | null
+          sent_at?: string
+          stock_quantity?: number
+          threshold?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_notifications: {
         Row: {
           created_at: string
