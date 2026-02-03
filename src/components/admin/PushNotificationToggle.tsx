@@ -69,32 +69,57 @@ export function PushNotificationToggle() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleToggle}
-            disabled={isLoading}
-            className={`border-gold/30 hover:border-gold/50 ${
-              isSubscribed
-                ? "bg-gold/10 text-gold hover:bg-gold/20"
-                : "text-cream/60 hover:text-cream"
-            }`}
-          >
-            {isLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : isSubscribed ? (
-              <BellRing className="h-5 w-5" />
-            ) : (
-              <Bell className="h-5 w-5" />
-            )}
-          </Button>
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleToggle}
+              disabled={isLoading}
+              className={`border-gold/30 hover:border-gold/50 ${
+                isSubscribed
+                  ? "bg-gold/10 text-gold hover:bg-gold/20"
+                  : "text-cream/60 hover:text-cream"
+              }`}
+            >
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : isSubscribed ? (
+                <BellRing className="h-5 w-5" />
+              ) : (
+                <Bell className="h-5 w-5" />
+              )}
+            </Button>
+            {/* Status indicator dot */}
+            <span
+              className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-noir ${
+                isSubscribed
+                  ? "bg-green-500 animate-pulse"
+                  : permission === "denied"
+                  ? "bg-red-500"
+                  : "bg-cream/40"
+              }`}
+            />
+          </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>
-            {isSubscribed
-              ? "Désactiver les notifications push"
-              : "Activer les notifications push"}
-          </p>
+          <div className="flex items-center gap-2">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                isSubscribed
+                  ? "bg-green-500"
+                  : permission === "denied"
+                  ? "bg-red-500"
+                  : "bg-cream/40"
+              }`}
+            />
+            <p>
+              {isSubscribed
+                ? "Notifications push activées"
+                : permission === "denied"
+                ? "Notifications bloquées par le navigateur"
+                : "Notifications push désactivées"}
+            </p>
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
