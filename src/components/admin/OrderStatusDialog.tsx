@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Package, Truck, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
+import { Package, Truck, CheckCircle, XCircle, Clock, Loader2, History } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { OrderStatusHistory } from "./OrderStatusHistory";
 import type { AdminOrder } from "@/hooks/useAdmin";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -66,6 +72,7 @@ const statusFlow: OrderStatus[] = ["pending", "confirmed", "processing", "shippe
 
 export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, isUpdating }: OrderStatusDialogProps) {
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   if (!order) return null;
 
@@ -156,6 +163,30 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               <span className="text-primary font-bold">{formatPrice(order.total)}</span>
             </div>
           </div>
+
+          {/* Status History */}
+          <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-between text-cream hover:bg-cream/10 border border-gold/20"
+              >
+                <span className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Historique des changements
+                </span>
+                <motion.span
+                  animate={{ rotate: historyOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  ▼
+                </motion.span>
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-3">
+              <OrderStatusHistory orderId={order.id} />
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Status Selection */}
           <div className="space-y-3">
