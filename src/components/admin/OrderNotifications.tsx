@@ -24,6 +24,7 @@ export function OrderNotifications({ enabled = true, onOrderClick }: OrderNotifi
   const {
     notifications,
     unreadCount,
+    isLoading,
     markAsRead,
     markAllAsRead,
     clearAll,
@@ -110,12 +111,17 @@ export function OrderNotifications({ enabled = true, onOrderClick }: OrderNotifi
 
         {/* Notifications List */}
         <ScrollArea className="max-h-[400px]">
-          {notifications.length === 0 ? (
+          {isLoading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary mx-auto mb-3" />
+              <p className="text-cream/60 text-sm">Chargement...</p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="h-10 w-10 text-cream/20 mx-auto mb-3" />
-              <p className="text-cream/60 text-sm">Aucune notification</p>
+              <p className="text-cream/60 text-sm">Aucune commande récente</p>
               <p className="text-cream/40 text-xs mt-1">
-                Les nouvelles commandes apparaîtront ici
+                Les nouvelles commandes des dernières 24h apparaîtront ici
               </p>
             </div>
           ) : (
@@ -178,7 +184,7 @@ export function OrderNotifications({ enabled = true, onOrderClick }: OrderNotifi
         {notifications.length > 0 && (
           <div className="p-2 border-t border-gold/20">
             <p className="text-xs text-center text-cream/40">
-              {notifications.length} notification{notifications.length > 1 ? "s" : ""}
+              Commandes des dernières 24h • {notifications.length} notification{notifications.length > 1 ? "s" : ""}
             </p>
           </div>
         )}
