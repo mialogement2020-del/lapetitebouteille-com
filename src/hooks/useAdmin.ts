@@ -258,16 +258,37 @@ export function useAdmin() {
 
   // Update order status mutation
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: OrderStatus }) => {
-      const { error } = await supabase
+    mutationFn: async ({ orderId, newStatus, notes }: { orderId: string; newStatus: OrderStatus; notes?: string }) => {
+      // First, update the order status
+      const { error: orderError } = await supabase
         .from("orders")
         .update({ status: newStatus })
         .eq("id", orderId);
 
-      if (error) throw error;
+      if (orderError) throw orderError;
+
+      // If notes are provided, update the latest history entry with the notes
+      if (notes) {
+        // Find the most recent history entry for this order and update it with the notes
+        const { data: historyEntries, error: historyFetchError } = await supabase
+          .from("order_status_history")
+          .select("id")
+          .eq("order_id", orderId)
+          .eq("new_status", newStatus)
+          .order("changed_at", { ascending: false })
+          .limit(1);
+
+        if (!historyFetchError && historyEntries && historyEntries.length > 0) {
+          await supabase
+            .from("order_status_history")
+            .update({ notes })
+            .eq("id", historyEntries[0].id);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-status-history"] });
     },
   });
 

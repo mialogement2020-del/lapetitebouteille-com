@@ -84,12 +84,14 @@ const Admin = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Handle status update
-  const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
+  const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus, notes?: string) => {
     try {
-      await updateOrderStatus.mutateAsync({ orderId, newStatus });
+      await updateOrderStatus.mutateAsync({ orderId, newStatus, notes });
       toast({
         title: "Statut mis à jour",
-        description: `La commande a été passée au statut "${newStatus}". Un email de notification a été envoyé au client.`,
+        description: notes 
+          ? `La commande a été passée au statut "${newStatus}" avec une note.`
+          : `La commande a été passée au statut "${newStatus}". Un email de notification a été envoyé au client.`,
       });
     } catch (error) {
       toast({
