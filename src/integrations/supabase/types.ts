@@ -102,6 +102,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean | null
+          low_stock_threshold: number | null
           name: string
           parent_id: string | null
           slug: string
@@ -114,6 +115,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          low_stock_threshold?: number | null
           name: string
           parent_id?: string | null
           slug: string
@@ -126,6 +128,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          low_stock_threshold?: number | null
           name?: string
           parent_id?: string | null
           slug?: string

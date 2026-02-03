@@ -70,6 +70,7 @@ export interface AdminCategory {
   image_url: string | null;
   display_order: number | null;
   is_active: boolean | null;
+  low_stock_threshold: number | null;
   created_at: string | null;
 }
 
@@ -114,6 +115,7 @@ export interface CategoryFormData {
   image_url?: string;
   display_order?: number;
   is_active?: boolean;
+  low_stock_threshold?: number | null;
 }
 
 export interface PromoCodeFormData {
@@ -456,6 +458,7 @@ export function useAdmin() {
           image_url: data.image_url || null,
           display_order: data.display_order || 0,
           is_active: data.is_active ?? true,
+          low_stock_threshold: data.low_stock_threshold || null,
         }]);
 
       if (error) throw error;
@@ -478,6 +481,7 @@ export function useAdmin() {
           image_url: data.image_url,
           display_order: data.display_order,
           is_active: data.is_active,
+          low_stock_threshold: data.low_stock_threshold,
         })
         .eq("id", id);
 

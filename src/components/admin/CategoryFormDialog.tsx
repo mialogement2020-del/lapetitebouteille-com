@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, Loader2 } from "lucide-react";
+import { FolderOpen, Loader2, AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { AdminCategory, CategoryFormData } from "@/hooks/useAdmin";
 
 interface CategoryFormDialogProps {
@@ -47,6 +48,7 @@ export function CategoryFormDialog({
     image_url: "",
     display_order: 0,
     is_active: true,
+    low_stock_threshold: null,
   });
 
   useEffect(() => {
@@ -58,6 +60,7 @@ export function CategoryFormDialog({
         image_url: category.image_url || "",
         display_order: category.display_order || 0,
         is_active: category.is_active ?? true,
+        low_stock_threshold: category.low_stock_threshold,
       });
     } else {
       setFormData({
@@ -67,6 +70,7 @@ export function CategoryFormDialog({
         image_url: "",
         display_order: 0,
         is_active: true,
+        low_stock_threshold: null,
       });
     }
   }, [category, open]);
@@ -164,6 +168,37 @@ export function CategoryFormDialog({
               className="bg-cream/5 border-gold/20 text-cream w-24"
             />
             <p className="text-cream/40 text-xs">Plus le nombre est petit, plus la catégorie apparaît en premier</p>
+          </div>
+
+          {/* Stock Alert Threshold */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label className="text-cream/80">Seuil d'alerte de stock</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertTriangle className="h-4 w-4 text-primary/70 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-noir border-gold/30 text-cream max-w-xs">
+                    <p>Ce seuil sera utilisé pour tous les produits de cette catégorie qui n'ont pas de seuil personnalisé.</p>
+                    <p className="text-cream/60 text-xs mt-1">Priorité : Produit → Catégorie → Global (5)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input
+              type="number"
+              min="1"
+              max="100"
+              value={formData.low_stock_threshold ?? ""}
+              onChange={(e) => setFormData((prev) => ({ 
+                ...prev, 
+                low_stock_threshold: e.target.value ? Number(e.target.value) : null 
+              }))}
+              placeholder="Non défini (utilise le seuil global)"
+              className="bg-cream/5 border-gold/20 text-cream w-full"
+            />
+            <p className="text-cream/40 text-xs">Laissez vide pour utiliser le seuil global par défaut (5 unités)</p>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg bg-cream/5 border border-gold/10">

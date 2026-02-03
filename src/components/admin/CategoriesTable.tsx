@@ -9,7 +9,8 @@ import {
   Folder,
   FolderOpen,
   Eye,
-  EyeOff
+  EyeOff,
+  AlertTriangle
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -148,6 +149,7 @@ export function CategoriesTable({
                 <TableHead className="text-cream/60">Slug</TableHead>
                 <TableHead className="text-cream/60">Description</TableHead>
                 <TableHead className="text-cream/60 text-center">Ordre</TableHead>
+                <TableHead className="text-cream/60 text-center">Seuil stock</TableHead>
                 <TableHead className="text-cream/60 text-center">Statut</TableHead>
                 <TableHead className="text-cream/60 text-right">Actions</TableHead>
               </TableRow>
@@ -187,6 +189,16 @@ export function CategoriesTable({
                   </TableCell>
                   <TableCell className="text-center">
                     <span className="text-cream/70">{category.display_order || 0}</span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {category.low_stock_threshold ? (
+                      <Badge className="bg-primary/20 text-primary border-primary/30 border">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        {category.low_stock_threshold} unités
+                      </Badge>
+                    ) : (
+                      <span className="text-cream/40 text-sm">Par défaut</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge className={`${
