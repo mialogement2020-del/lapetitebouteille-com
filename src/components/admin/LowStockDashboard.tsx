@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuickRestockDialog } from "./QuickRestockDialog";
+import { StockPredictions } from "./StockPredictions";
+import { useStockPredictions } from "@/hooks/useStockPredictions";
 import { toast } from "sonner";
 import type { AdminProduct } from "@/hooks/useAdmin";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -20,6 +22,9 @@ interface LowStockDashboardProps {
 export function LowStockDashboard({ products, isLoading, onEditProduct, updateProduct }: LowStockDashboardProps) {
   const [restockProduct, setRestockProduct] = useState<AdminProduct | null>(null);
   const [restockDialogOpen, setRestockDialogOpen] = useState(false);
+
+  // Get stock predictions
+  const { data: predictions = [], isLoading: isPredictionsLoading } = useStockPredictions(products, !isLoading);
 
   // Filter products by stock status
   const outOfStock = products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active);
@@ -137,6 +142,13 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
 
   return (
     <div className="space-y-6">
+      {/* Stock Predictions */}
+      <StockPredictions 
+        predictions={predictions} 
+        isLoading={isPredictionsLoading} 
+        onEditProduct={onEditProduct} 
+      />
+
       {/* Quick Restock Dialog */}
       <QuickRestockDialog
         product={restockProduct}
