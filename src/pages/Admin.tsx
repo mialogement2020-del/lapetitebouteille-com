@@ -446,6 +446,7 @@ const Admin = () => {
                     setSelectedProduct(product);
                     setIsProductDialogOpen(true);
                   }}
+                  updateProduct={updateProduct}
                 />
                 <PerformanceCharts orders={orders} products={products} />
               </TabsContent>

@@ -1,19 +1,26 @@
-import { Link } from "react-router-dom";
-import { AlertTriangle, Package, XCircle, TrendingDown } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, Package, XCircle, TrendingDown, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QuickRestockDialog } from "./QuickRestockDialog";
+import { toast } from "sonner";
 import type { AdminProduct } from "@/hooks/useAdmin";
+import type { UseMutationResult } from "@tanstack/react-query";
 
 interface LowStockDashboardProps {
   products: AdminProduct[];
   isLoading: boolean;
   onEditProduct: (product: AdminProduct) => void;
+  updateProduct?: UseMutationResult<void, Error, { id: string; data: Partial<AdminProduct> }>;
 }
 
-export function LowStockDashboard({ products, isLoading, onEditProduct }: LowStockDashboardProps) {
+export function LowStockDashboard({ products, isLoading, onEditProduct, updateProduct }: LowStockDashboardProps) {
+  const [restockProduct, setRestockProduct] = useState<AdminProduct | null>(null);
+  const [restockDialogOpen, setRestockDialogOpen] = useState(false);
+
   // Filter products by stock status
   const outOfStock = products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active);
   const lowStock = products.filter(p => {
@@ -27,6 +34,28 @@ export function LowStockDashboard({ products, isLoading, onEditProduct }: LowSto
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("fr-FR").format(price);
+  };
+
+  const handleQuickRestock = (product: AdminProduct, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRestockProduct(product);
+    setRestockDialogOpen(true);
+  };
+
+  const handleRestock = async (productId: string, newQuantity: number) => {
+    if (!updateProduct) return;
+    
+    try {
+      await updateProduct.mutateAsync({
+        id: productId,
+        data: { stock_quantity: newQuantity }
+      });
+      toast.success("Stock mis à jour avec succès");
+      setRestockDialogOpen(false);
+      setRestockProduct(null);
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour du stock");
+    }
   };
 
   if (isLoading) {
@@ -76,7 +105,16 @@ export function LowStockDashboard({ products, isLoading, onEditProduct }: LowSto
           <p className="text-sm font-medium text-cream truncate">{product.name}</p>
           <p className="text-xs text-cream/60">{formatPrice(product.price)} FCFA</p>
         </div>
-        <div className="text-right flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0 border-gold/30 text-gold hover:bg-gold/10"
+            onClick={(e) => handleQuickRestock(product, e)}
+            title="Réapprovisionner"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
           {variant === "danger" ? (
             <Badge variant="destructive" className="text-xs">
               Rupture
@@ -89,7 +127,7 @@ export function LowStockDashboard({ products, isLoading, onEditProduct }: LowSto
                 : "border-yellow-500/50 text-yellow-400 text-xs"
               }
             >
-              {product.stock_quantity} en stock
+              {product.stock_quantity}
             </Badge>
           )}
         </div>
@@ -99,6 +137,15 @@ export function LowStockDashboard({ products, isLoading, onEditProduct }: LowSto
 
   return (
     <div className="space-y-6">
+      {/* Quick Restock Dialog */}
+      <QuickRestockDialog
+        product={restockProduct}
+        open={restockDialogOpen}
+        onOpenChange={setRestockDialogOpen}
+        onRestock={handleRestock}
+        isLoading={updateProduct?.isPending}
+      />
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-noir/50 border-destructive/30">
