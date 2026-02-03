@@ -37,6 +37,7 @@ import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { StockNotifications } from "@/components/admin/StockNotifications";
 import { StockAlertsHistory } from "@/components/admin/StockAlertsHistory";
 import { StockAlertsChart } from "@/components/admin/StockAlertsChart";
+import { StockAlertSettings } from "@/components/admin/StockAlertSettings";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -566,6 +567,7 @@ const Admin = () => {
               </TabsContent>
 
               <TabsContent value="stock-alerts" className="space-y-6">
+                <StockAlertSettings onSettingsApplied={() => refetchProducts()} />
                 <StockAlertsChart />
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <StockAlertsHistory />
