@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays, subWeeks, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AlertTriangle, XCircle, Mail, MailX, Package, RefreshCw, Filter } from "lucide-react";
+import { AlertTriangle, XCircle, Mail, MailX, Package, RefreshCw, Filter, Download } from "lucide-react";
+import { convertToCSV, downloadCSV, formatDateForCSV } from "@/lib/csvExport";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -109,6 +111,45 @@ export function StockAlertsHistory() {
 
   const hasActiveFilters = alertTypeFilter !== "all" || periodFilter !== "all";
 
+  const handleExportCSV = () => {
+    if (!alerts || alerts.length === 0) {
+      toast({
+        title: "Export impossible",
+        description: "Aucune alerte à exporter",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const columns = [
+      { key: "sent_at" as const, header: "Date" },
+      { key: "product_name" as const, header: "Produit" },
+      { key: "product_sku" as const, header: "SKU" },
+      { key: "alert_type" as const, header: "Type" },
+      { key: "stock_quantity" as const, header: "Stock" },
+      { key: "threshold" as const, header: "Seuil" },
+      { key: "email_sent_to" as const, header: "Email" },
+      { key: "email_status" as const, header: "Statut" },
+    ];
+
+    // Format data for export
+    const exportData = alerts.map((alert) => ({
+      ...alert,
+      sent_at: formatDateForCSV(alert.sent_at),
+      alert_type: alert.alert_type === "out_of_stock" ? "Rupture de stock" : "Stock faible",
+      email_status: alert.email_status === "sent" ? "Envoyé" : "Échec",
+    }));
+
+    const csv = convertToCSV(exportData, columns);
+    const filename = `alertes-stock-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    downloadCSV(csv, filename);
+
+    toast({
+      title: "Export réussi",
+      description: `${alerts.length} alerte(s) exportée(s) en CSV`,
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -205,6 +246,17 @@ export function StockAlertsHistory() {
                 Réinitialiser
               </Button>
             )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              disabled={!alerts || alerts.length === 0}
+              className="border-gold/30 text-cream hover:bg-gold/10"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exporter CSV
+            </Button>
 
             <Button
               variant="outline"
