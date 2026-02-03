@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, subDays, subWeeks, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AlertTriangle, XCircle, Mail, MailX, Package, RefreshCw, ExternalLink } from "lucide-react";
+import { AlertTriangle, XCircle, Mail, MailX, Package, RefreshCw, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface StockAlert {
   id: string;
@@ -24,17 +25,51 @@ interface StockAlert {
   email_status: string;
 }
 
+type AlertTypeFilter = "all" | "out_of_stock" | "low_stock";
+type PeriodFilter = "all" | "today" | "week" | "month" | "3months";
+
 export function StockAlertsHistory() {
   const [limit, setLimit] = useState(20);
+  const [alertTypeFilter, setAlertTypeFilter] = useState<AlertTypeFilter>("all");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("all");
+
+  const getDateFromPeriod = (period: PeriodFilter): Date | null => {
+    const now = new Date();
+    switch (period) {
+      case "today":
+        return subDays(now, 1);
+      case "week":
+        return subWeeks(now, 1);
+      case "month":
+        return subMonths(now, 1);
+      case "3months":
+        return subMonths(now, 3);
+      default:
+        return null;
+    }
+  };
 
   const { data: alerts, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ["stock-alerts-history", limit],
+    queryKey: ["stock-alerts-history", limit, alertTypeFilter, periodFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("stock_alerts_history")
         .select("*")
         .order("sent_at", { ascending: false })
         .limit(limit);
+
+      // Apply alert type filter
+      if (alertTypeFilter !== "all") {
+        query = query.eq("alert_type", alertTypeFilter);
+      }
+
+      // Apply period filter
+      const dateFrom = getDateFromPeriod(periodFilter);
+      if (dateFrom) {
+        query = query.gte("sent_at", dateFrom.toISOString());
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as StockAlert[];
@@ -42,11 +77,19 @@ export function StockAlertsHistory() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ["stock-alerts-stats"],
+    queryKey: ["stock-alerts-stats", periodFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("stock_alerts_history")
-        .select("alert_type, email_status");
+        .select("alert_type, email_status, sent_at");
+
+      // Apply period filter to stats too
+      const dateFrom = getDateFromPeriod(periodFilter);
+      if (dateFrom) {
+        query = query.gte("sent_at", dateFrom.toISOString());
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -58,6 +101,13 @@ export function StockAlertsHistory() {
       return { totalAlerts, outOfStock, lowStock, failed };
     },
   });
+
+  const resetFilters = () => {
+    setAlertTypeFilter("all");
+    setPeriodFilter("all");
+  };
+
+  const hasActiveFilters = alertTypeFilter !== "all" || periodFilter !== "all";
 
   if (isLoading) {
     return (
@@ -110,23 +160,63 @@ export function StockAlertsHistory() {
 
       {/* History Table */}
       <Card className="bg-noir/50 border-gold/20">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-cream">Historique des alertes</CardTitle>
             <CardDescription className="text-cream/60">
               Toutes les alertes de stock envoyées par email
             </CardDescription>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isRefetching}
-            className="border-gold/30 text-cream hover:bg-gold/10"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? "animate-spin" : ""}`} />
-            Actualiser
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Alert Type Filter */}
+            <Select value={alertTypeFilter} onValueChange={(v) => setAlertTypeFilter(v as AlertTypeFilter)}>
+              <SelectTrigger className="w-[160px] bg-noir border-gold/30 text-cream">
+                <SelectValue placeholder="Type d'alerte" />
+              </SelectTrigger>
+              <SelectContent className="bg-noir border-gold/30">
+                <SelectItem value="all" className="text-cream hover:bg-gold/10">Tous les types</SelectItem>
+                <SelectItem value="out_of_stock" className="text-cream hover:bg-gold/10">Rupture de stock</SelectItem>
+                <SelectItem value="low_stock" className="text-cream hover:bg-gold/10">Stock faible</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Period Filter */}
+            <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as PeriodFilter)}>
+              <SelectTrigger className="w-[160px] bg-noir border-gold/30 text-cream">
+                <SelectValue placeholder="Période" />
+              </SelectTrigger>
+              <SelectContent className="bg-noir border-gold/30">
+                <SelectItem value="all" className="text-cream hover:bg-gold/10">Toute période</SelectItem>
+                <SelectItem value="today" className="text-cream hover:bg-gold/10">Aujourd'hui</SelectItem>
+                <SelectItem value="week" className="text-cream hover:bg-gold/10">7 derniers jours</SelectItem>
+                <SelectItem value="month" className="text-cream hover:bg-gold/10">30 derniers jours</SelectItem>
+                <SelectItem value="3months" className="text-cream hover:bg-gold/10">3 derniers mois</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                className="text-cream/60 hover:text-cream hover:bg-gold/10"
+              >
+                <Filter className="h-4 w-4 mr-1" />
+                Réinitialiser
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isRefetching}
+              className="border-gold/30 text-cream hover:bg-gold/10"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? "animate-spin" : ""}`} />
+              Actualiser
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {alerts && alerts.length > 0 ? (
@@ -217,10 +307,20 @@ export function StockAlertsHistory() {
           ) : (
             <div className="text-center py-12 text-cream/50">
               <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Aucune alerte de stock envoyée pour le moment</p>
-              <p className="text-sm mt-2">
-                Les alertes sont envoyées automatiquement quand le stock d'un produit passe sous le seuil configuré
-              </p>
+              <p>Aucune alerte de stock {hasActiveFilters ? "pour ces critères" : "envoyée pour le moment"}</p>
+              {hasActiveFilters ? (
+                <Button
+                  variant="link"
+                  onClick={resetFilters}
+                  className="text-gold hover:text-gold/80 mt-2"
+                >
+                  Réinitialiser les filtres
+                </Button>
+              ) : (
+                <p className="text-sm mt-2">
+                  Les alertes sont envoyées automatiquement quand le stock d'un produit passe sous le seuil configuré
+                </p>
+              )}
             </div>
           )}
         </CardContent>
