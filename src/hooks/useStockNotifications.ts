@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { playNotificationSound, isSoundEnabled } from "@/lib/notificationSound";
 
 type UserNotification = Database["public"]["Tables"]["user_notifications"]["Row"];
 
@@ -18,6 +19,21 @@ export function useStockNotifications(enabled: boolean = true) {
   const [notifications, setNotifications] = useState<StockNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [soundEnabled, setSoundEnabledState] = useState(isSoundEnabled);
+  const isInitialLoadRef = useRef(true);
+
+  // Toggle sound
+  const toggleSound = useCallback(() => {
+    const newState = !soundEnabled;
+    setSoundEnabledState(newState);
+    import("@/lib/notificationSound").then(({ setSoundEnabled }) => {
+      setSoundEnabled(newState);
+    });
+    // Play a test sound when enabling
+    if (newState) {
+      playNotificationSound("info");
+    }
+  }, [soundEnabled]);
 
   // Mark notification as read
   const markAsRead = useCallback(async (id: string) => {
@@ -128,6 +144,7 @@ export function useStockNotifications(enabled: boolean = true) {
         console.error("Error in fetchNotifications:", err);
       } finally {
         setIsLoading(false);
+        isInitialLoadRef.current = false;
       }
     };
 
@@ -168,6 +185,14 @@ export function useStockNotifications(enabled: boolean = true) {
               isRead: newNotif.is_read ?? false,
             };
 
+            // Play notification sound for new alerts (not on initial load)
+            if (!isInitialLoadRef.current && isSoundEnabled()) {
+              // Determine sound type based on message
+              const isOutOfStock = notification.message.toLowerCase().includes("rupture") || 
+                                   notification.message.includes("0 unité");
+              playNotificationSound(isOutOfStock ? "critical" : "warning");
+            }
+
             // Add new notification at the top, avoiding duplicates
             setNotifications((prev) => {
               const exists = prev.some((n) => n.id === notification.id);
@@ -190,6 +215,8 @@ export function useStockNotifications(enabled: boolean = true) {
     notifications,
     unreadCount,
     isLoading,
+    soundEnabled,
+    toggleSound,
     markAsRead,
     markAllAsRead,
     deleteNotification,

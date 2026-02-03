@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AlertTriangle, XCircle, Check, CheckCheck, Package, Trash2, Bell } from "lucide-react";
+import { AlertTriangle, XCircle, CheckCheck, Package, Trash2, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Popover,
@@ -24,6 +24,8 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
     notifications,
     unreadCount,
     isLoading,
+    soundEnabled,
+    toggleSound,
     markAsRead,
     markAllAsRead,
     deleteNotification,
@@ -85,6 +87,24 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
             )}
           </div>
           <div className="flex items-center gap-1">
+            {/* Sound Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSound}
+              className={`h-8 px-2 text-xs ${
+                soundEnabled 
+                  ? "text-orange-400 hover:text-orange-300" 
+                  : "text-cream/40 hover:text-cream/60"
+              }`}
+              title={soundEnabled ? "Désactiver le son" : "Activer le son"}
+            >
+              {soundEnabled ? (
+                <Volume2 className="h-4 w-4" />
+              ) : (
+                <VolumeX className="h-4 w-4" />
+              )}
+            </Button>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
