@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   BarChart, 
@@ -29,6 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ExportReportButton } from "./ExportReportButton";
 import type { AdminOrder, AdminProduct } from "@/hooks/useAdmin";
 
 interface PerformanceChartsProps {
@@ -48,6 +49,7 @@ const COLORS = [
 
 export function PerformanceCharts({ orders, products }: PerformanceChartsProps) {
   const [period, setPeriod] = useState<PeriodType>("7days");
+  const chartsContainerRef = useRef<HTMLDivElement>(null);
 
   const periodLabels: Record<PeriodType, string> = {
     "7days": "7 derniers jours",
@@ -179,6 +181,46 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
     return new Intl.NumberFormat("fr-FR", { notation: "compact" }).format(value) + " FCFA";
   };
 
+  // Calculate stats for PDF export
+  const statsForExport = useMemo(() => {
+    const statusCounts = {
+      pending: 0,
+      confirmed: 0,
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+    };
+
+    orders.forEach(order => {
+      if (order.status && statusCounts[order.status as keyof typeof statusCounts] !== undefined) {
+        statusCounts[order.status as keyof typeof statusCounts]++;
+      }
+    });
+
+    const totalRevenue = orders
+      .filter(o => o.status !== "cancelled")
+      .reduce((sum, o) => sum + o.total, 0);
+
+    const lowStockProducts = products.filter(
+      p => (p.stock_quantity ?? 0) <= 5
+    ).length;
+
+    return {
+      totalOrders: orders.length,
+      pendingOrders: statusCounts.pending,
+      confirmedOrders: statusCounts.confirmed,
+      processingOrders: statusCounts.processing,
+      shippedOrders: statusCounts.shipped,
+      deliveredOrders: statusCounts.delivered,
+      cancelledOrders: statusCounts.cancelled,
+      totalRevenue,
+      totalProducts: products.length,
+      activeProducts: products.filter(p => p.is_active).length,
+      lowStockProducts,
+    };
+  }, [orders, products]);
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -215,47 +257,59 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
       className="space-y-6"
     >
       {/* Period Selector */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-display font-semibold text-cream">
             Graphiques de performance
           </h2>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="border-gold/20 text-cream hover:bg-cream/10">
-              <Calendar className="h-4 w-4 mr-2" />
-              {periodLabels[period]}
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-noir border-gold/20">
-            <DropdownMenuItem 
-              className="text-cream hover:bg-cream/10 cursor-pointer"
-              onClick={() => setPeriod("7days")}
-            >
-              7 derniers jours
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="text-cream hover:bg-cream/10 cursor-pointer"
-              onClick={() => setPeriod("30days")}
-            >
-              30 derniers jours
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="text-cream hover:bg-cream/10 cursor-pointer"
-              onClick={() => setPeriod("3months")}
-            >
-              3 derniers mois
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-3">
+          <ExportReportButton
+            stats={statsForExport}
+            salesData={salesData}
+            popularProducts={popularProducts}
+            statusDistribution={statusDistribution}
+            periodLabel={periodLabels[period]}
+            chartsContainerRef={chartsContainerRef}
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="border-gold/20 text-cream hover:bg-cream/10">
+                <Calendar className="h-4 w-4 mr-2" />
+                {periodLabels[period]}
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-noir border-gold/20">
+              <DropdownMenuItem 
+                className="text-cream hover:bg-cream/10 cursor-pointer"
+                onClick={() => setPeriod("7days")}
+              >
+                7 derniers jours
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-cream hover:bg-cream/10 cursor-pointer"
+                onClick={() => setPeriod("30days")}
+              >
+                30 derniers jours
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="text-cream hover:bg-cream/10 cursor-pointer"
+                onClick={() => setPeriod("3months")}
+              >
+                3 derniers mois
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Chart */}
-        <Card className="bg-noir/50 border-gold/20">
+      {/* Charts Container for PDF export */}
+      <div ref={chartsContainerRef} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Sales Chart */}
+          <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream text-lg font-medium">
               Évolution des ventes
@@ -362,10 +416,10 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
             )}
           </CardContent>
         </Card>
-      </div>
+        </div>
 
-      {/* Popular Products */}
-      <Card className="bg-noir/50 border-gold/20">
+        {/* Popular Products */}
+        <Card className="bg-noir/50 border-gold/20">
         <CardHeader className="pb-2">
           <CardTitle className="text-cream text-lg font-medium flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
@@ -421,6 +475,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
           )}
         </CardContent>
       </Card>
+      </div>
     </motion.div>
   );
 }
