@@ -250,129 +250,248 @@ const handler = async (req: Request): Promise<Response> => {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Rapport Hebdomadaire des Stocks</title>
+  <!--[if mso]>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    .mobile-hide { display: table-cell !important; }
+  </style>
+  <![endif]-->
+  <style type="text/css">
+    /* Reset styles */
+    body, table, td, p, a, li { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    
+    /* Mobile styles */
+    @media only screen and (max-width: 600px) {
+      .email-container { width: 100% !important; max-width: 100% !important; }
+      .stack-column { display: block !important; width: 100% !important; max-width: 100% !important; }
+      .stack-column-center { text-align: center !important; }
+      .stat-card { width: 48% !important; display: inline-block !important; margin-bottom: 8px !important; }
+      .stat-number { font-size: 24px !important; }
+      .mobile-padding { padding-left: 15px !important; padding-right: 15px !important; }
+      .mobile-full-width { width: 100% !important; }
+      .product-table-mobile td { display: block !important; width: 100% !important; text-align: left !important; padding: 8px 15px !important; }
+      .product-table-mobile tr { display: block !important; border-bottom: 1px solid #333 !important; padding: 10px 0 !important; }
+      .hide-mobile { display: none !important; }
+      .product-name-mobile { font-size: 15px !important; font-weight: 600 !important; }
+      .mobile-header { padding: 25px 15px !important; }
+      .mobile-title { font-size: 22px !important; }
+      .mobile-subtitle { font-size: 15px !important; }
+      .cta-button { padding: 14px 30px !important; font-size: 13px !important; }
+      .recommendations-list { padding-left: 15px !important; }
+      .recommendations-list li { margin-bottom: 10px !important; }
+    }
+    
+    @media only screen and (max-width: 400px) {
+      .stat-card { width: 100% !important; display: block !important; }
+      .mobile-title { font-size: 20px !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  
+  <!-- Preheader (hidden text for email preview) -->
+  <div style="display: none; font-size: 1px; color: #0a0a0a; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+    📊 ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s) - ${stats.trendPercentage > 0 ? "Tendance +" : "Tendance "}${stats.trendPercentage}%
+  </div>
+  
+  <!-- Email wrapper -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a;">
     <tr>
-      <td align="center">
-        <table width="650" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid #333;">
+      <td align="center" style="padding: 20px 10px;">
+        
+        <!-- Main container -->
+        <table role="presentation" class="email-container" width="600" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; border-radius: 16px; overflow: hidden; border: 1px solid rgba(212, 175, 55, 0.3); max-width: 600px;">
           
-          <!-- Header -->
+          <!-- Header with gradient -->
           <tr>
-            <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); padding: 35px; text-align: center; border-bottom: 3px solid #D4AF37;">
-              <h1 style="color: #D4AF37; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 2px;">
-                🍷 LA PETITE BOUTEILLE
-              </h1>
-              <p style="color: #fff; margin: 15px 0 0 0; font-size: 18px; font-weight: 500;">
-                Rapport Hebdomadaire des Stocks
-              </p>
-              <p style="color: #888; margin: 8px 0 0 0; font-size: 13px;">
-                Semaine du ${formatDate(sevenDaysAgo)} au ${formatDate(now)}
-              </p>
+            <td class="mobile-header" style="background: linear-gradient(180deg, #1a1a1a 0%, #252525 100%); padding: 40px 30px; text-align: center; border-bottom: 3px solid #D4AF37;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <p style="font-size: 40px; margin: 0 0 10px 0;">🍷</p>
+                    <h1 class="mobile-title" style="color: #D4AF37; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">
+                      La Petite Bouteille
+                    </h1>
+                    <p class="mobile-subtitle" style="color: #ffffff; margin: 12px 0 0 0; font-size: 17px; font-weight: 500;">
+                      Rapport Hebdomadaire des Stocks
+                    </p>
+                    <p style="color: #999; margin: 10px 0 0 0; font-size: 13px;">
+                      ${formatDate(sevenDaysAgo)} → ${formatDate(now)}
+                    </p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
-          <!-- Summary Stats -->
+          <!-- Summary Stats - 2x2 grid on mobile -->
           <tr>
-            <td style="padding: 30px;">
-              <h2 style="color: #D4AF37; margin: 0 0 20px 0; font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+            <td class="mobile-padding" style="padding: 25px 30px;">
+              <h2 style="color: #D4AF37; margin: 0 0 20px 0; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                 📊 Résumé de la Semaine
               </h2>
               
-              <table width="100%" cellpadding="0" cellspacing="8" style="margin-bottom: 20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <!-- Out of Stock -->
-                  <td width="25%" style="padding: 0;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #2a2a2a; border-radius: 8px; border-left: 4px solid #DC2626;">
+                  <td align="center">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="padding: 15px; text-align: center;">
-                          <p style="color: #DC2626; font-size: 32px; font-weight: bold; margin: 0;">${stats.outOfStock}</p>
-                          <p style="color: #888; font-size: 11px; text-transform: uppercase; margin: 5px 0 0 0;">Ruptures</p>
+                        <!-- Out of Stock -->
+                        <td class="stat-card" width="25%" valign="top" style="padding: 0 4px 8px 0;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #2a1a1a 0%, #1f1515 100%); border-radius: 12px; border: 1px solid rgba(220, 38, 38, 0.3);">
+                            <tr>
+                              <td style="padding: 18px 12px; text-align: center;">
+                                <p class="stat-number" style="color: #DC2626; font-size: 28px; font-weight: 800; margin: 0; line-height: 1;">${stats.outOfStock}</p>
+                                <p style="color: #DC2626; font-size: 10px; text-transform: uppercase; margin: 8px 0 0 0; font-weight: 600; letter-spacing: 0.5px;">Ruptures</p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <!-- Low Stock -->
-                  <td width="25%" style="padding: 0;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #2a2a2a; border-radius: 8px; border-left: 4px solid #F97316;">
-                      <tr>
-                        <td style="padding: 15px; text-align: center;">
-                          <p style="color: #F97316; font-size: 32px; font-weight: bold; margin: 0;">${stats.lowStock}</p>
-                          <p style="color: #888; font-size: 11px; text-transform: uppercase; margin: 5px 0 0 0;">Stock faible</p>
+                        <!-- Low Stock -->
+                        <td class="stat-card" width="25%" valign="top" style="padding: 0 4px 8px 4px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #2a2010 0%, #1f1a10 100%); border-radius: 12px; border: 1px solid rgba(249, 115, 22, 0.3);">
+                            <tr>
+                              <td style="padding: 18px 12px; text-align: center;">
+                                <p class="stat-number" style="color: #F97316; font-size: 28px; font-weight: 800; margin: 0; line-height: 1;">${stats.lowStock}</p>
+                                <p style="color: #F97316; font-size: 10px; text-transform: uppercase; margin: 8px 0 0 0; font-weight: 600; letter-spacing: 0.5px;">Stock faible</p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <!-- Critical -->
-                  <td width="25%" style="padding: 0;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #2a2a2a; border-radius: 8px; border-left: 4px solid #EAB308;">
-                      <tr>
-                        <td style="padding: 15px; text-align: center;">
-                          <p style="color: #EAB308; font-size: 32px; font-weight: bold; margin: 0;">${stats.criticalStock}</p>
-                          <p style="color: #888; font-size: 11px; text-transform: uppercase; margin: 5px 0 0 0;">Critique</p>
+                        <!-- Critical -->
+                        <td class="stat-card" width="25%" valign="top" style="padding: 0 4px 8px 4px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #2a2a10 0%, #1f1f10 100%); border-radius: 12px; border: 1px solid rgba(234, 179, 8, 0.3);">
+                            <tr>
+                              <td style="padding: 18px 12px; text-align: center;">
+                                <p class="stat-number" style="color: #EAB308; font-size: 28px; font-weight: 800; margin: 0; line-height: 1;">${stats.criticalStock}</p>
+                                <p style="color: #EAB308; font-size: 10px; text-transform: uppercase; margin: 8px 0 0 0; font-weight: 600; letter-spacing: 0.5px;">Critique</p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <!-- Trend -->
-                  <td width="25%" style="padding: 0;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #2a2a2a; border-radius: 8px; border-left: 4px solid ${trendColor};">
-                      <tr>
-                        <td style="padding: 15px; text-align: center;">
-                          <p style="color: ${trendColor}; font-size: 28px; font-weight: bold; margin: 0;">${stats.trendPercentage > 0 ? "+" : ""}${stats.trendPercentage}%</p>
-                          <p style="color: #888; font-size: 11px; text-transform: uppercase; margin: 5px 0 0 0;">${trendIcon} Tendance</p>
+                        <!-- Trend -->
+                        <td class="stat-card" width="25%" valign="top" style="padding: 0 0 8px 4px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, ${stats.trendPercentage > 0 ? '#2a1a1a' : '#1a2a1a'} 0%, ${stats.trendPercentage > 0 ? '#1f1515' : '#152015'} 100%); border-radius: 12px; border: 1px solid ${stats.trendPercentage > 0 ? 'rgba(220, 38, 38, 0.3)' : 'rgba(34, 197, 94, 0.3)'};">
+                            <tr>
+                              <td style="padding: 18px 12px; text-align: center;">
+                                <p class="stat-number" style="color: ${trendColor}; font-size: 24px; font-weight: 800; margin: 0; line-height: 1;">${stats.trendPercentage > 0 ? "+" : ""}${stats.trendPercentage}%</p>
+                                <p style="color: ${trendColor}; font-size: 10px; text-transform: uppercase; margin: 8px 0 0 0; font-weight: 600; letter-spacing: 0.5px;">${trendIcon} Tendance</p>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                     </table>
                   </td>
                 </tr>
               </table>
-
-              <p style="color: #888; font-size: 13px; margin: 0; text-align: center;">
+              
+              <p style="color: #888; font-size: 12px; margin: 15px 0 0 0; text-align: center;">
                 ${stats.totalAlertsThisWeek} alertes cette semaine vs ${stats.previousWeekAlerts} la semaine précédente
               </p>
             </td>
           </tr>
 
           ${productsList.length > 0 ? `
-          <!-- Products Table -->
+          <!-- Products Section -->
           <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <h2 style="color: #D4AF37; margin: 0 0 15px 0; font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+            <td class="mobile-padding" style="padding: 0 30px 25px 30px;">
+              <h2 style="color: #D4AF37; margin: 0 0 15px 0; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                 📦 Produits Nécessitant Attention
               </h2>
               
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #2a2a2a; border-radius: 8px; overflow: hidden;">
-                <!-- Table Header -->
+              <!-- Desktop table -->
+              <table role="presentation" class="hide-mobile" width="100%" cellpadding="0" cellspacing="0" style="background-color: #252525; border-radius: 12px; overflow: hidden;">
                 <tr style="background-color: #333;">
-                  <td style="padding: 12px 15px; color: #888; font-size: 11px; text-transform: uppercase; font-weight: 600;">Produit</td>
-                  <td style="padding: 12px 10px; color: #888; font-size: 11px; text-transform: uppercase; font-weight: 600; text-align: center;">Stock</td>
-                  <td style="padding: 12px 10px; color: #888; font-size: 11px; text-transform: uppercase; font-weight: 600; text-align: center;">Ventes/jour</td>
-                  <td style="padding: 12px 10px; color: #888; font-size: 11px; text-transform: uppercase; font-weight: 600; text-align: center;">Jours restants</td>
-                  <td style="padding: 12px 15px; color: #888; font-size: 11px; text-transform: uppercase; font-weight: 600; text-align: right;">Statut</td>
+                  <td style="padding: 14px 15px; color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Produit</td>
+                  <td style="padding: 14px 10px; color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; text-align: center; letter-spacing: 0.5px;">Stock</td>
+                  <td style="padding: 14px 10px; color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; text-align: center; letter-spacing: 0.5px;">Ventes/j</td>
+                  <td style="padding: 14px 10px; color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; text-align: center; letter-spacing: 0.5px;">Jours</td>
+                  <td style="padding: 14px 15px; color: #999; font-size: 11px; text-transform: uppercase; font-weight: 600; text-align: right; letter-spacing: 0.5px;">Statut</td>
                 </tr>
                 ${productsList.map((product, index) => {
                   const badge = getStatusBadge(product.status);
-                  const bgColor = index % 2 === 0 ? "#2a2a2a" : "#252525";
+                  const bgColor = index % 2 === 0 ? "#252525" : "#2a2a2a";
                   return `
-                <tr style="background-color: ${bgColor}; border-top: 1px solid #333;">
-                  <td style="padding: 12px 15px;">
-                    <p style="color: #fff; font-size: 14px; margin: 0; font-weight: 500;">${product.name.length > 30 ? product.name.substring(0, 30) + "..." : product.name}</p>
-                    ${product.sku ? `<p style="color: #666; font-size: 11px; margin: 3px 0 0 0;">SKU: ${product.sku}</p>` : ""}
+                <tr style="background-color: ${bgColor};">
+                  <td style="padding: 14px 15px; border-top: 1px solid #333;">
+                    <p style="color: #fff; font-size: 14px; margin: 0; font-weight: 500;">${product.name.length > 28 ? product.name.substring(0, 28) + "..." : product.name}</p>
+                    ${product.sku ? `<p style="color: #666; font-size: 11px; margin: 4px 0 0 0;">SKU: ${product.sku}</p>` : ""}
                   </td>
-                  <td style="padding: 12px 10px; text-align: center;">
-                    <span style="color: ${product.stock_quantity === 0 ? "#DC2626" : product.stock_quantity <= 5 ? "#F97316" : "#EAB308"}; font-weight: bold; font-size: 16px;">${product.stock_quantity}</span>
+                  <td style="padding: 14px 10px; text-align: center; border-top: 1px solid #333;">
+                    <span style="color: ${product.stock_quantity === 0 ? "#DC2626" : product.stock_quantity <= 5 ? "#F97316" : "#EAB308"}; font-weight: 700; font-size: 18px;">${product.stock_quantity}</span>
                   </td>
-                  <td style="padding: 12px 10px; text-align: center; color: #888; font-size: 13px;">
+                  <td style="padding: 14px 10px; text-align: center; color: #888; font-size: 13px; border-top: 1px solid #333;">
                     ${product.dailySalesRate > 0 ? product.dailySalesRate.toFixed(1) : "-"}
                   </td>
-                  <td style="padding: 12px 10px; text-align: center;">
-                    <span style="color: ${product.daysUntilStockout !== null && product.daysUntilStockout <= 7 ? "#DC2626" : "#888"}; font-size: 13px; font-weight: ${product.daysUntilStockout !== null && product.daysUntilStockout <= 7 ? "bold" : "normal"};">
-                      ${product.daysUntilStockout !== null ? (product.daysUntilStockout === 0 ? "Épuisé" : `≈ ${product.daysUntilStockout}j`) : "-"}
+                  <td style="padding: 14px 10px; text-align: center; border-top: 1px solid #333;">
+                    <span style="color: ${product.daysUntilStockout !== null && product.daysUntilStockout <= 7 ? "#DC2626" : "#888"}; font-size: 13px; font-weight: ${product.daysUntilStockout !== null && product.daysUntilStockout <= 7 ? "700" : "400"};">
+                      ${product.daysUntilStockout !== null ? (product.daysUntilStockout === 0 ? "0j" : `≈${product.daysUntilStockout}j`) : "-"}
                     </span>
                   </td>
-                  <td style="padding: 12px 15px; text-align: right;">
-                    <span style="background-color: ${badge.bg}; color: ${badge.text}; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;">${badge.label}</span>
+                  <td style="padding: 14px 15px; text-align: right; border-top: 1px solid #333;">
+                    <span style="background-color: ${badge.bg}; color: ${badge.text}; padding: 5px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">${badge.label}</span>
+                  </td>
+                </tr>
+                  `;
+                }).join("")}
+              </table>
+              
+              <!-- Mobile cards -->
+              <div style="display: none;">
+                <!--[if !mso]><!-->
+                <style>.show-mobile { display: none; } @media only screen and (max-width: 600px) { .show-mobile { display: block !important; } }</style>
+                <!--<![endif]-->
+              </div>
+              <table role="presentation" class="show-mobile" width="100%" cellpadding="0" cellspacing="0" style="display: none;">
+                ${productsList.map((product, index) => {
+                  const badge = getStatusBadge(product.status);
+                  return `
+                <tr>
+                  <td style="padding: 0 0 12px 0;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #252525; border-radius: 12px; border-left: 4px solid ${badge.bg};">
+                      <tr>
+                        <td style="padding: 15px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td>
+                                <p style="color: #fff; font-size: 15px; margin: 0; font-weight: 600;">${product.name.length > 35 ? product.name.substring(0, 35) + "..." : product.name}</p>
+                                ${product.sku ? `<p style="color: #666; font-size: 11px; margin: 4px 0 0 0;">SKU: ${product.sku}</p>` : ""}
+                              </td>
+                              <td width="80" align="right">
+                                <span style="background-color: ${badge.bg}; color: ${badge.text}; padding: 4px 8px; border-radius: 6px; font-size: 9px; font-weight: 700; text-transform: uppercase;">${badge.label}</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colspan="2" style="padding-top: 12px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                  <tr>
+                                    <td width="33%" style="text-align: center; padding: 8px 0; background-color: #1f1f1f; border-radius: 6px 0 0 6px;">
+                                      <p style="color: ${product.stock_quantity === 0 ? "#DC2626" : product.stock_quantity <= 5 ? "#F97316" : "#EAB308"}; font-size: 18px; font-weight: 700; margin: 0;">${product.stock_quantity}</p>
+                                      <p style="color: #888; font-size: 9px; margin: 4px 0 0 0; text-transform: uppercase;">Stock</p>
+                                    </td>
+                                    <td width="34%" style="text-align: center; padding: 8px 0; background-color: #1a1a1a;">
+                                      <p style="color: #888; font-size: 14px; font-weight: 500; margin: 0;">${product.dailySalesRate > 0 ? product.dailySalesRate.toFixed(1) : "-"}</p>
+                                      <p style="color: #666; font-size: 9px; margin: 4px 0 0 0; text-transform: uppercase;">Ventes/j</p>
+                                    </td>
+                                    <td width="33%" style="text-align: center; padding: 8px 0; background-color: #1f1f1f; border-radius: 0 6px 6px 0;">
+                                      <p style="color: ${product.daysUntilStockout !== null && product.daysUntilStockout <= 7 ? "#DC2626" : "#888"}; font-size: 14px; font-weight: ${product.daysUntilStockout !== null && product.daysUntilStockout <= 7 ? "700" : "500"}; margin: 0;">
+                                        ${product.daysUntilStockout !== null ? (product.daysUntilStockout === 0 ? "0j" : `≈${product.daysUntilStockout}j`) : "-"}
+                                      </p>
+                                      <p style="color: #666; font-size: 9px; margin: 4px 0 0 0; text-transform: uppercase;">Restant</p>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
                   `;
@@ -381,30 +500,36 @@ const handler = async (req: Request): Promise<Response> => {
             </td>
           </tr>
           ` : `
+          <!-- All stocks OK -->
           <tr>
-            <td style="padding: 0 30px 30px 30px; text-align: center;">
-              <div style="background-color: #2a2a2a; border-radius: 8px; padding: 30px;">
-                <p style="color: #22C55E; font-size: 48px; margin: 0;">✓</p>
-                <p style="color: #fff; font-size: 16px; margin: 10px 0 0 0;">Tous les stocks sont suffisants !</p>
-              </div>
+            <td class="mobile-padding" style="padding: 0 30px 25px 30px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1a2a1a 0%, #152015 100%); border-radius: 12px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                <tr>
+                  <td style="padding: 35px; text-align: center;">
+                    <p style="font-size: 50px; margin: 0;">✓</p>
+                    <p style="color: #22C55E; font-size: 18px; font-weight: 600; margin: 15px 0 0 0;">Tous les stocks sont suffisants !</p>
+                    <p style="color: #888; font-size: 13px; margin: 8px 0 0 0;">Aucune action requise cette semaine</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
           `}
 
           <!-- Recommendations -->
           <tr>
-            <td style="padding: 0 30px 30px 30px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #1E3A5F; border-radius: 8px; border-left: 4px solid #3B82F6;">
+            <td class="mobile-padding" style="padding: 0 30px 25px 30px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1a2535 0%, #152030 100%); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);">
                 <tr>
                   <td style="padding: 20px;">
-                    <h3 style="color: #60A5FA; margin: 0 0 10px 0; font-size: 14px;">💡 Recommandations</h3>
-                    <ul style="color: #CBD5E1; font-size: 13px; margin: 0; padding-left: 20px; line-height: 1.8;">
-                      ${stats.outOfStock > 0 ? `<li><strong>${stats.outOfStock} produit(s) en rupture</strong> nécessitent un réapprovisionnement urgent</li>` : ""}
-                      ${stats.lowStock > 0 ? `<li>Planifiez le réapprovisionnement des <strong>${stats.lowStock} produit(s) à stock faible</strong></li>` : ""}
-                      ${stats.trendPercentage > 30 ? `<li>⚠️ Tendance à la hausse de ${stats.trendPercentage}% - Revoir la gestion des stocks</li>` : ""}
+                    <h3 style="color: #60A5FA; margin: 0 0 12px 0; font-size: 14px; font-weight: 600;">💡 Recommandations</h3>
+                    <ul class="recommendations-list" style="color: #CBD5E1; font-size: 13px; margin: 0; padding-left: 20px; line-height: 1.9;">
+                      ${stats.outOfStock > 0 ? `<li><strong style="color: #DC2626;">${stats.outOfStock} produit(s) en rupture</strong> nécessitent un réapprovisionnement urgent</li>` : ""}
+                      ${stats.lowStock > 0 ? `<li>Planifiez le réapprovisionnement des <strong style="color: #F97316;">${stats.lowStock} produit(s) à stock faible</strong></li>` : ""}
+                      ${stats.trendPercentage > 30 ? `<li>⚠️ <strong>Tendance à la hausse de ${stats.trendPercentage}%</strong> - Revoir la gestion des stocks</li>` : ""}
                       ${productsList.filter(p => p.daysUntilStockout !== null && p.daysUntilStockout <= 7 && p.daysUntilStockout > 0).length > 0 ? 
-                        `<li>${productsList.filter(p => p.daysUntilStockout !== null && p.daysUntilStockout <= 7 && p.daysUntilStockout > 0).length} produit(s) épuisé(s) d'ici 7 jours selon les prévisions</li>` : ""}
-                      ${stats.outOfStock === 0 && stats.lowStock === 0 ? `<li>✓ Excellente gestion des stocks cette semaine !</li>` : ""}
+                        `<li><strong>${productsList.filter(p => p.daysUntilStockout !== null && p.daysUntilStockout <= 7 && p.daysUntilStockout > 0).length} produit(s)</strong> seront épuisés d'ici 7 jours</li>` : ""}
+                      ${stats.outOfStock === 0 && stats.lowStock === 0 ? `<li style="color: #22C55E;">✓ Excellente gestion des stocks cette semaine !</li>` : ""}
                     </ul>
                   </td>
                 </tr>
@@ -412,28 +537,44 @@ const handler = async (req: Request): Promise<Response> => {
             </td>
           </tr>
 
-          <!-- Action Button -->
+          <!-- CTA Button -->
           <tr>
-            <td style="padding: 0 30px 30px 30px; text-align: center;">
-              <a href="https://cameroon-spirits-ai.lovable.app/admin" 
-                 style="display: inline-block; background: linear-gradient(135deg, #D4AF37 0%, #B8963A 100%); color: #000000; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
-                Accéder au Dashboard Admin
-              </a>
+            <td class="mobile-padding" style="padding: 0 30px 30px 30px; text-align: center;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="https://cameroon-spirits-ai.lovable.app/admin" 
+                       class="cta-button"
+                       style="display: inline-block; background: linear-gradient(135deg, #D4AF37 0%, #B8963A 100%); color: #000000; text-decoration: none; padding: 16px 40px; border-radius: 10px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">
+                      Accéder au Dashboard
+                    </a>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="background-color: #111; padding: 25px; text-align: center; border-top: 1px solid #333;">
+            <td style="background-color: #111; padding: 25px 30px; text-align: center; border-top: 1px solid #333;">
               <p style="color: #888; font-size: 12px; margin: 0;">
-                📅 Ce rapport est envoyé automatiquement chaque lundi à 8h00
+                📅 Rapport envoyé automatiquement chaque lundi à 8h00
               </p>
-              <p style="color: #666; font-size: 11px; margin: 10px 0 0 0;">
-                Pour modifier vos préférences de notification, connectez-vous au dashboard admin.
+              <p style="color: #666; font-size: 11px; margin: 12px 0 0 0;">
+                Pour modifier vos préférences, connectez-vous au dashboard admin.
               </p>
-              <p style="color: #888; font-size: 11px; margin: 15px 0 0 0;">
-                © ${new Date().getFullYear()} La Petite Bouteille. Tous droits réservés.
-              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 15px;">
+                <tr>
+                  <td align="center">
+                    <p style="color: #D4AF37; font-size: 12px; margin: 0; font-weight: 500;">
+                      La Petite Bouteille
+                    </p>
+                    <p style="color: #555; font-size: 10px; margin: 6px 0 0 0;">
+                      © ${new Date().getFullYear()} Tous droits réservés
+                    </p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
