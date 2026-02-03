@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Heart,
   Share2,
   Minus,
   Plus,
@@ -18,6 +17,7 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductDetails } from "@/components/product/ProductDetails";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -279,10 +279,7 @@ const ProductPage = () => {
 
               {/* Secondary Actions */}
               <div className="flex gap-4">
-                <Button variant="outline" className="gap-2">
-                  <Heart className="h-4 w-4" />
-                  Favoris
-                </Button>
+                <WishlistButton productId={product.id} variant="full" />
                 <Button variant="outline" className="gap-2" onClick={handleShare}>
                   <Share2 className="h-4 w-4" />
                   Partager
