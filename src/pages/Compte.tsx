@@ -1,17 +1,19 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Loader2, MapPin, MessageSquare } from "lucide-react";
+import { ArrowLeft, User, Loader2, MapPin, MessageSquare, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useReviews } from "@/hooks/useReviews";
+import { useWishlist } from "@/hooks/useWishlist";
 import { ProfileForm } from "@/components/account/ProfileForm";
 import { OrderHistory } from "@/components/account/OrderHistory";
 import { AddressManager } from "@/components/account/AddressManager";
 import { MyReviews } from "@/components/account/MyReviews";
+import { MyWishlist } from "@/components/account/MyWishlist";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -20,6 +22,7 @@ export default function Compte() {
   const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { profile, orders, loading, ordersLoading, updateProfile } = useProfile();
   const { reviewableProducts } = useReviews();
+  const { wishlistCount } = useWishlist();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -128,6 +131,18 @@ export default function Compte() {
                   </span>
                 )}
               </TabsTrigger>
+              <TabsTrigger
+                value="wishlist"
+                className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
+              >
+                <Heart className="h-4 w-4 mr-1.5" />
+                Favoris
+                {wishlistCount > 0 && (
+                  <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">
+                    {wishlistCount}
+                  </span>
+                )}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile">
@@ -148,6 +163,10 @@ export default function Compte() {
 
             <TabsContent value="reviews">
               <MyReviews />
+            </TabsContent>
+
+            <TabsContent value="wishlist">
+              <MyWishlist />
             </TabsContent>
           </Tabs>
         </div>

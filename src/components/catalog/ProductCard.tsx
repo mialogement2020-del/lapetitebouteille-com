@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { Product } from "@/hooks/useProducts";
 
 interface ProductCardProps {
@@ -53,13 +53,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
         {/* Quick Actions */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-9 w-9 rounded-full bg-white/90 hover:bg-white text-burgundy"
-          >
-            <Heart className="h-4 w-4" />
-          </Button>
+          <WishlistButton productId={product.id} />
         </div>
 
         {/* Stock Status */}
