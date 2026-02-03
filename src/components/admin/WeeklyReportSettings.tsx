@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ReportPreview } from "./ReportPreview";
+import { ReportHistory } from "./ReportHistory";
 
 // Frequency options for the report
 const FREQUENCY_OPTIONS = [
@@ -475,6 +476,11 @@ export function WeeklyReportSettings() {
             </span>
           </motion.div>
         )}
+
+        {/* Report History */}
+        <div className="pt-4 border-t border-gold/10">
+          <ReportHistory />
+        </div>
       </CardContent>
     </Card>
   );
