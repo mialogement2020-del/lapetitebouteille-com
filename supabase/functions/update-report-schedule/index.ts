@@ -12,10 +12,10 @@ interface UpdateScheduleRequest {
   frequency: string;
   day?: string;
   hour: string;
+  recipientEmails?: string[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -23,106 +23,83 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-
-    // Create Supabase client with service role for admin operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { cronExpression, frequency, day, hour }: UpdateScheduleRequest = await req.json();
+    const { cronExpression, frequency, day, hour, recipientEmails }: UpdateScheduleRequest = await req.json();
 
     if (!cronExpression || !frequency || !hour) {
       throw new Error("Missing required fields: cronExpression, frequency, hour");
     }
 
-    console.log(`Updating report schedule to: ${cronExpression} (${frequency})`);
+    console.log(`Updating report schedule: ${cronExpression} (${frequency}), recipients: ${recipientEmails?.length || 0}`);
 
-    // Build the function URL
-    const functionUrl = `${supabaseUrl}/functions/v1/send-weekly-stock-report`;
-
-    // First, try to unschedule the existing job
-    try {
-      const { error: unscheduleError } = await supabase.rpc("cron_unschedule", { 
-        job_name: "send-weekly-stock-report" 
-      });
-      if (unscheduleError) {
-        console.log("Unschedule via RPC failed, trying direct query");
-      } else {
-        console.log("Existing job unscheduled via RPC");
-      }
-    } catch (unscheduleError) {
-      console.log("No existing job to unschedule or RPC not available:", unscheduleError);
-    }
-
-    // Try to schedule the new job using direct SQL
-    const scheduleQuery = `
-      SELECT cron.unschedule('send-weekly-stock-report');
-    `;
-    
-    try {
-      // We'll use a workaround: update the cron.job table directly
-      // This requires the service role key
-      const unscheduleResult = await fetch(`${supabaseUrl}/rest/v1/rpc/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": supabaseServiceKey,
-          "Authorization": `Bearer ${supabaseServiceKey}`,
-        },
-        body: JSON.stringify({
-          // Empty body for unschedule attempt
-        }),
-      });
-      console.log("Attempted to unschedule existing job");
-    } catch (e) {
-      console.log("Direct unschedule attempt failed:", e);
-    }
-
-    // Update the configuration table (this will always work)
-    const { error: updateError } = await supabase
+    // Get existing config ID
+    const { data: existingConfig } = await supabase
       .from("report_schedule_config")
-      .upsert({
-        id: "weekly-stock-report",
-        cron_expression: cronExpression,
-        frequency: frequency,
-        day_of_week: day || null,
-        hour: parseInt(hour),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "id" });
+      .select("id")
+      .limit(1)
+      .single();
 
-    if (updateError) {
-      console.error("Error updating config table:", updateError);
-      throw new Error(`Failed to update configuration: ${updateError.message}`);
+    const configData = {
+      cron_expression: cronExpression,
+      frequency: frequency,
+      day_of_week: day || null,
+      hour: parseInt(hour),
+      is_active: true,
+      recipient_emails: recipientEmails || [],
+      updated_at: new Date().toISOString(),
+    };
+
+    if (existingConfig?.id) {
+      // Update existing config
+      const { error: updateError } = await supabase
+        .from("report_schedule_config")
+        .update(configData)
+        .eq("id", existingConfig.id);
+
+      if (updateError) {
+        console.error("Error updating config:", updateError);
+        throw new Error(`Failed to update configuration: ${updateError.message}`);
+      }
+    } else {
+      // Insert new config
+      const { error: insertError } = await supabase
+        .from("report_schedule_config")
+        .insert(configData);
+
+      if (insertError) {
+        console.error("Error inserting config:", insertError);
+        throw new Error(`Failed to create configuration: ${insertError.message}`);
+      }
     }
 
-    // Now schedule the new job using pg_net to call the cron.schedule function
-    // We need to use a different approach since direct cron access may be restricted
-    const cronJobBody = JSON.stringify({});
-    
-    // Store the new cron expression - the actual cron job will be updated by an admin
-    // or we can use the existing job which runs the edge function that checks the config
-    
     const scheduleDescription = getScheduleDescription(frequency, day, hour);
 
-    console.log(`Configuration updated successfully: ${scheduleDescription}`);
-    console.log(`Cron expression: ${cronExpression}`);
+    // Create notification for admins
+    const { data: adminRoles } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
 
-    // Try to create a notification for the admin about the schedule change
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user?.id) {
-        await supabase.from("user_notifications").insert({
-          user_id: userData.user.id,
-          type: "system",
-          title: "Planification du rapport mise à jour",
-          message: `Le rapport de stock sera envoyé : ${scheduleDescription}`,
-          reference_type: "report_schedule",
-          reference_id: "weekly-stock-report",
-        });
-      }
-    } catch (notifError) {
-      // Notification insert might fail if user is not authenticated
-      console.log("Could not create notification:", notifError);
+    if (adminRoles && adminRoles.length > 0) {
+      const recipientCount = recipientEmails?.length || 0;
+      const recipientText = recipientCount > 0 
+        ? `Envoi à ${recipientCount} destinataire(s).` 
+        : "Envoi à OWNER_EMAIL par défaut.";
+
+      const notifications = adminRoles.map((role) => ({
+        user_id: role.user_id,
+        title: "📅 Planification du rapport modifiée",
+        message: `${scheduleDescription}. ${recipientText}`,
+        type: "schedule_update",
+        reference_type: "report_schedule",
+        is_read: false,
+      }));
+
+      await supabase.from("user_notifications").insert(notifications);
     }
+
+    console.log(`Configuration updated successfully: ${scheduleDescription}`);
 
     return new Response(
       JSON.stringify({
@@ -133,9 +110,9 @@ const handler = async (req: Request): Promise<Response> => {
           frequency,
           day,
           hour,
+          recipientEmails,
           description: scheduleDescription,
         },
-        note: "La configuration a été enregistrée. Le job cron existant continuera de s'exécuter selon la nouvelle planification lors de sa prochaine mise à jour."
       }),
       {
         status: 200,
@@ -143,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error in update-report-schedule function:", error);
+    console.error("Error in update-report-schedule:", error);
     return new Response(
       JSON.stringify({ 
         success: false,
@@ -179,7 +156,7 @@ function getScheduleDescription(frequency: string, day?: string, hour?: string):
     case "monthly":
       return `Le 1er de chaque mois à ${hourFormatted}:00`;
     default:
-      return `Planifié avec expression cron personnalisée`;
+      return `Planifié`;
   }
 }
 

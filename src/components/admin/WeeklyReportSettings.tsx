@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { Calendar, Mail, Send, Clock, RefreshCw, Check, FileText, Save } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calendar, Mail, Send, Clock, RefreshCw, Check, FileText, Save, Plus, X, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -43,26 +45,106 @@ function buildCronExpression(frequency: string, day: string, hour: string): stri
   
   switch (frequency) {
     case "daily":
-      return `0 ${hourNum} * * *`; // Every day at specified hour
+      return `0 ${hourNum} * * *`;
     case "weekly":
-      return `0 ${hourNum} * * ${day}`; // Every week on specified day at specified hour
+      return `0 ${hourNum} * * ${day}`;
     case "biweekly":
-      return `0 ${hourNum} 1,15 * *`; // 1st and 15th of each month at specified hour
+      return `0 ${hourNum} 1,15 * *`;
     case "monthly":
-      return `0 ${hourNum} 1 * *`; // 1st of each month at specified hour
+      return `0 ${hourNum} 1 * *`;
     default:
-      return `0 ${hourNum} * * 1`; // Default to weekly on Monday
+      return `0 ${hourNum} * * 1`;
   }
+}
+
+// Email validation
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 export function WeeklyReportSettings() {
   const [isSending, setIsSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [lastSentAt, setLastSentAt] = useState<Date | null>(null);
   const [scheduleUpdated, setScheduleUpdated] = useState(false);
   const [frequency, setFrequency] = useState("weekly");
   const [selectedDay, setSelectedDay] = useState("1");
   const [selectedHour, setSelectedHour] = useState("8");
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([]);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  // Load existing configuration
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("report_schedule_config")
+          .select("*")
+          .limit(1)
+          .single();
+
+        if (error && error.code !== "PGRST116") {
+          console.error("Error loading config:", error);
+          return;
+        }
+
+        if (data) {
+          setFrequency(data.frequency || "weekly");
+          setSelectedDay(data.day_of_week || "1");
+          setSelectedHour(data.hour?.toString() || "8");
+          setRecipientEmails(data.recipient_emails || []);
+        }
+      } catch (error) {
+        console.error("Error loading config:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, []);
+
+  const handleAddEmail = () => {
+    const trimmedEmail = newEmail.trim().toLowerCase();
+    
+    if (!trimmedEmail) {
+      setEmailError("Veuillez entrer une adresse email");
+      return;
+    }
+    
+    if (!isValidEmail(trimmedEmail)) {
+      setEmailError("Adresse email invalide");
+      return;
+    }
+    
+    if (recipientEmails.includes(trimmedEmail)) {
+      setEmailError("Cette adresse est déjà dans la liste");
+      return;
+    }
+    
+    if (recipientEmails.length >= 10) {
+      setEmailError("Maximum 10 destinataires autorisés");
+      return;
+    }
+    
+    setRecipientEmails([...recipientEmails, trimmedEmail]);
+    setNewEmail("");
+    setEmailError("");
+  };
+
+  const handleRemoveEmail = (emailToRemove: string) => {
+    setRecipientEmails(recipientEmails.filter(email => email !== emailToRemove));
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddEmail();
+    }
+  };
 
   const handleSendNow = async () => {
     setIsSending(true);
@@ -76,7 +158,7 @@ export function WeeklyReportSettings() {
 
       setLastSentAt(new Date());
       toast.success("Rapport envoyé avec succès", {
-        description: "Le rapport de stock a été envoyé par email.",
+        description: `Le rapport a été envoyé à ${recipientEmails.length > 0 ? recipientEmails.length : 1} destinataire(s).`,
       });
     } catch (error) {
       console.error("Error sending report:", error);
@@ -101,6 +183,7 @@ export function WeeklyReportSettings() {
           frequency,
           day: frequency === "weekly" ? selectedDay : undefined,
           hour: selectedHour,
+          recipientEmails,
         },
       });
 
@@ -111,7 +194,6 @@ export function WeeklyReportSettings() {
         description: getCurrentScheduleDescription(),
       });
 
-      // Reset the success indicator after 5 seconds
       setTimeout(() => setScheduleUpdated(false), 5000);
     } catch (error) {
       console.error("Error updating schedule:", error);
@@ -140,6 +222,19 @@ export function WeeklyReportSettings() {
         return "";
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-noir/50 border-gold/20">
+        <CardContent className="py-8">
+          <div className="flex items-center justify-center gap-2 text-cream/60">
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            <span>Chargement de la configuration...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-noir/50 border-gold/20">
@@ -170,6 +265,75 @@ export function WeeklyReportSettings() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Recipients Management */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary" />
+            <Label className="text-cream font-medium">Destinataires du rapport</Label>
+          </div>
+          
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                type="email"
+                placeholder="Ajouter une adresse email..."
+                value={newEmail}
+                onChange={(e) => {
+                  setNewEmail(e.target.value);
+                  setEmailError("");
+                }}
+                onKeyPress={handleKeyPress}
+                className="bg-noir border-gold/30 text-cream placeholder:text-cream/40"
+              />
+            </div>
+            <Button
+              type="button"
+              onClick={handleAddEmail}
+              variant="outline"
+              className="border-gold/30 hover:bg-cream/5 text-cream px-3"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {emailError && (
+            <p className="text-sm text-red-400">{emailError}</p>
+          )}
+          
+          {/* Email list */}
+          <div className="flex flex-wrap gap-2">
+            {recipientEmails.length === 0 ? (
+              <p className="text-sm text-cream/50 italic">
+                Aucun destinataire configuré. L'email sera envoyé à OWNER_EMAIL par défaut.
+              </p>
+            ) : (
+              recipientEmails.map((email) => (
+                <Badge
+                  key={email}
+                  variant="secondary"
+                  className="bg-cream/10 text-cream border-gold/20 px-3 py-1.5 flex items-center gap-2"
+                >
+                  <Mail className="h-3 w-3" />
+                  {email}
+                  <button
+                    onClick={() => handleRemoveEmail(email)}
+                    className="ml-1 hover:text-red-400 transition-colors"
+                    aria-label={`Supprimer ${email}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))
+            )}
+          </div>
+          
+          {recipientEmails.length > 0 && (
+            <p className="text-xs text-cream/50">
+              {recipientEmails.length} destinataire(s) configuré(s) • Maximum 10
+            </p>
+          )}
         </div>
 
         {/* Frequency Settings */}
@@ -309,14 +473,6 @@ export function WeeklyReportSettings() {
             </span>
           </motion.div>
         )}
-
-        {/* Email destination info */}
-        <div className="flex items-center gap-2 text-sm text-cream/60">
-          <Mail className="h-4 w-4" />
-          <span>
-            Le rapport est envoyé à l'adresse configurée dans les paramètres (OWNER_EMAIL)
-          </span>
-        </div>
       </CardContent>
     </Card>
   );
