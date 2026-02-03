@@ -16,6 +16,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductDetails } from "@/components/product/ProductDetails";
+import { ProductReviews } from "@/components/product/ProductReviews";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -333,12 +334,11 @@ const ProductPage = () => {
                 <ProductDetails product={product} />
               </TabsContent>
               <TabsContent value="reviews" className="pt-6">
-                <div className="text-center py-12 text-muted-foreground">
-                  <p>Aucun avis pour le moment.</p>
-                  <p className="text-sm mt-2">
-                    Soyez le premier à donner votre avis sur ce produit.
-                  </p>
-                </div>
+                <ProductReviews
+                  productId={product.id}
+                  averageRating={product.average_rating}
+                  reviewCount={product.review_count}
+                />
               </TabsContent>
             </Tabs>
           </div>
