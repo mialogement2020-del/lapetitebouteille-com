@@ -1,15 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Loader2, MapPin } from "lucide-react";
+import { ArrowLeft, User, Loader2, MapPin, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { useReviews } from "@/hooks/useReviews";
 import { ProfileForm } from "@/components/account/ProfileForm";
 import { OrderHistory } from "@/components/account/OrderHistory";
 import { AddressManager } from "@/components/account/AddressManager";
+import { MyReviews } from "@/components/account/MyReviews";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -17,6 +19,7 @@ export default function Compte() {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { profile, orders, loading, ordersLoading, updateProfile } = useProfile();
+  const { reviewableProducts } = useReviews();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -113,6 +116,18 @@ export default function Compte() {
                   </span>
                 )}
               </TabsTrigger>
+              <TabsTrigger
+                value="reviews"
+                className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
+              >
+                <MessageSquare className="h-4 w-4 mr-1.5" />
+                Mes avis
+                {reviewableProducts.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">
+                    {reviewableProducts.length}
+                  </span>
+                )}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile">
@@ -129,6 +144,10 @@ export default function Compte() {
 
             <TabsContent value="orders">
               <OrderHistory orders={orders} loading={ordersLoading} />
+            </TabsContent>
+
+            <TabsContent value="reviews">
+              <MyReviews />
             </TabsContent>
           </Tabs>
         </div>
