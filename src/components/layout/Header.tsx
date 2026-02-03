@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, Search, Wine, LogOut, LogIn, Users, Shield } from "lucide-react";
+import { Menu, X, User, Search, Wine, LogOut, LogIn, Users, Shield, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -10,12 +10,14 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const Header = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, signOut } = useAuthContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { wishlistCount } = useWishlist();
 
   // Check if user is admin
   const { data: isAdmin } = useQuery({
@@ -77,6 +79,22 @@ const Header = () => {
             >
               <Search className="h-5 w-5" />
             </Button>
+
+            {/* Wishlist */}
+            <Link to={isAuthenticated ? "/compte?tab=wishlist" : "/connexion"}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-cream hover:text-primary hover:bg-cream/10 relative"
+              >
+                <Heart className="h-5 w-5" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-noir text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount > 99 ? "99+" : wishlistCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
 
             {/* Cart */}
             <CartDrawer />
