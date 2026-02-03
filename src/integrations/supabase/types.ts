@@ -776,6 +776,39 @@ export type Database = {
         }
         Relationships: []
       }
+      report_schedule_config: {
+        Row: {
+          created_at: string | null
+          cron_expression: string
+          day_of_week: string | null
+          frequency: string
+          hour: number
+          id: string
+          is_active: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          cron_expression?: string
+          day_of_week?: string | null
+          frequency?: string
+          hour?: number
+          id?: string
+          is_active?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          cron_expression?: string
+          day_of_week?: string | null
+          frequency?: string
+          hour?: number
+          id?: string
+          is_active?: boolean
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
