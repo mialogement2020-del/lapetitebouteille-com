@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Mail, Send, Clock, RefreshCw, Check, FileText } from "lucide-react";
+import { Calendar, Mail, Send, Clock, RefreshCw, Check, FileText, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Frequency options for the report
 const FREQUENCY_OPTIONS = [
-  { value: "daily", label: "Quotidien", cron: "0 8 * * *", description: "Tous les jours à 8h00" },
-  { value: "weekly", label: "Hebdomadaire", cron: "0 8 * * 1", description: "Chaque lundi à 8h00" },
-  { value: "biweekly", label: "Bi-mensuel", cron: "0 8 1,15 * *", description: "Le 1er et 15 de chaque mois à 8h00" },
-  { value: "monthly", label: "Mensuel", cron: "0 8 1 * *", description: "Le 1er de chaque mois à 8h00" },
+  { value: "daily", label: "Quotidien", description: "Tous les jours" },
+  { value: "weekly", label: "Hebdomadaire", description: "Une fois par semaine" },
+  { value: "biweekly", label: "Bi-mensuel", description: "Le 1er et 15 de chaque mois" },
+  { value: "monthly", label: "Mensuel", description: "Le 1er de chaque mois" },
 ];
 
 const DAY_OPTIONS = [
@@ -37,9 +37,29 @@ const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({
   label: `${i.toString().padStart(2, "0")}:00`,
 }));
 
+// Build cron expression based on frequency settings
+function buildCronExpression(frequency: string, day: string, hour: string): string {
+  const hourNum = parseInt(hour);
+  
+  switch (frequency) {
+    case "daily":
+      return `0 ${hourNum} * * *`; // Every day at specified hour
+    case "weekly":
+      return `0 ${hourNum} * * ${day}`; // Every week on specified day at specified hour
+    case "biweekly":
+      return `0 ${hourNum} 1,15 * *`; // 1st and 15th of each month at specified hour
+    case "monthly":
+      return `0 ${hourNum} 1 * *`; // 1st of each month at specified hour
+    default:
+      return `0 ${hourNum} * * 1`; // Default to weekly on Monday
+  }
+}
+
 export function WeeklyReportSettings() {
   const [isSending, setIsSending] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [lastSentAt, setLastSentAt] = useState<Date | null>(null);
+  const [scheduleUpdated, setScheduleUpdated] = useState(false);
   const [frequency, setFrequency] = useState("weekly");
   const [selectedDay, setSelectedDay] = useState("1");
   const [selectedHour, setSelectedHour] = useState("8");
@@ -68,8 +88,42 @@ export function WeeklyReportSettings() {
     }
   };
 
+  const handleSaveSchedule = async () => {
+    setIsSaving(true);
+    setScheduleUpdated(false);
+
+    try {
+      const cronExpression = buildCronExpression(frequency, selectedDay, selectedHour);
+      
+      const { data, error } = await supabase.functions.invoke("update-report-schedule", {
+        body: {
+          cronExpression,
+          frequency,
+          day: frequency === "weekly" ? selectedDay : undefined,
+          hour: selectedHour,
+        },
+      });
+
+      if (error) throw error;
+
+      setScheduleUpdated(true);
+      toast.success("Planification mise à jour", {
+        description: getCurrentScheduleDescription(),
+      });
+
+      // Reset the success indicator after 5 seconds
+      setTimeout(() => setScheduleUpdated(false), 5000);
+    } catch (error) {
+      console.error("Error updating schedule:", error);
+      toast.error("Erreur lors de la mise à jour", {
+        description: "Impossible de modifier la planification. Réessayez plus tard.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getCurrentScheduleDescription = () => {
-    const freq = FREQUENCY_OPTIONS.find(f => f.value === frequency);
     const day = DAY_OPTIONS.find(d => d.value === selectedDay);
     const hour = selectedHour.padStart(2, "0");
 
@@ -83,7 +137,7 @@ export function WeeklyReportSettings() {
       case "monthly":
         return `Le 1er de chaque mois à ${hour}:00`;
       default:
-        return freq?.description || "";
+        return "";
     }
   };
 
@@ -186,14 +240,39 @@ export function WeeklyReportSettings() {
           </div>
         </div>
 
-        {/* Info about schedule changes */}
-        <div className="flex items-start gap-2 text-xs text-cream/50">
-          <Clock className="h-4 w-4 shrink-0 mt-0.5" />
-          <p>
-            Les modifications de la planification nécessitent une mise à jour du job cron côté backend. 
-            Le rapport est actuellement configuré pour être envoyé chaque lundi à 8h00.
-          </p>
-        </div>
+        {/* Save Schedule Button */}
+        <Button
+          onClick={handleSaveSchedule}
+          disabled={isSaving}
+          variant="outline"
+          className="w-full border-gold/30 hover:bg-cream/5 text-cream"
+        >
+          {isSaving ? (
+            <>
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              Mise à jour en cours...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Enregistrer la planification
+            </>
+          )}
+        </Button>
+
+        {/* Schedule update success */}
+        {scheduleUpdated && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/30 rounded-lg"
+          >
+            <Check className="h-5 w-5 text-primary" />
+            <span className="text-primary text-sm">
+              Planification mise à jour : {getCurrentScheduleDescription()}
+            </span>
+          </motion.div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gold/10">
