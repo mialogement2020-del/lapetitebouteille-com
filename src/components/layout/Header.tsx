@@ -88,11 +88,24 @@ const Header = () => {
                 className="text-cream hover:text-primary hover:bg-cream/10 relative"
               >
                 <Heart className="h-5 w-5" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-noir text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {wishlistCount > 99 ? "99+" : wishlistCount}
-                  </span>
-                )}
+                <AnimatePresence mode="wait">
+                  {wishlistCount > 0 && (
+                    <motion.span
+                      key={wishlistCount}
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 500, 
+                        damping: 15 
+                      }}
+                      className="absolute -top-1 -right-1 bg-primary text-noir text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    >
+                      {wishlistCount > 99 ? "99+" : wishlistCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Button>
             </Link>
 
