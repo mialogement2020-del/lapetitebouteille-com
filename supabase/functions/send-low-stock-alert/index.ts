@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -22,6 +23,11 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Initialize Supabase client with service role for inserting history
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
   try {
     const { productName, productId, currentStock, threshold, sku }: LowStockAlertRequest = await req.json();
 
@@ -32,6 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const urgencyLevel = currentStock === 0 ? "RUPTURE DE STOCK" : "STOCK FAIBLE";
     const urgencyColor = currentStock === 0 ? "#DC2626" : "#F59E0B";
+    const alertType = currentStock === 0 ? "out_of_stock" : "low_stock";
 
     const emailHtml = `
 <!DOCTYPE html>
@@ -152,16 +159,46 @@ const handler = async (req: Request): Promise<Response> => {
 </html>
     `;
 
-    const emailResponse = await resend.emails.send({
-      from: "La Petite Bouteille <alertes@lapetitebouteille.com>",
-      to: [ownerEmail],
-      subject: `${urgencyLevel}: ${productName} (${currentStock} unités)`,
-      html: emailHtml,
-    });
+    let emailStatus = "sent";
+    let emailError = null;
 
-    console.log("Low stock alert sent successfully:", emailResponse);
+    try {
+      const emailResponse = await resend.emails.send({
+        from: "La Petite Bouteille <alertes@lapetitebouteille.com>",
+        to: [ownerEmail],
+        subject: `${urgencyLevel}: ${productName} (${currentStock} unités)`,
+        html: emailHtml,
+      });
+      console.log("Low stock alert sent successfully:", emailResponse);
+    } catch (error: any) {
+      emailStatus = "failed";
+      emailError = error.message;
+      console.error("Failed to send email:", error);
+    }
 
-    return new Response(JSON.stringify(emailResponse), {
+    // Log the alert to history
+    const { error: historyError } = await supabase
+      .from("stock_alerts_history")
+      .insert({
+        product_id: productId,
+        product_name: productName,
+        product_sku: sku || null,
+        stock_quantity: currentStock,
+        threshold: threshold,
+        alert_type: alertType,
+        email_sent_to: ownerEmail,
+        email_status: emailStatus,
+      });
+
+    if (historyError) {
+      console.error("Failed to log alert history:", historyError);
+    }
+
+    if (emailStatus === "failed") {
+      throw new Error(emailError || "Failed to send email");
+    }
+
+    return new Response(JSON.stringify({ success: true, logged: !historyError }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
