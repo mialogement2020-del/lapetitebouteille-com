@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Package, Truck, CheckCircle, XCircle, Clock, Loader2, History } from "lucide-react";
+import { Package, Truck, CheckCircle, XCircle, Clock, Loader2, History, MessageSquare } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Collapsible,
   CollapsibleContent,
@@ -25,7 +26,7 @@ interface OrderStatusDialogProps {
   order: AdminOrder | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdateStatus: (orderId: string, newStatus: OrderStatus) => Promise<void>;
+  onUpdateStatus: (orderId: string, newStatus: OrderStatus, notes?: string) => Promise<void>;
   isUpdating: boolean;
 }
 
@@ -73,6 +74,7 @@ const statusFlow: OrderStatus[] = ["pending", "confirmed", "processing", "shippe
 export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, isUpdating }: OrderStatusDialogProps) {
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [notes, setNotes] = useState("");
 
   if (!order) return null;
 
@@ -81,8 +83,9 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
 
   const handleUpdateStatus = async () => {
     if (selectedStatus && order) {
-      await onUpdateStatus(order.id, selectedStatus);
+      await onUpdateStatus(order.id, selectedStatus, notes.trim() || undefined);
       setSelectedStatus(null);
+      setNotes("");
       onOpenChange(false);
     }
   };
@@ -227,6 +230,30 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
                 );
               })}
             </div>
+
+            {/* Notes field - shown when a status is selected */}
+            {selectedStatus && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="h-4 w-4 text-cream/60" />
+                  <label className="text-sm text-cream/60">
+                    Note (optionnelle)
+                  </label>
+                </div>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Ajouter une note pour ce changement de statut..."
+                  className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 resize-none"
+                  rows={2}
+                />
+              </motion.div>
+            )}
           </div>
 
           {/* Actions */}
