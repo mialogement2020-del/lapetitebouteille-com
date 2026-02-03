@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Mail, Send, Clock, RefreshCw, Check, FileText, Save, Plus, X, Users } from "lucide-react";
+import { Calendar, Mail, Send, Clock, RefreshCw, Check, FileText, Save, Plus, X, Users, TestTube } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,7 @@ function isValidEmail(email: string): boolean {
 
 export function WeeklyReportSettings() {
   const [isSending, setIsSending] = useState(false);
+  const [isSendingTest, setIsSendingTest] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [lastSentAt, setLastSentAt] = useState<Date | null>(null);
@@ -77,6 +78,8 @@ export function WeeklyReportSettings() {
   const [recipientEmails, setRecipientEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [testEmail, setTestEmail] = useState("");
+  const [testEmailError, setTestEmailError] = useState("");
 
   // Load existing configuration
   useEffect(() => {
@@ -145,6 +148,43 @@ export function WeeklyReportSettings() {
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddEmail();
+    }
+  };
+
+  const handleSendTest = async () => {
+    const trimmedTestEmail = testEmail.trim().toLowerCase();
+    
+    if (!trimmedTestEmail) {
+      setTestEmailError("Veuillez entrer une adresse email");
+      return;
+    }
+    
+    if (!isValidEmail(trimmedTestEmail)) {
+      setTestEmailError("Adresse email invalide");
+      return;
+    }
+    
+    setTestEmailError("");
+    setIsSendingTest(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("send-weekly-stock-report", {
+        body: { testEmail: trimmedTestEmail },
+      });
+
+      if (error) throw error;
+
+      toast.success("Email de test envoyé", {
+        description: `Le rapport de test a été envoyé à ${trimmedTestEmail}`,
+      });
+      setTestEmail("");
+    } catch (error) {
+      console.error("Error sending test report:", error);
+      toast.error("Erreur lors de l'envoi", {
+        description: "Impossible d'envoyer l'email de test. Réessayez plus tard.",
+      });
+    } finally {
+      setIsSendingTest(false);
     }
   };
 
@@ -439,6 +479,56 @@ export function WeeklyReportSettings() {
             </span>
           </motion.div>
         )}
+
+        {/* Test Email Section */}
+        <div className="bg-cream/5 border border-gold/10 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <TestTube className="h-4 w-4 text-primary" />
+            <Label className="text-cream font-medium">Envoyer un email de test</Label>
+          </div>
+          <p className="text-xs text-cream/50">
+            Testez le rapport en l'envoyant à une seule adresse avant l'envoi global. 
+            L'email de test ne sera pas enregistré dans l'historique.
+          </p>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                type="email"
+                placeholder="votre-email@exemple.com"
+                value={testEmail}
+                onChange={(e) => {
+                  setTestEmail(e.target.value);
+                  setTestEmailError("");
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSendTest();
+                  }
+                }}
+                className="bg-noir border-gold/30 text-cream placeholder:text-cream/40"
+              />
+            </div>
+            <Button
+              onClick={handleSendTest}
+              disabled={isSendingTest || !testEmail.trim()}
+              variant="outline"
+              className="border-primary/50 text-primary hover:bg-primary/10"
+            >
+              {isSendingTest ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <TestTube className="h-4 w-4 mr-2" />
+                  Tester
+                </>
+              )}
+            </Button>
+          </div>
+          {testEmailError && (
+            <p className="text-sm text-red-400">{testEmailError}</p>
+          )}
+        </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gold/10">

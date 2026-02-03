@@ -41,31 +41,52 @@ const handler = async (req: Request): Promise<Response> => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    // Parse request body for optional test email
+    let testEmail: string | null = null;
+    let isTestMode = false;
+    
+    try {
+      const body = await req.json();
+      testEmail = body.testEmail || null;
+      isTestMode = !!testEmail;
+    } catch {
+      // No body or invalid JSON, proceed with normal flow
+    }
+
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get recipient emails from config
-    const { data: configData } = await supabase
-      .from("report_schedule_config")
-      .select("recipient_emails")
-      .limit(1)
-      .single();
-
-    const configuredEmails: string[] = configData?.recipient_emails || [];
-    const ownerEmail = Deno.env.get("OWNER_EMAIL");
+    // Determine recipient emails
+    let recipientEmails: string[];
     
-    // Use configured emails if available, otherwise fall back to OWNER_EMAIL
-    const recipientEmails = configuredEmails.length > 0 
-      ? configuredEmails 
-      : (ownerEmail ? [ownerEmail] : []);
+    if (isTestMode && testEmail) {
+      // Test mode: only send to the specified test email
+      recipientEmails = [testEmail];
+      console.log("Test mode: Sending report to:", testEmail);
+    } else {
+      // Normal mode: get recipient emails from config
+      const { data: configData } = await supabase
+        .from("report_schedule_config")
+        .select("recipient_emails")
+        .limit(1)
+        .single();
 
-    if (recipientEmails.length === 0) {
-      throw new Error("No recipient emails configured and OWNER_EMAIL not set");
+      const configuredEmails: string[] = configData?.recipient_emails || [];
+      const ownerEmail = Deno.env.get("OWNER_EMAIL");
+      
+      // Use configured emails if available, otherwise fall back to OWNER_EMAIL
+      recipientEmails = configuredEmails.length > 0 
+        ? configuredEmails 
+        : (ownerEmail ? [ownerEmail] : []);
+
+      if (recipientEmails.length === 0) {
+        throw new Error("No recipient emails configured and OWNER_EMAIL not set");
+      }
+
+      console.log("Sending report to:", recipientEmails);
     }
-
-    console.log("Sending report to:", recipientEmails);
 
     // Fetch all active products with stock info
     const { data: products, error: productsError } = await supabase
@@ -431,55 +452,60 @@ const handler = async (req: Request): Promise<Response> => {
     let emailId: string | null = null;
 
     try {
+      const subjectPrefix = isTestMode ? "[TEST] " : "";
       emailResponse = await resend.emails.send({
         from: "La Petite Bouteille <rapports@lapetitebouteille.com>",
         to: recipientEmails,
-        subject: `📊 Rapport Hebdomadaire des Stocks - ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s)`,
+        subject: `${subjectPrefix}📊 Rapport Hebdomadaire des Stocks - ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s)`,
         html: emailHtml,
       });
 
       sendStatus = "success";
       emailId = emailResponse?.id || null;
-      console.log(`Weekly stock report sent successfully to ${recipientEmails.length} recipient(s):`, emailResponse);
+      console.log(`Weekly stock report ${isTestMode ? "(TEST) " : ""}sent successfully to ${recipientEmails.length} recipient(s):`, emailResponse);
     } catch (emailError: any) {
       sendStatus = "failed";
       errorMessage = emailError.message || "Unknown email error";
       console.error("Error sending email:", emailError);
     }
 
-    // Log to report history
-    await supabase.from("report_history").insert({
-      report_type: "weekly_stock",
-      recipients: recipientEmails,
-      out_of_stock_count: stats.outOfStock,
-      low_stock_count: stats.lowStock,
-      critical_stock_count: stats.criticalStock,
-      total_alerts_count: stats.outOfStock + stats.lowStock + stats.criticalStock,
-      trend_percentage: stats.trendPercentage,
-      send_status: sendStatus,
-      error_message: errorMessage,
-      email_id: emailId,
-    });
+    // Log to report history (skip for test mode to keep history clean)
+    if (!isTestMode) {
+      await supabase.from("report_history").insert({
+        report_type: "weekly_stock",
+        recipients: recipientEmails,
+        out_of_stock_count: stats.outOfStock,
+        low_stock_count: stats.lowStock,
+        critical_stock_count: stats.criticalStock,
+        total_alerts_count: stats.outOfStock + stats.lowStock + stats.criticalStock,
+        trend_percentage: stats.trendPercentage,
+        send_status: sendStatus,
+        error_message: errorMessage,
+        email_id: emailId,
+      });
+    }
 
-    // Create in-app notification for admins
-    const { data: adminRoles } = await supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "admin");
+    // Create in-app notification for admins (skip for test mode)
+    if (!isTestMode) {
+      const { data: adminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
 
-    if (adminRoles && adminRoles.length > 0) {
-      const notifications = adminRoles.map((role) => ({
-        user_id: role.user_id,
-        title: sendStatus === "success" ? "📊 Rapport hebdomadaire envoyé" : "❌ Échec de l'envoi du rapport",
-        message: sendStatus === "success" 
-          ? `Le rapport de stock a été envoyé par email. ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s).`
-          : `L'envoi du rapport a échoué: ${errorMessage}`,
-        type: "weekly_report",
-        reference_type: "stock_report",
-        is_read: false,
-      }));
+      if (adminRoles && adminRoles.length > 0) {
+        const notifications = adminRoles.map((role) => ({
+          user_id: role.user_id,
+          title: sendStatus === "success" ? "📊 Rapport hebdomadaire envoyé" : "❌ Échec de l'envoi du rapport",
+          message: sendStatus === "success" 
+            ? `Le rapport de stock a été envoyé par email. ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s).`
+            : `L'envoi du rapport a échoué: ${errorMessage}`,
+          type: "weekly_report",
+          reference_type: "stock_report",
+          is_read: false,
+        }));
 
-      await supabase.from("user_notifications").insert(notifications);
+        await supabase.from("user_notifications").insert(notifications);
+      }
     }
 
     // If email failed, still return success for the function but indicate email failure
@@ -490,7 +516,9 @@ const handler = async (req: Request): Promise<Response> => {
         sendStatus,
         errorMessage,
         stats,
-        productsCount: productsList.length
+        productsCount: productsList.length,
+        isTestMode,
+        testEmail: isTestMode ? testEmail : undefined
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
