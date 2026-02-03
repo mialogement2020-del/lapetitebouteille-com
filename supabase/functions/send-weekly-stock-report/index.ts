@@ -425,14 +425,41 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Send the email to all recipients
-    const emailResponse = await resend.emails.send({
-      from: "La Petite Bouteille <rapports@lapetitebouteille.com>",
-      to: recipientEmails,
-      subject: `📊 Rapport Hebdomadaire des Stocks - ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s)`,
-      html: emailHtml,
-    });
+    let emailResponse: any = null;
+    let sendStatus = "pending";
+    let errorMessage: string | null = null;
+    let emailId: string | null = null;
 
-    console.log(`Weekly stock report sent successfully to ${recipientEmails.length} recipient(s):`, emailResponse);
+    try {
+      emailResponse = await resend.emails.send({
+        from: "La Petite Bouteille <rapports@lapetitebouteille.com>",
+        to: recipientEmails,
+        subject: `📊 Rapport Hebdomadaire des Stocks - ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s)`,
+        html: emailHtml,
+      });
+
+      sendStatus = "success";
+      emailId = emailResponse?.id || null;
+      console.log(`Weekly stock report sent successfully to ${recipientEmails.length} recipient(s):`, emailResponse);
+    } catch (emailError: any) {
+      sendStatus = "failed";
+      errorMessage = emailError.message || "Unknown email error";
+      console.error("Error sending email:", emailError);
+    }
+
+    // Log to report history
+    await supabase.from("report_history").insert({
+      report_type: "weekly_stock",
+      recipients: recipientEmails,
+      out_of_stock_count: stats.outOfStock,
+      low_stock_count: stats.lowStock,
+      critical_stock_count: stats.criticalStock,
+      total_alerts_count: stats.outOfStock + stats.lowStock + stats.criticalStock,
+      trend_percentage: stats.trendPercentage,
+      send_status: sendStatus,
+      error_message: errorMessage,
+      email_id: emailId,
+    });
 
     // Create in-app notification for admins
     const { data: adminRoles } = await supabase
@@ -443,8 +470,10 @@ const handler = async (req: Request): Promise<Response> => {
     if (adminRoles && adminRoles.length > 0) {
       const notifications = adminRoles.map((role) => ({
         user_id: role.user_id,
-        title: "📊 Rapport hebdomadaire envoyé",
-        message: `Le rapport de stock a été envoyé par email. ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s).`,
+        title: sendStatus === "success" ? "📊 Rapport hebdomadaire envoyé" : "❌ Échec de l'envoi du rapport",
+        message: sendStatus === "success" 
+          ? `Le rapport de stock a été envoyé par email. ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s).`
+          : `L'envoi du rapport a échoué: ${errorMessage}`,
         type: "weekly_report",
         reference_type: "stock_report",
         is_read: false,
@@ -453,10 +482,13 @@ const handler = async (req: Request): Promise<Response> => {
       await supabase.from("user_notifications").insert(notifications);
     }
 
+    // If email failed, still return success for the function but indicate email failure
     return new Response(
       JSON.stringify({
         success: true,
-        emailSent: true,
+        emailSent: sendStatus === "success",
+        sendStatus,
+        errorMessage,
         stats,
         productsCount: productsList.length
       }),

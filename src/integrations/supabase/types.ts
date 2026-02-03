@@ -776,6 +776,51 @@ export type Database = {
         }
         Relationships: []
       }
+      report_history: {
+        Row: {
+          critical_stock_count: number
+          email_id: string | null
+          error_message: string | null
+          id: string
+          low_stock_count: number
+          out_of_stock_count: number
+          recipients: string[]
+          report_type: string
+          send_status: string
+          sent_at: string
+          total_alerts_count: number
+          trend_percentage: number | null
+        }
+        Insert: {
+          critical_stock_count?: number
+          email_id?: string | null
+          error_message?: string | null
+          id?: string
+          low_stock_count?: number
+          out_of_stock_count?: number
+          recipients?: string[]
+          report_type?: string
+          send_status?: string
+          sent_at?: string
+          total_alerts_count?: number
+          trend_percentage?: number | null
+        }
+        Update: {
+          critical_stock_count?: number
+          email_id?: string | null
+          error_message?: string | null
+          id?: string
+          low_stock_count?: number
+          out_of_stock_count?: number
+          recipients?: string[]
+          report_type?: string
+          send_status?: string
+          sent_at?: string
+          total_alerts_count?: number
+          trend_percentage?: number | null
+        }
+        Relationships: []
+      }
       report_schedule_config: {
         Row: {
           created_at: string | null
