@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { History, CheckCircle, XCircle, Clock, Mail, Users, AlertTriangle, RefreshCw, Calendar, Filter } from "lucide-react";
+import { History, CheckCircle, XCircle, Clock, Mail, Users, AlertTriangle, RefreshCw, Calendar, Filter, Download } from "lucide-react";
+import { convertToCSV, downloadCSV, formatDateForCSV } from "@/lib/csvExport";
+import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -120,6 +122,48 @@ export function ReportHistory() {
   useEffect(() => {
     fetchHistory();
   }, [datePreset, startDate, endDate]);
+
+  const handleExportCSV = () => {
+    if (!history || history.length === 0) {
+      toast({
+        title: "Export impossible",
+        description: "Aucun rapport à exporter",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const columns = [
+      { key: "sent_at" as const, header: "Date d'envoi" },
+      { key: "report_type" as const, header: "Type" },
+      { key: "recipients" as const, header: "Destinataires" },
+      { key: "out_of_stock_count" as const, header: "Ruptures" },
+      { key: "low_stock_count" as const, header: "Stock faible" },
+      { key: "critical_stock_count" as const, header: "Critique" },
+      { key: "total_alerts_count" as const, header: "Total alertes" },
+      { key: "trend_percentage" as const, header: "Tendance (%)" },
+      { key: "send_status" as const, header: "Statut" },
+      { key: "error_message" as const, header: "Erreur" },
+    ];
+
+    const exportData = history.map((item) => ({
+      ...item,
+      sent_at: formatDateForCSV(item.sent_at),
+      recipients: item.recipients.join(", "),
+      send_status: item.send_status === "success" ? "Envoyé" : item.send_status === "failed" ? "Échec" : "En cours",
+      trend_percentage: item.trend_percentage ?? 0,
+      error_message: item.error_message || "",
+    }));
+
+    const csv = convertToCSV(exportData, columns);
+    const filename = `historique-rapports-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    downloadCSV(csv, filename);
+
+    toast({
+      title: "Export réussi",
+      description: `${history.length} rapport(s) exporté(s) en CSV`,
+    });
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -292,14 +336,26 @@ export function ReportHistory() {
           <History className="h-4 w-4 text-primary" />
           Historique des rapports ({history.length})
         </h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={fetchHistory}
-          className="text-cream/60 hover:text-cream"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={history.length === 0}
+            className="border-gold/30 text-cream hover:bg-gold/10"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exporter CSV
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchHistory}
+            className="text-cream/60 hover:text-cream"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {history.length === 0 ? (
