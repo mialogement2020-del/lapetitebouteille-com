@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -38,6 +38,7 @@ import { StockNotifications } from "@/components/admin/StockNotifications";
 import { StockAlertsHistory } from "@/components/admin/StockAlertsHistory";
 import { StockAlertsChart } from "@/components/admin/StockAlertsChart";
 import { StockAlertSettings } from "@/components/admin/StockAlertSettings";
+import { StockAlertsPDFExport } from "@/components/admin/StockAlertsPDFExport";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -91,6 +92,8 @@ const Admin = () => {
   const [isPromoCodeDialogOpen, setIsPromoCodeDialogOpen] = useState(false);
   const [selectedReview, setSelectedReview] = useState<AdminReview | null>(null);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [stockAlertPeriod, setStockAlertPeriod] = useState("30");
+  const stockAlertsChartRef = useRef<HTMLDivElement>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -567,8 +570,14 @@ const Admin = () => {
               </TabsContent>
 
               <TabsContent value="stock-alerts" className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-cream">Gestion des Alertes de Stock</h2>
+                  <StockAlertsPDFExport chartRef={stockAlertsChartRef} period={stockAlertPeriod} />
+                </div>
                 <StockAlertSettings onSettingsApplied={() => refetchProducts()} />
-                <StockAlertsChart />
+                <div ref={stockAlertsChartRef}>
+                  <StockAlertsChart />
+                </div>
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <StockAlertsHistory />
                 </div>
