@@ -31,6 +31,7 @@ import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
 import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
 import { ReviewModerationDialog } from "@/components/admin/ReviewModerationDialog";
+import { LowStockDashboard } from "@/components/admin/LowStockDashboard";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -437,7 +438,15 @@ const Admin = () => {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="performance">
+              <TabsContent value="performance" className="space-y-8">
+                <LowStockDashboard 
+                  products={products} 
+                  isLoading={isLoadingProducts}
+                  onEditProduct={(product) => {
+                    setSelectedProduct(product);
+                    setIsProductDialogOpen(true);
+                  }}
+                />
                 <PerformanceCharts orders={orders} products={products} />
               </TabsContent>
 
