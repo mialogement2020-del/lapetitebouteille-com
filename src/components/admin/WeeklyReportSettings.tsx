@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ReportPreview } from "./ReportPreview";
 
 // Frequency options for the report
 const FREQUENCY_OPTIONS = [
@@ -440,6 +441,7 @@ export function WeeklyReportSettings() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gold/10">
+          <ReportPreview />
           <Button
             onClick={handleSendNow}
             disabled={isSending}
