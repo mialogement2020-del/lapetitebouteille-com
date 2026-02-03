@@ -46,6 +46,27 @@ const handler = async (req: Request): Promise<Response> => {
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+    // Get recipient emails from config
+    const { data: configData } = await supabase
+      .from("report_schedule_config")
+      .select("recipient_emails")
+      .limit(1)
+      .single();
+
+    const configuredEmails: string[] = configData?.recipient_emails || [];
+    const ownerEmail = Deno.env.get("OWNER_EMAIL");
+    
+    // Use configured emails if available, otherwise fall back to OWNER_EMAIL
+    const recipientEmails = configuredEmails.length > 0 
+      ? configuredEmails 
+      : (ownerEmail ? [ownerEmail] : []);
+
+    if (recipientEmails.length === 0) {
+      throw new Error("No recipient emails configured and OWNER_EMAIL not set");
+    }
+
+    console.log("Sending report to:", recipientEmails);
+
     // Fetch all active products with stock info
     const { data: products, error: productsError } = await supabase
       .from("products")
@@ -175,11 +196,6 @@ const handler = async (req: Request): Promise<Response> => {
     const lowStockTopSellers = productsList.filter(p => 
       products?.find(prod => prod.id && topSellerIds.includes(prod.id) && prod.name === p.name)
     );
-
-    const ownerEmail = Deno.env.get("OWNER_EMAIL");
-    if (!ownerEmail) {
-      throw new Error("OWNER_EMAIL not configured");
-    }
 
     // Format date for display
     const formatDate = (date: Date) => date.toLocaleDateString("fr-FR", {
@@ -408,15 +424,15 @@ const handler = async (req: Request): Promise<Response> => {
 </html>
     `;
 
-    // Send the email
+    // Send the email to all recipients
     const emailResponse = await resend.emails.send({
       from: "La Petite Bouteille <rapports@lapetitebouteille.com>",
-      to: [ownerEmail],
+      to: recipientEmails,
       subject: `📊 Rapport Hebdomadaire des Stocks - ${stats.outOfStock} rupture(s), ${stats.lowStock} stock(s) faible(s)`,
       html: emailHtml,
     });
 
-    console.log("Weekly stock report sent successfully:", emailResponse);
+    console.log(`Weekly stock report sent successfully to ${recipientEmails.length} recipient(s):`, emailResponse);
 
     // Create in-app notification for admins
     const { data: adminRoles } = await supabase
