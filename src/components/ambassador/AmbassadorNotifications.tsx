@@ -57,10 +57,12 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
     clearAll,
   } = useAmbassadorNotifications(enabled);
 
+  // Animation duration in milliseconds (configurable)
+  const ANIMATION_DURATION_MS = 5000;
+
   // Detect new notifications arriving
   useEffect(() => {
     if (notifications.length > 0 && previousCountRef.current > 0) {
-      const currentIds = new Set(notifications.map(n => n.id));
       const newIds = notifications
         .filter(n => !n.isRead)
         .slice(0, notifications.length - previousCountRef.current)
@@ -70,11 +72,11 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
         setNewNotificationIds(new Set(newIds));
         setShowNewIndicator(true);
         
-        // Clear the new indicator after 3 seconds
+        // Clear the new indicator after animation duration
         const timer = setTimeout(() => {
           setShowNewIndicator(false);
           setNewNotificationIds(new Set());
-        }, 3000);
+        }, ANIMATION_DURATION_MS);
         
         return () => clearTimeout(timer);
       }
