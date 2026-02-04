@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   Settings
 } from "lucide-react";
+import { AmbassadorNotifications } from "@/components/ambassador/AmbassadorNotifications";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -84,12 +85,14 @@ export default function Ambassadeur() {
                 <p className="text-cream/60">Gérez votre réseau et vos gains</p>
               </div>
             </div>
-            <Button variant="outline" className="border-gold/30 text-cream hover:bg-cream/10">
-              <Settings className="h-4 w-4 mr-2" />
-              Paramètres
-            </Button>
+            <div className="flex items-center gap-3">
+              <AmbassadorNotifications />
+              <Button variant="outline" className="border-gold/30 text-cream hover:bg-cream/10">
+                <Settings className="h-4 w-4 mr-2" />
+                Paramètres
+              </Button>
+            </div>
           </motion.div>
-
           {/* Main Content */}
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Left Column - Referral Link */}
