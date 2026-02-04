@@ -56,12 +56,12 @@ interface OrdersTableProps {
 }
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; icon: any }> = {
-  pending: { label: "En attente", color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30", icon: Clock },
-  confirmed: { label: "Confirmée", color: "bg-blue-500/20 text-blue-500 border-blue-500/30", icon: CheckCircle },
-  processing: { label: "En préparation", color: "bg-purple-500/20 text-purple-500 border-purple-500/30", icon: Package },
-  shipped: { label: "Expédiée", color: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30", icon: Truck },
-  delivered: { label: "Livrée", color: "bg-green-500/20 text-green-500 border-green-500/30", icon: CheckCircle },
-  cancelled: { label: "Annulée", color: "bg-red-500/20 text-red-500 border-red-500/30", icon: XCircle },
+  pending: { label: "En attente", color: "bg-warning/20 text-warning border-warning/30", icon: Clock },
+  confirmed: { label: "Confirmée", color: "bg-info/20 text-info border-info/30", icon: CheckCircle },
+  processing: { label: "En préparation", color: "bg-primary/20 text-primary border-primary/30", icon: Package },
+  shipped: { label: "Expédiée", color: "bg-info/20 text-info border-info/30", icon: Truck },
+  delivered: { label: "Livrée", color: "bg-success/20 text-success border-success/30", icon: CheckCircle },
+  cancelled: { label: "Annulée", color: "bg-destructive/20 text-destructive border-destructive/30", icon: XCircle },
 };
 
 export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: OrdersTableProps) {

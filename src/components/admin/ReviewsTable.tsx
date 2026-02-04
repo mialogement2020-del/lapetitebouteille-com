@@ -151,10 +151,10 @@ export function ReviewsTable({
     <div className="space-y-4">
       {/* Stats */}
       {pendingCount > 0 && (
-        <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/30 flex items-center gap-3">
-          <MessageSquare className="h-5 w-5 text-orange-500" />
+        <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 flex items-center gap-3">
+          <MessageSquare className="h-5 w-5 text-warning" />
           <p className="text-cream text-sm">
-            <span className="font-semibold text-orange-500">{pendingCount}</span> avis en attente de modération
+            <span className="font-semibold text-warning">{pendingCount}</span> avis en attente de modération
           </p>
         </div>
       )}
@@ -249,7 +249,7 @@ export function ReviewsTable({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
                   className={`border-gold/10 hover:bg-cream/5 cursor-pointer group ${
-                    !review.is_approved ? "bg-orange-500/5" : ""
+                    !review.is_approved ? "bg-warning/5" : ""
                   }`}
                   onClick={() => onViewReview(review)}
                 >
@@ -285,7 +285,7 @@ export function ReviewsTable({
                         {review.comment || "Aucun commentaire"}
                       </p>
                       {review.is_verified_purchase && (
-                        <Badge variant="outline" className="mt-1 text-[10px] border-green-500/30 text-green-500">
+                        <Badge variant="outline" className="mt-1 text-[10px] border-info/30 text-info">
                           Achat vérifié
                         </Badge>
                       )}
@@ -294,8 +294,8 @@ export function ReviewsTable({
                   <TableCell className="text-center">
                     <Badge className={`${
                       review.is_approved 
-                        ? "bg-green-500/20 text-green-500 border-green-500/30" 
-                        : "bg-orange-500/20 text-orange-500 border-orange-500/30"
+                        ? "bg-success/20 text-success border-success/30" 
+                        : "bg-warning/20 text-warning border-warning/30"
                     } border`}>
                       {review.is_approved ? "Approuvé" : "En attente"}
                     </Badge>
@@ -327,7 +327,7 @@ export function ReviewsTable({
                             e.stopPropagation();
                             onApproveReview(review);
                           }}
-                          className="h-8 w-8 text-green-400 hover:text-green-500 hover:bg-green-500/10"
+                          className="h-8 w-8 text-success hover:text-success hover:bg-success/10"
                           title="Approuver"
                         >
                           <CheckCircle className="h-4 w-4" />
@@ -340,7 +340,7 @@ export function ReviewsTable({
                           e.stopPropagation();
                           onRejectReview(review);
                         }}
-                        className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-500/10"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                         title={review.is_approved ? "Désapprouver" : "Supprimer"}
                       >
                         <XCircle className="h-4 w-4" />
