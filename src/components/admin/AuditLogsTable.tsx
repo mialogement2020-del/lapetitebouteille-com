@@ -22,6 +22,8 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
+  FileSpreadsheet,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -55,7 +57,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuditLogs, AuditLog, AuditAction, AuditEntityType } from "@/hooks/useAuditLogs";
+import { exportAuditLogsToCSV, exportAuditLogsToPDF } from "@/lib/auditExport";
+import { toast } from "sonner";
+import { logAuditAction } from "@/hooks/useAuditLogs";
 
 const actionIcons: Record<string, React.ElementType> = {
   create: Plus,
@@ -122,12 +133,51 @@ export function AuditLogsTable() {
   const [actionFilter, setActionFilter] = useState<AuditAction | "all">("all");
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { logs, isLoading, totalCount, refetch } = useAuditLogs({
     entityType: entityFilter === "all" ? undefined : entityFilter,
     action: actionFilter === "all" ? undefined : actionFilter,
     limit: 100,
   });
+
+  const handleExportCSV = async () => {
+    if (logs.length === 0) {
+      toast.error("Aucune donnée à exporter");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      exportAuditLogsToCSV(logs);
+      await logAuditAction("export", "report", undefined, "Export CSV - Journal d'audit");
+      toast.success("Export CSV généré avec succès");
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      toast.error("Erreur lors de l'export CSV");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (logs.length === 0) {
+      toast.error("Aucune donnée à exporter");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      exportAuditLogsToPDF(logs);
+      await logAuditAction("export", "report", undefined, "Export PDF - Journal d'audit");
+      toast.success("Rapport PDF généré avec succès");
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast.error("Erreur lors de l'export PDF");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const ActionIcon = (action: string) => {
     const Icon = actionIcons[action] || History;
@@ -244,6 +294,41 @@ export function AuditLogsTable() {
                   <RefreshCcw className="h-3 w-3 mr-1" />
                   Actualiser
                 </Button>
+
+                {/* Export dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isExporting || logs.length === 0}
+                      className="h-8 text-xs border-gold/30 text-cream hover:bg-gold/10"
+                    >
+                      {isExporting ? (
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <Download className="h-3 w-3 mr-1" />
+                      )}
+                      Exporter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-noir border-gold/30">
+                    <DropdownMenuItem
+                      onClick={handleExportCSV}
+                      className="text-cream hover:bg-gold/10 cursor-pointer"
+                    >
+                      <FileSpreadsheet className="h-4 w-4 mr-2 text-success" />
+                      Exporter en CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleExportPDF}
+                      className="text-cream hover:bg-gold/10 cursor-pointer"
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-destructive" />
+                      Exporter en PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Table */}
