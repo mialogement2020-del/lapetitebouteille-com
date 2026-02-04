@@ -47,9 +47,9 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
   const getTrendIcon = (trend: StockPrediction["trend"]) => {
     switch (trend) {
       case "increasing":
-        return <TrendingUp className="h-4 w-4 text-green-500" />;
+        return <TrendingUp className="h-4 w-4 text-success" />;
       case "decreasing":
-        return <TrendingDown className="h-4 w-4 text-red-500" />;
+        return <TrendingDown className="h-4 w-4 text-destructive" />;
       default:
         return <Minus className="h-4 w-4 text-cream/50" />;
     }
@@ -60,11 +60,11 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
       case "critical":
         return <Badge variant="destructive">Critique</Badge>;
       case "warning":
-        return <Badge variant="outline" className="border-orange-500/50 text-orange-400">Attention</Badge>;
+        return <Badge variant="outline" className="border-warning/50 text-warning">Attention</Badge>;
       case "moderate":
-        return <Badge variant="outline" className="border-yellow-500/50 text-yellow-400">Modéré</Badge>;
+        return <Badge variant="outline" className="border-info/50 text-info">Modéré</Badge>;
       default:
-        return <Badge variant="outline" className="border-green-500/50 text-green-400">Stable</Badge>;
+        return <Badge variant="outline" className="border-success/50 text-success">Stable</Badge>;
     }
   };
 
@@ -117,7 +117,7 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
                   </Badge>
                 )}
                 {warningCount > 0 && (
-                  <Badge variant="outline" className="border-orange-500/50 text-orange-400 text-xs">
+                  <Badge variant="outline" className="border-warning/50 text-warning text-xs">
                     {warningCount} attention
                   </Badge>
                 )}
@@ -235,11 +235,11 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
                                     <div className="flex items-center gap-1">
                                       <Clock className={`h-3.5 w-3.5 ${
                                         prediction.urgency === "critical" ? "text-destructive" :
-                                        prediction.urgency === "warning" ? "text-orange-500" : ""
+                                        prediction.urgency === "warning" ? "text-warning" : ""
                                       }`} />
                                       <span className={`font-medium ${
                                         prediction.urgency === "critical" ? "text-destructive" :
-                                        prediction.urgency === "warning" ? "text-orange-400" : ""
+                                        prediction.urgency === "warning" ? "text-warning" : ""
                                       }`}>
                                         {formatDaysUntilStockout(prediction.daysUntilStockout)}
                                       </span>
