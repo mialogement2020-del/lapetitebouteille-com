@@ -108,8 +108,15 @@ const Admin = () => {
 
   // Handle status update
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus, notes?: string) => {
+    const order = orders.find(o => o.id === orderId);
     try {
-      await updateOrderStatus.mutateAsync({ orderId, newStatus, notes });
+      await updateOrderStatus.mutateAsync({ 
+        orderId, 
+        newStatus, 
+        notes,
+        orderNumber: order?.order_number,
+        previousStatus: order?.status || undefined
+      });
       toast({
         title: "Statut mis à jour",
         description: notes 
@@ -130,7 +137,16 @@ const Admin = () => {
   const handleSaveProduct = async (data: ProductFormData, id?: string) => {
     try {
       if (id) {
-        await updateProduct.mutateAsync({ id, data });
+        const oldProduct = products.find(p => p.id === id);
+        await updateProduct.mutateAsync({ 
+          id, 
+          data,
+          oldData: oldProduct ? {
+            name: oldProduct.name,
+            price: oldProduct.price,
+            stock_quantity: oldProduct.stock_quantity || 0
+          } : undefined
+        });
         toast({
           title: "Produit modifié",
           description: `Le produit "${data.name}" a été mis à jour.`,
@@ -157,7 +173,7 @@ const Admin = () => {
   // Handle product delete
   const handleDeleteProduct = async (product: AdminProduct) => {
     try {
-      await deleteProduct.mutateAsync(product.id);
+      await deleteProduct.mutateAsync({ id: product.id, productName: product.name });
       toast({
         title: "Produit supprimé",
         description: `Le produit "${product.name}" a été supprimé.`,
@@ -175,7 +191,8 @@ const Admin = () => {
   const handleSaveCategory = async (data: CategoryFormData, id?: string) => {
     try {
       if (id) {
-        await updateCategory.mutateAsync({ id, data });
+        const oldCategory = allCategories.find(c => c.id === id);
+        await updateCategory.mutateAsync({ id, data, oldName: oldCategory?.name });
         toast({
           title: "Catégorie modifiée",
           description: `La catégorie "${data.name}" a été mise à jour.`,
@@ -202,7 +219,7 @@ const Admin = () => {
   // Handle category delete
   const handleDeleteCategory = async (category: AdminCategory) => {
     try {
-      await deleteCategory.mutateAsync(category.id);
+      await deleteCategory.mutateAsync({ id: category.id, categoryName: category.name });
       toast({
         title: "Catégorie supprimée",
         description: `La catégorie "${category.name}" a été supprimée.`,
@@ -220,7 +237,8 @@ const Admin = () => {
   const handleSavePromoCode = async (data: PromoCodeFormData, id?: string) => {
     try {
       if (id) {
-        await updatePromoCode.mutateAsync({ id, data });
+        const oldPromo = promoCodes.find(p => p.id === id);
+        await updatePromoCode.mutateAsync({ id, data, oldCode: oldPromo?.code });
         toast({
           title: "Code promo modifié",
           description: `Le code "${data.code}" a été mis à jour.`,
@@ -247,7 +265,7 @@ const Admin = () => {
   // Handle promo code delete
   const handleDeletePromoCode = async (promoCode: AdminPromoCode) => {
     try {
-      await deletePromoCode.mutateAsync(promoCode.id);
+      await deletePromoCode.mutateAsync({ id: promoCode.id, promoCode: promoCode.code });
       toast({
         title: "Code promo supprimé",
         description: `Le code "${promoCode.code}" a été supprimé.`,
@@ -264,7 +282,10 @@ const Admin = () => {
   // Handle review approval
   const handleApproveReview = async (review: AdminReview) => {
     try {
-      await approveReview.mutateAsync(review.id);
+      await approveReview.mutateAsync({ 
+        reviewId: review.id, 
+        productName: review.product?.name 
+      });
       toast({
         title: "Avis approuvé",
         description: "L'avis a été publié avec succès.",
@@ -282,7 +303,10 @@ const Admin = () => {
   // Handle review rejection/deletion
   const handleRejectReview = async (review: AdminReview) => {
     try {
-      await deleteReview.mutateAsync(review.id);
+      await deleteReview.mutateAsync({ 
+        reviewId: review.id, 
+        productName: review.product?.name 
+      });
       toast({
         title: review.is_approved ? "Avis désapprouvé" : "Avis supprimé",
         description: review.is_approved 
