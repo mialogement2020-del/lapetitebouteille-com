@@ -1,5 +1,4 @@
-import { motion } from "framer-motion";
-import { Star, CheckCircle, XCircle, User, ShoppingBag, Calendar, Loader2 } from "lucide-react";
+import { Star, CheckCircle, XCircle, ShoppingBag, Calendar, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
