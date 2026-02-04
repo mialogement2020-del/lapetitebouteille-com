@@ -13,7 +13,8 @@ import {
   Ticket,
   MessageSquare,
   Bell,
-  History
+  History,
+  RefreshCw
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -490,6 +491,13 @@ const Admin = () => {
                   )}
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="restock"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Réappro.
+                </TabsTrigger>
+                <TabsTrigger 
                   value="stock-alerts"
                   className="data-[state=active]:bg-primary data-[state=active]:text-noir"
                 >
@@ -506,6 +514,10 @@ const Admin = () => {
               </TabsList>
 
               <TabsContent value="performance" className="space-y-8">
+                <PerformanceCharts orders={orders} products={products} />
+              </TabsContent>
+
+              <TabsContent value="restock" className="space-y-8">
                 <LowStockDashboard 
                   products={products} 
                   isLoading={isLoadingProducts}
@@ -515,7 +527,6 @@ const Admin = () => {
                   }}
                   restockProduct={restockProduct}
                 />
-                <PerformanceCharts orders={orders} products={products} />
               </TabsContent>
 
               <TabsContent value="orders">
