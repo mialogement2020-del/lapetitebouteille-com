@@ -10,6 +10,7 @@ import {
   Settings
 } from "lucide-react";
 import { AmbassadorNotifications } from "@/components/ambassador/AmbassadorNotifications";
+import { PushNotificationSettings } from "@/components/ambassador/PushNotificationSettings";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -95,8 +96,8 @@ export default function Ambassadeur() {
           </motion.div>
           {/* Main Content */}
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column - Referral Link */}
-            <div className="lg:col-span-1 order-2 lg:order-1">
+            {/* Left Column - Referral Link & Push Settings */}
+            <div className="lg:col-span-1 order-2 lg:order-1 space-y-6">
               {referralCodeLoading ? (
                 <div className="h-80 rounded-xl bg-noir-light/50 animate-pulse" />
               ) : referralCode ? (
@@ -110,6 +111,9 @@ export default function Ambassadeur() {
                   }}
                 />
               ) : null}
+              
+              {/* Push Notification Settings */}
+              <PushNotificationSettings />
             </div>
 
             {/* Right Column - Dashboard Tabs */}
