@@ -154,7 +154,10 @@ export function useAuditLogs(options: UseAuditLogsOptions = {}) {
   useEffect(() => {
     fetchLogs();
     fetchUniqueUsers();
+  }, [fetchLogs, fetchUniqueUsers]);
 
+  // Separate effect for realtime subscription to avoid infinite loops
+  useEffect(() => {
     const channel = supabase
       .channel("audit-logs-realtime")
       .on(
@@ -180,9 +183,12 @@ export function useAuditLogs(options: UseAuditLogsOptions = {}) {
           }
           setTotalCount((prev) => prev + 1);
           
-          // Update unique users if new email
-          if (newLog.user_email && !uniqueUsers.includes(newLog.user_email)) {
-            setUniqueUsers((prev) => [...prev, newLog.user_email!]);
+          // Update unique users if new email (use functional update to avoid stale closure)
+          if (newLog.user_email) {
+            setUniqueUsers((prev) => {
+              if (prev.includes(newLog.user_email!)) return prev;
+              return [...prev, newLog.user_email!];
+            });
           }
         }
       )
@@ -191,7 +197,7 @@ export function useAuditLogs(options: UseAuditLogsOptions = {}) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchLogs, fetchUniqueUsers, entityType, action, limit, page, dateFrom, dateTo, userEmail, uniqueUsers]);
+  }, [entityType, action, limit, page, dateFrom, dateTo, userEmail]);
 
   const totalPages = Math.ceil(totalCount / limit);
 
