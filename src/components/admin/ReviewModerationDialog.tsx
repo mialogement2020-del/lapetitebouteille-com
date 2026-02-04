@@ -109,13 +109,13 @@ export function ReviewModerationDialog({
           <div className="flex flex-wrap gap-2">
             <Badge className={`${
               review.is_approved 
-                ? "bg-green-500/20 text-green-500 border-green-500/30" 
-                : "bg-orange-500/20 text-orange-500 border-orange-500/30"
+                ? "bg-success/20 text-success border-success/30" 
+                : "bg-warning/20 text-warning border-warning/30"
             } border`}>
               {review.is_approved ? "Approuvé" : "En attente de modération"}
             </Badge>
             {review.is_verified_purchase && (
-              <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/30 border">
+              <Badge className="bg-info/20 text-info border-info/30 border">
                 <ShoppingBag className="h-3 w-3 mr-1" />
                 Achat vérifié
               </Badge>
@@ -161,7 +161,7 @@ export function ReviewModerationDialog({
               <>
                 <Button
                   variant="outline"
-                  className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-500"
+                  className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10"
                   onClick={handleReject}
                   disabled={isUpdating}
                 >
@@ -175,7 +175,7 @@ export function ReviewModerationDialog({
                   )}
                 </Button>
                 <Button
-                  className="flex-1 bg-green-600 text-white hover:bg-green-700"
+                  className="flex-1 bg-success text-success-foreground hover:bg-success/90"
                   onClick={handleApprove}
                   disabled={isUpdating}
                 >
@@ -192,7 +192,7 @@ export function ReviewModerationDialog({
             ) : (
               <Button
                 variant="outline"
-                className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-500"
+                className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10"
                 onClick={handleReject}
                 disabled={isUpdating}
               >
