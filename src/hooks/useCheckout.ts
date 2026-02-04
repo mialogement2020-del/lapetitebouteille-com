@@ -8,100 +8,31 @@ import type { AddressFormData } from "@/components/checkout/AddressForm";
 import type { PaymentMethod } from "@/components/checkout/PaymentMethodSelect";
 import type { AppliedCode } from "@/components/checkout/UnifiedCodeInput";
 
-// Commission rates for each level
-const COMMISSION_RATES = [
-  { level: 1, rate: 8 },
-  { level: 2, rate: 4 },
-  { level: 3, rate: 2 },
-];
-
-// Function to generate MLM commissions for all levels
+// Generate MLM commissions using atomic server-side function
 async function generateMLMCommissions(orderId: string, referrerId: string, orderTotal: number) {
-  let currentReferrerId: string | null = referrerId;
-  
-  for (const { level, rate } of COMMISSION_RATES) {
-    if (!currentReferrerId) break;
-
-    // Check if this referrer has a bonus rate from their rank
-    const { data: userRank } = await supabase
-      .from("user_ranks")
-      .select("current_rank")
-      .eq("user_id", currentReferrerId)
-      .single();
-
-    let bonusRate = 0;
-    if (userRank?.current_rank) {
-      const { data: rankConfig } = await supabase
-        .from("rank_config")
-        .select("bonus_percentage")
-        .eq("rank", userRank.current_rank)
-        .single();
-      bonusRate = rankConfig?.bonus_percentage || 0;
-    }
-
-    const effectiveRate = rate + (level === 1 ? bonusRate : 0);
-    const commissionAmount = (orderTotal * effectiveRate) / 100;
-
-    // Create the commission record
-    const { data: commission } = await supabase.from("commissions").insert({
-      order_id: orderId,
-      beneficiary_id: currentReferrerId,
-      level,
-      commission_rate: effectiveRate,
-      bonus_rate: level === 1 ? bonusRate : 0,
-      order_amount: orderTotal,
-      commission_amount: commissionAmount,
-      status: "pending",
-    }).select().single();
-
-    // Update wallet pending balance
-    const { data: wallet } = await supabase
-      .from("wallets")
-      .select("id, pending_balance")
-      .eq("user_id", currentReferrerId)
-      .single();
-
-    if (wallet) {
-      await supabase
-        .from("wallets")
-        .update({
-          pending_balance: (wallet.pending_balance || 0) + commissionAmount,
-        })
-        .eq("id", wallet.id);
-
-      // Create wallet transaction
-      await supabase.from("wallet_transactions").insert({
-        wallet_id: wallet.id,
-        user_id: currentReferrerId,
-        type: "commission",
-        amount: commissionAmount,
-        balance_after: (wallet.pending_balance || 0) + commissionAmount,
-        reference_type: "order",
-        reference_id: orderId,
-        description: `Commission niveau ${level} (${effectiveRate}%)`,
-      });
-    }
-
-    // Create notification for the sponsor
-    const formatPrice = (price: number) => new Intl.NumberFormat("fr-FR").format(price);
-    await supabase.from("user_notifications").insert({
-      user_id: currentReferrerId,
-      type: "commission",
-      title: `🎉 Nouvelle commission niveau ${level}`,
-      message: `Vous avez reçu ${formatPrice(commissionAmount)} FCFA de commission (${effectiveRate}%) suite à une commande de votre ${level === 1 ? "filleul direct" : level === 2 ? "filleul de niveau 2" : "filleul de niveau 3"}.`,
-      reference_type: "commission",
-      reference_id: commission?.id || null,
+  try {
+    const { data, error } = await supabase.rpc('generate_mlm_commissions', {
+      _order_id: orderId,
+      _referrer_id: referrerId,
+      _order_total: orderTotal
     });
 
-    // Get the next referrer up the chain
-    const { data: relationship } = await supabase
-      .from("referral_relationships")
-      .select("referrer_id")
-      .eq("referred_id", currentReferrerId)
-      .eq("level", 1)
-      .single();
+    if (error) {
+      console.error('Commission generation error:', error);
+      return { success: false, error: error.message };
+    }
 
-    currentReferrerId = relationship?.referrer_id || null;
+    // Type-safe response handling
+    const result = data as { success?: boolean; error?: string; commissions?: unknown[] } | null;
+    if (result && !result.success) {
+      console.error('Commission generation failed:', result.error);
+      return { success: false, error: result.error };
+    }
+
+    return { success: true, commissions: result?.commissions || [] };
+  } catch (error: any) {
+    console.error('Error generating commissions:', error);
+    return { success: false, error: error.message };
   }
 }
 
@@ -249,33 +180,14 @@ export function useCheckout() {
 
       if (itemsError) throw itemsError;
 
-      // Send confirmation email if email is provided
+      // Send confirmation email - now uses secure server-side data fetching
       const customerEmail = addressData.email?.trim();
       if (customerEmail) {
         try {
+          // The edge function now securely fetches order data from the database
           const emailResponse = await supabase.functions.invoke('send-order-confirmation', {
             body: {
-              email: customerEmail,
               orderNumber,
-              customerName: addressData.fullName,
-              items: orderItems.map(item => ({
-                product_name: item.product_name,
-                quantity: item.quantity,
-                unit_price: item.unit_price,
-                total_price: item.total_price,
-              })),
-              subtotal,
-              discountAmount,
-              promoCode: appliedCode?.type === "promo" ? appliedCode.data.code : undefined,
-              deliveryFee,
-              total,
-              shippingAddress: {
-                city: cityLabel,
-                neighborhood: addressData.neighborhood || '',
-                street: addressData.streetAddress,
-                phone: addressData.phone,
-              },
-              paymentMethod: method,
             },
           });
           

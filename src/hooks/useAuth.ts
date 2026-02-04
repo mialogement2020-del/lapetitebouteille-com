@@ -114,9 +114,9 @@ export function useAuth() {
         console.error("Profile creation error:", profileError);
       }
 
-      // Handle referral code if provided
+      // Handle referral code using secure server-side function
       if (options?.referralCode) {
-        await processReferralCode(data.user.id, options.referralCode);
+        await processReferralCodeSecure(options.referralCode);
       }
     }
 
@@ -152,30 +152,32 @@ export function useAuth() {
   };
 }
 
-async function processReferralCode(userId: string, code: string) {
+// Secure server-side referral code processing using RPC
+async function processReferralCodeSecure(code: string) {
   try {
-    // Find the referrer by code
-    const { data: referralCode } = await supabase
-      .from("referral_codes")
-      .select("user_id, total_signups")
-      .or(`code.eq.${code},custom_code.eq.${code}`)
-      .eq("is_active", true)
-      .single();
+    // Sanitize input - only allow alphanumeric, hyphen, underscore
+    const sanitizedCode = code.replace(/[^a-zA-Z0-9_-]/g, '');
+    
+    // If sanitization changed the code, it's invalid
+    if (sanitizedCode !== code || !sanitizedCode) {
+      console.error("Invalid referral code format");
+      return;
+    }
 
-    if (referralCode && referralCode.user_id !== userId) {
-      // Create the referral relationship
-      await supabase.from("referral_relationships").insert({
-        referrer_id: referralCode.user_id,
-        referred_id: userId,
-        referral_code_used: code,
-        level: 1,
-      });
+    // Use secure server-side function to create referral relationship
+    const { data, error } = await supabase.rpc('create_referral_relationship', {
+      _referral_code: sanitizedCode
+    });
 
-      // Update referral code stats
-      await supabase
-        .from("referral_codes")
-        .update({ total_signups: (referralCode.total_signups || 0) + 1 })
-        .eq("user_id", referralCode.user_id);
+    if (error) {
+      console.error("Error processing referral code:", error);
+      return;
+    }
+
+    // Type-safe check for response
+    const result = data as { success?: boolean; error?: string } | null;
+    if (result && !result.success) {
+      console.warn("Referral code processing failed:", result.error);
     }
   } catch (error) {
     console.error("Error processing referral code:", error);

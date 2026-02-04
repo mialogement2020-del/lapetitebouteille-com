@@ -406,6 +406,7 @@ export type Database = {
           guest_phone: string | null
           id: string
           notes: string | null
+          order_lookup_token: string | null
           order_number: string
           payment_method: Database["public"]["Enums"]["payment_method"] | null
           payment_reference: string | null
@@ -433,6 +434,7 @@ export type Database = {
           guest_phone?: string | null
           id?: string
           notes?: string | null
+          order_lookup_token?: string | null
           order_number: string
           payment_method?: Database["public"]["Enums"]["payment_method"] | null
           payment_reference?: string | null
@@ -460,6 +462,7 @@ export type Database = {
           guest_phone?: string | null
           id?: string
           notes?: string | null
+          order_lookup_token?: string | null
           order_number?: string
           payment_method?: Database["public"]["Enums"]["payment_method"] | null
           payment_reference?: string | null
@@ -1256,6 +1259,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_referral_relationship: {
+        Args: { _referral_code: string }
+        Returns: Json
+      }
+      generate_mlm_commissions: {
+        Args: { _order_id: string; _order_total: number; _referrer_id: string }
+        Returns: Json
+      }
       generate_order_number: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_user_rank: {
