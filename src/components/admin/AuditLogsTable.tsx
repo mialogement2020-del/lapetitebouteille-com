@@ -77,6 +77,7 @@ import { useAuditLogs, AuditLog, AuditAction, AuditEntityType } from "@/hooks/us
 import { exportAuditLogsToCSV, exportAuditLogsToPDF } from "@/lib/auditExport";
 import { toast } from "sonner";
 import { logAuditAction } from "@/hooks/useAuditLogs";
+import { AuditLogDiffView } from "./AuditLogDiffView";
 
 const actionIcons: Record<string, React.ElementType> = {
   create: Plus,
@@ -655,28 +656,14 @@ export function AuditLogsTable() {
                 )}
               </div>
 
-              {/* Changes */}
+              {/* Changes with Diff View */}
               {(selectedLog.old_values || selectedLog.new_values) && (
                 <div className="space-y-2">
-                  <p className="text-xs text-cream/50 font-medium">Modifications</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    {selectedLog.old_values && (
-                      <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-3">
-                        <p className="text-xs text-destructive mb-2 font-medium">Avant</p>
-                        <pre className="text-xs text-cream/70 overflow-auto max-h-[150px]">
-                          {JSON.stringify(selectedLog.old_values, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                    {selectedLog.new_values && (
-                      <div className="bg-success/5 border border-success/20 rounded-lg p-3">
-                        <p className="text-xs text-success mb-2 font-medium">Après</p>
-                        <pre className="text-xs text-cream/70 overflow-auto max-h-[150px]">
-                          {JSON.stringify(selectedLog.new_values, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
+                  <p className="text-xs text-cream/50 font-medium">Détail des modifications</p>
+                  <AuditLogDiffView 
+                    oldValues={selectedLog.old_values} 
+                    newValues={selectedLog.new_values} 
+                  />
                 </div>
               )}
 
