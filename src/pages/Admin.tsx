@@ -12,7 +12,8 @@ import {
   BarChart3,
   Ticket,
   MessageSquare,
-  Bell
+  Bell,
+  History
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -41,6 +42,7 @@ import { StockAlertsChart } from "@/components/admin/StockAlertsChart";
 import { StockAlertSettings } from "@/components/admin/StockAlertSettings";
 import { StockAlertsPDFExport } from "@/components/admin/StockAlertsPDFExport";
 import { WeeklyReportSettings } from "@/components/admin/WeeklyReportSettings";
+import { AuditLogsTable } from "@/components/admin/AuditLogsTable";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -469,6 +471,13 @@ const Admin = () => {
                   <Bell className="h-4 w-4 mr-2" />
                   Alertes Stock
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="audit"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                >
+                  <History className="h-4 w-4 mr-2" />
+                  Audit
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="performance" className="space-y-8">
@@ -587,6 +596,10 @@ const Admin = () => {
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <StockAlertsHistory />
                 </div>
+              </TabsContent>
+
+              <TabsContent value="audit" className="space-y-6">
+                <AuditLogsTable />
               </TabsContent>
             </Tabs>
           </motion.div>
