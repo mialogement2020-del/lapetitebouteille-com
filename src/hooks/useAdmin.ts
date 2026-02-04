@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import type { Database } from "@/integrations/supabase/types";
+import { logAuditAction } from "@/hooks/useAuditLogs";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
@@ -296,13 +297,23 @@ export function useAdmin() {
 
   // Approve review mutation
   const approveReview = useMutation({
-    mutationFn: async (reviewId: string) => {
+    mutationFn: async ({ reviewId, productName }: { reviewId: string; productName?: string }) => {
       const { error } = await supabase
         .from("reviews")
         .update({ is_approved: true })
         .eq("id", reviewId);
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "approve",
+        "review",
+        reviewId,
+        productName ? `Avis sur ${productName}` : "Avis client",
+        { is_approved: false },
+        { is_approved: true }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
@@ -311,13 +322,21 @@ export function useAdmin() {
 
   // Reject/delete review mutation
   const deleteReview = useMutation({
-    mutationFn: async (reviewId: string) => {
+    mutationFn: async ({ reviewId, productName }: { reviewId: string; productName?: string }) => {
       const { error } = await supabase
         .from("reviews")
         .delete()
         .eq("id", reviewId);
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "reject",
+        "review",
+        reviewId,
+        productName ? `Avis sur ${productName}` : "Avis client"
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
@@ -326,7 +345,13 @@ export function useAdmin() {
 
   // Update order status mutation
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, newStatus, notes }: { orderId: string; newStatus: OrderStatus; notes?: string }) => {
+    mutationFn: async ({ orderId, newStatus, notes, orderNumber, previousStatus }: { 
+      orderId: string; 
+      newStatus: OrderStatus; 
+      notes?: string;
+      orderNumber?: string;
+      previousStatus?: OrderStatus;
+    }) => {
       // First, update the order status
       const { error: orderError } = await supabase
         .from("orders")
@@ -353,6 +378,16 @@ export function useAdmin() {
             .eq("id", historyEntries[0].id);
         }
       }
+      
+      // Log audit action
+      await logAuditAction(
+        "status_change",
+        "order",
+        orderId,
+        orderNumber || `Commande ${orderId.slice(0, 8)}`,
+        { status: previousStatus || "unknown" },
+        { status: newStatus, notes }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
@@ -363,7 +398,7 @@ export function useAdmin() {
   // Create product mutation
   const createProduct = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from("products")
         .insert([{
           name: data.name,
@@ -386,9 +421,21 @@ export function useAdmin() {
           tasting_notes: data.tasting_notes || null,
           food_pairing: data.food_pairing || null,
           serving_temperature: data.serving_temperature || null,
-        }]);
+        }])
+        .select("id")
+        .single();
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "create",
+        "product",
+        insertedData?.id,
+        data.name,
+        null,
+        { name: data.name, price: data.price, stock_quantity: data.stock_quantity }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
@@ -397,7 +444,7 @@ export function useAdmin() {
 
   // Update product mutation
   const updateProduct = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ProductFormData> }) => {
+    mutationFn: async ({ id, data, oldData }: { id: string; data: Partial<ProductFormData>; oldData?: Partial<ProductFormData> }) => {
       const { error } = await supabase
         .from("products")
         .update({
@@ -425,6 +472,16 @@ export function useAdmin() {
         .eq("id", id);
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "update",
+        "product",
+        id,
+        data.name || "Produit",
+        oldData ? { name: oldData.name, price: oldData.price, stock_quantity: oldData.stock_quantity } : null,
+        { name: data.name, price: data.price, stock_quantity: data.stock_quantity }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
@@ -433,13 +490,21 @@ export function useAdmin() {
 
   // Delete product mutation
   const deleteProduct = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, productName }: { id: string; productName?: string }) => {
       const { error } = await supabase
         .from("products")
         .delete()
         .eq("id", id);
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "delete",
+        "product",
+        id,
+        productName || "Produit supprimé"
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
@@ -449,7 +514,7 @@ export function useAdmin() {
   // Create category mutation
   const createCategory = useMutation({
     mutationFn: async (data: CategoryFormData) => {
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from("categories")
         .insert([{
           name: data.name,
@@ -459,9 +524,21 @@ export function useAdmin() {
           display_order: data.display_order || 0,
           is_active: data.is_active ?? true,
           low_stock_threshold: data.low_stock_threshold || null,
-        }]);
+        }])
+        .select("id")
+        .single();
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "create",
+        "category",
+        insertedData?.id,
+        data.name,
+        null,
+        { name: data.name, is_active: data.is_active }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-all-categories"] });
@@ -471,7 +548,7 @@ export function useAdmin() {
 
   // Update category mutation
   const updateCategory = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<CategoryFormData> }) => {
+    mutationFn: async ({ id, data, oldName }: { id: string; data: Partial<CategoryFormData>; oldName?: string }) => {
       const { error } = await supabase
         .from("categories")
         .update({
@@ -486,6 +563,16 @@ export function useAdmin() {
         .eq("id", id);
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "update",
+        "category",
+        id,
+        data.name || oldName || "Catégorie",
+        oldName ? { name: oldName } : null,
+        { name: data.name, is_active: data.is_active }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-all-categories"] });
@@ -495,13 +582,21 @@ export function useAdmin() {
 
   // Delete category mutation
   const deleteCategory = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, categoryName }: { id: string; categoryName?: string }) => {
       const { error } = await supabase
         .from("categories")
         .delete()
         .eq("id", id);
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "delete",
+        "category",
+        id,
+        categoryName || "Catégorie supprimée"
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-all-categories"] });
@@ -512,7 +607,7 @@ export function useAdmin() {
   // Create promo code mutation
   const createPromoCode = useMutation({
     mutationFn: async (data: PromoCodeFormData) => {
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from("promo_codes")
         .insert([{
           code: data.code,
@@ -525,9 +620,21 @@ export function useAdmin() {
           valid_from: data.valid_from || null,
           valid_until: data.valid_until || null,
           is_active: data.is_active ?? true,
-        }]);
+        }])
+        .select("id")
+        .single();
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "create",
+        "promo_code",
+        insertedData?.id,
+        data.code,
+        null,
+        { code: data.code, discount_type: data.discount_type, discount_value: data.discount_value }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-promo-codes"] });
@@ -536,7 +643,7 @@ export function useAdmin() {
 
   // Update promo code mutation
   const updatePromoCode = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<PromoCodeFormData> }) => {
+    mutationFn: async ({ id, data, oldCode }: { id: string; data: Partial<PromoCodeFormData>; oldCode?: string }) => {
       const { error } = await supabase
         .from("promo_codes")
         .update({
@@ -554,6 +661,16 @@ export function useAdmin() {
         .eq("id", id);
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "update",
+        "promo_code",
+        id,
+        data.code || oldCode || "Code promo",
+        oldCode ? { code: oldCode } : null,
+        { code: data.code, discount_type: data.discount_type, discount_value: data.discount_value, is_active: data.is_active }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-promo-codes"] });
@@ -562,13 +679,21 @@ export function useAdmin() {
 
   // Delete promo code mutation
   const deletePromoCode = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, promoCode }: { id: string; promoCode?: string }) => {
       const { error } = await supabase
         .from("promo_codes")
         .delete()
         .eq("id", id);
 
       if (error) throw error;
+      
+      // Log audit action
+      await logAuditAction(
+        "delete",
+        "promo_code",
+        id,
+        promoCode || "Code promo supprimé"
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-promo-codes"] });
