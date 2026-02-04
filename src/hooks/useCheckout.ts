@@ -43,7 +43,7 @@ async function generateMLMCommissions(orderId: string, referrerId: string, order
     const commissionAmount = (orderTotal * effectiveRate) / 100;
 
     // Create the commission record
-    await supabase.from("commissions").insert({
+    const { data: commission } = await supabase.from("commissions").insert({
       order_id: orderId,
       beneficiary_id: currentReferrerId,
       level,
@@ -52,7 +52,7 @@ async function generateMLMCommissions(orderId: string, referrerId: string, order
       order_amount: orderTotal,
       commission_amount: commissionAmount,
       status: "pending",
-    });
+    }).select().single();
 
     // Update wallet pending balance
     const { data: wallet } = await supabase
@@ -81,6 +81,17 @@ async function generateMLMCommissions(orderId: string, referrerId: string, order
         description: `Commission niveau ${level} (${effectiveRate}%)`,
       });
     }
+
+    // Create notification for the sponsor
+    const formatPrice = (price: number) => new Intl.NumberFormat("fr-FR").format(price);
+    await supabase.from("user_notifications").insert({
+      user_id: currentReferrerId,
+      type: "commission",
+      title: `🎉 Nouvelle commission niveau ${level}`,
+      message: `Vous avez reçu ${formatPrice(commissionAmount)} FCFA de commission (${effectiveRate}%) suite à une commande de votre ${level === 1 ? "filleul direct" : level === 2 ? "filleul de niveau 2" : "filleul de niveau 3"}.`,
+      reference_type: "commission",
+      reference_id: commission?.id || null,
+    });
 
     // Get the next referrer up the chain
     const { data: relationship } = await supabase
