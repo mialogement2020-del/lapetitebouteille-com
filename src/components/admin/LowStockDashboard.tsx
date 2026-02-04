@@ -48,19 +48,38 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
   };
 
   const handleRestock = async (productId: string, newQuantity: number) => {
-    if (!restockProductMutation || !selectedRestockProduct) return;
+    if (!restockProductMutation) {
+      console.error("restockProductMutation is not available");
+      toast.error("Erreur: mutation non disponible");
+      return;
+    }
+    if (!selectedRestockProduct) {
+      console.error("No product selected for restock");
+      toast.error("Erreur: aucun produit sélectionné");
+      return;
+    }
     
     try {
+      console.log("Restocking product:", {
+        id: productId,
+        newQuantity,
+        oldQuantity: selectedRestockProduct.stock_quantity ?? 0,
+        productName: selectedRestockProduct.name
+      });
+      
       await restockProductMutation.mutateAsync({
         id: productId,
         newQuantity,
         oldQuantity: selectedRestockProduct.stock_quantity ?? 0,
         productName: selectedRestockProduct.name
       });
+      
+      console.log("Restock successful, audit log should be created");
       toast.success("Stock mis à jour avec succès");
       setRestockDialogOpen(false);
       setSelectedRestockProduct(null);
     } catch (error) {
+      console.error("Error during restock:", error);
       toast.error("Erreur lors de la mise à jour du stock");
     }
   };
