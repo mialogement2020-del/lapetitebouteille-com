@@ -48,9 +48,9 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
         <Button
           variant="outline"
           size="icon"
-          className="relative border-orange-500/30 hover:bg-orange-500/10 hover:border-orange-500/50"
+          className="relative border-warning/30 hover:bg-warning/10 hover:border-warning/50"
         >
-          <Package className="h-5 w-5 text-orange-400" />
+          <Package className="h-5 w-5 text-warning" />
           <AnimatePresence>
             {unreadCount > 0 && (
               <motion.div
@@ -60,7 +60,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                 className="absolute -top-1 -right-1"
               >
                 <Badge
-                  className="h-5 w-5 p-0 flex items-center justify-center text-xs bg-orange-500 hover:bg-orange-600"
+                  className="h-5 w-5 p-0 flex items-center justify-center text-xs bg-warning hover:bg-warning/80"
                 >
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </Badge>
@@ -78,10 +78,10 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gold/20">
           <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-orange-400" />
+            <Package className="h-4 w-4 text-warning" />
             <h3 className="font-semibold text-cream">Alertes Stock</h3>
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="text-xs bg-orange-500/20 text-orange-400">
+              <Badge variant="secondary" className="text-xs bg-warning/20 text-warning">
                 {unreadCount} nouvelle{unreadCount > 1 ? "s" : ""}
               </Badge>
             )}
@@ -94,7 +94,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
               onClick={toggleSound}
               className={`h-8 px-2 text-xs ${
                 soundEnabled 
-                  ? "text-orange-400 hover:text-orange-300" 
+                  ? "text-warning hover:text-warning/80" 
                   : "text-cream/40 hover:text-cream/60"
               }`}
               title={soundEnabled ? "Désactiver le son" : "Activer le son"}
@@ -110,7 +110,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                 variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
-                className="h-8 px-2 text-xs text-cream/60 hover:text-orange-400"
+                className="h-8 px-2 text-xs text-cream/60 hover:text-warning"
               >
                 <CheckCheck className="h-3 w-3 mr-1" />
                 Tout lire
@@ -133,7 +133,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
         <ScrollArea className="max-h-[400px]">
           {isLoading ? (
             <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-orange-500 mx-auto mb-3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-warning mx-auto mb-3" />
               <p className="text-cream/60 text-sm">Chargement...</p>
             </div>
           ) : notifications.length === 0 ? (
@@ -152,7 +152,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={`p-4 cursor-pointer transition-colors hover:bg-cream/5 ${
-                    !notification.isRead ? "bg-orange-500/5" : ""
+                    !notification.isRead ? "bg-warning/5" : ""
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -161,7 +161,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                       className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                         isOutOfStock(notification.title)
                           ? "bg-destructive/20 text-destructive"
-                          : "bg-orange-500/20 text-orange-400"
+                          : "bg-warning/20 text-warning"
                       }`}
                     >
                       {isOutOfStock(notification.title) ? (
@@ -173,12 +173,12 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className={`font-medium text-sm truncate ${
-                          isOutOfStock(notification.title) ? "text-destructive" : "text-orange-400"
+                          isOutOfStock(notification.title) ? "text-destructive" : "text-warning"
                         }`}>
                           {isOutOfStock(notification.title) ? "Rupture de stock" : "Stock faible"}
                         </p>
                         {!notification.isRead && (
-                          <div className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
+                          <div className="w-2 h-2 rounded-full bg-warning shrink-0" />
                         )}
                       </div>
                       <p className="text-xs text-cream/80 mt-0.5 line-clamp-2">
@@ -190,7 +190,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                           className={`text-xs ${
                             isOutOfStock(notification.title) 
                               ? "border-destructive/50 text-destructive" 
-                              : "border-orange-500/50 text-orange-400"
+                              : "border-warning/50 text-warning"
                           }`}
                         >
                           {isOutOfStock(notification.title) ? "Urgent" : "Attention"}

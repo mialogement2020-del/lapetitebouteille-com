@@ -155,7 +155,7 @@ export function StockAlertsChart() {
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle className="text-cream flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-orange-400" />
+            <TrendingUp className="h-5 w-5 text-warning" />
             Évolution des alertes de stock
           </CardTitle>
           <CardDescription className="text-cream/60">
@@ -185,16 +185,16 @@ export function StockAlertsChart() {
           <>
             {/* Summary stats */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-cream/5 rounded-lg p-4 border border-gold/10">
+              <div className="bg-warning/5 rounded-lg p-4 border border-warning/20">
                 <div className="flex items-center gap-2 text-cream/60 text-sm mb-1">
-                  <AlertTriangle className="h-4 w-4 text-orange-400" />
+                  <AlertTriangle className="h-4 w-4 text-warning" />
                   Stock faible
                 </div>
-                <p className="text-2xl font-bold text-orange-400">
+                <p className="text-2xl font-bold text-warning">
                   {stats.lowStockCount}
                 </p>
               </div>
-              <div className="bg-cream/5 rounded-lg p-4 border border-gold/10">
+              <div className="bg-destructive/5 rounded-lg p-4 border border-destructive/20">
                 <div className="flex items-center gap-2 text-cream/60 text-sm mb-1">
                   <XCircle className="h-4 w-4 text-destructive" />
                   Ruptures
@@ -206,14 +206,14 @@ export function StockAlertsChart() {
               <div className="bg-cream/5 rounded-lg p-4 border border-gold/10">
                 <div className="flex items-center gap-2 text-cream/60 text-sm mb-1">
                   {stats.trend >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-orange-400" />
+                    <TrendingUp className="h-4 w-4 text-warning" />
                   ) : (
-                    <TrendingDown className="h-4 w-4 text-green-500" />
+                    <TrendingDown className="h-4 w-4 text-success" />
                   )}
                   Tendance
                 </div>
                 <p className={`text-2xl font-bold ${
-                  stats.trend >= 0 ? "text-orange-400" : "text-green-500"
+                  stats.trend >= 0 ? "text-warning" : "text-success"
                 }`}>
                   {stats.trend >= 0 ? "+" : ""}{stats.trend}%
                 </p>
