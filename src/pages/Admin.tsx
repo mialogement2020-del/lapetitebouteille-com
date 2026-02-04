@@ -68,6 +68,7 @@ const Admin = () => {
     refetchCategories,
     createProduct,
     updateProduct,
+    restockProduct,
     deleteProduct,
     createCategory,
     updateCategory,
@@ -512,7 +513,7 @@ const Admin = () => {
                     setSelectedProduct(product);
                     setIsProductDialogOpen(true);
                   }}
-                  updateProduct={updateProduct}
+                  restockProduct={restockProduct}
                 />
                 <PerformanceCharts orders={orders} products={products} />
               </TabsContent>

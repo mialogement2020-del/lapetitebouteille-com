@@ -488,6 +488,41 @@ export function useAdmin() {
     },
   });
 
+  // Restock product mutation (dedicated for audit logging)
+  const restockProduct = useMutation({
+    mutationFn: async ({ 
+      id, 
+      newQuantity, 
+      oldQuantity, 
+      productName 
+    }: { 
+      id: string; 
+      newQuantity: number; 
+      oldQuantity: number; 
+      productName: string;
+    }) => {
+      const { error } = await supabase
+        .from("products")
+        .update({ stock_quantity: newQuantity })
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      // Log audit action with restock type
+      await logAuditAction(
+        "restock",
+        "stock",
+        id,
+        productName,
+        { stock_quantity: oldQuantity },
+        { stock_quantity: newQuantity, quantity_added: newQuantity - oldQuantity }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    },
+  });
+
   // Delete product mutation
   const deleteProduct = useMutation({
     mutationFn: async ({ id, productName }: { id: string; productName?: string }) => {
@@ -739,6 +774,7 @@ export function useAdmin() {
     refetchCategories,
     createProduct,
     updateProduct,
+    restockProduct,
     deleteProduct,
     createCategory,
     updateCategory,
