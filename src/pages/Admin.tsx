@@ -501,6 +501,17 @@ const Admin = () => {
                       {products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active).length}
                     </span>
                   )}
+                  {products.filter(p => {
+                    const stock = p.stock_quantity ?? 0;
+                    return stock > 0 && stock <= 5 && p.is_active;
+                  }).length > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-warning text-warning-foreground rounded-full">
+                      {products.filter(p => {
+                        const stock = p.stock_quantity ?? 0;
+                        return stock > 0 && stock <= 5 && p.is_active;
+                      }).length}
+                    </span>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="stock-alerts"
