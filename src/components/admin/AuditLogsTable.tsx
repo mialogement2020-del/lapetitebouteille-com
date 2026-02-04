@@ -24,6 +24,9 @@ import {
   Eye,
   FileSpreadsheet,
   Loader2,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Table,
@@ -63,6 +66,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import { useAuditLogs, AuditLog, AuditAction, AuditEntityType } from "@/hooks/useAuditLogs";
 import { exportAuditLogsToCSV, exportAuditLogsToPDF } from "@/lib/auditExport";
 import { toast } from "sonner";
@@ -131,15 +141,37 @@ const actionColors: Record<string, string> = {
 export function AuditLogsTable() {
   const [entityFilter, setEntityFilter] = useState<AuditEntityType | "all">("all");
   const [actionFilter, setActionFilter] = useState<AuditAction | "all">("all");
+  const [userFilter, setUserFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
-  const { logs, isLoading, totalCount, refetch } = useAuditLogs({
+  const pageSize = 15;
+
+  const { logs, isLoading, totalCount, totalPages, uniqueUsers, refetch } = useAuditLogs({
     entityType: entityFilter === "all" ? undefined : entityFilter,
     action: actionFilter === "all" ? undefined : actionFilter,
-    limit: 100,
+    userEmail: userFilter === "all" ? undefined : userFilter,
+    dateFrom,
+    dateTo,
+    limit: pageSize,
+    page: currentPage,
   });
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: any) => void, value: any) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
+  const clearDateFilters = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
+    setCurrentPage(1);
+  };
 
   const handleExportCSV = async () => {
     if (logs.length === 0) {
@@ -239,15 +271,15 @@ export function AuditLogsTable() {
 
           <CollapsibleContent>
             <CardContent className="pt-0">
-              {/* Filters */}
-              <div className="flex flex-wrap items-center gap-3 mb-4">
+              {/* Filters Row 1 */}
+              <div className="flex flex-wrap items-center gap-3 mb-3">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-cream/50" />
                   <span className="text-sm text-cream/60">Filtres:</span>
                 </div>
                 <Select
                   value={entityFilter}
-                  onValueChange={(v) => setEntityFilter(v as AuditEntityType | "all")}
+                  onValueChange={(v) => handleFilterChange(setEntityFilter, v as AuditEntityType | "all")}
                 >
                   <SelectTrigger className="w-[140px] h-8 text-xs border-gold/30 bg-noir">
                     <SelectValue placeholder="Type" />
@@ -267,7 +299,7 @@ export function AuditLogsTable() {
 
                 <Select
                   value={actionFilter}
-                  onValueChange={(v) => setActionFilter(v as AuditAction | "all")}
+                  onValueChange={(v) => handleFilterChange(setActionFilter, v as AuditAction | "all")}
                 >
                   <SelectTrigger className="w-[140px] h-8 text-xs border-gold/30 bg-noir">
                     <SelectValue placeholder="Action" />
@@ -285,50 +317,137 @@ export function AuditLogsTable() {
                   </SelectContent>
                 </Select>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => refetch()}
-                  className="h-8 text-xs text-cream/60 hover:text-cream"
+                {/* User Filter */}
+                <Select
+                  value={userFilter}
+                  onValueChange={(v) => handleFilterChange(setUserFilter, v)}
                 >
-                  <RefreshCcw className="h-3 w-3 mr-1" />
-                  Actualiser
-                </Button>
+                  <SelectTrigger className="w-[180px] h-8 text-xs border-gold/30 bg-noir">
+                    <User className="h-3 w-3 mr-1" />
+                    <SelectValue placeholder="Utilisateur" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-noir border-gold/30">
+                    <SelectItem value="all">Tous les utilisateurs</SelectItem>
+                    {uniqueUsers.map((email) => (
+                      <SelectItem key={email} value={email}>
+                        <span className="truncate max-w-[150px]">{email}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                {/* Export dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+              {/* Filters Row 2 - Dates */}
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-cream/50" />
+                  <span className="text-sm text-cream/60">Période:</span>
+                </div>
+
+                {/* Date From */}
+                <Popover>
+                  <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={isExporting || logs.length === 0}
-                      className="h-8 text-xs border-gold/30 text-cream hover:bg-gold/10"
+                      className="h-8 text-xs border-gold/30 bg-noir text-cream hover:bg-gold/10 w-[130px] justify-start"
                     >
-                      {isExporting ? (
-                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      ) : (
-                        <Download className="h-3 w-3 mr-1" />
-                      )}
-                      Exporter
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Du..."}
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-noir border-gold/30">
-                    <DropdownMenuItem
-                      onClick={handleExportCSV}
-                      className="text-cream hover:bg-gold/10 cursor-pointer"
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-noir border-gold/30" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={(date) => handleFilterChange(setDateFrom, date)}
+                      initialFocus
+                      locale={fr}
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {/* Date To */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs border-gold/30 bg-noir text-cream hover:bg-gold/10 w-[130px] justify-start"
                     >
-                      <FileSpreadsheet className="h-4 w-4 mr-2 text-success" />
-                      Exporter en CSV
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleExportPDF}
-                      className="text-cream hover:bg-gold/10 cursor-pointer"
-                    >
-                      <FileText className="h-4 w-4 mr-2 text-destructive" />
-                      Exporter en PDF
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {dateTo ? format(dateTo, "dd/MM/yyyy") : "Au..."}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-noir border-gold/30" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={(date) => handleFilterChange(setDateTo, date)}
+                      initialFocus
+                      locale={fr}
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {(dateFrom || dateTo) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearDateFilters}
+                    className="h-8 text-xs text-cream/60 hover:text-cream"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Effacer dates
+                  </Button>
+                )}
+
+                <div className="ml-auto flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => refetch()}
+                    className="h-8 text-xs text-cream/60 hover:text-cream"
+                  >
+                    <RefreshCcw className="h-3 w-3 mr-1" />
+                    Actualiser
+                  </Button>
+
+                  {/* Export dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isExporting || logs.length === 0}
+                        className="h-8 text-xs border-gold/30 text-cream hover:bg-gold/10"
+                      >
+                        {isExporting ? (
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        ) : (
+                          <Download className="h-3 w-3 mr-1" />
+                        )}
+                        Exporter
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-noir border-gold/30">
+                      <DropdownMenuItem
+                        onClick={handleExportCSV}
+                        className="text-cream hover:bg-gold/10 cursor-pointer"
+                      >
+                        <FileSpreadsheet className="h-4 w-4 mr-2 text-success" />
+                        Exporter en CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleExportPDF}
+                        className="text-cream hover:bg-gold/10 cursor-pointer"
+                      >
+                        <FileText className="h-4 w-4 mr-2 text-destructive" />
+                        Exporter en PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
 
               {/* Table */}
@@ -416,6 +535,69 @@ export function AuditLogsTable() {
                   </Table>
                 )}
               </ScrollArea>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gold/10">
+                  <div className="text-xs text-cream/50">
+                    Page {currentPage} sur {totalPages} ({totalCount} entrées)
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 text-xs border-gold/30 text-cream hover:bg-gold/10 disabled:opacity-50"
+                    >
+                      <ChevronLeft className="h-3 w-3 mr-1" />
+                      Précédent
+                    </Button>
+                    
+                    {/* Page numbers */}
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? "default" : "ghost"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`h-8 w-8 text-xs ${
+                              currentPage === pageNum
+                                ? "bg-gold text-noir"
+                                : "text-cream/60 hover:text-cream hover:bg-gold/10"
+                            }`}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="h-8 text-xs border-gold/30 text-cream hover:bg-gold/10 disabled:opacity-50"
+                    >
+                      Suivant
+                      <ChevronRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </CollapsibleContent>
         </Card>
