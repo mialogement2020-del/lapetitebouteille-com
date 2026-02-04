@@ -150,14 +150,11 @@ export function useAuditLogs(options: UseAuditLogsOptions = {}) {
     }
   }, []);
 
-  // Subscribe to realtime updates
+  // Fetch data and subscribe to realtime updates
   useEffect(() => {
     fetchLogs();
     fetchUniqueUsers();
-  }, [fetchLogs, fetchUniqueUsers]);
 
-  // Separate effect for realtime subscription to avoid infinite loops
-  useEffect(() => {
     const channel = supabase
       .channel("audit-logs-realtime")
       .on(
@@ -197,7 +194,8 @@ export function useAuditLogs(options: UseAuditLogsOptions = {}) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [entityType, action, limit, page, dateFrom, dateTo, userEmail]);
+    // Note: fetchLogs and fetchUniqueUsers are stable callbacks, other deps are filter values
+  }, [fetchLogs, fetchUniqueUsers, entityType, action, limit, page, dateFrom, dateTo, userEmail]);
 
   const totalPages = Math.ceil(totalCount / limit);
 
