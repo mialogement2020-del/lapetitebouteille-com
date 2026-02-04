@@ -10,7 +10,7 @@ function getAudioContext(): AudioContext {
   return audioContext;
 }
 
-export function playNotificationSound(type: "info" | "warning" | "critical" = "warning") {
+export function playNotificationSound(type: "info" | "warning" | "critical" | "commission" = "warning") {
   try {
     const ctx = getAudioContext();
     
@@ -26,6 +26,7 @@ export function playNotificationSound(type: "info" | "warning" | "critical" = "w
       info: { frequencies: [523.25, 659.25], duration: 0.15, volume: 0.3 },
       warning: { frequencies: [440, 554.37, 659.25], duration: 0.12, volume: 0.4 },
       critical: { frequencies: [440, 440, 554.37, 659.25], duration: 0.1, volume: 0.5 },
+      commission: { frequencies: [523.25, 659.25, 783.99, 1046.50], duration: 0.12, volume: 0.35 }, // Pleasant chime for money
     }[type];
 
     config.frequencies.forEach((freq, index) => {
@@ -56,10 +57,20 @@ export function playNotificationSound(type: "info" | "warning" | "critical" = "w
 
 // Check if sound is enabled (stored in localStorage)
 export function isSoundEnabled(): boolean {
-  const stored = localStorage.getItem("stock-notification-sound");
+  const stored = localStorage.getItem("notification-sound");
   return stored !== "disabled";
 }
 
 export function setSoundEnabled(enabled: boolean): void {
-  localStorage.setItem("stock-notification-sound", enabled ? "enabled" : "disabled");
+  localStorage.setItem("notification-sound", enabled ? "enabled" : "disabled");
+}
+
+// Specific for ambassador notifications
+export function isAmbassadorSoundEnabled(): boolean {
+  const stored = localStorage.getItem("ambassador-notification-sound");
+  return stored !== "disabled";
+}
+
+export function setAmbassadorSoundEnabled(enabled: boolean): void {
+  localStorage.setItem("ambassador-notification-sound", enabled ? "enabled" : "disabled");
 }

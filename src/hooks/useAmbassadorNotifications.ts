@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { playNotificationSound, isSoundEnabled } from "@/lib/notificationSound";
+import { playNotificationSound, isAmbassadorSoundEnabled } from "@/lib/notificationSound";
 
 type UserNotification = Database["public"]["Tables"]["user_notifications"]["Row"];
 
@@ -164,9 +164,10 @@ export function useAmbassadorNotifications(enabled: boolean = true) {
             isRead: newNotif.is_read ?? false,
           };
 
-          // Play notification sound for new commission
-          if (!isInitialLoadRef.current && isSoundEnabled()) {
-            playNotificationSound("info");
+          // Play notification sound for new notifications
+          if (!isInitialLoadRef.current && isAmbassadorSoundEnabled()) {
+            const soundType = newNotif.type === "commission" ? "commission" : "info";
+            playNotificationSound(soundType);
           }
 
           // Add new notification at the top
