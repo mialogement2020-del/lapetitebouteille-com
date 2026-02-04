@@ -181,20 +181,20 @@ export function StockAlertsHistory() {
             <CardTitle className="text-2xl text-destructive">{stats?.outOfStock || 0}</CardTitle>
           </CardHeader>
         </Card>
-        <Card className="bg-noir/50 border-orange-500/30">
+        <Card className="bg-noir/50 border-warning/30">
           <CardHeader className="pb-2">
             <CardDescription className="text-cream/60 flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" /> Stocks faibles
             </CardDescription>
-            <CardTitle className="text-2xl text-orange-500">{stats?.lowStock || 0}</CardTitle>
+            <CardTitle className="text-2xl text-warning">{stats?.lowStock || 0}</CardTitle>
           </CardHeader>
         </Card>
-        <Card className="bg-noir/50 border-red-500/30">
+        <Card className="bg-noir/50 border-destructive/30">
           <CardHeader className="pb-2">
             <CardDescription className="text-cream/60 flex items-center gap-1">
               <MailX className="h-3 w-3" /> Échecs envoi
             </CardDescription>
-            <CardTitle className="text-2xl text-red-500">{stats?.failed || 0}</CardTitle>
+            <CardTitle className="text-2xl text-destructive">{stats?.failed || 0}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -307,14 +307,14 @@ export function StockAlertsHistory() {
                               Rupture
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="border-orange-500/50 text-orange-400 text-xs">
+                            <Badge variant="outline" className="border-warning/50 text-warning text-xs">
                               <AlertTriangle className="h-3 w-3 mr-1" />
                               Stock faible
                             </Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-center">
-                          <span className={`font-bold ${alert.stock_quantity === 0 ? "text-destructive" : "text-orange-400"}`}>
+                          <span className={`font-bold ${alert.stock_quantity === 0 ? "text-destructive" : "text-warning"}`}>
                             {alert.stock_quantity}
                           </span>
                         </TableCell>
@@ -326,7 +326,7 @@ export function StockAlertsHistory() {
                         </TableCell>
                         <TableCell>
                           {alert.email_status === "sent" ? (
-                            <Badge variant="outline" className="border-green-500/50 text-green-400 text-xs">
+                            <Badge variant="outline" className="border-success/50 text-success text-xs">
                               <Mail className="h-3 w-3 mr-1" />
                               Envoyé
                             </Badge>

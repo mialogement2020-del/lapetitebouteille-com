@@ -84,8 +84,8 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
   const ProductItem = ({ product, variant }: { product: AdminProduct; variant: "danger" | "warning" | "caution" }) => {
     const variantStyles = {
       danger: "border-destructive/30 hover:border-destructive/50",
-      warning: "border-orange-500/30 hover:border-orange-500/50",
-      caution: "border-yellow-500/30 hover:border-yellow-500/50"
+      warning: "border-warning/30 hover:border-warning/50",
+      caution: "border-warning/30 hover:border-warning/50"
     };
 
     return (
@@ -128,8 +128,8 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
             <Badge 
               variant="outline" 
               className={variant === "warning" 
-                ? "border-orange-500/50 text-orange-400 text-xs" 
-                : "border-yellow-500/50 text-yellow-400 text-xs"
+                ? "border-warning/50 text-warning text-xs" 
+                : "border-warning/50 text-warning text-xs"
               }
             >
               {product.stock_quantity}
@@ -178,10 +178,10 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
           </CardContent>
         </Card>
 
-        <Card className="bg-noir/50 border-orange-500/30">
+        <Card className="bg-noir/50 border-warning/30">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               <CardTitle className="text-lg text-cream">Stock faible</CardTitle>
             </div>
             <CardDescription className="text-cream/60">
@@ -189,17 +189,17 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-500">{lowStock.length}</div>
+            <div className="text-3xl font-bold text-warning">{lowStock.length}</div>
             <p className="text-xs text-cream/50 mt-1">
               {lowStock.length === 0 ? "Tous les stocks sont suffisants" : "produits à surveiller"}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-noir/50 border-yellow-500/30">
+        <Card className="bg-noir/50 border-warning/30">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <TrendingDown className="h-5 w-5 text-yellow-500" />
+              <TrendingDown className="h-5 w-5 text-warning" />
               <CardTitle className="text-lg text-cream">Stock critique</CardTitle>
             </div>
             <CardDescription className="text-cream/60">
@@ -207,7 +207,7 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-500">{criticalStock.length}</div>
+            <div className="text-3xl font-bold text-warning">{criticalStock.length}</div>
             <p className="text-xs text-cream/50 mt-1">
               {criticalStock.length === 0 ? "Aucun stock critique" : "produits à planifier"}
             </p>
@@ -253,11 +253,11 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base text-cream flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-orange-500" />
+                <AlertTriangle className="h-4 w-4 text-warning" />
                 Stock faible (1-5)
               </CardTitle>
               {lowStock.length > 0 && (
-                <Badge variant="outline" className="border-orange-500/50 text-orange-400">
+                <Badge variant="outline" className="border-warning/50 text-warning">
                   {lowStock.length}
                 </Badge>
               )}
@@ -286,11 +286,11 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base text-cream flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-yellow-500" />
+                <TrendingDown className="h-4 w-4 text-warning" />
                 Stock critique (6-10)
               </CardTitle>
               {criticalStock.length > 0 && (
-                <Badge variant="outline" className="border-yellow-500/50 text-yellow-400">
+                <Badge variant="outline" className="border-warning/50 text-warning">
                   {criticalStock.length}
                 </Badge>
               )}
