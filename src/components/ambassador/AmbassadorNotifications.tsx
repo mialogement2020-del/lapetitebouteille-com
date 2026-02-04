@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Bell, CheckCheck, Gift, TrendingUp, Trash2, Users } from "lucide-react";
+import { Bell, CheckCheck, Gift, TrendingUp, Trash2, Users, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Popover,
@@ -45,6 +45,9 @@ const getNotificationColor = (type: string) => {
 
 export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificationsProps) {
   const [open, setOpen] = useState(false);
+  const [showNewIndicator, setShowNewIndicator] = useState(false);
+  const [newNotificationIds, setNewNotificationIds] = useState<Set<string>>(new Set());
+  const previousCountRef = useRef<number>(0);
   const {
     notifications,
     unreadCount,
@@ -54,8 +57,38 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
     clearAll,
   } = useAmbassadorNotifications(enabled);
 
+  // Detect new notifications arriving
+  useEffect(() => {
+    if (notifications.length > 0 && previousCountRef.current > 0) {
+      const currentIds = new Set(notifications.map(n => n.id));
+      const newIds = notifications
+        .filter(n => !n.isRead)
+        .slice(0, notifications.length - previousCountRef.current)
+        .map(n => n.id);
+      
+      if (newIds.length > 0) {
+        setNewNotificationIds(new Set(newIds));
+        setShowNewIndicator(true);
+        
+        // Clear the new indicator after 3 seconds
+        const timer = setTimeout(() => {
+          setShowNewIndicator(false);
+          setNewNotificationIds(new Set());
+        }, 3000);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+    previousCountRef.current = notifications.length;
+  }, [notifications]);
+
   const handleNotificationClick = (notification: AmbassadorNotification) => {
     markAsRead(notification.id);
+    setNewNotificationIds(prev => {
+      const next = new Set(prev);
+      next.delete(notification.id);
+      return next;
+    });
   };
 
   return (
@@ -66,13 +99,29 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
           size="icon"
           className="relative border-gold/20 hover:bg-primary/10"
         >
-          <Bell className="h-5 w-5" />
+          <motion.div
+            animate={showNewIndicator ? { 
+              rotate: [0, -15, 15, -10, 10, 0],
+              scale: [1, 1.1, 1]
+            } : {}}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <Bell className="h-5 w-5" />
+          </motion.div>
           <AnimatePresence>
             {unreadCount > 0 && (
               <motion.div
                 initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+                animate={{ 
+                  scale: 1,
+                  ...(showNewIndicator ? {
+                    boxShadow: ["0 0 0 0 rgba(34, 197, 94, 0.7)", "0 0 0 10px rgba(34, 197, 94, 0)", "0 0 0 0 rgba(34, 197, 94, 0)"]
+                  } : {})
+                }}
                 exit={{ scale: 0 }}
+                transition={showNewIndicator ? { 
+                  boxShadow: { duration: 1, repeat: 2 }
+                } : {}}
                 className="absolute -top-1 -right-1"
               >
                 <Badge
@@ -81,6 +130,19 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
                 >
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </Badge>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Sparkle effect for new notifications */}
+          <AnimatePresence>
+            {showNewIndicator && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                className="absolute -top-2 -right-2"
+              >
+                <Sparkles className="h-4 w-4 text-amber-400" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -149,29 +211,58 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
                 const Icon = getNotificationIcon(notification.type);
                 const colorClass = getNotificationColor(notification.type);
 
+                const isNew = newNotificationIds.has(notification.id);
+                
                 return (
                   <motion.div
                     key={notification.id}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: -10, x: isNew ? -20 : 0 }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0, 
+                      x: 0,
+                      backgroundColor: isNew ? "rgba(34, 197, 94, 0.15)" : undefined
+                    }}
+                    transition={{ 
+                      duration: 0.3,
+                      backgroundColor: { duration: 0.5, repeat: isNew ? 2 : 0, repeatType: "reverse" }
+                    }}
                     className={`p-4 cursor-pointer transition-colors hover:bg-cream/5 ${
                       !notification.isRead ? "bg-primary/5" : ""
-                    }`}
+                    } ${isNew ? "border-l-2 border-green-500" : ""}`}
                     onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-start gap-3">
-                      <div
+                      <motion.div
+                        animate={isNew ? { 
+                          scale: [1, 1.2, 1],
+                          rotate: [0, 10, -10, 0]
+                        } : {}}
+                        transition={{ duration: 0.5, delay: 0.2 }}
                         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${colorClass}`}
                       >
                         <Icon className="h-5 w-5" />
-                      </div>
+                      </motion.div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-sm text-cream">
                             {notification.title}
                           </p>
                           {!notification.isRead && (
-                            <div className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+                            <motion.div 
+                              animate={isNew ? { scale: [1, 1.5, 1] } : {}}
+                              transition={{ duration: 0.3, repeat: isNew ? 2 : 0 }}
+                              className="w-2 h-2 rounded-full bg-green-500 shrink-0" 
+                            />
+                          )}
+                          {isNew && (
+                            <motion.span
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="text-[10px] font-bold text-green-400 bg-green-500/20 px-1.5 py-0.5 rounded"
+                            >
+                              NOUVEAU
+                            </motion.span>
                           )}
                         </div>
                         <p className="text-xs text-cream/60 mt-0.5 line-clamp-2">
