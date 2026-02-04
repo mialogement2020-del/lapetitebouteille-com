@@ -16,11 +16,11 @@ interface LowStockDashboardProps {
   products: AdminProduct[];
   isLoading: boolean;
   onEditProduct: (product: AdminProduct) => void;
-  updateProduct?: UseMutationResult<void, Error, { id: string; data: Partial<AdminProduct> }>;
+  restockProduct?: UseMutationResult<void, Error, { id: string; newQuantity: number; oldQuantity: number; productName: string }>;
 }
 
-export function LowStockDashboard({ products, isLoading, onEditProduct, updateProduct }: LowStockDashboardProps) {
-  const [restockProduct, setRestockProduct] = useState<AdminProduct | null>(null);
+export function LowStockDashboard({ products, isLoading, onEditProduct, restockProduct: restockProductMutation }: LowStockDashboardProps) {
+  const [selectedRestockProduct, setSelectedRestockProduct] = useState<AdminProduct | null>(null);
   const [restockDialogOpen, setRestockDialogOpen] = useState(false);
 
   // Get stock predictions
@@ -43,21 +43,23 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
 
   const handleQuickRestock = (product: AdminProduct, e: React.MouseEvent) => {
     e.stopPropagation();
-    setRestockProduct(product);
+    setSelectedRestockProduct(product);
     setRestockDialogOpen(true);
   };
 
   const handleRestock = async (productId: string, newQuantity: number) => {
-    if (!updateProduct) return;
+    if (!restockProductMutation || !selectedRestockProduct) return;
     
     try {
-      await updateProduct.mutateAsync({
+      await restockProductMutation.mutateAsync({
         id: productId,
-        data: { stock_quantity: newQuantity }
+        newQuantity,
+        oldQuantity: selectedRestockProduct.stock_quantity ?? 0,
+        productName: selectedRestockProduct.name
       });
       toast.success("Stock mis à jour avec succès");
       setRestockDialogOpen(false);
-      setRestockProduct(null);
+      setSelectedRestockProduct(null);
     } catch (error) {
       toast.error("Erreur lors de la mise à jour du stock");
     }
@@ -151,11 +153,11 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, updatePr
 
       {/* Quick Restock Dialog */}
       <QuickRestockDialog
-        product={restockProduct}
+        product={selectedRestockProduct}
         open={restockDialogOpen}
         onOpenChange={setRestockDialogOpen}
         onRestock={handleRestock}
-        isLoading={updateProduct?.isPending}
+        isLoading={restockProductMutation?.isPending}
       />
 
       {/* Summary Cards */}
