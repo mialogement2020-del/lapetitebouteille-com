@@ -4,44 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-// Generate VAPID keys using Web Crypto API
-async function generateVapidKeys(): Promise<{ publicKey: string; privateKey: string }> {
-  // Generate an ECDSA key pair on the P-256 curve (required for VAPID)
-  const keyPair = await crypto.subtle.generateKey(
-    {
-      name: "ECDSA",
-      namedCurve: "P-256",
-    },
-    true,
-    ["sign", "verify"]
-  );
-
-  // Export public key in raw format
-  const publicKeyBuffer = await crypto.subtle.exportKey("raw", keyPair.publicKey);
-  const publicKeyArray = new Uint8Array(publicKeyBuffer);
-  
-  // Export private key in PKCS8 format, then extract the raw 32-byte key
-  const privateKeyBuffer = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-  const privateKeyArray = new Uint8Array(privateKeyBuffer);
-  // The raw private key is the last 32 bytes of the PKCS8 export for P-256
-  const rawPrivateKey = privateKeyArray.slice(-32);
-  
-  // Convert to URL-safe base64
-  const publicKey = btoa(String.fromCharCode(...publicKeyArray))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-    
-  const privateKey = btoa(String.fromCharCode(...rawPrivateKey))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-
-  return { publicKey, privateKey };
-}
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -49,17 +13,52 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Check if VAPID keys already exist
+    // Verify authentication - only authenticated users can request VAPID keys
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("Missing Supabase configuration");
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Verify user is authenticated
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid token" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Get VAPID public key from environment (NEVER expose private key)
     const existingPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const existingPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
 
     if (existingPublicKey && existingPrivateKey) {
-      // Keys already exist, return public key only
+      // Return ONLY the public key - NEVER return private key
       return new Response(
         JSON.stringify({
           success: true,
           publicKey: existingPublicKey,
-          message: "VAPID keys already configured",
+          message: "VAPID public key retrieved",
           alreadyExists: true,
         }),
         {
@@ -69,35 +68,20 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Generate new VAPID keys
-    const { publicKey, privateKey } = await generateVapidKeys();
-
-    console.log("Generated VAPID keys successfully");
-    console.log("Public Key:", publicKey);
-    console.log("Private Key length:", privateKey.length);
-
-    // Note: In production, these keys should be stored as secrets
-    // For now, we return them so they can be manually added as secrets
+    // If keys don't exist, return an error - they must be configured by admin
+    console.log("VAPID keys not configured in environment");
     return new Response(
       JSON.stringify({
-        success: true,
-        publicKey,
-        privateKey,
-        message: "VAPID keys generated. Please add these as secrets: VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY",
-        alreadyExists: false,
-        instructions: [
-          "1. Copy the publicKey and privateKey values",
-          "2. Add them as secrets in your Supabase project",
-          "3. Name them VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY respectively",
-        ],
+        success: false,
+        error: "VAPID keys not configured. Contact administrator.",
       }),
       {
-        status: 200,
+        status: 503,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
   } catch (error: any) {
-    console.error("Error generating VAPID keys:", error);
+    console.error("Error in generate-vapid-keys:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       {
