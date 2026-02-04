@@ -2,26 +2,29 @@ import { Link } from "react-router-dom";
 import { ShoppingBag, Truck, ChevronRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useCartContext } from "@/contexts/CartContext";
-import { PromoCodeInput, AppliedPromoCode } from "./PromoCodeInput";
+import { UnifiedCodeInput, AppliedCode } from "./UnifiedCodeInput";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("fr-FR").format(price);
 };
 
 interface OrderSummaryProps {
-  appliedPromoCode?: AppliedPromoCode | null;
-  onPromoCodeApply?: (promoCode: AppliedPromoCode) => void;
-  onPromoCodeRemove?: () => void;
+  appliedCode?: AppliedCode | null;
+  onCodeApply?: (code: AppliedCode) => void;
+  onCodeRemove?: () => void;
 }
 
 export function OrderSummary({ 
-  appliedPromoCode = null,
-  onPromoCodeApply,
-  onPromoCodeRemove,
+  appliedCode = null,
+  onCodeApply,
+  onCodeRemove,
 }: OrderSummaryProps) {
   const { items, subtotal, itemCount } = useCartContext();
 
-  const discountAmount = appliedPromoCode?.discountAmount || 0;
+  // Calculate discount only if it's a promo code
+  const discountAmount = appliedCode?.type === "promo" 
+    ? appliedCode.data.discountAmount 
+    : 0;
   const deliveryFee = subtotal >= 50000 ? 0 : 2000;
   const total = subtotal - discountAmount + deliveryFee;
 
@@ -60,14 +63,14 @@ export function OrderSummary({
 
       <Separator className="bg-gold/20 mb-4" />
 
-      {/* Promo Code Input */}
-      {onPromoCodeApply && onPromoCodeRemove && (
+      {/* Unified Code Input (Promo or Referral) */}
+      {onCodeApply && onCodeRemove && (
         <div className="mb-4">
-          <PromoCodeInput
+          <UnifiedCodeInput
             subtotal={subtotal}
-            appliedCode={appliedPromoCode}
-            onApply={onPromoCodeApply}
-            onRemove={onPromoCodeRemove}
+            appliedCode={appliedCode}
+            onApply={onCodeApply}
+            onRemove={onCodeRemove}
           />
         </div>
       )}
@@ -79,10 +82,10 @@ export function OrderSummary({
           <span className="text-cream">{formatPrice(subtotal)} FCFA</span>
         </div>
 
-        {discountAmount > 0 && appliedPromoCode && (
+        {discountAmount > 0 && appliedCode?.type === "promo" && (
           <div className="flex justify-between text-sm">
             <span className="text-cream/70 flex items-center gap-1">
-              Réduction ({appliedPromoCode.code})
+              Réduction ({appliedCode.data.code})
             </span>
             <span className="text-green-500">-{formatPrice(discountAmount)} FCFA</span>
           </div>
