@@ -496,6 +496,11 @@ const Admin = () => {
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Réappro.
+                  {products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active).length > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-destructive text-destructive-foreground rounded-full">
+                      {products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active).length}
+                    </span>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="stock-alerts"
