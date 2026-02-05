@@ -1,31 +1,54 @@
 import { motion, useScroll, useTransform } from "framer-motion";
  import { Link } from "react-router-dom";
- import { Users, TrendingUp, Wallet, Gift, ArrowRight, Sparkles } from "lucide-react";
+ import { Users, TrendingUp, Wallet, Gift, ArrowRight, Sparkles, Truck, Shield, Clock, Award } from "lucide-react";
  import { Button } from "@/components/ui/button";
 import { useRef } from "react";
  
- const benefits = [
-   {
-     icon: Users,
-     title: "Parrainez vos proches",
-     description: "Partagez votre lien unique et gagnez sur chaque commande",
-   },
-   {
-     icon: TrendingUp,
-     title: "Revenus Multi-Niveaux",
-     description: "Commissions sur 3 niveaux de votre réseau",
-   },
-   {
-     icon: Wallet,
-     title: "Retrait Instantané",
-     description: "MTN Money et Orange Money disponibles",
-   },
-   {
-     icon: Gift,
-     title: "Bonus Exclusifs",
-     description: "Récompenses et avantages VIP",
-   },
- ];
+const benefits = [
+  {
+    icon: Users,
+    title: "Parrainez vos proches",
+    description: "Partagez votre lien unique et gagnez sur chaque commande",
+  },
+  {
+    icon: TrendingUp,
+    title: "Revenus Multi-Niveaux",
+    description: "Commissions sur 3 niveaux de votre réseau",
+  },
+  {
+    icon: Wallet,
+    title: "Retrait Instantané",
+    description: "MTN Money et Orange Money disponibles",
+  },
+  {
+    icon: Gift,
+    title: "Bonus Exclusifs",
+    description: "Récompenses et avantages VIP",
+  },
+];
+
+const trustFeatures = [
+  {
+    icon: Truck,
+    title: "Livraison Premium",
+    description: "Express 24h sur Yaoundé & Douala",
+  },
+  {
+    icon: Shield,
+    title: "Paiement Sécurisé",
+    description: "Mobile Money & Paiement à la livraison",
+  },
+  {
+    icon: Clock,
+    title: "Conciergerie 7j/7",
+    description: "Service client dédié et personnalisé",
+  },
+  {
+    icon: Award,
+    title: "Authenticité Certifiée",
+    description: "Produits 100% garantis d'origine",
+  },
+];
  
  const MLMTeaser = () => {
    const sectionRef = useRef<HTMLElement>(null);
@@ -202,6 +225,40 @@ import { useRef } from "react";
            </motion.div>
          </div>
  
+        {/* Trust Features Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
+        >
+          {trustFeatures.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+              className="text-center group"
+            >
+              <motion.div 
+                whileHover={{ scale: 1.15, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors"
+              >
+                <feature.icon className="h-6 w-6 text-primary" />
+              </motion.div>
+              <h3 className="font-display text-lg font-semibold text-cream mb-1">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-cream/60">
+                {feature.description}
+              </p>
+            </motion.div>
+          ))}
+        </motion.div>
+
          {/* Bottom CTA Banner */}
          <motion.div
            initial={{ opacity: 0, y: 50, scale: 0.95 }}
