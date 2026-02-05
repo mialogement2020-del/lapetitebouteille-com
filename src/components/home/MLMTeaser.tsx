@@ -1,167 +1,194 @@
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Users, TrendingUp, Wallet, Gift, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-const benefits = [
-  {
-    icon: Users,
-    title: "Parrainez vos proches",
-    description: "Partagez votre code et gagnez sur chaque commande",
-  },
-  {
-    icon: TrendingUp,
-    title: "Commissions multi-niveaux",
-    description: "Gagnez sur 3 niveaux de votre réseau",
-  },
-  {
-    icon: Wallet,
-    title: "Retraits Mobile Money",
-    description: "MTN et Orange Money disponibles",
-  },
-  {
-    icon: Gift,
-    title: "Bonus & Récompenses",
-    description: "Débloquez des avantages exclusifs",
-  },
-];
-
-const MLMTeaser = () => {
-  return (
-    <section className="py-20 lg:py-28 bg-gradient-luxury text-cream relative overflow-hidden">
-      {/* Background Decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-6">
-              <Wallet className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Programme Ambassadeur</span>
-            </div>
-
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-              Gagnez de l'argent en
-              <br />
-              <span className="text-gradient-gold">recommandant nos produits</span>
-            </h2>
-
-            <p className="text-cream/80 text-lg mb-8 leading-relaxed">
-              Rejoignez notre programme d'ambassadeurs et transformez votre réseau en source de revenus. 
-              Commissions attractives, bonus de performance et avantages exclusifs vous attendent !
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                asChild
-                size="lg"
-                className="bg-gradient-gold text-noir font-semibold hover:opacity-90 shadow-gold"
-              >
-                <Link to="/ambassadeur">
-                  Devenir Ambassadeur
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="border-cream/30 text-cream hover:bg-cream/10"
-              >
-                <Link to="/ambassadeur#comment-ca-marche">
-                  Comment ça marche ?
-                </Link>
-              </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-10 grid grid-cols-3 gap-6">
-              {[
-                { value: "8%", label: "Commission Niveau 1" },
-                { value: "4%", label: "Commission Niveau 2" },
-                { value: "2%", label: "Commission Niveau 3" },
-              ].map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-primary font-display">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs text-cream/60 mt-1">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Right Content - Benefits Grid */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-          >
-            {benefits.map((benefit, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                className="p-6 rounded-xl bg-cream/5 border border-cream/10 hover:border-primary/30 transition-colors group"
-              >
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <benefit.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-display text-lg font-semibold mb-2">
-                  {benefit.title}
-                </h3>
-                <p className="text-cream/70 text-sm">
-                  {benefit.description}
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* Bottom CTA Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-16 p-6 md:p-8 rounded-2xl bg-gradient-gold text-noir text-center"
-        >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-left">
-              <h3 className="font-display text-2xl font-bold mb-2">
-                Prêt à commencer ?
-              </h3>
-              <p className="text-noir/80">
-                Inscrivez-vous maintenant et recevez votre code ambassadeur unique
-              </p>
-            </div>
-            <Button
-              asChild
-              size="lg"
-              className="bg-noir text-cream hover:bg-noir/90 font-semibold shrink-0"
-            >
-              <Link to="/inscription">
-                Créer mon compte gratuitement
-              </Link>
-            </Button>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-export default MLMTeaser;
+ import { motion } from "framer-motion";
+ import { Link } from "react-router-dom";
+ import { Users, TrendingUp, Wallet, Gift, ArrowRight, Sparkles } from "lucide-react";
+ import { Button } from "@/components/ui/button";
+ 
+ const benefits = [
+   {
+     icon: Users,
+     title: "Parrainez vos proches",
+     description: "Partagez votre lien unique et gagnez sur chaque commande",
+   },
+   {
+     icon: TrendingUp,
+     title: "Revenus Multi-Niveaux",
+     description: "Commissions sur 3 niveaux de votre réseau",
+   },
+   {
+     icon: Wallet,
+     title: "Retrait Instantané",
+     description: "MTN Money et Orange Money disponibles",
+   },
+   {
+     icon: Gift,
+     title: "Bonus Exclusifs",
+     description: "Récompenses et avantages VIP",
+   },
+ ];
+ 
+ const MLMTeaser = () => {
+   return (
+     <section className="py-24 lg:py-32 bg-noir text-cream relative overflow-hidden">
+       {/* Background Decorations */}
+       <div className="absolute inset-0 pointer-events-none">
+         <motion.div 
+           animate={{ y: [0, -20, 0], opacity: [0.05, 0.1, 0.05] }}
+           transition={{ duration: 8, repeat: Infinity }}
+           className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl" 
+         />
+         <motion.div 
+           animate={{ y: [0, 20, 0], opacity: [0.05, 0.15, 0.05] }}
+           transition={{ duration: 6, repeat: Infinity, delay: 1 }}
+           className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-secondary/15 rounded-full blur-3xl" 
+         />
+         
+         {/* Subtle pattern */}
+         <div 
+           className="absolute inset-0 opacity-[0.02]"
+           style={{
+             backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+             backgroundSize: '40px 40px'
+           }}
+         />
+       </div>
+ 
+       <div className="container mx-auto px-4 relative z-10">
+         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
+           {/* Left Content */}
+           <motion.div
+             initial={{ opacity: 0, x: -30 }}
+             whileInView={{ opacity: 1, x: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.6 }}
+           >
+             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm">
+               <Sparkles className="h-4 w-4 text-primary" />
+               <span className="text-sm font-medium text-primary tracking-wide">Programme Ambassadeur</span>
+             </div>
+ 
+             <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mb-8 leading-[1.1]">
+               Transformez votre passion en
+               <br />
+               <span className="text-gradient-gold">source de revenus</span>
+             </h2>
+ 
+             <p className="text-cream/70 text-lg mb-10 leading-relaxed max-w-lg">
+               Rejoignez notre réseau d'ambassadeurs et bénéficiez de commissions 
+               attractives sur chaque vente générée par votre réseau.
+             </p>
+ 
+             <div className="flex flex-col sm:flex-row gap-4">
+               <Button
+                 asChild
+                 size="lg"
+                 className="bg-gradient-gold text-noir font-semibold hover:opacity-90 shadow-gold h-14 px-8 rounded-full shine-effect"
+               >
+                 <Link to="/ambassadeur">
+                   Devenir Ambassadeur
+                   <ArrowRight className="ml-2 h-5 w-5" />
+                 </Link>
+               </Button>
+               <Button
+                 asChild
+                 variant="outline"
+                 size="lg"
+                 className="border-cream/20 text-cream hover:bg-cream/5 h-14 px-8 rounded-full"
+               >
+                 <Link to="/ambassadeur#comment-ca-marche">
+                   En savoir plus
+                 </Link>
+               </Button>
+             </div>
+ 
+             {/* Stats */}
+             <div className="mt-12 grid grid-cols-3 gap-8">
+               {[
+                 { value: "8%", label: "Niveau 1" },
+                 { value: "4%", label: "Niveau 2" },
+                 { value: "2%", label: "Niveau 3" },
+               ].map((stat, index) => (
+                 <motion.div 
+                   key={index} 
+                   className="text-center"
+                   initial={{ opacity: 0, scale: 0.8 }}
+                   whileInView={{ opacity: 1, scale: 1 }}
+                   transition={{ delay: 0.3 + index * 0.1 }}
+                 >
+                   <div className="text-3xl md:text-4xl font-semibold text-primary font-display">
+                     {stat.value}
+                   </div>
+                   <div className="text-xs text-cream/50 mt-2 tracking-wide uppercase">{stat.label}</div>
+                 </motion.div>
+               ))}
+             </div>
+           </motion.div>
+ 
+           {/* Right Content - Benefits Grid */}
+           <motion.div
+             initial={{ opacity: 0, x: 30 }}
+             whileInView={{ opacity: 1, x: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.6, delay: 0.2 }}
+             className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+           >
+             {benefits.map((benefit, index) => (
+               <motion.div
+                 key={index}
+                 initial={{ opacity: 0, y: 20 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 viewport={{ once: true }}
+                 transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                 whileHover={{ y: -5 }}
+                 className="p-7 rounded-2xl bg-cream/[0.03] border border-cream/10 hover:border-primary/30 hover:bg-cream/[0.05] transition-all duration-300 group"
+               >
+                 <motion.div 
+                   whileHover={{ scale: 1.1, rotate: 5 }}
+                   className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors"
+                 >
+                   <benefit.icon className="h-6 w-6 text-primary" />
+                 </motion.div>
+                 <h3 className="font-display text-xl font-semibold mb-2">
+                   {benefit.title}
+                 </h3>
+                 <p className="text-cream/60 text-sm leading-relaxed">
+                   {benefit.description}
+                 </p>
+               </motion.div>
+             ))}
+           </motion.div>
+         </div>
+ 
+         {/* Bottom CTA Banner */}
+         <motion.div
+           initial={{ opacity: 0, y: 30 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+           transition={{ duration: 0.6, delay: 0.4 }}
+           className="mt-20 p-8 md:p-10 rounded-3xl bg-gradient-gold text-noir shine-effect"
+         >
+           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+             <div className="text-left">
+               <h3 className="font-display text-3xl font-semibold mb-2">
+                 Prêt à commencer ?
+               </h3>
+               <p className="text-noir/80">
+                 Inscrivez-vous maintenant et recevez votre lien ambassadeur unique
+               </p>
+             </div>
+             <Button
+               asChild
+               size="lg"
+               className="bg-noir text-cream hover:bg-noir/90 font-semibold shrink-0 h-14 px-10 rounded-full"
+             >
+               <Link to="/inscription">
+                 Créer mon compte
+               </Link>
+             </Button>
+           </div>
+         </motion.div>
+       </div>
+     </section>
+   );
+ };
+ 
+ export default MLMTeaser;

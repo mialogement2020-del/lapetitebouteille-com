@@ -6,36 +6,39 @@ const categories = [
   {
     id: "vins",
     title: "Vins",
-    description: "Rouges, blancs et rosés d'exception",
-    image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=600",
-    href: "/vins",
+    description: "Grands crus et appellations prestigieuses",
+    image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?q=80&w=800",
+    href: "/catalogue?category=vins",
   },
   {
     id: "champagnes",
     title: "Champagnes",
-    description: "Les plus grandes maisons",
-    image: "https://images.unsplash.com/photo-1547595628-c61a29f496f0?q=80&w=600",
-    href: "/champagnes",
+    description: "Les plus grandes maisons françaises",
+    image: "https://images.unsplash.com/photo-1578911373434-0cb395d2cbfb?q=80&w=800",
+    href: "/catalogue?category=champagnes",
   },
   {
     id: "spiritueux",
     title: "Spiritueux",
-    description: "Whisky, Cognac, Rhum...",
-    image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?q=80&w=600",
-    href: "/spiritueux",
+    description: "Whisky, Cognac, Rhum d'exception",
+    image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?q=80&w=800",
+    href: "/catalogue?category=spiritueux",
   },
   {
     id: "coffrets",
     title: "Coffrets Cadeaux",
-    description: "L'art d'offrir",
-    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=600",
-    href: "/coffrets",
+    description: "L'art du cadeau raffiné",
+    image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?q=80&w=800",
+    href: "/catalogue?category=coffrets",
   },
 ];
 
 const CategoriesSection = () => {
   return (
-    <section className="py-20 lg:py-28 bg-cream">
+    <section className="py-24 lg:py-32 bg-cream relative">
+      {/* Decorative line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
+
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <motion.div
@@ -43,18 +46,26 @@ const CategoriesSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 lg:mb-16"
+          className="text-center mb-16 lg:mb-20"
         >
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-noir mb-4">
-            Nos <span className="text-secondary">Catégories</span>
+          <motion.span 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block"
+          >
+            Collections
+          </motion.span>
+          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-noir mb-6">
+            Explorez nos <span className="text-secondary">Univers</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Explorez notre collection soigneusement sélectionnée pour satisfaire les palais les plus exigeants
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            Une sélection rigoureuse pour les palais les plus exigeants
           </p>
         </motion.div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {categories.map((category, index) => (
             <motion.div
               key={category.id}
@@ -65,34 +76,40 @@ const CategoriesSection = () => {
             >
               <Link
                 to={category.href}
-                className="group block relative h-80 rounded-xl overflow-hidden shadow-elegant"
+                className="group block relative h-96 rounded-2xl overflow-hidden shadow-elegant"
               >
                 {/* Image */}
                 <img
                   src={category.image}
                   alt={category.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-noir via-noir/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-noir via-noir/60 to-noir/10 group-hover:from-noir/90 transition-all duration-500" />
 
                 {/* Content */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                  <h3 className="font-display text-2xl font-bold text-cream mb-2 group-hover:text-primary transition-colors">
+                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 + index * 0.1 }}
+                  >
+                  <h3 className="font-display text-3xl font-semibold text-cream mb-3 group-hover:text-primary transition-colors">
                     {category.title}
                   </h3>
-                  <p className="text-cream/70 text-sm mb-4">
+                  <p className="text-cream/70 text-sm mb-5">
                     {category.description}
                   </p>
                   <div className="flex items-center text-primary font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    Explorer
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    Découvrir
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-2" />
                   </div>
+                  </motion.div>
                 </div>
 
                 {/* Border Glow on Hover */}
-                <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-primary/50 transition-colors" />
+                <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-primary/30 transition-all duration-500" />
               </Link>
             </motion.div>
           ))}
