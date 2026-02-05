@@ -12,10 +12,10 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
-        <TrustSection />
         <CategoriesSection />
         <FeaturedProducts />
         <MLMTeaser />
+        <TrustSection />
       </main>
       <Footer />
     </div>
