@@ -1269,6 +1269,7 @@ export type Database = {
       }
       generate_order_number: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
+      get_referrer_id_from_code: { Args: { _code: string }; Returns: string }
       get_user_rank: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["ambassador_rank"]
