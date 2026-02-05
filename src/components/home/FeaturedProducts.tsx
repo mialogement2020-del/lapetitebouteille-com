@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Heart, ShoppingCart, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Mock data - will be replaced with real data from database
@@ -11,7 +11,7 @@ const featuredProducts = [
     category: "Vin Rouge",
     price: 125000,
     originalPrice: 145000,
-    image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1586370434639-0fe43b2d32d6?q=80&w=600",
     rating: 4.9,
     isNew: true,
     inStock: true,
@@ -21,7 +21,7 @@ const featuredProducts = [
     name: "Dom Pérignon Vintage",
     category: "Champagne",
     price: 185000,
-    image: "https://images.unsplash.com/photo-1547595628-c61a29f496f0?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1592483648228-b35146a4330c?q=80&w=600",
     rating: 5.0,
     isNew: false,
     inStock: true,
@@ -31,7 +31,7 @@ const featuredProducts = [
     name: "Hennessy XO",
     category: "Cognac",
     price: 95000,
-    image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?q=80&w=600",
     rating: 4.8,
     isNew: false,
     inStock: true,
@@ -42,7 +42,7 @@ const featuredProducts = [
     category: "Champagne",
     price: 45000,
     originalPrice: 52000,
-    image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=400",
+    image: "https://images.unsplash.com/photo-1594372365401-3b5ff14eaaed?q=80&w=600",
     rating: 4.7,
     isNew: true,
     inStock: false,
@@ -58,7 +58,12 @@ const formatPrice = (price: number) => {
 
 const FeaturedProducts = () => {
   return (
-    <section className="py-20 lg:py-28 bg-cream-dark">
+    <section className="py-24 lg:py-32 bg-marble relative overflow-hidden">
+      {/* Subtle marble texture overlay */}
+      <div className="absolute inset-0 opacity-50">
+        <div className="absolute inset-0 bg-gradient-to-br from-cream via-cream-dark to-cream" />
+      </div>
+
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <motion.div
@@ -66,27 +71,37 @@ const FeaturedProducts = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12"
+          className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16"
         >
           <div>
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-noir mb-4">
+            <motion.span 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block"
+            >
+              Sélection Premium
+            </motion.span>
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-noir leading-tight">
               Nos <span className="text-secondary">Nouveautés</span>
             </h2>
-            <p className="text-muted-foreground max-w-xl">
-              Découvrez les dernières additions à notre collection exclusive
-            </p>
           </div>
-          <Button
-            asChild
-            variant="outline"
-            className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground self-start md:self-auto"
+          <motion.div
+            whileHover={{ x: 5 }}
+            transition={{ type: "spring", stiffness: 400 }}
           >
-            <Link to="/catalogue">Voir tout le catalogue</Link>
-          </Button>
+            <Link 
+              to="/catalogue"
+              className="inline-flex items-center gap-2 text-secondary font-medium hover:text-secondary/80 transition-colors group"
+            >
+              Voir la collection
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
         </motion.div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {featuredProducts.map((product, index) => (
             <motion.div
               key={product.id}
@@ -96,72 +111,87 @@ const FeaturedProducts = () => {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="group"
             >
-              <div className="bg-card rounded-xl overflow-hidden shadow-card hover:shadow-elegant transition-shadow">
+              <div className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-luxury transition-all duration-500 border border-border/50 shine-effect">
                 {/* Image Container */}
-                <div className="relative aspect-[3/4] overflow-hidden bg-cream">
+                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-cream to-cream-dark">
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   
                   {/* Badges */}
-                  <div className="absolute top-3 left-3 flex flex-col gap-2">
+                  <div className="absolute top-4 left-4 flex flex-col gap-2">
                     {product.isNew && (
-                      <span className="px-3 py-1 bg-primary text-noir text-xs font-bold rounded-full">
+                      <motion.span 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="px-3 py-1.5 bg-primary text-noir text-xs font-bold rounded-full shadow-gold"
+                      >
                         Nouveau
-                      </span>
+                      </motion.span>
                     )}
                     {product.originalPrice && (
-                      <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold rounded-full">
-                        Promo
+                      <span className="px-3 py-1.5 bg-secondary text-secondary-foreground text-xs font-bold rounded-full">
+                        -{Math.round((1 - product.price / product.originalPrice) * 100)}%
                       </span>
                     )}
                     {!product.inStock && (
-                      <span className="px-3 py-1 bg-muted text-muted-foreground text-xs font-medium rounded-full">
+                      <span className="px-3 py-1.5 bg-noir/80 text-cream text-xs font-medium rounded-full backdrop-blur-sm">
                         Rupture
                       </span>
                     )}
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="w-10 h-10 rounded-full bg-card/90 backdrop-blur-sm flex items-center justify-center text-foreground hover:text-secondary transition-colors shadow-sm">
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
+                    <motion.button 
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="w-11 h-11 rounded-full bg-card/95 backdrop-blur-sm flex items-center justify-center text-foreground hover:text-secondary transition-colors shadow-lg"
+                    >
                       <Heart className="h-5 w-5" />
-                    </button>
-                  </div>
+                    </motion.button>
+                  </motion.div>
 
                   {/* Add to Cart Overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform">
+                  <motion.div 
+                    className="absolute bottom-0 left-0 right-0 p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+                  >
                     <Button
-                      className="w-full bg-noir text-cream hover:bg-noir/90"
+                      className="w-full bg-noir text-cream hover:bg-noir/90 h-12 rounded-xl font-medium"
                       disabled={!product.inStock}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       {product.inStock ? "Ajouter au panier" : "Indisponible"}
                     </Button>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Product Info */}
-                <div className="p-4">
-                  <div className="flex items-center gap-1 mb-2">
+                <div className="p-5">
+                  <div className="flex items-center gap-1.5 mb-3">
                     <Star className="h-4 w-4 text-primary fill-primary" />
-                    <span className="text-sm font-medium">{product.rating}</span>
+                    <span className="text-sm font-medium text-foreground">{product.rating}</span>
+                    <span className="text-xs text-muted-foreground">(50+ avis)</span>
                   </div>
                   
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  <p className="text-xs text-primary uppercase tracking-widest mb-2 font-medium">
                     {product.category}
                   </p>
                   
                   <Link to={`/produit/${product.id}`}>
-                    <h3 className="font-display text-lg font-semibold text-foreground hover:text-secondary transition-colors line-clamp-2">
+                    <h3 className="font-display text-xl font-semibold text-foreground hover:text-secondary transition-colors line-clamp-2">
                       {product.name}
                     </h3>
                   </Link>
                   
-                  <div className="mt-3 flex items-center gap-2">
-                    <span className="text-lg font-bold text-secondary">
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="text-2xl font-semibold text-secondary">
                       {formatPrice(product.price)}
                     </span>
                     {product.originalPrice && (

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, Search, Wine, LogOut, LogIn, Users, Shield, Heart } from "lucide-react";
+import { Menu, X, User, Search, LogOut, LogIn, Users, Shield, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -17,7 +17,16 @@ const Header = () => {
   const { user, isAuthenticated, signOut } = useAuthContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { wishlistCount } = useWishlist();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Check if user is admin
   const { data: isAdmin } = useQuery({
@@ -44,48 +53,75 @@ const Header = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-noir/95 backdrop-blur-md border-b border-gold/20">
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled 
+          ? "bg-noir/95 backdrop-blur-xl border-b border-gold/10 shadow-luxury" 
+          : "bg-gradient-to-b from-noir/80 to-transparent"
+      }`}
+    >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <Wine className="h-8 w-8 text-primary" />
-            <span className="font-display text-xl lg:text-2xl font-bold text-cream">
-              Prestige<span className="text-primary">Vins</span>
-            </span>
+        <div className="flex items-center justify-between h-20 lg:h-24">
+          {/* Logo - Elegant Typography */}
+          <Link to="/" className="group flex items-center gap-3">
+            <motion.div 
+              className="relative"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <svg className="h-10 w-10 text-primary" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 3C14 3 10 8 10 14C10 18 12 21 15 23V33H13C12 33 11 34 11 35V37H29V35C29 34 28 33 27 33H25V23C28 21 30 18 30 14C30 8 26 3 20 3Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                <path d="M10 14C10 14 14 16 20 16C26 16 30 14 30 14" stroke="currentColor" strokeWidth="1.5"/>
+                <circle cx="20" cy="10" r="2" fill="currentColor" opacity="0.6"/>
+              </svg>
+            </motion.div>
+            <div className="flex flex-col">
+              <span className="font-display text-2xl lg:text-3xl font-semibold text-cream tracking-tight leading-none">
+                La Petite
+              </span>
+              <span className="font-display text-lg lg:text-xl text-primary tracking-widest uppercase">
+                Bouteille
+              </span>
+            </div>
           </Link>
 
           {/* Navigation Desktop */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
-              <Link
+              <motion.div
                 key={link.href}
-                to={link.href}
-                className="text-cream/80 hover:text-primary transition-colors font-medium text-sm uppercase tracking-wide"
+                whileHover={{ y: -2 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                {link.label}
-              </Link>
+                <Link
+                  to={link.href}
+                  className="relative px-4 py-2 text-cream/80 hover:text-cream transition-colors font-medium text-sm uppercase tracking-wider group"
+                >
+                  {link.label}
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-3/4" />
+                </Link>
+              </motion.div>
             ))}
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 lg:gap-4">
+          <div className="flex items-center gap-1 lg:gap-2">
             {/* Search Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-cream hover:text-primary hover:bg-cream/10"
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="p-3 text-cream/70 hover:text-cream transition-colors"
             >
               <Search className="h-5 w-5" />
-            </Button>
+            </motion.button>
 
             {/* Wishlist */}
             <Link to={isAuthenticated ? "/compte?tab=wishlist" : "/connexion"}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-cream hover:text-primary hover:bg-cream/10 relative"
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 text-cream/70 hover:text-cream transition-colors relative"
               >
                 <Heart className="h-5 w-5" />
                 <AnimatePresence mode="wait">
@@ -95,18 +131,14 @@ const Header = () => {
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ 
-                        type: "spring", 
-                        stiffness: 500, 
-                        damping: 15 
-                      }}
-                      className="absolute -top-1 -right-1 bg-primary text-noir text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                    className="absolute top-0 right-0 bg-primary text-noir text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
                     >
                       {wishlistCount > 99 ? "99+" : wishlistCount}
                     </motion.span>
                   )}
                 </AnimatePresence>
-              </Button>
+            </motion.div>
             </Link>
 
             {/* Cart */}
@@ -116,16 +148,16 @@ const Header = () => {
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-cream hover:text-primary hover:bg-cream/10"
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-3 text-cream/70 hover:text-cream transition-colors"
                   >
                     <User className="h-5 w-5" />
-                  </Button>
+                  </motion.button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-noir border-gold/30 z-50">
-                  <div className="px-3 py-2 border-b border-gold/20">
+                <DropdownMenuContent align="end" className="w-56 bg-noir/95 backdrop-blur-xl border-gold/20 z-50 shadow-luxury">
+                  <div className="px-4 py-3 border-b border-gold/10">
                     <p className="text-cream/60 text-xs truncate">
                       {user?.email}
                     </p>
@@ -169,25 +201,25 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <Link to="/connexion">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-cream hover:text-primary hover:bg-cream/10"
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-3 text-cream/70 hover:text-cream transition-colors"
                 >
                   <LogIn className="h-5 w-5" />
-                </Button>
+                </motion.button>
               </Link>
             )}
 
             {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden text-cream hover:text-primary hover:bg-cream/10"
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="lg:hidden p-3 text-cream/70 hover:text-cream transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            </motion.button>
           </div>
         </div>
 
@@ -195,20 +227,26 @@ const Header = () => {
         <AnimatePresence>
           {isSearchOpen && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden border-t border-gold/20"
+              initial={{ height: 0, opacity: 0, y: -10 }}
+              animate={{ height: "auto", opacity: 1, y: 0 }}
+              exit={{ height: 0, opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="overflow-hidden border-t border-gold/10"
             >
-              <div className="py-4">
-                <div className="relative max-w-xl mx-auto">
+              <div className="py-6">
+                <div className="relative max-w-2xl mx-auto">
                   <Input
                     type="text"
                     placeholder="Rechercher un vin, champagne, spiritueux..."
-                    className="bg-cream/10 border-gold/30 text-cream placeholder:text-cream/50 focus:border-primary pr-12"
+                    className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary h-14 text-lg rounded-full px-6 pr-14"
+                    autoFocus
                   />
-                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-cream/50" />
+                  <Button 
+                    size="icon" 
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 text-noir h-10 w-10"
+                  >
+                    <Search className="h-5 w-5" />
+                  </Button>
                 </div>
               </div>
             </motion.div>
@@ -220,35 +258,43 @@ const Header = () => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.nav
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden bg-noir border-t border-gold/20 overflow-hidden"
+              initial={{ opacity: 0, x: "100%" }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: "100%" }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:hidden fixed inset-0 top-20 bg-noir/98 backdrop-blur-xl z-40"
           >
-            <div className="container mx-auto px-4 py-6 space-y-4">
+            <div className="container mx-auto px-6 py-8 h-full overflow-auto">
+              <div className="space-y-2">
               {navLinks.map((link, index) => (
                 <motion.div
                   key={link.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
                 >
                   <Link
                     to={link.href}
-                    className="block text-cream/80 hover:text-primary transition-colors font-medium text-lg py-2"
+                    className="block text-cream hover:text-primary transition-colors font-display text-3xl py-4 border-b border-gold/10"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}
                   </Link>
                 </motion.div>
               ))}
-              <div className="pt-4 border-t border-gold/20 space-y-3">
+              </div>
+
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-10 space-y-4"
+              >
                 {isAuthenticated ? (
                   <>
-                    <p className="text-cream/60 text-sm truncate">{user?.email}</p>
+                    <p className="text-cream/50 text-sm truncate mb-6">{user?.email}</p>
                     <Button 
-                      className="w-full bg-gradient-gold text-noir font-semibold hover:opacity-90"
+                      className="w-full bg-gradient-gold text-noir font-semibold hover:opacity-90 h-14 text-lg"
                       onClick={() => {
                         setIsMenuOpen(false);
                         navigate("/ambassadeur");
@@ -260,7 +306,7 @@ const Header = () => {
                     {isAdmin && (
                       <Button 
                         variant="outline"
-                        className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                        className="w-full border-primary/50 text-primary hover:bg-primary/10 h-14 text-lg"
                         onClick={() => {
                           setIsMenuOpen(false);
                           navigate("/admin");
@@ -272,7 +318,7 @@ const Header = () => {
                     )}
                     <Button 
                       variant="outline"
-                      className="w-full border-gold/30 text-cream hover:bg-cream/10"
+                      className="w-full border-gold/20 text-cream hover:bg-cream/10 h-14 text-lg"
                       onClick={() => {
                         setIsMenuOpen(false);
                         navigate("/compte");
@@ -282,7 +328,7 @@ const Header = () => {
                     </Button>
                     <Button 
                       variant="outline"
-                      className="w-full border-destructive/50 text-destructive hover:bg-destructive/10"
+                      className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 h-14 text-lg"
                       onClick={async () => {
                         await signOut();
                         toast({ title: "Déconnexion réussie" });
@@ -297,18 +343,18 @@ const Header = () => {
                 ) : (
                   <>
                     <Link to="/connexion" onClick={() => setIsMenuOpen(false)}>
-                      <Button className="w-full bg-gradient-gold text-noir font-semibold hover:opacity-90">
+                      <Button className="w-full bg-gradient-gold text-noir font-semibold hover:opacity-90 h-14 text-lg">
                         Se connecter
                       </Button>
                     </Link>
                     <Link to="/inscription" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" className="w-full border-gold/30 text-cream hover:bg-cream/10">
+                      <Button variant="outline" className="w-full border-gold/20 text-cream hover:bg-cream/10 h-14 text-lg">
                         Créer un compte
                       </Button>
                     </Link>
                   </>
                 )}
-              </div>
+              </motion.div>
             </div>
           </motion.nav>
         )}
