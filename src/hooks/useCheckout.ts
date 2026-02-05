@@ -125,7 +125,8 @@ export function useCheckout() {
           shipping_neighborhood: addressData.neighborhood,
           shipping_street: addressData.streetAddress,
           shipping_notes: addressData.additionalInfo || null,
-          guest_phone: !user?.id ? addressData.phone : null,
+      guest_email: !user?.id ? addressData.email?.trim() || null : null,
+      guest_phone: !user?.id ? addressData.phone : null,
           referral_code_used: referralCodeUsed || promoCodeUsed || null,
           referrer_id: referrerId,
         })
