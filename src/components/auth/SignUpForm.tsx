@@ -32,6 +32,7 @@ export function SignUpForm() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
 
   const parseDate = (dateStr: string): Date | null => {
     // Parse DD/MM/YYYY format
@@ -188,6 +189,23 @@ export function SignUpForm() {
     }
   };
 
+  const handleAppleSignUp = async () => {
+    setIsAppleLoading(true);
+    
+    const { error } = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: window.location.origin,
+    });
+    
+    if (error) {
+      setIsAppleLoading(false);
+      toast({
+        title: "Erreur d'inscription",
+        description: "Impossible de s'inscrire avec Apple. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -199,7 +217,7 @@ export function SignUpForm() {
         type="button"
         variant="outline"
         onClick={handleGoogleSignUp}
-        disabled={isGoogleLoading || isLoading}
+        disabled={isGoogleLoading || isAppleLoading || isLoading}
         className="w-full border-gold/30 text-cream hover:bg-cream/10 h-12 mb-4"
       >
         {isGoogleLoading ? (
@@ -225,6 +243,24 @@ export function SignUpForm() {
           </svg>
         )}
         S'inscrire avec Google
+      </Button>
+
+      {/* Apple Sign-Up Button */}
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleAppleSignUp}
+        disabled={isGoogleLoading || isAppleLoading || isLoading}
+        className="w-full border-gold/30 text-cream hover:bg-cream/10 h-12 mb-4"
+      >
+        {isAppleLoading ? (
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+        ) : (
+          <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+          </svg>
+        )}
+        S'inscrire avec Apple
       </Button>
 
       {/* Separator */}
