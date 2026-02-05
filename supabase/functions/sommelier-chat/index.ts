@@ -1,4 +1,5 @@
  import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
  
 // Simple in-memory rate limiter (resets on function cold start)
 // For production, consider using Redis or database-based rate limiting
@@ -6,12 +7,15 @@
 import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_MAX_REQUESTS = 15; // Max requests per window
+const RATE_LIMIT_AUTHENTICATED = 30; // Max requests per window for authenticated users
+const RATE_LIMIT_ANONYMOUS = 5; // Lower limit for anonymous users
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute window
 
-function checkRateLimit(clientIP: string): { allowed: boolean; remaining: number; resetIn: number } {
+function checkRateLimit(clientIP: string, isAuthenticated: boolean): { allowed: boolean; remaining: number; resetIn: number } {
+  const maxRequests = isAuthenticated ? RATE_LIMIT_AUTHENTICATED : RATE_LIMIT_ANONYMOUS;
   const now = Date.now();
-  const record = rateLimitMap.get(clientIP);
+  const key = isAuthenticated ? `auth:${clientIP}` : `anon:${clientIP}`;
+  const record = rateLimitMap.get(key);
   
   // Clean up old entries periodically (simple cleanup every 100 checks)
   if (rateLimitMap.size > 1000) {
@@ -24,16 +28,16 @@ function checkRateLimit(clientIP: string): { allowed: boolean; remaining: number
   
   if (!record || record.resetTime < now) {
     // New window
-    rateLimitMap.set(clientIP, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1, resetIn: RATE_LIMIT_WINDOW_MS };
+    rateLimitMap.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: maxRequests - 1, resetIn: RATE_LIMIT_WINDOW_MS };
   }
   
-  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+  if (record.count >= maxRequests) {
     return { allowed: false, remaining: 0, resetIn: record.resetTime - now };
   }
   
   record.count++;
-  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - record.count, resetIn: record.resetTime - now };
+  return { allowed: true, remaining: maxRequests - record.count, resetIn: record.resetTime - now };
 }
 
  const corsHeaders = {
@@ -78,15 +82,35 @@ function checkRateLimit(clientIP: string): { allowed: boolean; remaining: number
    }
  
    try {
+    // Check authentication status (optional - higher rate limits for authenticated users)
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    let isAuthenticated = false;
+    
+    if (supabaseUrl && supabaseAnonKey) {
+      const authHeader = req.headers.get("authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        try {
+          const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+            auth: { persistSession: false }
+          });
+          const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+          isAuthenticated = !!user;
+        } catch {
+          // Auth check failed, continue as anonymous
+        }
+      }
+    }
+
     // Get client IP for rate limiting
     const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
                      req.headers.get("x-real-ip") || 
                      "unknown";
     
-    // Check rate limit
-    const rateLimit = checkRateLimit(clientIP);
+    // Check rate limit (stricter for anonymous users)
+    const rateLimit = checkRateLimit(clientIP, isAuthenticated);
     if (!rateLimit.allowed) {
-      console.log("Rate limit exceeded", { ip: clientIP, resetIn: rateLimit.resetIn });
+      console.log("Rate limit exceeded", { authenticated: isAuthenticated, resetIn: rateLimit.resetIn });
       return new Response(
         JSON.stringify({ 
           error: "Trop de requêtes. Veuillez patienter avant de réessayer.",
@@ -108,7 +132,7 @@ function checkRateLimit(clientIP: string): { allowed: boolean; remaining: number
     const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`sommelier-${clientIP}`));
     const ipHash = new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
     const shortHash = ipHash.substring(0, 12); // First 12 chars sufficient for debugging
-    console.log("Chat request", { ipHash: shortHash, remaining: rateLimit.remaining, timestamp: new Date().toISOString() });
+    console.log("Chat request", { ipHash: shortHash, authenticated: isAuthenticated, remaining: rateLimit.remaining, timestamp: new Date().toISOString() });
 
      const { messages } = await req.json();
      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

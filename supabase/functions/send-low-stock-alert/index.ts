@@ -122,7 +122,10 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         // Send push notifications to admins
-        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvaHRnbXJsYmF4dHB3emJ4aGRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NjQyMTQsImV4cCI6MjA4NTQ0MDIxNH0.2CE8-Bzu3s5Iilg0t776Cthws75ve-xjmHwBgFsIQEc";
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+        if (!anonKey) {
+          console.error("SUPABASE_ANON_KEY not configured - skipping push notification");
+        } else {
         await sendPushNotificationToAdmins(
           supabaseUrl,
           anonKey,
@@ -130,6 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
           notificationMessage,
           { productId, productName, currentStock, threshold }
         );
+        }
       }
     } catch (notifErr) {
       console.error("Error in notification creation:", notifErr);
