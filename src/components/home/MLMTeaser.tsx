@@ -1,7 +1,8 @@
- import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
  import { Link } from "react-router-dom";
  import { Users, TrendingUp, Wallet, Gift, ArrowRight, Sparkles } from "lucide-react";
  import { Button } from "@/components/ui/button";
+import { useRef } from "react";
  
  const benefits = [
    {
@@ -27,8 +28,19 @@
  ];
  
  const MLMTeaser = () => {
+   const sectionRef = useRef<HTMLElement>(null);
+   
+   const { scrollYProgress } = useScroll({
+     target: sectionRef,
+     offset: ["start end", "center center"]
+   });
+   
+   const leftX = useTransform(scrollYProgress, [0, 0.5], [-100, 0]);
+   const rightX = useTransform(scrollYProgress, [0, 0.5], [100, 0]);
+   const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
+   
    return (
-     <section className="py-24 lg:py-32 bg-noir text-cream relative overflow-hidden">
+     <section ref={sectionRef} className="py-24 lg:py-32 bg-noir text-cream relative overflow-hidden">
        {/* Background Decorations */}
        <div className="absolute inset-0 pointer-events-none">
          <motion.div 
@@ -56,28 +68,53 @@
          <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
            {/* Left Content */}
            <motion.div
-             initial={{ opacity: 0, x: -30 }}
+             initial={{ opacity: 0, x: -50 }}
              whileInView={{ opacity: 1, x: 0 }}
              viewport={{ once: true }}
-             transition={{ duration: 0.6 }}
+             transition={{ duration: 0.8, ease: "easeOut" }}
+             style={{ x: leftX, opacity }}
            >
-             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm">
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.8 }}
+               whileInView={{ opacity: 1, scale: 1 }}
+               transition={{ delay: 0.2, duration: 0.5 }}
+               viewport={{ once: true }}
+               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm"
+             >
                <Sparkles className="h-4 w-4 text-primary" />
                <span className="text-sm font-medium text-primary tracking-wide">Programme Ambassadeur</span>
-             </div>
+             </motion.div>
  
-             <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mb-8 leading-[1.1]">
+             <motion.h2 
+               initial={{ opacity: 0, y: 30 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.3, duration: 0.7 }}
+               viewport={{ once: true }}
+               className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mb-8 leading-[1.1]"
+             >
                Transformez votre passion en
                <br />
                <span className="text-gradient-gold">source de revenus</span>
-             </h2>
+             </motion.h2>
  
-             <p className="text-cream/70 text-lg mb-10 leading-relaxed max-w-lg">
+             <motion.p 
+               initial={{ opacity: 0, y: 20 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.4, duration: 0.6 }}
+               viewport={{ once: true }}
+               className="text-cream/70 text-lg mb-10 leading-relaxed max-w-lg"
+             >
                Rejoignez notre réseau d'ambassadeurs et bénéficiez de commissions 
                attractives sur chaque vente générée par votre réseau.
-             </p>
+             </motion.p>
  
-             <div className="flex flex-col sm:flex-row gap-4">
+             <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.5, duration: 0.6 }}
+               viewport={{ once: true }}
+               className="flex flex-col sm:flex-row gap-4"
+             >
                <Button
                  asChild
                  size="lg"
@@ -98,7 +135,7 @@
                    En savoir plus
                  </Link>
                </Button>
-             </div>
+             </motion.div>
  
              {/* Stats */}
              <div className="mt-12 grid grid-cols-3 gap-8">
@@ -112,7 +149,8 @@
                    className="text-center"
                    initial={{ opacity: 0, scale: 0.8 }}
                    whileInView={{ opacity: 1, scale: 1 }}
-                   transition={{ delay: 0.3 + index * 0.1 }}
+                   viewport={{ once: true }}
+                   transition={{ delay: 0.6 + index * 0.15, type: "spring", stiffness: 200 }}
                  >
                    <div className="text-3xl md:text-4xl font-semibold text-primary font-display">
                      {stat.value}
@@ -125,24 +163,30 @@
  
            {/* Right Content - Benefits Grid */}
            <motion.div
-             initial={{ opacity: 0, x: 30 }}
+             initial={{ opacity: 0, x: 50 }}
              whileInView={{ opacity: 1, x: 0 }}
              viewport={{ once: true }}
-             transition={{ duration: 0.6, delay: 0.2 }}
+             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+             style={{ x: rightX, opacity }}
              className="grid grid-cols-1 sm:grid-cols-2 gap-5"
            >
              {benefits.map((benefit, index) => (
                <motion.div
                  key={index}
-                 initial={{ opacity: 0, y: 20 }}
-                 whileInView={{ opacity: 1, y: 0 }}
+                 initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                  viewport={{ once: true }}
-                 transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                 whileHover={{ y: -5 }}
+                 transition={{ 
+                   duration: 0.5, 
+                   delay: 0.4 + index * 0.12,
+                   ease: [0.25, 0.46, 0.45, 0.94]
+                 }}
+                 whileHover={{ y: -8, scale: 1.02 }}
                  className="p-7 rounded-2xl bg-cream/[0.03] border border-cream/10 hover:border-primary/30 hover:bg-cream/[0.05] transition-all duration-300 group"
                >
                  <motion.div 
-                   whileHover={{ scale: 1.1, rotate: 5 }}
+                   whileHover={{ scale: 1.15, rotate: 10 }}
+                   transition={{ type: "spring", stiffness: 300 }}
                    className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors"
                  >
                    <benefit.icon className="h-6 w-6 text-primary" />
@@ -160,10 +204,11 @@
  
          {/* Bottom CTA Banner */}
          <motion.div
-           initial={{ opacity: 0, y: 30 }}
-           whileInView={{ opacity: 1, y: 0 }}
+           initial={{ opacity: 0, y: 50, scale: 0.95 }}
+           whileInView={{ opacity: 1, y: 0, scale: 1 }}
            viewport={{ once: true }}
-           transition={{ duration: 0.6, delay: 0.4 }}
+           transition={{ duration: 0.7, delay: 0.5, ease: "easeOut" }}
+           whileHover={{ scale: 1.02 }}
            className="mt-20 p-8 md:p-10 rounded-3xl bg-gradient-gold text-noir shine-effect"
          >
            <div className="flex flex-col md:flex-row items-center justify-between gap-8">

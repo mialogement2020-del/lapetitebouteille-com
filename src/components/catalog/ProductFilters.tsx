@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Filter, X, ChevronDown } from "lucide-react";
+import { Filter, X, ChevronDown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,7 +83,7 @@ const FilterContent = ({ filters, onFiltersChange }: ProductFiltersProps) => {
           variant="outline"
           size="sm"
           onClick={clearFilters}
-          className="w-full border-burgundy text-burgundy hover:bg-burgundy hover:text-white"
+          className="w-full border-secondary/50 text-secondary hover:bg-secondary hover:text-cream rounded-full"
         >
           <X className="w-4 h-4 mr-2" />
           Effacer les filtres
@@ -92,21 +92,21 @@ const FilterContent = ({ filters, onFiltersChange }: ProductFiltersProps) => {
 
       {/* Categories */}
       <Collapsible open={openSections.category} onOpenChange={() => toggleSection("category")}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-semibold text-foreground">
-          <span>Catégories</span>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-3 font-semibold text-cream border-b border-cream/10">
+          <span className="text-sm uppercase tracking-wider">Catégories</span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${
+            className={`w-4 h-4 transition-transform text-cream/50 ${
               openSections.category ? "rotate-180" : ""
             }`}
           />
         </CollapsibleTrigger>
-        <CollapsibleContent className="pt-2 space-y-2">
+        <CollapsibleContent className="pt-3 space-y-1">
           <button
             onClick={() => onFiltersChange({ ...filters, categorySlug: undefined })}
-            className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+            className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all ${
               !filters.categorySlug
-                ? "bg-gold/20 text-gold font-medium"
-                : "hover:bg-muted"
+                ? "bg-primary/20 text-primary font-medium border border-primary/30"
+                : "text-cream/70 hover:bg-cream/5 hover:text-cream"
             }`}
           >
             Toutes les catégories
@@ -117,10 +117,10 @@ const FilterContent = ({ filters, onFiltersChange }: ProductFiltersProps) => {
               onClick={() =>
                 onFiltersChange({ ...filters, categorySlug: category.slug })
               }
-              className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+              className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all ${
                 filters.categorySlug === category.slug
-                  ? "bg-gold/20 text-gold font-medium"
-                  : "hover:bg-muted"
+                  ? "bg-primary/20 text-primary font-medium border border-primary/30"
+                  : "text-cream/70 hover:bg-cream/5 hover:text-cream"
               }`}
             >
               {category.name}
@@ -131,10 +131,10 @@ const FilterContent = ({ filters, onFiltersChange }: ProductFiltersProps) => {
 
       {/* Price Range */}
       <Collapsible open={openSections.price} onOpenChange={() => toggleSection("price")}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-semibold text-foreground">
-          <span>Prix</span>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-3 font-semibold text-cream border-b border-cream/10">
+          <span className="text-sm uppercase tracking-wider">Prix</span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${
+            className={`w-4 h-4 transition-transform text-cream/50 ${
               openSections.price ? "rotate-180" : ""
             }`}
           />
@@ -147,9 +147,9 @@ const FilterContent = ({ filters, onFiltersChange }: ProductFiltersProps) => {
             min={0}
             max={500000}
             step={5000}
-            className="w-full"
+            className="w-full [&_[role=slider]]:bg-primary [&_[role=slider]]:border-primary [&_.relative]:bg-cream/20 [&_[data-orientation=horizontal]>.absolute]:bg-primary"
           />
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center justify-between text-sm text-cream/60">
             <span>{formatPrice(priceRange[0])}</span>
             <span>{formatPrice(priceRange[1])}</span>
           </div>
@@ -158,21 +158,21 @@ const FilterContent = ({ filters, onFiltersChange }: ProductFiltersProps) => {
 
       {/* Origin */}
       <Collapsible open={openSections.origin} onOpenChange={() => toggleSection("origin")}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full py-2 font-semibold text-foreground">
-          <span>Origine</span>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-3 font-semibold text-cream border-b border-cream/10">
+          <span className="text-sm uppercase tracking-wider">Origine</span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform ${
+            className={`w-4 h-4 transition-transform text-cream/50 ${
               openSections.origin ? "rotate-180" : ""
             }`}
           />
         </CollapsibleTrigger>
-        <CollapsibleContent className="pt-2 space-y-2">
+        <CollapsibleContent className="pt-3 space-y-1">
           <button
             onClick={() => onFiltersChange({ ...filters, origin: undefined })}
-            className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+            className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all ${
               !filters.origin
-                ? "bg-gold/20 text-gold font-medium"
-                : "hover:bg-muted"
+                ? "bg-primary/20 text-primary font-medium border border-primary/30"
+                : "text-cream/70 hover:bg-cream/5 hover:text-cream"
             }`}
           >
             Toutes les origines
@@ -181,10 +181,10 @@ const FilterContent = ({ filters, onFiltersChange }: ProductFiltersProps) => {
             <button
               key={origin}
               onClick={() => onFiltersChange({ ...filters, origin })}
-              className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+              className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all ${
                 filters.origin === origin
-                  ? "bg-gold/20 text-gold font-medium"
-                  : "hover:bg-muted"
+                  ? "bg-primary/20 text-primary font-medium border border-primary/30"
+                  : "text-cream/70 hover:bg-cream/5 hover:text-cream"
               }`}
             >
               {origin}
@@ -203,14 +203,14 @@ export const ProductFilters = ({ filters, onFiltersChange }: ProductFiltersProps
     return (
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2 border-cream/20 text-cream hover:bg-cream/5 rounded-full">
             <Filter className="w-4 h-4" />
             Filtres
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-80">
+        <SheetContent side="left" className="w-80 bg-noir border-cream/10">
           <SheetHeader>
-            <SheetTitle>Filtres</SheetTitle>
+            <SheetTitle className="text-cream font-display">Filtres</SheetTitle>
           </SheetHeader>
           <div className="mt-6">
             <FilterContent filters={filters} onFiltersChange={onFiltersChange} />
@@ -226,8 +226,11 @@ export const ProductFilters = ({ filters, onFiltersChange }: ProductFiltersProps
       animate={{ opacity: 1, x: 0 }}
       className="w-64 flex-shrink-0"
     >
-      <div className="sticky top-24 bg-card rounded-lg border p-6">
-        <h2 className="font-display text-lg font-semibold mb-4">Filtres</h2>
+      <div className="sticky top-24 glass-premium rounded-2xl border border-cream/10 p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <h2 className="font-display text-lg font-semibold text-cream">Filtres</h2>
+        </div>
         <FilterContent filters={filters} onFiltersChange={onFiltersChange} />
       </div>
     </motion.aside>
