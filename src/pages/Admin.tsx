@@ -14,7 +14,8 @@ import {
   MessageSquare,
   Bell,
   History,
-  RefreshCw
+   RefreshCw,
+   Users
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -44,6 +45,7 @@ import { StockAlertSettings } from "@/components/admin/StockAlertSettings";
 import { StockAlertsPDFExport } from "@/components/admin/StockAlertsPDFExport";
 import { WeeklyReportSettings } from "@/components/admin/WeeklyReportSettings";
 import { AuditLogsTable } from "@/components/admin/AuditLogsTable";
+ import { MLMDashboard } from "@/components/admin/MLMDashboard";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -527,6 +529,13 @@ const Admin = () => {
                   <History className="h-4 w-4 mr-2" />
                   Audit
                 </TabsTrigger>
+                 <TabsTrigger 
+                   value="mlm"
+                   className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                 >
+                   <Users className="h-4 w-4 mr-2" />
+                   MLM
+                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="performance" className="space-y-8">
@@ -653,6 +662,10 @@ const Admin = () => {
               <TabsContent value="audit" className="space-y-6">
                 <AuditLogsTable />
               </TabsContent>
+ 
+               <TabsContent value="mlm" className="space-y-6">
+                 <MLMDashboard />
+               </TabsContent>
             </Tabs>
           </motion.div>
         </div>

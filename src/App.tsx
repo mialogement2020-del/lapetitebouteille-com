@@ -17,6 +17,9 @@ import Ambassadeur from "./pages/Ambassadeur";
 import Compte from "./pages/Compte";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+ import Conditions from "./pages/Conditions";
+ import Confidentialite from "./pages/Confidentialite";
+ import { SommelierChat } from "./components/chat/SommelierChat";
 
 const queryClient = new QueryClient();
 
@@ -40,9 +43,12 @@ const App = () => (
               <Route path="/ambassadeur" element={<Ambassadeur />} />
               <Route path="/compte" element={<Compte />} />
               <Route path="/admin" element={<Admin />} />
+               <Route path="/conditions" element={<Conditions />} />
+               <Route path="/confidentialite" element={<Confidentialite />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+             <SommelierChat />
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
