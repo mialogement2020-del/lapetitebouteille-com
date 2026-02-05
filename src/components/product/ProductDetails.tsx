@@ -1,5 +1,6 @@
 import { Wine, Thermometer, Utensils, Grape, MapPin, Calendar } from "lucide-react";
 import { Product } from "@/hooks/useProducts";
+import { motion } from "framer-motion";
 
 interface ProductDetailsProps {
   product: Product;
@@ -35,63 +36,96 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
   ].filter((d) => d.value);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Product Specs */}
       {details.length > 0 && (
-        <div className="bg-muted/50 rounded-lg p-6">
-          <h3 className="font-display text-lg font-semibold mb-4">
+        <motion.div 
+          className="glass-premium rounded-2xl p-8 border border-cream/10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 className="font-display text-xl font-semibold mb-6 text-cream flex items-center gap-2">
+            <span className="w-8 h-px bg-gradient-gold" />
             Caractéristiques
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {details.map((detail, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <detail.icon className="h-5 w-5 text-gold flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">{detail.label}</p>
-                  <p className="font-medium">{detail.value}</p>
+              <motion.div 
+                key={index} 
+                className="flex items-start gap-4 p-4 rounded-xl bg-cream/5 hover:bg-cream/10 transition-colors"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <detail.icon className="h-5 w-5 text-primary" />
                 </div>
-              </div>
+                <div>
+                  <p className="text-sm text-cream/50">{detail.label}</p>
+                  <p className="font-medium text-cream">{detail.value}</p>
+                </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Tasting Notes */}
       {product.tasting_notes && (
-        <div>
-          <h3 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
-            <Wine className="h-5 w-5 text-burgundy" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="p-6 rounded-2xl border border-secondary/20 bg-secondary/5"
+        >
+          <h3 className="font-display text-xl font-semibold mb-4 flex items-center gap-3 text-cream">
+            <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
+              <Wine className="h-5 w-5 text-secondary" />
+            </div>
             Notes de dégustation
           </h3>
-          <p className="text-muted-foreground leading-relaxed">
+          <p className="text-cream/70 leading-relaxed pl-[52px]">
             {product.tasting_notes}
           </p>
-        </div>
+        </motion.div>
       )}
 
       {/* Food Pairing */}
       {product.food_pairing && (
-        <div>
-          <h3 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
-            <Utensils className="h-5 w-5 text-gold" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="p-6 rounded-2xl border border-primary/20 bg-primary/5"
+        >
+          <h3 className="font-display text-xl font-semibold mb-4 flex items-center gap-3 text-cream">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Utensils className="h-5 w-5 text-primary" />
+            </div>
             Accords mets-vins
           </h3>
-          <p className="text-muted-foreground leading-relaxed">
+          <p className="text-cream/70 leading-relaxed pl-[52px]">
             {product.food_pairing}
           </p>
-        </div>
+        </motion.div>
       )}
 
       {/* Full Description */}
       {product.description && (
-        <div>
-          <h3 className="font-display text-lg font-semibold mb-3">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <h3 className="font-display text-xl font-semibold mb-4 text-cream flex items-center gap-2">
+            <span className="w-8 h-px bg-gradient-gold" />
             Description
           </h3>
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+          <p className="text-cream/70 leading-relaxed whitespace-pre-line">
             {product.description}
           </p>
-        </div>
+        </motion.div>
       )}
     </div>
   );

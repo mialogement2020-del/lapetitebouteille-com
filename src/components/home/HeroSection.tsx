@@ -1,21 +1,40 @@
- import { motion } from "framer-motion";
- import { ArrowRight, Star, ChevronDown } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowRight, Star, ChevronDown } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import { Link } from "react-router-dom";
 import heroBackground from "@/assets/hero-wine-cellar.jpg";
+import { useRef } from "react";
  
  const HeroSection = () => {
+  const containerRef = useRef<HTMLElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [1, 0.5, 0]);
+  
    return (
-     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-noir pt-24">
+    <section 
+      ref={containerRef}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-noir pt-24"
+    >
        {/* Background Image with Overlay */}
-       <div
-         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+      <motion.div
+        className="absolute inset-[-20%] bg-cover bg-center bg-no-repeat will-change-transform"
          style={{
           backgroundImage: `url(${heroBackground})`,
+          y: backgroundY,
          }}
+        initial={{ scale: 1.1 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
        >
-         <div className="absolute inset-0 bg-gradient-to-b from-noir/95 via-noir/70 to-noir" />
-       </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-noir/90 via-noir/60 to-noir" />
+      </motion.div>
  
        {/* Decorative Elements */}
        <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -46,7 +65,10 @@ import heroBackground from "@/assets/hero-wine-cellar.jpg";
        </div>
  
        {/* Content */}
-       <div className="relative z-10 container mx-auto px-4">
+      <motion.div 
+        className="relative z-10 container mx-auto px-4"
+        style={{ y: textY, opacity }}
+      >
          <div className="max-w-4xl mx-auto text-center">
            {/* Badge */}
            <motion.div
@@ -138,7 +160,7 @@ import heroBackground from "@/assets/hero-wine-cellar.jpg";
              ))}
            </motion.div>
          </div>
-       </div>
+      </motion.div>
  
        {/* Scroll Indicator */}
        <motion.div

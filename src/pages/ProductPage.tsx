@@ -10,6 +10,7 @@ import {
   Truck,
   Shield,
   Gift,
+  Sparkles,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -108,43 +109,50 @@ const ProductPage = () => {
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-noir">
       <Header />
 
-      <main className="pt-24 pb-12">
-        <div className="container mx-auto px-4">
+      <main className="pt-24 pb-12 relative">
+        {/* Decorative Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-40 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-            <Link to="/" className="hover:text-foreground transition-colors">
+          <nav className="flex items-center gap-2 text-sm text-cream/60 mb-8">
+            <Link to="/" className="hover:text-primary transition-colors">
               Accueil
             </Link>
-            <ChevronRight className="h-4 w-4" />
-            <Link to="/catalogue" className="hover:text-foreground transition-colors">
+            <ChevronRight className="h-4 w-4 text-cream/40" />
+            <Link to="/catalogue" className="hover:text-primary transition-colors">
               Catalogue
             </Link>
             {product.category && (
               <>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 text-cream/40" />
                 <Link
                   to={`/catalogue?category=${product.category.slug}`}
-                  className="hover:text-foreground transition-colors"
+                  className="hover:text-primary transition-colors"
                 >
                   {product.category.name}
                 </Link>
               </>
             )}
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-foreground font-medium truncate max-w-[200px]">
+            <ChevronRight className="h-4 w-4 text-cream/40" />
+            <span className="text-cream font-medium truncate max-w-[200px]">
               {product.name}
             </span>
           </nav>
 
           {/* Product Layout */}
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             {/* Gallery */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
             >
               <ProductGallery
                 mainImage={product.image_url}
@@ -157,50 +165,54 @@ const ProductPage = () => {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
               className="space-y-6"
             >
               {/* Category & Badges */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 {product.category && (
                   <Link
                     to={`/catalogue?category=${product.category.slug}`}
-                    className="text-sm text-gold uppercase tracking-wider hover:underline"
+                    className="text-sm text-primary uppercase tracking-widest hover:underline font-medium"
                   >
                     {product.category.name}
                   </Link>
                 )}
                 {isNew && (
-                  <Badge className="bg-gold text-black">Nouveau</Badge>
+                  <Badge className="bg-gradient-gold text-noir font-semibold">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Nouveau
+                  </Badge>
                 )}
                 {discount > 0 && (
-                  <Badge className="bg-burgundy text-white">-{discount}%</Badge>
+                  <Badge className="bg-secondary text-cream font-semibold">-{discount}%</Badge>
                 )}
               </div>
 
               {/* Name */}
-              <h1 className="font-display text-3xl md:text-4xl font-bold">
+              <h1 className="font-display text-3xl md:text-5xl font-semibold text-cream leading-tight">
                 {product.name}
               </h1>
 
               {/* Rating */}
               {product.review_count > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
                         className={`h-5 w-5 ${
                           i < Math.round(product.average_rating)
-                            ? "fill-gold text-gold"
-                            : "text-muted"
+                            ? "fill-primary text-primary"
+                            : "text-cream/20"
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="font-medium">
+                  <span className="font-medium text-cream">
                     {product.average_rating.toFixed(1)}
                   </span>
-                  <span className="text-muted-foreground">
+                  <span className="text-cream/50">
                     ({product.review_count} avis)
                   </span>
                 </div>
@@ -208,18 +220,21 @@ const ProductPage = () => {
 
               {/* Short Description */}
               {product.short_description && (
-                <p className="text-lg text-muted-foreground">
+                <p className="text-lg text-cream/70 leading-relaxed">
                   {product.short_description}
                 </p>
               )}
 
               {/* Price */}
-              <div className="flex items-baseline gap-4">
-                <span className="text-3xl md:text-4xl font-bold text-foreground">
-                  {formatPrice(product.price)} <span className="text-lg">FCFA</span>
-                </span>
+              <div className="flex items-baseline gap-4 py-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl md:text-5xl font-bold text-gradient-gold font-display">
+                    {formatPrice(product.price)}
+                  </span>
+                  <span className="text-lg text-cream/60 font-medium">FCFA</span>
+                </div>
                 {product.original_price && (
-                  <span className="text-xl text-muted-foreground line-through">
+                  <span className="text-xl text-cream/40 line-through">
                     {formatPrice(product.original_price)} FCFA
                   </span>
                 )}
@@ -229,10 +244,10 @@ const ProductPage = () => {
               <div className="flex items-center gap-2">
                 {product.stock_quantity > 0 ? (
                   <>
-                    <span className="w-2 h-2 rounded-full bg-gold" />
-                    <span className="text-gold font-medium">En stock</span>
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-primary font-medium">En stock</span>
                     {product.stock_quantity <= 5 && (
-                      <span className="text-burgundy text-sm">
+                      <span className="text-secondary text-sm">
                         (Plus que {product.stock_quantity} disponibles)
                       </span>
                     )}
@@ -247,21 +262,23 @@ const ProductPage = () => {
 
               {/* Quantity & Add to Cart */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex items-center border rounded-md">
+                <div className="flex items-center border border-cream/20 rounded-full bg-cream/5">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
+                    className="text-cream hover:bg-cream/10 rounded-full"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-12 text-center font-semibold">{quantity}</span>
+                  <span className="w-12 text-center font-semibold text-cream">{quantity}</span>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity(quantity + 1)}
                     disabled={quantity >= product.stock_quantity}
+                    className="text-cream hover:bg-cream/10 rounded-full"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -272,37 +289,43 @@ const ProductPage = () => {
                   productName={product.name}
                   quantity={quantity}
                   size="lg"
-                  className="flex-1 bg-gold hover:bg-gold/90 text-black font-semibold gap-2"
+                  className="flex-1 bg-gradient-gold text-noir font-semibold gap-2 rounded-full hover:opacity-90 shadow-gold shine-effect py-6"
                   disabled={product.stock_quantity <= 0}
                 />
               </div>
 
               {/* Secondary Actions */}
               <div className="flex gap-4">
-                <WishlistButton productId={product.id} variant="full" />
-                <Button variant="outline" className="gap-2" onClick={handleShare}>
+                <WishlistButton productId={product.id} variant="full" className="border-cream/20 text-cream hover:bg-cream/5 rounded-full" />
+                <Button variant="outline" className="gap-2 border-cream/20 text-cream hover:bg-cream/5 rounded-full" onClick={handleShare}>
                   <Share2 className="h-4 w-4" />
                   Partager
                 </Button>
               </div>
 
               {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-4 pt-6 border-t">
+              <div className="grid grid-cols-3 gap-4 pt-8 border-t border-cream/10">
                 <div className="text-center">
-                  <Truck className="h-6 w-6 mx-auto text-gold mb-2" />
-                  <p className="text-xs text-muted-foreground">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Truck className="h-5 w-5 text-primary" />
+                  </div>
+                  <p className="text-xs text-cream/60">
                     Livraison Yaoundé & Douala
                   </p>
                 </div>
                 <div className="text-center">
-                  <Shield className="h-6 w-6 mx-auto text-gold mb-2" />
-                  <p className="text-xs text-muted-foreground">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Shield className="h-5 w-5 text-primary" />
+                  </div>
+                  <p className="text-xs text-cream/60">
                     Paiement sécurisé
                   </p>
                 </div>
                 <div className="text-center">
-                  <Gift className="h-6 w-6 mx-auto text-gold mb-2" />
-                  <p className="text-xs text-muted-foreground">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Gift className="h-5 w-5 text-primary" />
+                  </div>
+                  <p className="text-xs text-cream/60">
                     Parrainez & Gagnez
                   </p>
                 </div>
@@ -311,26 +334,31 @@ const ProductPage = () => {
           </div>
 
           {/* Product Tabs */}
-          <div className="mt-12">
+          <motion.div 
+            className="mt-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
             <Tabs defaultValue="details" className="w-full">
-              <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0">
+              <TabsList className="w-full justify-start border-b border-cream/10 rounded-none bg-transparent h-auto p-0">
                 <TabsTrigger
                   value="details"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent px-6 py-3"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary text-cream/60 px-6 py-4 font-medium"
                 >
                   Détails du produit
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent px-6 py-3"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary text-cream/60 px-6 py-4 font-medium"
                 >
                   Avis clients ({product.review_count})
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="details" className="pt-6">
+              <TabsContent value="details" className="pt-8">
                 <ProductDetails product={product} />
               </TabsContent>
-              <TabsContent value="reviews" className="pt-6">
+              <TabsContent value="reviews" className="pt-8">
                 <ProductReviews
                   productId={product.id}
                   averageRating={product.average_rating}
@@ -338,7 +366,7 @@ const ProductPage = () => {
                 />
               </TabsContent>
             </Tabs>
-          </div>
+          </motion.div>
         </div>
 
         {/* Related Products */}
