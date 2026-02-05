@@ -2,6 +2,9 @@
  
 // Simple in-memory rate limiter (resets on function cold start)
 // For production, consider using Redis or database-based rate limiting
+// Privacy: IPs are hashed for logging, never stored in full
+import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
+
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_MAX_REQUESTS = 15; // Max requests per window
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute window
@@ -100,9 +103,12 @@ function checkRateLimit(clientIP: string): { allowed: boolean; remaining: number
       );
     }
     
-    // Log request for monitoring (anonymized IP - last octet masked)
-    const maskedIP = clientIP.replace(/\.\d+$/, ".xxx");
-    console.log("Chat request", { ip: maskedIP, remaining: rateLimit.remaining, timestamp: new Date().toISOString() });
+    // Log request for monitoring (hashed IP for privacy compliance)
+    // Using SHA-256 hash with salt prefix for proper anonymization
+    const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`sommelier-${clientIP}`));
+    const ipHash = new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
+    const shortHash = ipHash.substring(0, 12); // First 12 chars sufficient for debugging
+    console.log("Chat request", { ipHash: shortHash, remaining: rateLimit.remaining, timestamp: new Date().toISOString() });
 
      const { messages } = await req.json();
      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
