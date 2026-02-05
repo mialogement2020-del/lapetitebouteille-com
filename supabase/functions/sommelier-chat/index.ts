@@ -1,5 +1,38 @@
  import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
  
+// Simple in-memory rate limiter (resets on function cold start)
+// For production, consider using Redis or database-based rate limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_MAX_REQUESTS = 15; // Max requests per window
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute window
+
+function checkRateLimit(clientIP: string): { allowed: boolean; remaining: number; resetIn: number } {
+  const now = Date.now();
+  const record = rateLimitMap.get(clientIP);
+  
+  // Clean up old entries periodically (simple cleanup every 100 checks)
+  if (rateLimitMap.size > 1000) {
+    for (const [ip, data] of rateLimitMap.entries()) {
+      if (data.resetTime < now) {
+        rateLimitMap.delete(ip);
+      }
+    }
+  }
+  
+  if (!record || record.resetTime < now) {
+    // New window
+    rateLimitMap.set(clientIP, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1, resetIn: RATE_LIMIT_WINDOW_MS };
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, remaining: 0, resetIn: record.resetTime - now };
+  }
+  
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - record.count, resetIn: record.resetTime - now };
+}
+
  const corsHeaders = {
    "Access-Control-Allow-Origin": "*",
    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -42,6 +75,35 @@
    }
  
    try {
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                     req.headers.get("x-real-ip") || 
+                     "unknown";
+    
+    // Check rate limit
+    const rateLimit = checkRateLimit(clientIP);
+    if (!rateLimit.allowed) {
+      console.log("Rate limit exceeded", { ip: clientIP, resetIn: rateLimit.resetIn });
+      return new Response(
+        JSON.stringify({ 
+          error: "Trop de requêtes. Veuillez patienter avant de réessayer.",
+          retryAfter: Math.ceil(rateLimit.resetIn / 1000)
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000))
+          } 
+        }
+      );
+    }
+    
+    // Log request for monitoring (anonymized IP - last octet masked)
+    const maskedIP = clientIP.replace(/\.\d+$/, ".xxx");
+    console.log("Chat request", { ip: maskedIP, remaining: rateLimit.remaining, timestamp: new Date().toISOString() });
+
      const { messages } = await req.json();
      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
      
