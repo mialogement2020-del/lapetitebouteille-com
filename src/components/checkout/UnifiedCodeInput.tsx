@@ -152,44 +152,30 @@ export function UnifiedCodeInput({
         return;
       }
 
-      // If not a promo code, try as a referral code
-      const { data: referralCode, error: referralError } = await supabase
-        .from("referral_codes")
-        .select(`
-          code,
-          user_id,
-          is_active
-        `)
-        .or(`code.eq.${normalizedCode},custom_code.eq.${normalizedCode}`)
-        .eq("is_active", true)
-        .maybeSingle();
+      // If not a promo code, try as a referral code using secure server-side validation
+      const { data: validationResult, error: validationError } = await supabase
+        .rpc('validate_referral_code', { _code: normalizedCode });
 
-      if (referralError) throw referralError;
+      if (validationError) throw validationError;
 
-      if (referralCode) {
-        // Get referrer's name from profiles
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("first_name, last_name")
-          .eq("id", referralCode.user_id)
-          .single();
-
-        const referrerName = profile
-          ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Parrain"
-          : "Parrain";
-
+      // Type the result properly
+      const result = validationResult as { is_valid: boolean; code: string } | null;
+      
+      if (result?.is_valid) {
+        // Code is valid - store it for checkout
+        // The referrer_id will be resolved securely during order creation
         onApply({
           type: "referral",
           data: {
-            code: referralCode.code,
-            referrerId: referralCode.user_id,
-            referrerName,
+            code: normalizedCode,
+            referrerId: "", // Will be resolved server-side during checkout
+            referrerName: "Parrain",
           },
         });
 
         toast({
           title: "Code parrain appliqué !",
-          description: `Parrainé par ${referrerName}`,
+          description: "Le parrainage sera validé lors de la commande",
         });
 
         setCode("");
