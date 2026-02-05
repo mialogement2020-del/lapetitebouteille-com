@@ -91,8 +91,17 @@ export function useCheckout() {
       let promoCodeUsed: string | null = null;
 
       if (appliedCode?.type === "referral") {
-        referrerId = appliedCode.data.referrerId;
         referralCodeUsed = appliedCode.data.code;
+        
+        // Securely resolve referrer_id from code using server-side function
+        const { data: resolvedReferrerId, error: resolveError } = await supabase
+          .rpc('get_referrer_id_from_code', { _code: referralCodeUsed });
+        
+        if (resolveError) {
+          console.error('Error resolving referrer:', resolveError);
+        } else {
+          referrerId = resolvedReferrerId;
+        }
       } else if (appliedCode?.type === "promo") {
         promoCodeUsed = appliedCode.data.code;
       }
