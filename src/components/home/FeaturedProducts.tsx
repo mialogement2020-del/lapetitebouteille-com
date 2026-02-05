@@ -1,7 +1,8 @@
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRef } from "react";
 
 // Mock data - will be replaced with real data from database
 const featuredProducts = [
@@ -57,8 +58,18 @@ const formatPrice = (price: number) => {
 };
 
 const FeaturedProducts = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "center center"]
+  });
+  
+  const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
+  const y = useTransform(scrollYProgress, [0, 0.3], [80, 0]);
+  
   return (
-    <section className="py-24 lg:py-32 bg-marble relative overflow-hidden">
+    <section ref={sectionRef} className="py-24 lg:py-32 bg-marble relative overflow-hidden">
       {/* Subtle marble texture overlay */}
       <div className="absolute inset-0 opacity-50">
         <div className="absolute inset-0 bg-gradient-to-br from-cream via-cream-dark to-cream" />
@@ -67,28 +78,38 @@ const FeaturedProducts = () => {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16"
         >
           <div>
             <motion.span 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.6 }}
               className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block"
             >
               Sélection Premium
             </motion.span>
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-noir leading-tight">
+            <motion.h2 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.7 }}
+              className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-noir leading-tight"
+            >
               Nos <span className="text-secondary">Nouveautés</span>
-            </h2>
+            </motion.h2>
           </div>
           <motion.div
-            whileHover={{ x: 5 }}
-            transition={{ type: "spring", stiffness: 400 }}
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            whileHover={{ x: 10 }}
           >
             <Link 
               to="/catalogue"
@@ -101,17 +122,25 @@ const FeaturedProducts = () => {
         </motion.div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+          style={{ opacity, y }}
+        >
           {featuredProducts.map((product, index) => (
             <motion.div
               key={product.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group"
+              transition={{ 
+                duration: 0.6, 
+                delay: index * 0.12,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }}
+              whileHover={{ y: -8 }}
+              className="group will-change-transform"
             >
-              <div className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-luxury transition-all duration-500 border border-border/50 shine-effect">
+              <div className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-luxury transition-all duration-700 border border-border/50 shine-effect">
                 {/* Image Container */}
                 <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-cream to-cream-dark">
                   <img
@@ -204,7 +233,7 @@ const FeaturedProducts = () => {
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

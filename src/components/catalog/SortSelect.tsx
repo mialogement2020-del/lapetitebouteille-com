@@ -23,12 +23,16 @@ const sortOptions = [
 export const SortSelect = ({ value, onChange }: SortSelectProps) => {
   return (
     <Select value={value || "popular"} onValueChange={onChange as (value: string) => void}>
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[180px] bg-cream/5 border-cream/10 text-cream rounded-full focus:border-primary/50 focus:ring-primary/20">
         <SelectValue placeholder="Trier par" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-noir border-cream/10">
         {sortOptions.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem 
+            key={option.value} 
+            value={option.value}
+            className="text-cream/70 focus:bg-cream/10 focus:text-cream"
+          >
             {option.label}
           </SelectItem>
         ))}
