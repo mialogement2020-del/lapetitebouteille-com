@@ -2,6 +2,7 @@
  import { ArrowRight, Star, ChevronDown } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import { Link } from "react-router-dom";
+import heroBackground from "@/assets/hero-wine-cellar.jpg";
  
  const HeroSection = () => {
    return (
@@ -10,7 +11,7 @@
        <div
          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
          style={{
-           backgroundImage: `url('https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?q=80&w=2070')`,
+          backgroundImage: `url(${heroBackground})`,
          }}
        >
          <div className="absolute inset-0 bg-gradient-to-b from-noir/95 via-noir/70 to-noir" />
