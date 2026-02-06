@@ -11,6 +11,7 @@ import ProductPage from "./pages/ProductPage";
 import Inscription from "./pages/Inscription";
 import Connexion from "./pages/Connexion";
 import MotDePasseOublie from "./pages/MotDePasseOublie";
+import ResetPassword from "./pages/ResetPassword";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import Ambassadeur from "./pages/Ambassadeur";
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/inscription" element={<Inscription />} />
               <Route path="/connexion" element={<Connexion />} />
               <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/commande-confirmee" element={<OrderConfirmation />} />
               <Route path="/ambassadeur" element={<Ambassadeur />} />
