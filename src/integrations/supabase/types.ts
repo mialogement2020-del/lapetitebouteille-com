@@ -104,6 +104,30 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_permissions: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          permission: Database["public"]["Enums"]["admin_permission"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          permission: Database["public"]["Enums"]["admin_permission"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["admin_permission"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string | null
@@ -1434,6 +1458,14 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["ambassador_rank"]
       }
+      has_admin_permission: {
+        Args: {
+          _permission: Database["public"]["Enums"]["admin_permission"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      has_full_admin_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1449,6 +1481,16 @@ export type Database = {
       validate_referral_code: { Args: { _code: string }; Returns: Json }
     }
     Enums: {
+      admin_permission:
+        | "orders"
+        | "products"
+        | "categories"
+        | "promo_codes"
+        | "stock"
+        | "audit"
+        | "mlm"
+        | "reviews"
+        | "full_access"
       ambassador_rank: "bronze" | "silver" | "gold" | "diamond" | "elite"
       app_role: "admin" | "moderator" | "user"
       order_status:
@@ -1598,6 +1640,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      admin_permission: [
+        "orders",
+        "products",
+        "categories",
+        "promo_codes",
+        "stock",
+        "audit",
+        "mlm",
+        "reviews",
+        "full_access",
+      ],
       ambassador_rank: ["bronze", "silver", "gold", "diamond", "elite"],
       app_role: ["admin", "moderator", "user"],
       order_status: [
