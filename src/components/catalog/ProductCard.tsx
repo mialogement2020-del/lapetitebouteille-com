@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
 
-const PUBLISHED_URL = "https://cameroon-spirits-ai.lovable.app";
+const PUBLISHED_URL = "https://lapetitebouteille.com";
 
 interface ProductCardProps {
   product: Product;

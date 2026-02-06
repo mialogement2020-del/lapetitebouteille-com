@@ -25,7 +25,7 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
   const { user } = useAuthContext();
   const { generateProductReferralLink, getUserReferralCode } = useProductReferral();
 
-  const baseUrl = "https://cameroon-spirits-ai.lovable.app";
+  const baseUrl = "https://lapetitebouteille.com";
 
   useEffect(() => {
     if (isOpen) {
