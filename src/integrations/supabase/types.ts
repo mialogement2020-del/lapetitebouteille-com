@@ -1474,6 +1474,10 @@ export type Database = {
         Returns: boolean
       }
       increment_referral_clicks: { Args: { _code: string }; Returns: Json }
+      lookup_guest_order: {
+        Args: { _identifier: string; _method?: string; _order_number: string }
+        Returns: Json
+      }
       redeem_loyalty_points: {
         Args: { _points: number; _user_id: string }
         Returns: Json
