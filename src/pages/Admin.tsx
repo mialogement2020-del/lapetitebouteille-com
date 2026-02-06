@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -14,8 +14,9 @@ import {
   MessageSquare,
   Bell,
   History,
-   RefreshCw,
-   Users
+  RefreshCw,
+  Users,
+  Shield
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdmin, type AdminOrder, type AdminProduct, type AdminCategory, type AdminPromoCode, type AdminReview, type ProductFormData, type CategoryFormData, type PromoCodeFormData } from "@/hooks/useAdmin";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { OrdersTable } from "@/components/admin/OrdersTable";
 import { OrderStatusDialog } from "@/components/admin/OrderStatusDialog";
@@ -45,7 +47,8 @@ import { StockAlertSettings } from "@/components/admin/StockAlertSettings";
 import { StockAlertsPDFExport } from "@/components/admin/StockAlertsPDFExport";
 import { WeeklyReportSettings } from "@/components/admin/WeeklyReportSettings";
 import { AuditLogsTable } from "@/components/admin/AuditLogsTable";
- import { MLMDashboard } from "@/components/admin/MLMDashboard";
+import { MLMDashboard } from "@/components/admin/MLMDashboard";
+import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsManager";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -90,6 +93,13 @@ const Admin = () => {
     stats 
   } = useAdmin();
   
+  const { 
+    canAccessTab, 
+    hasFullAccess, 
+    isLoadingMyPermissions,
+    myPermissions 
+  } = useAdminPermissions();
+  
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(null);
@@ -103,12 +113,42 @@ const Admin = () => {
   const [stockAlertPeriod, setStockAlertPeriod] = useState("30");
   const stockAlertsChartRef = useRef<HTMLDivElement>(null);
 
+  // Define available tabs based on permissions
+  const availableTabs = useMemo(() => {
+    const allTabs = [
+      { id: 'performance', label: 'Performance', icon: BarChart3 },
+      { id: 'orders', label: 'Commandes', icon: Package },
+      { id: 'products', label: 'Produits', icon: Wine },
+      { id: 'categories', label: 'Catégories', icon: FolderOpen },
+      { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
+      { id: 'reviews', label: 'Avis', icon: MessageSquare },
+      { id: 'restock', label: 'Réappro.', icon: RefreshCw },
+      { id: 'stock-alerts', label: 'Alertes Stock', icon: Bell },
+      { id: 'audit', label: 'Audit', icon: History },
+      { id: 'mlm', label: 'MLM', icon: Users },
+      { id: 'permissions', label: 'Permissions', icon: Shield },
+    ];
+    
+    return allTabs.filter(tab => {
+      // Permissions tab only for super admins
+      if (tab.id === 'permissions') return hasFullAccess;
+      return canAccessTab(tab.id);
+    });
+  }, [canAccessTab, hasFullAccess, myPermissions]);
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/connexion");
     }
   }, [authLoading, isAuthenticated, navigate]);
+
+  // Set active tab to first available tab if current is not accessible
+  useEffect(() => {
+    if (availableTabs.length > 0 && !availableTabs.some(t => t.id === activeTab)) {
+      setActiveTab(availableTabs[0].id);
+    }
+  }, [availableTabs, activeTab]);
 
   // Handle status update
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus, notes?: string, shippingPhone?: string | null, customerName?: string | null, customerEmail?: string | null) => {
@@ -338,7 +378,7 @@ const Admin = () => {
   };
 
   // Loading state
-  if (authLoading || isCheckingAdmin) {
+  if (authLoading || isCheckingAdmin || isLoadingMyPermissions) {
     return (
       <div className="min-h-screen bg-noir flex items-center justify-center">
         <div className="text-center">
@@ -454,98 +494,46 @@ const Admin = () => {
             className="mt-8"
           >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="bg-noir/50 border border-gold/20">
-                <TabsTrigger 
-                  value="performance"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Performance
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="orders"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <Package className="h-4 w-4 mr-2" />
-                  Commandes
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="products"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <Wine className="h-4 w-4 mr-2" />
-                  Produits
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="categories"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <FolderOpen className="h-4 w-4 mr-2" />
-                  Catégories
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="promo-codes"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <Ticket className="h-4 w-4 mr-2" />
-                  Codes Promo
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="reviews"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Avis
-                  {stats.pendingReviews > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-orange-500 text-white rounded-full">
-                      {stats.pendingReviews}
-                    </span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="restock"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Réappro.
-                  {products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active).length > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-destructive text-destructive-foreground rounded-full">
-                      {products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active).length}
-                    </span>
-                  )}
-                  {products.filter(p => {
-                    const stock = p.stock_quantity ?? 0;
-                    return stock > 0 && stock <= 5 && p.is_active;
-                  }).length > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-warning text-warning-foreground rounded-full">
-                      {products.filter(p => {
-                        const stock = p.stock_quantity ?? 0;
-                        return stock > 0 && stock <= 5 && p.is_active;
-                      }).length}
-                    </span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="stock-alerts"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <Bell className="h-4 w-4 mr-2" />
-                  Alertes Stock
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="audit"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                >
-                  <History className="h-4 w-4 mr-2" />
-                  Audit
-                </TabsTrigger>
-                 <TabsTrigger 
-                   value="mlm"
-                   className="data-[state=active]:bg-primary data-[state=active]:text-noir"
-                 >
-                   <Users className="h-4 w-4 mr-2" />
-                   MLM
-                 </TabsTrigger>
+              <TabsList className="bg-noir/50 border border-gold/20 flex-wrap h-auto p-1">
+                {availableTabs.map(tab => {
+                  const Icon = tab.icon;
+                  return (
+                    <TabsTrigger 
+                      key={tab.id}
+                      value={tab.id}
+                      className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                    >
+                      <Icon className="h-4 w-4 mr-2" />
+                      {tab.label}
+                      {/* Badges for specific tabs */}
+                      {tab.id === 'reviews' && stats.pendingReviews > 0 && (
+                        <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-warning text-warning-foreground rounded-full">
+                          {stats.pendingReviews}
+                        </span>
+                      )}
+                      {tab.id === 'restock' && (
+                        <>
+                          {products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active).length > 0 && (
+                            <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-destructive text-destructive-foreground rounded-full">
+                              {products.filter(p => (p.stock_quantity ?? 0) === 0 && p.is_active).length}
+                            </span>
+                          )}
+                          {products.filter(p => {
+                            const stock = p.stock_quantity ?? 0;
+                            return stock > 0 && stock <= 5 && p.is_active;
+                          }).length > 0 && (
+                            <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-warning text-warning-foreground rounded-full">
+                              {products.filter(p => {
+                                const stock = p.stock_quantity ?? 0;
+                                return stock > 0 && stock <= 5 && p.is_active;
+                              }).length}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
 
               <TabsContent value="performance" className="space-y-8">
@@ -673,9 +661,14 @@ const Admin = () => {
                 <AuditLogsTable />
               </TabsContent>
  
-               <TabsContent value="mlm" className="space-y-6">
-                 <MLMDashboard />
-               </TabsContent>
+              <TabsContent value="mlm" className="space-y-6">
+                <MLMDashboard />
+              </TabsContent>
+
+              {/* Permissions Management - Super Admin Only */}
+              <TabsContent value="permissions" className="space-y-6">
+                <AdminPermissionsManager />
+              </TabsContent>
             </Tabs>
           </motion.div>
         </div>
