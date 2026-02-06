@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Star, Sparkles, Share2, Check, QrCode } from "lucide-react";
+import { Star, Sparkles, Share2, Check, QrCode, Download, Copy } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
 
+const PUBLISHED_URL = "https://cameroon-spirits-ai.lovable.app";
+
 interface ProductCardProps {
   product: Product;
   index?: number;
@@ -28,6 +30,67 @@ const formatPrice = (price: number) => {
 
 export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const [copied, setCopied] = useState(false);
+  const [qrCopied, setQrCopied] = useState(false);
+
+  const productQrUrl = `${PUBLISHED_URL}/produit/${product.slug}`;
+
+  const handleDownloadQR = () => {
+    const svg = document.getElementById(`qr-code-${product.id}`);
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    canvas.width = 300;
+    canvas.height = 300;
+
+    img.onload = () => {
+      if (ctx) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        const link = document.createElement("a");
+        link.download = `qr-${product.slug}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        toast.success("QR code téléchargé !");
+      }
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+  };
+
+  const handleCopyQrLink = async () => {
+    try {
+      await navigator.clipboard.writeText(productQrUrl);
+      setQrCopied(true);
+      toast.success("Lien copié !");
+      setTimeout(() => setQrCopied(false), 2000);
+    } catch {
+      toast.error("Impossible de copier le lien");
+    }
+  };
+
+  const handleShareQR = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Découvrez ${product.name}`,
+          url: productQrUrl,
+        });
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          handleCopyQrLink();
+        }
+      }
+    } else {
+      handleCopyQrLink();
+    }
+  };
   
   const discount = product.original_price
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
@@ -232,7 +295,8 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
               <div className="flex flex-col items-center space-y-3">
                 <div className="bg-white p-3 rounded-xl">
                   <QRCodeSVG
-                    value={`https://cameroon-spirits-ai.lovable.app/produit/${product.slug}`}
+                    id={`qr-code-${product.id}`}
+                    value={productQrUrl}
                     size={160}
                     level="H"
                     includeMargin
@@ -243,6 +307,44 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 <p className="text-cream/70 text-center text-xs font-medium line-clamp-2">
                   {product.name}
                 </p>
+                
+                {/* Link Display */}
+                <div className="w-full bg-noir/50 rounded-lg p-2">
+                  <p className="text-[10px] text-cream/50 mb-0.5">Lien :</p>
+                  <p className="text-[10px] text-cream font-mono break-all line-clamp-2">
+                    {productQrUrl}
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 w-full">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-8 gap-1.5 border-cream/20 text-cream hover:bg-cream/5 text-xs"
+                    onClick={handleCopyQrLink}
+                  >
+                    {qrCopied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {qrCopied ? "Copié" : "Copier"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-8 gap-1.5 border-cream/20 text-cream hover:bg-cream/5 text-xs"
+                    onClick={handleShareQR}
+                  >
+                    <Share2 className="h-3 w-3" />
+                    Partager
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 h-8 gap-1.5 bg-gradient-gold text-noir font-semibold hover:opacity-90 text-xs"
+                    onClick={handleDownloadQR}
+                  >
+                    <Download className="h-3 w-3" />
+                    PNG
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
