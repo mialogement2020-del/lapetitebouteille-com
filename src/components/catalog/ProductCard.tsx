@@ -151,13 +151,32 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             )}
           </div>
 
-          <AddToCartButton
-            productId={product.id}
-            productName={product.name}
-            iconOnly
-            className="h-11 w-11 rounded-full bg-gradient-gold hover:opacity-90 text-noir shadow-gold shine-effect"
-            disabled={product.stock_quantity <= 0}
-          />
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            animate={{ 
+              boxShadow: [
+                "0 0 0 0 rgba(212, 175, 55, 0.4)",
+                "0 0 0 8px rgba(212, 175, 55, 0)",
+              ]
+            }}
+            transition={{
+              boxShadow: {
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeOut"
+              }
+            }}
+            className="rounded-full"
+          >
+            <AddToCartButton
+              productId={product.id}
+              productName={product.name}
+              iconOnly
+              className="h-11 w-11 rounded-full bg-gradient-gold hover:brightness-110 text-noir shadow-gold shine-effect"
+              disabled={product.stock_quantity <= 0}
+            />
+          </motion.div>
         </div>
 
         {/* Origin & Volume */}
