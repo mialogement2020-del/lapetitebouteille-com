@@ -124,31 +124,31 @@ export default function Ambassadeur() {
             {/* Right Column - Dashboard Tabs */}
             <div className="lg:col-span-2 order-1 lg:order-2">
               <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="bg-noir-light/50 border border-gold/10 p-1 w-full justify-start overflow-x-auto">
+                <TabsList className="bg-noir-light/50 border border-gold/10 p-1 w-full flex overflow-x-auto scrollbar-thin scrollbar-thumb-gold/30 scrollbar-track-transparent whitespace-nowrap">
                   <TabsTrigger
                     value="overview"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <LayoutDashboard className="h-4 w-4 mr-2" />
                     Vue d'ensemble
                   </TabsTrigger>
                   <TabsTrigger
                     value="commissions"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Commissions
                   </TabsTrigger>
                   <TabsTrigger
                     value="network"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <Users className="h-4 w-4 mr-2" />
                     Réseau
                   </TabsTrigger>
                   <TabsTrigger
                     value="wallet"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <Wallet className="h-4 w-4 mr-2" />
                     Portefeuille
