@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Gift, ShoppingCart } from "lucide-react";
@@ -20,6 +21,18 @@ const formatPrice = (price: number) => {
 export function CartDrawer({ children }: CartDrawerProps) {
   const { items, isLoading, updateQuantity, removeItem, subtotal, itemCount } = useCartContext();
   const { hasStoredReferral, getStoredReferralCode } = useProductReferral();
+  const [isAnimating, setIsAnimating] = useState(false);
+  const prevCountRef = useRef(itemCount);
+
+  // Trigger animation when itemCount increases
+  useEffect(() => {
+    if (itemCount > prevCountRef.current) {
+      setIsAnimating(true);
+      const timer = setTimeout(() => setIsAnimating(false), 600);
+      return () => clearTimeout(timer);
+    }
+    prevCountRef.current = itemCount;
+  }, [itemCount]);
 
   const hasActiveReferral = hasStoredReferral();
   const referralCode = hasActiveReferral ? getStoredReferralCode() : null;
@@ -31,18 +44,38 @@ export function CartDrawer({ children }: CartDrawerProps) {
     <Sheet>
       <SheetTrigger asChild>
         {children || (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-cream hover:text-primary hover:bg-cream/10 relative"
+          <motion.div
+            animate={isAnimating ? {
+              scale: [1, 1.3, 0.9, 1.15, 1],
+              rotate: [0, -10, 10, -5, 0],
+            } : {}}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <ShoppingCart className="h-5 w-5" />
-            {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-noir text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {itemCount > 99 ? "99+" : itemCount}
-              </span>
-            )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-cream hover:text-primary hover:bg-cream/10 relative"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <AnimatePresence mode="wait">
+                {itemCount > 0 && (
+                  <motion.span
+                    key={itemCount}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ 
+                      scale: 1, 
+                      opacity: 1,
+                    }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                    className="absolute -top-1 -right-1 bg-primary text-noir text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-gold"
+                  >
+                    {itemCount > 99 ? "99+" : itemCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
         )}
       </SheetTrigger>
 
