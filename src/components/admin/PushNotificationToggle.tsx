@@ -61,29 +61,41 @@ export function PushNotificationToggle() {
     );
   }
 
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("[PushNotificationToggle] Button clicked, isLoading:", isLoading, "isSubscribed:", isSubscribed);
+    if (!isLoading) {
+      handleToggle();
+    }
+  };
+
   return (
-    <button
-      type="button"
-      onClick={handleToggle}
-      onTouchEnd={(e) => {
-        e.preventDefault();
-        handleToggle();
-      }}
-      disabled={isLoading}
+    <div 
+      onClick={handleClick}
+      onTouchStart={handleClick}
+      role="button"
+      tabIndex={0}
       aria-label={getStatusText()}
-      className={`relative z-50 inline-flex items-center justify-center h-10 w-10 rounded-md border text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation select-none cursor-pointer ${
+      aria-disabled={isLoading}
+      className={`relative inline-flex items-center justify-center h-10 w-10 rounded-md border text-sm font-medium transition-all cursor-pointer select-none ${
+        isLoading ? "opacity-50 cursor-wait" : ""
+      } ${
         isSubscribed
-          ? "border-gold/30 bg-gold/10 text-gold hover:bg-gold/20"
-          : "border-gold/30 text-cream/60 hover:text-cream hover:border-gold/50"
+          ? "border-gold/30 bg-gold/10 text-gold hover:bg-gold/20 active:bg-gold/30"
+          : "border-gold/30 text-cream/60 hover:text-cream hover:border-gold/50 active:bg-cream/10"
       }`}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
+      style={{ 
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'manipulation'
+      }}
     >
       {isLoading ? (
-        <Loader2 className="h-5 w-5 animate-spin" />
+        <Loader2 className="h-5 w-5 animate-spin pointer-events-none" />
       ) : isSubscribed ? (
-        <BellRing className="h-5 w-5" />
+        <BellRing className="h-5 w-5 pointer-events-none" />
       ) : (
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5 pointer-events-none" />
       )}
       {/* Status indicator dot */}
       <span
@@ -95,6 +107,6 @@ export function PushNotificationToggle() {
             : "bg-cream/40"
         }`}
       />
-    </button>
+    </div>
   );
 }
