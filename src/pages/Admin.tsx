@@ -111,7 +111,7 @@ const Admin = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Handle status update
-  const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus, notes?: string) => {
+  const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus, notes?: string, shippingPhone?: string | null, customerName?: string | null, customerEmail?: string | null) => {
     const order = orders.find(o => o.id === orderId);
     try {
       await updateOrderStatus.mutateAsync({ 
@@ -119,13 +119,23 @@ const Admin = () => {
         newStatus, 
         notes,
         orderNumber: order?.order_number,
-        previousStatus: order?.status || undefined
+        previousStatus: order?.status || undefined,
+        shippingPhone: shippingPhone || order?.shipping_phone,
+        customerName: customerName || order?.shipping_full_name,
+        customerEmail: customerEmail || order?.guest_email,
       });
+      
+      // Build notification message based on status
+      const smsStatuses = ['shipped', 'delivered'];
+      const smsMessage = smsStatuses.includes(newStatus) && shippingPhone
+        ? " Un SMS de notification a été envoyé au client."
+        : "";
+      
       toast({
         title: "Statut mis à jour",
         description: notes 
-          ? `La commande a été passée au statut "${newStatus}" avec une note.`
-          : `La commande a été passée au statut "${newStatus}". Un email de notification a été envoyé au client.`,
+          ? `La commande a été passée au statut "${newStatus}" avec une note.${smsMessage}`
+          : `La commande a été passée au statut "${newStatus}".${smsMessage}`,
       });
     } catch (error) {
       toast({
