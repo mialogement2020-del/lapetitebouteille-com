@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Gift, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 import { useCartContext } from "@/contexts/CartContext";
-import { ShoppingCart } from "lucide-react";
+import { useProductReferral } from "@/hooks/useProductReferral";
 
 interface CartDrawerProps {
   children?: React.ReactNode;
@@ -18,6 +19,10 @@ const formatPrice = (price: number) => {
 
 export function CartDrawer({ children }: CartDrawerProps) {
   const { items, isLoading, updateQuantity, removeItem, subtotal, itemCount } = useCartContext();
+  const { hasStoredReferral, getStoredReferralCode } = useProductReferral();
+
+  const hasActiveReferral = hasStoredReferral();
+  const referralCode = hasActiveReferral ? getStoredReferralCode() : null;
 
   const deliveryFee = subtotal >= 50000 ? 0 : 2000;
   const total = subtotal + deliveryFee;
@@ -150,6 +155,28 @@ export function CartDrawer({ children }: CartDrawerProps) {
 
             {/* Footer */}
             <div className="p-6 border-t border-gold/20 space-y-4">
+              {/* Referral Indicator */}
+              {hasActiveReferral && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-lg p-3"
+                >
+                  <Gift className="h-5 w-5 text-primary flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-cream">
+                      Parrainage actif
+                    </p>
+                    <p className="text-xs text-cream/60 truncate">
+                      Code <span className="font-mono text-primary">{referralCode}</span> sera appliqué automatiquement
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="bg-primary/20 text-primary border-0 text-xs">
+                    👥
+                  </Badge>
+                </motion.div>
+              )}
+
               {/* Subtotals */}
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-cream/70">
