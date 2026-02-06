@@ -103,60 +103,52 @@ export function AdminStats({ stats }: AdminStatsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Revenue Card */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="bg-gradient-to-br from-primary/20 to-primary/5 border-primary/30 h-full">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+      {/* Combined Revenue & Catalogue Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="bg-gradient-to-br from-primary/20 via-noir/50 to-cream/5 border-primary/30">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              {/* Revenue Section */}
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-primary/20 shrink-0">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
                 <div>
-                  <p className="text-cream/60 text-sm mb-1">Chiffre d'affaires</p>
-                  <p className="text-3xl font-display font-bold text-primary">
+                  <p className="text-cream/60 text-xs mb-0.5">Chiffre d'affaires</p>
+                  <p className="text-2xl font-display font-bold text-primary">
                     {formatPrice(stats.totalRevenue)}
                   </p>
-                  <p className="text-cream/50 text-xs mt-1">
-                    Sur {stats.total - stats.cancelled} commande{stats.total - stats.cancelled > 1 ? "s" : ""} validée{stats.total - stats.cancelled > 1 ? "s" : ""}
+                  <p className="text-cream/50 text-xs">
+                    {stats.total - stats.cancelled} commande{stats.total - stats.cancelled > 1 ? "s" : ""} validée{stats.total - stats.cancelled > 1 ? "s" : ""}
                   </p>
                 </div>
-                <div className="p-4 rounded-full bg-primary/20">
-                  <TrendingUp className="h-8 w-8 text-primary" />
-                </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
 
-        {stats.totalProducts !== undefined && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <Card className="bg-gradient-to-br from-cream/10 to-cream/5 border-gold/20 h-full">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-cream/60 text-sm mb-1">Catalogue</p>
-                    <p className="text-3xl font-display font-bold text-cream">
-                      {stats.totalProducts} <span className="text-lg font-normal text-cream/50">produits</span>
-                    </p>
-                    <p className="text-cream/50 text-xs mt-1">
-                      {stats.activeProducts} actifs • {stats.lowStock} en stock faible
-                    </p>
+              {/* Catalogue Section */}
+              {stats.totalProducts !== undefined && (
+                <div className="flex items-center gap-4 md:border-l md:border-gold/20 md:pl-8">
+                  <div className="p-3 rounded-full bg-cream/10 shrink-0">
+                    <Wine className="h-6 w-6 text-cream" />
                   </div>
-                  <div className="p-4 rounded-full bg-cream/10">
-                    <Wine className="h-8 w-8 text-cream" />
+                  <div>
+                    <p className="text-cream/60 text-xs mb-0.5">Catalogue</p>
+                    <p className="text-2xl font-display font-bold text-cream">
+                      {stats.totalProducts} <span className="text-base font-normal text-cream/50">produits</span>
+                    </p>
+                    <p className="text-cream/50 text-xs">
+                      {stats.activeProducts} actifs • {stats.lowStock} stock faible
+                    </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Order Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
