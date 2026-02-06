@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import Conditions from "./pages/Conditions";
 import Confidentialite from "./pages/Confidentialite";
 import SuiviCommande from "./pages/SuiviCommande";
+import ShortLinkRedirect from "./pages/ShortLinkRedirect";
 import { SommelierChat } from "./components/chat/SommelierChat";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/conditions" element={<Conditions />} />
               <Route path="/confidentialite" element={<Confidentialite />} />
               <Route path="/suivi-commande" element={<SuiviCommande />} />
+              <Route path="/r/:code" element={<ShortLinkRedirect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
