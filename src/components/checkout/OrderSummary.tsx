@@ -1,23 +1,41 @@
 import { Link } from "react-router-dom";
-import { ShoppingBag, Truck, ChevronRight } from "lucide-react";
+import { ShoppingBag, Truck, ChevronRight, Gift } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useCartContext } from "@/contexts/CartContext";
 import { UnifiedCodeInput, AppliedCode } from "./UnifiedCodeInput";
+import { GiftPackagingSelect } from "./GiftPackagingSelect";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("fr-FR").format(price);
 };
 
+interface GiftPackagingOption {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  display_order: number | null;
+}
+
 interface OrderSummaryProps {
   appliedCode?: AppliedCode | null;
   onCodeApply?: (code: AppliedCode) => void;
   onCodeRemove?: () => void;
+  giftPackaging?: GiftPackagingOption | null;
+  giftMessage?: string;
+  onGiftPackagingChange?: (option: GiftPackagingOption | null) => void;
+  onGiftMessageChange?: (message: string) => void;
 }
 
 export function OrderSummary({ 
   appliedCode = null,
   onCodeApply,
   onCodeRemove,
+  giftPackaging = null,
+  giftMessage = "",
+  onGiftPackagingChange,
+  onGiftMessageChange,
 }: OrderSummaryProps) {
   const { items, subtotal, itemCount } = useCartContext();
 
@@ -25,8 +43,9 @@ export function OrderSummary({
   const discountAmount = appliedCode?.type === "promo" 
     ? appliedCode.data.discountAmount 
     : 0;
+  const giftPackagingPrice = giftPackaging?.price || 0;
   const deliveryFee = subtotal >= 50000 ? 0 : 2000;
-  const total = subtotal - discountAmount + deliveryFee;
+  const total = subtotal - discountAmount + giftPackagingPrice + deliveryFee;
 
   return (
     <div className="bg-cream/5 rounded-xl border border-gold/20 p-6 sticky top-24">
@@ -37,7 +56,7 @@ export function OrderSummary({
       </div>
 
       {/* Products List */}
-      <div className="space-y-4 max-h-[300px] overflow-y-auto mb-6">
+      <div className="space-y-4 max-h-[200px] overflow-y-auto mb-6">
         {items.map((item) => (
           <div key={item.id} className="flex gap-3">
             <img
@@ -63,6 +82,18 @@ export function OrderSummary({
 
       <Separator className="bg-gold/20 mb-4" />
 
+      {/* Gift Packaging */}
+      {onGiftPackagingChange && onGiftMessageChange && (
+        <div className="mb-4">
+          <GiftPackagingSelect
+            selectedId={giftPackaging?.id || null}
+            giftMessage={giftMessage}
+            onSelect={onGiftPackagingChange}
+            onMessageChange={onGiftMessageChange}
+          />
+        </div>
+      )}
+
       {/* Unified Code Input (Promo or Referral) */}
       {onCodeApply && onCodeRemove && (
         <div className="mb-4">
@@ -81,6 +112,16 @@ export function OrderSummary({
           <span className="text-cream/70">Sous-total</span>
           <span className="text-cream">{formatPrice(subtotal)} FCFA</span>
         </div>
+
+        {giftPackagingPrice > 0 && giftPackaging && (
+          <div className="flex justify-between text-sm">
+            <span className="text-cream/70 flex items-center gap-1">
+              <Gift className="h-3 w-3" />
+              {giftPackaging.name}
+            </span>
+            <span className="text-cream">+{formatPrice(giftPackagingPrice)} FCFA</span>
+          </div>
+        )}
 
         {discountAmount > 0 && appliedCode?.type === "promo" && (
           <div className="flex justify-between text-sm">

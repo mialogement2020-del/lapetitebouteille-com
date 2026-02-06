@@ -36,6 +36,15 @@ async function generateMLMCommissions(orderId: string, referrerId: string, order
   }
 }
 
+interface GiftPackagingOption {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  display_order: number | null;
+}
+
 export function useCheckout() {
   const navigate = useNavigate();
   const { user } = useAuthContext();
@@ -44,9 +53,12 @@ export function useCheckout() {
   const [step, setStep] = useState<"address" | "payment" | "confirmation">("address");
   const [addressData, setAddressData] = useState<AddressFormData | null>(null);
   const [appliedCode, setAppliedCode] = useState<AppliedCode | null>(null);
+  const [giftPackaging, setGiftPackaging] = useState<GiftPackagingOption | null>(null);
+  const [giftMessage, setGiftMessage] = useState("");
 
   const deliveryFee = subtotal >= 50000 ? 0 : 2000;
   const discountAmount = appliedCode?.type === "promo" ? appliedCode.data.discountAmount : 0;
+  const giftPackagingPrice = giftPackaging?.price || 0;
 
   const handleCodeApply = (code: AppliedCode) => {
     setAppliedCode(code);
@@ -54,6 +66,14 @@ export function useCheckout() {
 
   const handleCodeRemove = () => {
     setAppliedCode(null);
+  };
+
+  const handleGiftPackagingChange = (option: GiftPackagingOption | null) => {
+    setGiftPackaging(option);
+  };
+
+  const handleGiftMessageChange = (message: string) => {
+    setGiftMessage(message);
   };
 
   const handleAddressSubmit = async (data: AddressFormData) => {
@@ -77,7 +97,7 @@ export function useCheckout() {
     try {
       // Use city directly as it's now stored with proper capitalization
       const cityLabel = addressData.city;
-      const total = subtotal - discountAmount + deliveryFee;
+      const total = subtotal - discountAmount + giftPackagingPrice + deliveryFee;
 
       // Generate order number
       const { data: orderNumberData } = await supabase
@@ -125,10 +145,13 @@ export function useCheckout() {
           shipping_neighborhood: addressData.neighborhood,
           shipping_street: addressData.streetAddress,
           shipping_notes: addressData.additionalInfo || null,
-      guest_email: !user?.id ? addressData.email?.trim() || null : null,
-      guest_phone: !user?.id ? addressData.phone : null,
+          guest_email: !user?.id ? addressData.email?.trim() || null : null,
+          guest_phone: !user?.id ? addressData.phone : null,
           referral_code_used: referralCodeUsed || promoCodeUsed || null,
           referrer_id: referrerId,
+          gift_packaging_id: giftPackaging?.id || null,
+          gift_message: giftMessage || null,
+          gift_packaging_price: giftPackagingPrice,
         })
         .select()
         .single();
@@ -241,8 +264,12 @@ export function useCheckout() {
     addressData,
     isLoading,
     appliedCode,
+    giftPackaging,
+    giftMessage,
     handleCodeApply,
     handleCodeRemove,
+    handleGiftPackagingChange,
+    handleGiftMessageChange,
     handleAddressSubmit,
     handlePaymentSubmit,
   };

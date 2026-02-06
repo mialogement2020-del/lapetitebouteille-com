@@ -272,6 +272,114 @@ export type Database = {
           },
         ]
       }
+      gift_packaging_options: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          price?: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      loyalty_config: {
+        Row: {
+          birthday_bonus: number | null
+          created_at: string | null
+          fcfa_per_point: number | null
+          id: string
+          is_active: boolean | null
+          min_points_redeem: number | null
+          points_per_fcfa: number | null
+          points_value_fcfa: number | null
+          updated_at: string | null
+          welcome_bonus: number | null
+        }
+        Insert: {
+          birthday_bonus?: number | null
+          created_at?: string | null
+          fcfa_per_point?: number | null
+          id?: string
+          is_active?: boolean | null
+          min_points_redeem?: number | null
+          points_per_fcfa?: number | null
+          points_value_fcfa?: number | null
+          updated_at?: string | null
+          welcome_bonus?: number | null
+        }
+        Update: {
+          birthday_bonus?: number | null
+          created_at?: string | null
+          fcfa_per_point?: number | null
+          id?: string
+          is_active?: boolean | null
+          min_points_redeem?: number | null
+          points_per_fcfa?: number | null
+          points_value_fcfa?: number | null
+          updated_at?: string | null
+          welcome_bonus?: number | null
+        }
+        Relationships: []
+      }
+      loyalty_transactions: {
+        Row: {
+          balance_after: number
+          created_at: string | null
+          description: string | null
+          id: string
+          points: number
+          reference_id: string | null
+          reference_type: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          balance_after: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          points: number
+          reference_id?: string | null
+          reference_type?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          balance_after?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          points?: number
+          reference_id?: string | null
+          reference_type?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mlm_bonuses: {
         Row: {
           achieved_at: string | null
@@ -402,9 +510,14 @@ export type Database = {
           created_at: string | null
           delivery_fee: number | null
           discount_amount: number | null
+          gift_message: string | null
+          gift_packaging_id: string | null
+          gift_packaging_price: number | null
           guest_email: string | null
           guest_phone: string | null
           id: string
+          loyalty_points_earned: number | null
+          loyalty_points_used: number | null
           notes: string | null
           order_lookup_token: string | null
           order_number: string
@@ -430,9 +543,14 @@ export type Database = {
           created_at?: string | null
           delivery_fee?: number | null
           discount_amount?: number | null
+          gift_message?: string | null
+          gift_packaging_id?: string | null
+          gift_packaging_price?: number | null
           guest_email?: string | null
           guest_phone?: string | null
           id?: string
+          loyalty_points_earned?: number | null
+          loyalty_points_used?: number | null
           notes?: string | null
           order_lookup_token?: string | null
           order_number: string
@@ -458,9 +576,14 @@ export type Database = {
           created_at?: string | null
           delivery_fee?: number | null
           discount_amount?: number | null
+          gift_message?: string | null
+          gift_packaging_id?: string | null
+          gift_packaging_price?: number | null
           guest_email?: string | null
           guest_phone?: string | null
           id?: string
+          loyalty_points_earned?: number | null
+          loyalty_points_used?: number | null
           notes?: string | null
           order_lookup_token?: string | null
           order_number?: string
@@ -483,6 +606,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_gift_packaging_id_fkey"
+            columns: ["gift_packaging_id"]
+            isOneToOne: false
+            referencedRelation: "gift_packaging_options"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_shipping_address_id_fkey"
             columns: ["shipping_address_id"]
@@ -999,6 +1129,36 @@ export type Database = {
           },
         ]
       }
+      user_loyalty: {
+        Row: {
+          created_at: string | null
+          id: string
+          lifetime_points: number | null
+          tier: string | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lifetime_points?: number | null
+          tier?: string | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lifetime_points?: number | null
+          tier?: string | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           created_at: string
@@ -1280,6 +1440,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      redeem_loyalty_points: {
+        Args: { _points: number; _user_id: string }
+        Returns: Json
       }
       validate_referral_code: { Args: { _code: string }; Returns: Json }
     }
