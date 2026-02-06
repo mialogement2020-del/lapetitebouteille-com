@@ -92,9 +92,15 @@ export default function SuiviCommande() {
         query = query.ilike("guest_email", `%${identifier.trim()}%`);
       }
 
-      const { data: orderData, error: orderError } = await query.single();
+      const { data: orderData, error: orderError } = await query.maybeSingle();
 
-      if (orderError || !orderData) {
+      if (orderError) {
+        console.error("Search error:", orderError);
+        setError("Une erreur est survenue lors de la recherche. Veuillez réessayer.");
+        return;
+      }
+
+      if (!orderData) {
         setError("Aucune commande trouvée. Vérifiez le numéro de commande et votre " + 
           (searchMethod === "phone" ? "téléphone" : "email") + ".");
         return;
