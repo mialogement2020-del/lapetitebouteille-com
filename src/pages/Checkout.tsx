@@ -24,8 +24,12 @@ export default function Checkout() {
     setStep,
     isLoading,
     appliedCode,
+    giftPackaging,
+    giftMessage,
     handleCodeApply,
     handleCodeRemove,
+    handleGiftPackagingChange,
+    handleGiftMessageChange,
     handleAddressSubmit,
     handlePaymentSubmit,
   } = useCheckout();
@@ -151,6 +155,10 @@ export default function Checkout() {
                 appliedCode={appliedCode}
                 onCodeApply={handleCodeApply}
                 onCodeRemove={handleCodeRemove}
+                giftPackaging={giftPackaging}
+                giftMessage={giftMessage}
+                onGiftPackagingChange={handleGiftPackagingChange}
+                onGiftMessageChange={handleGiftMessageChange}
               />
             </div>
           </div>

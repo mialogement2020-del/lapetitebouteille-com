@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Loader2, MapPin, MessageSquare, Heart } from "lucide-react";
+import { ArrowLeft, User, Loader2, MapPin, MessageSquare, Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +14,7 @@ import { OrderHistory } from "@/components/account/OrderHistory";
 import { AddressManager } from "@/components/account/AddressManager";
 import { MyReviews } from "@/components/account/MyReviews";
 import { MyWishlist } from "@/components/account/MyWishlist";
+import { LoyaltyCard } from "@/components/account/LoyaltyCard";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -146,11 +147,18 @@ export default function Compte() {
             </TabsList>
 
             <TabsContent value="profile">
-              {profile ? (
-                <ProfileForm profile={profile} onUpdate={updateProfile} />
-              ) : (
-                <Skeleton className="h-96 w-full bg-cream/10" />
-              )}
+              <div className="grid lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  {profile ? (
+                    <ProfileForm profile={profile} onUpdate={updateProfile} />
+                  ) : (
+                    <Skeleton className="h-96 w-full bg-cream/10" />
+                  )}
+                </div>
+                <div className="lg:col-span-1">
+                  <LoyaltyCard />
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="addresses">
