@@ -514,14 +514,14 @@ const Admin = () => {
             className="mt-8"
           >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="bg-noir/50 border border-gold/20 flex-wrap h-auto p-1">
+              <TabsList className="bg-noir/50 border border-gold/20 h-auto p-1 flex overflow-x-auto scrollbar-thin scrollbar-thumb-gold/30 scrollbar-track-transparent w-full max-w-full">
                 {availableTabs.map(tab => {
                   const Icon = tab.icon;
                   return (
                     <TabsTrigger 
                       key={tab.id}
                       value={tab.id}
-                      className="data-[state=active]:bg-primary data-[state=active]:text-noir"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                     >
                       <Icon className="h-4 w-4 mr-2" />
                       {tab.label}
