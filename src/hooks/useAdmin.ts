@@ -345,7 +345,7 @@ export function useAdmin() {
 
   // Update order status mutation
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, newStatus, notes, orderNumber, previousStatus, shippingPhone, customerName, customerEmail }: { 
+    mutationFn: async ({ orderId, newStatus, notes, orderNumber, previousStatus, shippingPhone, customerName, customerEmail, userId }: { 
       orderId: string; 
       newStatus: OrderStatus; 
       notes?: string;
@@ -354,6 +354,7 @@ export function useAdmin() {
       shippingPhone?: string | null;
       customerName?: string | null;
       customerEmail?: string | null;
+      userId?: string | null;
     }) => {
       // First, update the order status
       const { error: orderError } = await supabase
@@ -379,6 +380,31 @@ export function useAdmin() {
             .from("order_status_history")
             .update({ notes })
             .eq("id", historyEntries[0].id);
+        }
+      }
+
+      // Send push notification to user if they have subscriptions
+      if (userId && orderNumber) {
+        try {
+          const pushResponse = await supabase.functions.invoke('send-order-push-notification', {
+            body: {
+              userId,
+              orderNumber,
+              status: newStatus,
+              customerName: customerName || 'Client',
+            },
+          });
+          
+          if (pushResponse.error) {
+            console.warn('Push notification failed:', pushResponse.error);
+          } else if (pushResponse.data?.skipped) {
+            console.log('Push notification skipped:', pushResponse.data.message);
+          } else {
+            console.log('Push notification sent:', pushResponse.data);
+          }
+        } catch (pushError) {
+          console.warn('Failed to send push notification:', pushError);
+          // Don't fail the status update if push fails
         }
       }
 
