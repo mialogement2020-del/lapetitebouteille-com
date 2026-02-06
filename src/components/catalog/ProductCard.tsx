@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
+import logoIcon from "@/assets/logo-icon.png";
 
 const PUBLISHED_URL = "https://lapetitebouteille.com";
 
@@ -293,7 +294,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 Scannez ce QR code pour accéder au produit.
               </p>
               <div className="flex flex-col items-center space-y-3">
-                <div className="bg-white p-3 rounded-xl">
+                <div className="bg-white p-3 rounded-xl relative">
                   <QRCodeSVG
                     id={`qr-code-${product.id}`}
                     value={productQrUrl}
@@ -303,6 +304,16 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                     bgColor="#ffffff"
                     fgColor="#1a1a1a"
                   />
+                  {/* Logo au centre du QR code */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="bg-white p-1 rounded-md">
+                      <img 
+                        src={logoIcon} 
+                        alt="La Petite Bouteille" 
+                        className="w-8 h-8 object-contain"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <p className="text-cream/70 text-center text-xs font-medium line-clamp-2">
                   {product.name}
