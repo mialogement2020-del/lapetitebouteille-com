@@ -26,8 +26,11 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     isPushSupported() ? getPushPermission() : "denied"
   );
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  // Start with false so button is interactive immediately
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const autoSubscribeAttempted = useRef(false);
+  const initializationRef = useRef(false);
 
   // Subscribe to push notifications
   const subscribe = useCallback(async (): Promise<boolean> => {
@@ -71,26 +74,28 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     }
   }, [isSupported]);
 
-  // Check subscription status on mount and auto-subscribe if never attempted
+  // Check subscription status on mount (non-blocking)
   useEffect(() => {
-    const checkAndAutoSubscribe = async () => {
+    // Prevent double initialization in strict mode
+    if (initializationRef.current) return;
+    initializationRef.current = true;
+
+    const checkSubscription = async () => {
       if (!isSupported) {
-        setIsLoading(false);
+        setIsInitialized(true);
         return;
       }
 
       try {
-        // Register service worker
-        await registerServiceWorker();
+        // Register service worker in background (non-blocking)
+        registerServiceWorker().catch(console.error);
         
         // Check if already subscribed
         const subscribed = await isSubscribedToPush();
         setIsSubscribed(subscribed);
+        setIsInitialized(true);
         
-        // Auto-subscribe if:
-        // 1. Not already subscribed
-        // 2. Permission not denied
-        // 3. Haven't attempted auto-subscribe before
+        // Auto-subscribe logic (in background, doesn't block UI)
         const hasAttempted = localStorage.getItem(AUTO_SUBSCRIBE_KEY) === "true";
         const currentPermission = getPushPermission();
         
@@ -105,16 +110,15 @@ export function usePushNotifications(): UsePushNotificationsReturn {
             if (result) {
               console.log("Auto-subscribed to push notifications successfully");
             }
-          }, 1500);
+          }, 2000);
         }
       } catch (error) {
         console.error("Error checking push subscription:", error);
-      } finally {
-        setIsLoading(false);
+        setIsInitialized(true);
       }
     };
 
-    checkAndAutoSubscribe();
+    checkSubscription();
   }, [isSupported, subscribe]);
 
   return {
