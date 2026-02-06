@@ -1503,6 +1503,50 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews_public: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string | null
+          is_approved: boolean | null
+          is_verified_purchase: boolean | null
+          product_id: string | null
+          rating: number | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_approved?: boolean | null
+          is_verified_purchase?: boolean | null
+          product_id?: string | null
+          rating?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_approved?: boolean | null
+          is_verified_purchase?: boolean | null
+          product_id?: string | null
+          rating?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       create_referral_relationship: {
