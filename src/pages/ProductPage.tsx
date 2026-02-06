@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Share2,
   Minus,
   Plus,
   Star,
@@ -18,6 +17,7 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductDetails } from "@/components/product/ProductDetails";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { ProductShareButton } from "@/components/product/ProductShareButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
-import { toast } from "sonner";
+import { useProductReferral } from "@/hooks/useProductReferral";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("fr-FR").format(price);
@@ -39,19 +39,9 @@ const ProductPage = () => {
     product?.category_id || null
   );
   const [quantity, setQuantity] = useState(1);
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      await navigator.share({
-        title: product?.name,
-        text: product?.short_description || "",
-        url: window.location.href,
-      });
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("Lien copié dans le presse-papier");
-    }
-  };
+  
+  // Initialize product referral tracking (captures ?ref= from URL)
+  useProductReferral();
 
   if (isLoading) {
     return (
@@ -297,10 +287,11 @@ const ProductPage = () => {
               {/* Secondary Actions */}
               <div className="flex gap-4">
                 <WishlistButton productId={product.id} variant="full" className="border-cream/20 text-cream hover:bg-cream/5 rounded-full" />
-                <Button variant="outline" className="gap-2 border-cream/20 text-cream hover:bg-cream/5 rounded-full" onClick={handleShare}>
-                  <Share2 className="h-4 w-4" />
-                  Partager
-                </Button>
+                <ProductShareButton 
+                  productSlug={product.slug}
+                  productName={product.name}
+                  shortDescription={product.short_description || undefined}
+                />
               </div>
 
               {/* Trust Badges */}
