@@ -49,7 +49,7 @@ const Header = () => {
     { href: "/catalogue?category=vins", label: "Vins" },
     { href: "/catalogue?category=champagnes", label: "Champagnes" },
     { href: "/catalogue?category=spiritueux", label: "Spiritueux" },
-    { href: "/catalogue?category=coffrets", label: "Coffrets" },
+    { href: "/suivi-commande", label: "Suivi" },
   ];
 
   return (

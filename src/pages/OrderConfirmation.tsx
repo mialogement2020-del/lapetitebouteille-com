@@ -104,9 +104,10 @@ export default function OrderConfirmation() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/">
-                <Button variant="outline" className="border-gold/30 text-cream hover:bg-cream/10">
-                  Retour à l'accueil
+              <Link to="/suivi-commande">
+                <Button variant="outline" className="border-gold/30 text-cream hover:bg-cream/10 gap-2">
+                  <Package className="h-4 w-4" />
+                  Suivre ma commande
                 </Button>
               </Link>
             </motion.div>
