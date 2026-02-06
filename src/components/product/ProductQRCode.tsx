@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { motion, AnimatePresence } from "framer-motion";
-import { QrCode, X, Download, Copy, Check } from "lucide-react";
+import { QrCode, Download, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -86,39 +85,36 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
         <Button
           variant="outline"
           size="icon"
-          className="border-cream/20 text-cream hover:bg-cream/5 rounded-full"
+          className="border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full"
           title="Afficher le QR code"
         >
           <QrCode className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-noir-light border-gold/20 max-w-sm">
+      <DialogContent className="bg-noir-light border-gold/20 max-w-sm" aria-describedby="qr-description">
         <DialogHeader>
           <DialogTitle className="text-cream font-display text-xl">
             QR Code de partage
           </DialogTitle>
         </DialogHeader>
+        <p id="qr-description" className="sr-only">
+          Scannez ce QR code ou copiez le lien pour partager ce produit.
+        </p>
 
-        <AnimatePresence mode="wait">
-          {qrLink && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center space-y-4"
-            >
-              {/* QR Code Container */}
-              <div className="bg-white p-4 rounded-xl">
-                <QRCodeSVG
-                  id="product-qr-code"
-                  value={qrLink}
-                  size={200}
-                  level="H"
-                  includeMargin
-                  bgColor="#ffffff"
-                  fgColor="#1a1a1a"
-                />
-              </div>
+        {qrLink && (
+          <div className="flex flex-col items-center space-y-4">
+            {/* QR Code Container */}
+            <div className="bg-white p-4 rounded-xl">
+              <QRCodeSVG
+                id="product-qr-code"
+                value={qrLink}
+                size={200}
+                level="H"
+                includeMargin
+                bgColor="#ffffff"
+                fgColor="#1a1a1a"
+              />
+            </div>
 
               {/* Product Name */}
               <p className="text-cream/80 text-center text-sm font-medium">
@@ -174,9 +170,8 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
                   </span>
                 )}
               </p>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );
