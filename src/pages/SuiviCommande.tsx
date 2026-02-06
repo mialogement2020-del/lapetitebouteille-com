@@ -66,76 +66,44 @@ export default function SuiviCommande() {
     setIsLoading(true);
 
     try {
-      // Search for order by order number and phone/email
-      let query = supabase
-        .from("orders")
-        .select(`
-          order_number,
-          status,
-          total,
-          shipping_full_name,
-          shipping_city,
-          shipping_neighborhood,
-          shipping_street,
-          created_at,
-          shipping_phone,
-          guest_email,
-          guest_phone
-        `)
-        .eq("order_number", orderNumber.trim().toUpperCase());
+      // Use the secure lookup_guest_order function that validates credentials
+      const { data, error: rpcError } = await supabase.rpc("lookup_guest_order", {
+        _order_number: orderNumber.trim(),
+        _identifier: identifier.trim(),
+        _method: searchMethod,
+      });
 
-      // Match by phone or email
-      if (searchMethod === "phone") {
-        // Match either shipping_phone or guest_phone
-        query = query.or(`shipping_phone.ilike.%${identifier.trim()}%,guest_phone.ilike.%${identifier.trim()}%`);
-      } else {
-        query = query.ilike("guest_email", `%${identifier.trim()}%`);
-      }
-
-      const { data: orderData, error: orderError } = await query.maybeSingle();
-
-      if (orderError) {
-        console.error("Search error:", orderError);
+      if (rpcError) {
+        console.error("Search error:", rpcError);
         setError("Une erreur est survenue lors de la recherche. Veuillez réessayer.");
         return;
       }
 
-      if (!orderData) {
-        setError("Aucune commande trouvée. Vérifiez le numéro de commande et votre " + 
+      // Parse the JSONB response
+      const result = data as { success: boolean; error?: string; order?: any; items?: any[] };
+
+      if (!result.success) {
+        setError(result.error || "Aucune commande trouvée. Vérifiez le numéro de commande et votre " + 
           (searchMethod === "phone" ? "téléphone" : "email") + ".");
         return;
       }
 
-      // Get order items
-      const { data: items } = await supabase
-        .from("order_items")
-        .select("product_name, quantity, unit_price, product_image")
-        .eq("order_id", orderData.order_number);
-
-      // Get items by order_number match
-      const { data: orderWithId } = await supabase
-        .from("orders")
-        .select("id")
-        .eq("order_number", orderData.order_number)
-        .single();
-
-      let orderItems: any[] = [];
-      if (orderWithId) {
-        const { data: itemsData } = await supabase
-          .from("order_items")
-          .select("product_name, quantity, unit_price, product_image")
-          .eq("order_id", orderWithId.id);
-        orderItems = itemsData || [];
-      }
-
+      // Set order data from secure function response
       setOrder({
-        ...orderData,
-        items: orderItems,
+        order_number: result.order.order_number,
+        status: result.order.status,
+        total: result.order.total,
+        shipping_full_name: result.order.shipping_full_name,
+        shipping_city: result.order.shipping_city,
+        shipping_neighborhood: result.order.shipping_neighborhood,
+        shipping_street: result.order.shipping_street,
+        created_at: result.order.created_at,
+        items: result.items || [],
       });
 
       toast({
         title: "Commande trouvée !",
-        description: `Commande ${orderData.order_number}`,
+        description: `Commande ${result.order.order_number}`,
       });
     } catch (err: any) {
       console.error("Search error:", err);
