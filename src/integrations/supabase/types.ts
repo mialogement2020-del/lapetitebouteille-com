@@ -59,6 +59,39 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_2fa: {
+        Row: {
+          backup_codes: string[] | null
+          created_at: string
+          id: string
+          is_enabled: boolean
+          last_verified_at: string | null
+          totp_secret: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          last_verified_at?: string | null
+          totp_secret: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[] | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          last_verified_at?: string | null
+          totp_secret?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_audit_logs: {
         Row: {
           action: string
@@ -1440,7 +1473,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_2fa_status: {
+        Row: {
+          created_at: string | null
+          has_backup_codes: boolean | null
+          id: string | null
+          is_enabled: boolean | null
+          last_verified_at: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          has_backup_codes?: never
+          id?: string | null
+          is_enabled?: boolean | null
+          last_verified_at?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          has_backup_codes?: never
+          id?: string | null
+          is_enabled?: boolean | null
+          last_verified_at?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_referral_relationship: {
@@ -1458,6 +1520,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["ambassador_rank"]
       }
+      has_2fa_enabled: { Args: { _user_id: string }; Returns: boolean }
       has_admin_permission: {
         Args: {
           _permission: Database["public"]["Enums"]["admin_permission"]
@@ -1474,6 +1537,7 @@ export type Database = {
         Returns: boolean
       }
       increment_referral_clicks: { Args: { _code: string }; Returns: Json }
+      is_2fa_session_valid: { Args: { _user_id: string }; Returns: boolean }
       lookup_guest_order: {
         Args: { _identifier: string; _method?: string; _order_number: string }
         Returns: Json
@@ -1483,6 +1547,7 @@ export type Database = {
         Returns: Json
       }
       validate_referral_code: { Args: { _code: string }; Returns: Json }
+      verify_2fa_session: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
       admin_permission:
