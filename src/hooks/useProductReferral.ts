@@ -21,22 +21,6 @@ export function useProductReferral() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuthContext();
 
-  // Capture referral code from URL on mount
-  useEffect(() => {
-    const refCode = searchParams.get("ref");
-    if (refCode) {
-      // Validate the code format (alphanumeric, hyphen, underscore)
-      if (/^[A-Za-z0-9_-]+$/.test(refCode)) {
-        storeReferralCode(refCode);
-      }
-      
-      // Clean the URL (remove ref param)
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete("ref");
-      setSearchParams(newParams, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
-
   // Store referral code with expiration
   const storeReferralCode = useCallback((code: string) => {
     const expiresAt = Date.now() + REFERRAL_EXPIRY_HOURS * 60 * 60 * 1000;
@@ -49,6 +33,38 @@ export function useProductReferral() {
       console.warn("Could not store referral code");
     }
   }, []);
+
+  // Track click via edge function
+  const trackReferralClick = useCallback(async (code: string) => {
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      await fetch(`${supabaseUrl}/functions/v1/track-referral-click`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+    } catch {
+      // Silent fail - tracking is non-critical
+    }
+  }, []);
+
+  // Capture referral code from URL on mount
+  useEffect(() => {
+    const refCode = searchParams.get("ref");
+    if (refCode) {
+      // Validate the code format (alphanumeric, hyphen, underscore)
+      if (/^[A-Za-z0-9_-]+$/.test(refCode)) {
+        storeReferralCode(refCode);
+        // Track the click
+        trackReferralClick(refCode);
+      }
+      
+      // Clean the URL (remove ref param)
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("ref");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams, storeReferralCode, trackReferralClick]);
 
   // Get stored referral code (if valid)
   const getStoredReferralCode = useCallback((): string | null => {

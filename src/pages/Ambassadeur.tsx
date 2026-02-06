@@ -29,6 +29,7 @@ import { ReferralTree } from "@/components/ambassador/ReferralTree";
 import { WalletManager } from "@/components/ambassador/WalletManager";
 import { ReferralLink } from "@/components/ambassador/ReferralLink";
 import { LinkStats } from "@/components/ambassador/LinkStats";
+import { ShortLinkManager } from "@/components/ambassador/ShortLinkManager";
 
 export default function Ambassadeur() {
   const navigate = useNavigate();
@@ -112,6 +113,9 @@ export default function Ambassadeur() {
                   }}
                 />
               ) : null}
+              
+              {/* Short Link Manager */}
+              <ShortLinkManager />
               
               {/* Push Notification Settings */}
               <PushNotificationSettings />
