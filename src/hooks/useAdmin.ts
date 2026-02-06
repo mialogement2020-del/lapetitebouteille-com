@@ -383,8 +383,63 @@ export function useAdmin() {
         }
       }
 
-      // Send push notification to user if they have subscriptions
+      // Create in-app notification for user
       if (userId && orderNumber) {
+        try {
+          const statusMessages: Record<string, { title: string; message: string }> = {
+            'pending': { 
+              title: '🛒 Commande enregistrée', 
+              message: `Votre commande ${orderNumber} a été enregistrée et est en attente de confirmation.` 
+            },
+            'confirmed': { 
+              title: '✓ Commande confirmée', 
+              message: `Votre commande ${orderNumber} a été confirmée et est en cours de préparation.` 
+            },
+            'processing': { 
+              title: '📦 Préparation en cours', 
+              message: `Votre commande ${orderNumber} est en cours de préparation.` 
+            },
+            'shipped': { 
+              title: '🚚 Commande expédiée', 
+              message: `Votre commande ${orderNumber} est en route ! Notre livreur vous contactera bientôt.` 
+            },
+            'delivered': { 
+              title: '✅ Commande livrée', 
+              message: `Votre commande ${orderNumber} a été livrée avec succès. Merci de votre confiance !` 
+            },
+            'cancelled': { 
+              title: '❌ Commande annulée', 
+              message: `Votre commande ${orderNumber} a été annulée.` 
+            },
+          };
+          
+          const notifContent = statusMessages[newStatus] || { 
+            title: '📋 Mise à jour commande', 
+            message: `Statut de votre commande ${orderNumber}: ${newStatus}` 
+          };
+
+          // Insert in-app notification using service role through edge function or direct insert
+          const { error: notifError } = await supabase
+            .from('user_notifications')
+            .insert({
+              user_id: userId,
+              type: 'order_update',
+              title: notifContent.title,
+              message: notifContent.message,
+              reference_type: 'order',
+              reference_id: orderId,
+            });
+
+          if (notifError) {
+            console.warn('Failed to create in-app notification:', notifError);
+          } else {
+            console.log('In-app notification created for user:', userId);
+          }
+        } catch (notifErr) {
+          console.warn('Error creating in-app notification:', notifErr);
+        }
+
+        // Send push notification
         try {
           const pushResponse = await supabase.functions.invoke('send-order-push-notification', {
             body: {
