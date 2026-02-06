@@ -124,7 +124,7 @@ export default function Ambassadeur() {
             {/* Right Column - Dashboard Tabs */}
             <div className="lg:col-span-2 order-1 lg:order-2">
               <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="bg-noir-light/50 border border-gold/10 p-1 w-full flex overflow-x-auto scrollbar-thin scrollbar-thumb-gold/30 scrollbar-track-transparent whitespace-nowrap">
+                <TabsList className="bg-noir-light/50 border border-gold/10 p-1 w-full flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gold/30 scrollbar-track-transparent !justify-start">
                   <TabsTrigger
                     value="overview"
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
