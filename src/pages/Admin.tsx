@@ -16,7 +16,8 @@ import {
   History,
   RefreshCw,
   Users,
-  Shield
+  Shield,
+  Lock
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -49,6 +50,9 @@ import { WeeklyReportSettings } from "@/components/admin/WeeklyReportSettings";
 import { AuditLogsTable } from "@/components/admin/AuditLogsTable";
 import { MLMDashboard } from "@/components/admin/MLMDashboard";
 import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsManager";
+import { TwoFASettings } from "@/components/admin/TwoFASettings";
+import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
+import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -113,6 +117,20 @@ const Admin = () => {
   const [stockAlertPeriod, setStockAlertPeriod] = useState("30");
   const stockAlertsChartRef = useRef<HTMLDivElement>(null);
 
+  // 2FA for sensitive operations
+  const { 
+    executeSensitiveOperation, 
+    showVerifyDialog, 
+    setShowVerifyDialog, 
+    handleVerify,
+    loading: twoFALoading,
+    operationName,
+    operationDescription
+  } = useSensitiveOperation({
+    operationName: "Vérification de sécurité",
+    description: "Cette opération sensible nécessite une vérification 2FA"
+  });
+
   // Define available tabs based on permissions
   const availableTabs = useMemo(() => {
     const allTabs = [
@@ -127,11 +145,13 @@ const Admin = () => {
       { id: 'audit', label: 'Audit', icon: History },
       { id: 'mlm', label: 'MLM', icon: Users },
       { id: 'permissions', label: 'Permissions', icon: Shield },
+      { id: 'security', label: 'Sécurité', icon: Lock },
     ];
     
     return allTabs.filter(tab => {
-      // Permissions tab only for super admins
+      // Permissions and security tabs only for super admins or admins
       if (tab.id === 'permissions') return hasFullAccess;
+      if (tab.id === 'security') return canAccessTab('permissions') || hasFullAccess;
       return canAccessTab(tab.id);
     });
   }, [canAccessTab, hasFullAccess, myPermissions]);
@@ -669,6 +689,13 @@ const Admin = () => {
               <TabsContent value="permissions" className="space-y-6">
                 <AdminPermissionsManager />
               </TabsContent>
+
+              {/* Security Settings - 2FA */}
+              <TabsContent value="security" className="space-y-6">
+                <div className="max-w-2xl">
+                  <TwoFASettings />
+                </div>
+              </TabsContent>
             </Tabs>
           </motion.div>
         </div>
@@ -719,6 +746,16 @@ const Admin = () => {
         onApprove={handleApproveReview}
         onReject={handleRejectReview}
         isUpdating={approveReview.isPending || deleteReview.isPending}
+      />
+
+      {/* 2FA Verification Dialog */}
+      <TwoFAVerifyDialog
+        open={showVerifyDialog}
+        onOpenChange={setShowVerifyDialog}
+        onVerify={handleVerify}
+        loading={twoFALoading}
+        title={operationName}
+        description={operationDescription}
       />
 
       <Footer />
