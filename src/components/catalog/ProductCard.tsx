@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Star, Sparkles } from "lucide-react";
+import { Star, Sparkles, Share2, Check } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { Product } from "@/hooks/useProducts";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   product: Product;
@@ -16,6 +19,8 @@ const formatPrice = (price: number) => {
 };
 
 export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
+  const [copied, setCopied] = useState(false);
+  
   const discount = product.original_price
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
     : 0;
@@ -24,13 +29,45 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     new Date(product.created_at) >
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
+  const handleShare = async () => {
+    const url = `${window.location.origin}/produit/${product.slug}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: product.short_description || `Découvrez ${product.name}`,
+          url: url,
+        });
+      } catch (error) {
+        // User cancelled or error
+        if ((error as Error).name !== 'AbortError') {
+          copyToClipboard(url);
+        }
+      }
+    } else {
+      copyToClipboard(url);
+    }
+  };
+
+  const copyToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success("Lien copié !");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Impossible de copier le lien");
+    }
+  };
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       whileHover={{ y: -5 }}
-      className="group relative bg-cream/[0.03] rounded-2xl border border-cream/10 overflow-hidden hover:border-primary/30 hover:shadow-luxury transition-all duration-500"
+      className="group relative bg-cream/[0.03] rounded-2xl border border-cream/10 overflow-hidden hover:border-primary/30 hover:shadow-luxury transition-all duration-500 flex flex-col"
     >
       {/* Image Container */}
       <Link to={`/produit/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-noir to-noir/80">
@@ -55,15 +92,6 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           )}
         </div>
 
-        {/* Quick Actions */}
-        <motion.div 
-          initial={{ opacity: 0, x: 10 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        >
-          <WishlistButton productId={product.id} />
-        </motion.div>
-
         {/* Stock Status */}
         {product.stock_quantity <= 0 && (
           <div className="absolute inset-0 bg-noir/70 backdrop-blur-sm flex items-center justify-center">
@@ -78,7 +106,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
       </Link>
 
       {/* Content */}
-      <div className="p-5">
+      <div className="p-5 flex flex-col flex-1">
         {/* Category */}
         {product.category && (
           <Link
@@ -137,6 +165,23 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {product.origin_country && <span>{product.origin_country}</span>}
           {product.volume_ml && <span>{product.volume_ml}ml</span>}
           {product.alcohol_percentage && <span>{product.alcohol_percentage}%</span>}
+        </div>
+
+        {/* Action Buttons - Always visible at bottom */}
+        <div className="flex items-center gap-2 mt-auto pt-4 border-t border-cream/10">
+          <WishlistButton 
+            productId={product.id} 
+            className="flex-1 h-9 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full text-xs"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            className="flex-1 h-9 gap-1.5 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full text-xs"
+          >
+            {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
+            {copied ? "Copié" : "Partager"}
+          </Button>
         </div>
       </div>
     </motion.article>
