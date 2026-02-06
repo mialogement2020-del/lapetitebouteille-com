@@ -18,6 +18,7 @@ import { ProductDetails } from "@/components/product/ProductDetails";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { ProductShareButton } from "@/components/product/ProductShareButton";
+import { ProductQRCode } from "@/components/product/ProductQRCode";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -291,6 +292,10 @@ const ProductPage = () => {
                   productSlug={product.slug}
                   productName={product.name}
                   shortDescription={product.short_description || undefined}
+                />
+                <ProductQRCode 
+                  productSlug={product.slug}
+                  productName={product.name}
                 />
               </div>
 
