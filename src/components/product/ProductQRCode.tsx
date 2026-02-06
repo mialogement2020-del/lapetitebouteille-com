@@ -12,6 +12,7 @@ import {
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import logoIcon from "@/assets/logo-icon.png";
 
 interface ProductQRCodeProps {
   productSlug: string;
@@ -106,7 +107,7 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
         {qrLink && (
           <div className="flex flex-col items-center space-y-4">
             {/* QR Code Container */}
-            <div className="bg-white p-4 rounded-xl">
+            <div className="bg-white p-4 rounded-xl relative">
               <QRCodeSVG
                 id="product-qr-code"
                 value={qrLink}
@@ -116,6 +117,16 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
                 bgColor="#ffffff"
                 fgColor="#1a1a1a"
               />
+              {/* Logo au centre du QR code */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="bg-white p-1.5 rounded-lg">
+                  <img 
+                    src={logoIcon} 
+                    alt="La Petite Bouteille" 
+                    className="w-10 h-10 object-contain"
+                  />
+                </div>
+              </div>
             </div>
 
               {/* Product Name */}
