@@ -270,23 +270,36 @@ export function useCheckout() {
 
       if (itemsError) throw itemsError;
 
-      // Send confirmation email - now uses secure server-side data fetching
-      const customerEmail = addressData.email?.trim();
-      if (customerEmail) {
+      // Send confirmation email - for both guests and authenticated users
+      try {
+        // The edge function now securely fetches order data from the database
+        const emailResponse = await supabase.functions.invoke('send-order-confirmation', {
+          body: {
+            orderNumber,
+          },
+        });
+        
+        if (emailResponse.error) {
+          console.warn('Email confirmation failed:', emailResponse.error);
+        }
+      } catch (emailError) {
+        console.warn('Failed to send confirmation email:', emailError);
+        // Don't fail the order if email fails
+      }
+
+      // Send push notification for order confirmation if user is authenticated
+      if (user?.id) {
         try {
-          // The edge function now securely fetches order data from the database
-          const emailResponse = await supabase.functions.invoke('send-order-confirmation', {
+          await supabase.functions.invoke('send-order-push-notification', {
             body: {
+              userId: user.id,
               orderNumber,
+              status: 'confirmed',
+              customerName: addressData.fullName,
             },
           });
-          
-          if (emailResponse.error) {
-            console.warn('Email confirmation failed:', emailResponse.error);
-          }
-        } catch (emailError) {
-          console.warn('Failed to send confirmation email:', emailError);
-          // Don't fail the order if email fails
+        } catch (pushError) {
+          console.warn('Failed to send push notification:', pushError);
         }
       }
 
