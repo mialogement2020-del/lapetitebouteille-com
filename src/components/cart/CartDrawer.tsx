@@ -45,11 +45,15 @@ export function CartDrawer({ children }: CartDrawerProps) {
       <SheetTrigger asChild>
         {children || (
           <motion.div
-            animate={isAnimating ? {
-              scale: [1, 1.3, 0.9, 1.15, 1],
-              rotate: [0, -10, 10, -5, 0],
-            } : {}}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            animate={{
+              scale: [1, 1.1, 1],
+            }}
+            transition={{ 
+              duration: 1.5, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            className="relative"
           >
             <Button
               variant="ghost"
@@ -75,6 +79,19 @@ export function CartDrawer({ children }: CartDrawerProps) {
                 )}
               </AnimatePresence>
             </Button>
+            {/* Pulse ring effect */}
+            <motion.span
+              className="absolute inset-0 rounded-full border-2 border-primary/50"
+              animate={{
+                scale: [1, 1.4],
+                opacity: [0.6, 0],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeOut",
+              }}
+            />
           </motion.div>
         )}
       </SheetTrigger>
