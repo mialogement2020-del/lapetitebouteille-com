@@ -34,37 +34,28 @@ export const ProductReviews = ({
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ["product-reviews", productId],
     queryFn: async () => {
+      // Use the reviews_public view which excludes user_id for privacy
+      // This view only shows approved reviews and protects user identity
       const { data, error } = await supabase
-        .from("reviews")
+        .from("reviews_public" as any)
         .select(`
           id,
           rating,
           title,
           comment,
           is_verified_purchase,
-          created_at,
-          user_id
+          created_at
         `)
         .eq("product_id", productId)
-        .eq("is_approved", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Fetch profiles separately for approved reviews
-      if (data && data.length > 0) {
-        const userIds = data.map((r) => r.user_id).filter(Boolean);
-        
-        if (userIds.length > 0) {
-          // Use RPC or admin endpoint if needed, for now we show anonymized names
-          return data.map((review) => ({
-            ...review,
-            profile: null, // Privacy: don't expose full names
-          })) as ReviewWithProfile[];
-        }
-      }
-
-      return (data || []) as ReviewWithProfile[];
+      // Map to ReviewWithProfile format (user_id excluded for privacy)
+      return (data || []).map((review: any) => ({
+        ...review,
+        profile: null, // Privacy: user_id is not exposed through the view
+      })) as ReviewWithProfile[];
     },
     enabled: !!productId,
   });
