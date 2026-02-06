@@ -287,7 +287,7 @@ const ProductPage = () => {
 
               {/* Secondary Actions */}
               <div className="flex gap-4">
-                <WishlistButton productId={product.id} variant="full" className="border-cream/20 text-cream hover:bg-cream/5 rounded-full" />
+                <WishlistButton productId={product.id} variant="full" className="border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full" />
                 <ProductShareButton 
                   productSlug={product.slug}
                   productName={product.name}

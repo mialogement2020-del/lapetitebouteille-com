@@ -78,7 +78,7 @@ export function ProductShareButton({
     return (
       <Button
         variant="outline"
-        className="gap-2 border-cream/20 text-cream hover:bg-cream/5 rounded-full"
+        className="gap-2 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full"
         onClick={() => handleShare(false)}
       >
         {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
@@ -92,7 +92,7 @@ export function ProductShareButton({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="gap-2 border-cream/20 text-cream hover:bg-cream/5 rounded-full"
+          className="gap-2 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full"
         >
           <Share2 className="h-4 w-4" />
           Partager
