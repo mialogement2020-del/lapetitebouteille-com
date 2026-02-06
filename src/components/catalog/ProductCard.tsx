@@ -232,7 +232,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
               <div className="flex flex-col items-center space-y-3">
                 <div className="bg-white p-3 rounded-xl">
                   <QRCodeSVG
-                    value={`${window.location.origin}/produit/${product.slug}`}
+                    value={`https://cameroon-spirits-ai.lovable.app/produit/${product.slug}`}
                     size={160}
                     level="H"
                     includeMargin

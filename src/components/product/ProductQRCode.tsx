@@ -25,19 +25,21 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
   const { user } = useAuthContext();
   const { generateProductReferralLink, getUserReferralCode } = useProductReferral();
 
+  const baseUrl = "https://cameroon-spirits-ai.lovable.app";
+
   useEffect(() => {
     if (isOpen) {
       const generateLink = async () => {
         if (user) {
-          const link = await generateProductReferralLink(productSlug);
-          setQrLink(link);
+          const code = await getUserReferralCode();
+          setQrLink(`${baseUrl}/produit/${productSlug}?ref=${code}`);
         } else {
-          setQrLink(`${window.location.origin}/produit/${productSlug}`);
+          setQrLink(`${baseUrl}/produit/${productSlug}`);
         }
       };
       generateLink();
     }
-  }, [isOpen, user, productSlug, generateProductReferralLink]);
+  }, [isOpen, user, productSlug, getUserReferralCode]);
 
   const handleCopyLink = async () => {
     try {
