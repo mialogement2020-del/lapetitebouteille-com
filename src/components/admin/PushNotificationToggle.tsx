@@ -62,17 +62,21 @@ export function PushNotificationToggle() {
   }
 
   return (
-    <Button
-      variant="outline"
-      size="icon"
+    <button
+      type="button"
       onClick={handleToggle}
+      onTouchEnd={(e) => {
+        e.preventDefault();
+        handleToggle();
+      }}
       disabled={isLoading}
       aria-label={getStatusText()}
-      className={`relative border-gold/30 hover:border-gold/50 touch-manipulation active:scale-95 transition-transform ${
+      className={`relative z-50 inline-flex items-center justify-center h-10 w-10 rounded-md border text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation select-none cursor-pointer ${
         isSubscribed
-          ? "bg-gold/10 text-gold hover:bg-gold/20"
-          : "text-cream/60 hover:text-cream"
+          ? "border-gold/30 bg-gold/10 text-gold hover:bg-gold/20"
+          : "border-gold/30 text-cream/60 hover:text-cream hover:border-gold/50"
       }`}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin" />
@@ -91,6 +95,6 @@ export function PushNotificationToggle() {
             : "bg-cream/40"
         }`}
       />
-    </Button>
+    </button>
   );
 }
