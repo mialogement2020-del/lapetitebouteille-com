@@ -1,52 +1,55 @@
- import { useState } from "react";
- import { motion } from "framer-motion";
- import { 
-   Users, 
-   TrendingUp, 
-   Wallet, 
-   Crown, 
-   ArrowUpRight, 
-   RefreshCw,
-   Search,
-   Filter,
-   Check,
-   X,
-   Loader2,
-   Eye
- } from "lucide-react";
- import { Button } from "@/components/ui/button";
- import { Input } from "@/components/ui/input";
- import { Badge } from "@/components/ui/badge";
- import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
- import {
-   Table,
-   TableBody,
-   TableCell,
-   TableHead,
-   TableHeader,
-   TableRow,
- } from "@/components/ui/table";
- import {
-   Select,
-   SelectContent,
-   SelectItem,
-   SelectTrigger,
-   SelectValue,
- } from "@/components/ui/select";
- import {
-   Dialog,
-   DialogContent,
-   DialogDescription,
-   DialogFooter,
-   DialogHeader,
-   DialogTitle,
- } from "@/components/ui/dialog";
- import { Textarea } from "@/components/ui/textarea";
- import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
- import { supabase } from "@/integrations/supabase/client";
- import { toast } from "@/hooks/use-toast";
- import { format } from "date-fns";
- import { fr } from "date-fns/locale";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { 
+  Users, 
+  TrendingUp, 
+  Wallet, 
+  Crown, 
+  ArrowUpRight, 
+  RefreshCw,
+  Search,
+  Filter,
+  Check,
+  X,
+  Loader2,
+  Eye,
+  Shield
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
+import { TwoFAVerifyDialog } from "./TwoFAVerifyDialog";
  
  type Ambassador = {
    user_id: string;
@@ -100,13 +103,28 @@
    elite: "👑",
  };
  
- export function MLMDashboard() {
-   const queryClient = useQueryClient();
-   const [searchQuery, setSearchQuery] = useState("");
-   const [rankFilter, setRankFilter] = useState<string>("all");
-   const [selectedWithdrawal, setSelectedWithdrawal] = useState<WithdrawalRequest | null>(null);
-   const [rejectionReason, setRejectionReason] = useState("");
-   const [isProcessing, setIsProcessing] = useState(false);
+export function MLMDashboard() {
+  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [rankFilter, setRankFilter] = useState<string>("all");
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<WithdrawalRequest | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // 2FA protection for sensitive operations
+  const {
+    executeSensitiveOperation,
+    showVerifyDialog,
+    setShowVerifyDialog,
+    handleVerify,
+    is2FAEnabled,
+    loading: is2FALoading,
+    operationName,
+    operationDescription,
+  } = useSensitiveOperation({
+    operationName: "Validation retrait",
+    description: "L'approbation ou le rejet d'un retrait nécessite une vérification 2FA",
+  });
  
    // Fetch ambassadors with their stats
    const { data: ambassadors = [], isLoading: isLoadingAmbassadors, refetch: refetchAmbassadors } = useQuery({
@@ -252,59 +270,63 @@
      return matchesSearch && matchesRank;
    });
  
-   const handleApproveWithdrawal = async (withdrawal: WithdrawalRequest) => {
-     setIsProcessing(true);
-     try {
-       await processWithdrawal.mutateAsync({ id: withdrawal.id, action: "approve" });
-       toast({
-         title: "Retrait approuvé",
-         description: `Le retrait de ${withdrawal.amount.toLocaleString()} FCFA a été approuvé.`,
-       });
-       setSelectedWithdrawal(null);
-     } catch (error) {
-       toast({
-         title: "Erreur",
-         description: "Impossible de traiter le retrait",
-         variant: "destructive",
-       });
-     } finally {
-       setIsProcessing(false);
-     }
-   };
- 
-   const handleRejectWithdrawal = async () => {
-     if (!selectedWithdrawal || !rejectionReason.trim()) {
-       toast({
-         title: "Raison requise",
-         description: "Veuillez indiquer la raison du rejet",
-         variant: "destructive",
-       });
-       return;
-     }
- 
-     setIsProcessing(true);
-     try {
-       await processWithdrawal.mutateAsync({ 
-         id: selectedWithdrawal.id, 
-         action: "reject", 
-         reason: rejectionReason 
-       });
-       toast({
-         title: "Retrait rejeté",
-         description: "La demande de retrait a été rejetée.",
-       });
-       setSelectedWithdrawal(null);
-       setRejectionReason("");
-     } catch (error) {
-       toast({
-         title: "Erreur",
-         description: "Impossible de rejeter le retrait",
-         variant: "destructive",
-       });
-     } finally {
-       setIsProcessing(false);
-     }
-   };
+  const handleApproveWithdrawal = async (withdrawal: WithdrawalRequest) => {
+    await executeSensitiveOperation(async () => {
+      setIsProcessing(true);
+      try {
+        await processWithdrawal.mutateAsync({ id: withdrawal.id, action: "approve" });
+        toast({
+          title: "Retrait approuvé",
+          description: `Le retrait de ${withdrawal.amount.toLocaleString()} FCFA a été approuvé.`,
+        });
+        setSelectedWithdrawal(null);
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de traiter le retrait",
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    });
+  };
+
+  const handleRejectWithdrawal = async () => {
+    if (!selectedWithdrawal || !rejectionReason.trim()) {
+      toast({
+        title: "Raison requise",
+        description: "Veuillez indiquer la raison du rejet",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await executeSensitiveOperation(async () => {
+      setIsProcessing(true);
+      try {
+        await processWithdrawal.mutateAsync({ 
+          id: selectedWithdrawal.id, 
+          action: "reject", 
+          reason: rejectionReason 
+        });
+        toast({
+          title: "Retrait rejeté",
+          description: "La demande de retrait a été rejetée.",
+        });
+        setSelectedWithdrawal(null);
+        setRejectionReason("");
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de rejeter le retrait",
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    });
+  };
  
    return (
      <div className="space-y-6">
@@ -563,11 +585,21 @@
                {isProcessing ? (
                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                ) : null}
-               Confirmer le rejet
-             </Button>
-           </DialogFooter>
-         </DialogContent>
-       </Dialog>
-     </div>
-   );
- }
+                Confirmer le rejet
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* 2FA Verification Dialog */}
+        <TwoFAVerifyDialog
+          open={showVerifyDialog}
+          onOpenChange={setShowVerifyDialog}
+          onVerify={handleVerify}
+          loading={is2FALoading}
+          title={operationName}
+          description={operationDescription}
+        />
+      </div>
+    );
+  }
