@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Star, Sparkles, Share2, Check } from "lucide-react";
+import { Star, Sparkles, Share2, Check, QrCode } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,14 @@ import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { Product } from "@/hooks/useProducts";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { QRCodeSVG } from "qrcode.react";
 
 interface ProductCardProps {
   product: Product;
@@ -201,6 +209,43 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
             {copied ? "Copié" : "Partager"}
           </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full"
+                title="QR Code"
+              >
+                <QrCode className="h-3.5 w-3.5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-noir-light border-gold/20 max-w-xs" aria-describedby={`qr-desc-${product.id}`}>
+              <DialogHeader>
+                <DialogTitle className="text-cream font-display text-lg">
+                  QR Code
+                </DialogTitle>
+              </DialogHeader>
+              <p id={`qr-desc-${product.id}`} className="sr-only">
+                Scannez ce QR code pour accéder au produit.
+              </p>
+              <div className="flex flex-col items-center space-y-3">
+                <div className="bg-white p-3 rounded-xl">
+                  <QRCodeSVG
+                    value={`${window.location.origin}/produit/${product.slug}`}
+                    size={160}
+                    level="H"
+                    includeMargin
+                    bgColor="#ffffff"
+                    fgColor="#1a1a1a"
+                  />
+                </div>
+                <p className="text-cream/70 text-center text-xs font-medium line-clamp-2">
+                  {product.name}
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </motion.article>
