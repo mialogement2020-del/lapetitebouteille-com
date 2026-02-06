@@ -345,12 +345,15 @@ export function useAdmin() {
 
   // Update order status mutation
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, newStatus, notes, orderNumber, previousStatus }: { 
+    mutationFn: async ({ orderId, newStatus, notes, orderNumber, previousStatus, shippingPhone, customerName, customerEmail }: { 
       orderId: string; 
       newStatus: OrderStatus; 
       notes?: string;
       orderNumber?: string;
       previousStatus?: OrderStatus;
+      shippingPhone?: string | null;
+      customerName?: string | null;
+      customerEmail?: string | null;
     }) => {
       // First, update the order status
       const { error: orderError } = await supabase
@@ -376,6 +379,43 @@ export function useAdmin() {
             .from("order_status_history")
             .update({ notes })
             .eq("id", historyEntries[0].id);
+        }
+      }
+
+      // Send SMS notification for specific status changes (shipped, delivered)
+      if (shippingPhone && orderNumber && ['shipped', 'delivered'].includes(newStatus)) {
+        try {
+          const smsResponse = await supabase.functions.invoke('send-order-status-sms', {
+            body: {
+              orderNumber,
+              phoneNumber: shippingPhone,
+              newStatus,
+              customerName: customerName || 'Client',
+            },
+          });
+          
+          if (smsResponse.error) {
+            console.warn('SMS notification failed:', smsResponse.error);
+          } else if (smsResponse.data?.skipped) {
+            console.log('SMS notification skipped:', smsResponse.data.message);
+          } else {
+            console.log('SMS notification sent successfully');
+          }
+        } catch (smsError) {
+          console.warn('Failed to send SMS notification:', smsError);
+          // Don't fail the status update if SMS fails
+        }
+      }
+
+      // Send email notification for status updates
+      if (customerEmail && orderNumber) {
+        try {
+          await supabase.functions.invoke('send-order-status-update', {
+            body: { orderNumber },
+          });
+        } catch (emailError) {
+          console.warn('Failed to send email notification:', emailError);
+          // Don't fail the status update if email fails
         }
       }
       
