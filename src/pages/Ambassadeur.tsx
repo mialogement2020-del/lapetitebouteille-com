@@ -28,6 +28,7 @@ import { CommissionHistory } from "@/components/ambassador/CommissionHistory";
 import { ReferralTree } from "@/components/ambassador/ReferralTree";
 import { WalletManager } from "@/components/ambassador/WalletManager";
 import { ReferralLink } from "@/components/ambassador/ReferralLink";
+import { LinkStats } from "@/components/ambassador/LinkStats";
 
 export default function Ambassadeur() {
   const navigate = useNavigate();
@@ -155,6 +156,11 @@ export default function Ambassadeur() {
                     stats={stats!} 
                     isLoading={statsLoading} 
                   />
+                  
+                  {/* Link Performance Stats */}
+                  <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
+                    <LinkStats />
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="commissions">
