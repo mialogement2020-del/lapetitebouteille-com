@@ -26,7 +26,7 @@ interface OrderStatusDialogProps {
   order: AdminOrder | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdateStatus: (orderId: string, newStatus: OrderStatus, notes?: string, shippingPhone?: string | null, customerName?: string | null, customerEmail?: string | null) => Promise<void>;
+  onUpdateStatus: (orderId: string, newStatus: OrderStatus, notes?: string, shippingPhone?: string | null, customerName?: string | null, customerEmail?: string | null, userId?: string | null) => Promise<void>;
   isUpdating: boolean;
 }
 
@@ -89,7 +89,8 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
         notes.trim() || undefined,
         order.shipping_phone,
         order.shipping_full_name,
-        order.guest_email
+        order.guest_email,
+        order.user_id
       );
       setSelectedStatus(null);
       setNotes("");
