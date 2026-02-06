@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCartContext } from "@/contexts/CartContext";
@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import type { AddressFormData } from "@/components/checkout/AddressForm";
 import type { PaymentMethod } from "@/components/checkout/PaymentMethodSelect";
 import type { AppliedCode } from "@/components/checkout/UnifiedCodeInput";
+import { useProductReferral } from "@/hooks/useProductReferral";
 
 // Generate MLM commissions using atomic server-side function
 async function generateMLMCommissions(orderId: string, referrerId: string, orderTotal: number) {
@@ -49,12 +50,68 @@ export function useCheckout() {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { items, subtotal, clearCart } = useCartContext();
+  const { getStoredReferralCode, clearStoredReferralCode } = useProductReferral();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"address" | "payment" | "confirmation">("address");
   const [addressData, setAddressData] = useState<AddressFormData | null>(null);
   const [appliedCode, setAppliedCode] = useState<AppliedCode | null>(null);
   const [giftPackaging, setGiftPackaging] = useState<GiftPackagingOption | null>(null);
   const [giftMessage, setGiftMessage] = useState("");
+  const [autoReferralApplied, setAutoReferralApplied] = useState(false);
+
+  // Auto-apply stored referral code from product links
+  const applyStoredReferralCode = useCallback(async () => {
+    // Don't apply if already applied or if there's already a code
+    if (autoReferralApplied || appliedCode) return;
+    
+    const storedCode = getStoredReferralCode();
+    if (!storedCode) return;
+
+    try {
+      // Validate the referral code
+      const { data, error } = await supabase.rpc('validate_referral_code', {
+        _code: storedCode
+      });
+
+      // Type-safe response handling
+      const result = data as { is_valid?: boolean; code?: string } | null;
+      
+      if (error || !result?.is_valid) {
+        // Invalid code, clear it
+        clearStoredReferralCode();
+        return;
+      }
+
+      // Get referrer ID for the applied code
+      const { data: referrerId } = await supabase.rpc('get_referrer_id_from_code', {
+        _code: storedCode
+      });
+
+      // Apply the referral code automatically
+      setAppliedCode({
+        type: "referral",
+        data: {
+          code: storedCode,
+          referrerId: referrerId || "",
+        },
+      });
+
+      setAutoReferralApplied(true);
+
+      toast({
+        title: "🎁 Code de parrainage appliqué",
+        description: "Un ami vous a recommandé ! Son parrainage a été pris en compte.",
+      });
+    } catch (error) {
+      console.error("Error applying stored referral:", error);
+      clearStoredReferralCode();
+    }
+  }, [autoReferralApplied, appliedCode, getStoredReferralCode, clearStoredReferralCode]);
+
+  // Check for stored referral on mount
+  useEffect(() => {
+    applyStoredReferralCode();
+  }, [applyStoredReferralCode]);
 
   const deliveryFee = subtotal >= 50000 ? 0 : 2000;
   const discountAmount = appliedCode?.type === "promo" ? appliedCode.data.discountAmount : 0;
@@ -233,8 +290,9 @@ export function useCheckout() {
         }
       }
 
-      // Clear cart
+      // Clear cart and stored referral code
       await clearCart();
+      clearStoredReferralCode();
 
       // For mobile money, we would integrate with payment gateway here
       // For now, redirect to confirmation
