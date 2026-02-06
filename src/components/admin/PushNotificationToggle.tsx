@@ -1,11 +1,5 @@
 import { Bell, BellOff, Loader2, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 
@@ -20,6 +14,8 @@ export function PushNotificationToggle() {
   } = usePushNotifications();
 
   const handleToggle = async () => {
+    if (isLoading) return;
+    
     if (isSubscribed) {
       const success = await unsubscribe();
       if (success) {
@@ -43,85 +39,58 @@ export function PushNotificationToggle() {
     }
   };
 
+  // Get status text for accessibility
+  const getStatusText = () => {
+    if (!isSupported) return "Notifications push non supportées";
+    if (isSubscribed) return "Notifications push activées";
+    if (permission === "denied") return "Notifications bloquées par le navigateur";
+    return "Notifications push désactivées";
+  };
+
   if (!isSupported) {
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              disabled
-              className="border-cream/20 text-cream/40"
-            >
-              <BellOff className="h-5 w-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Notifications push non supportées par ce navigateur</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Button
+        variant="outline"
+        size="icon"
+        disabled
+        className="border-cream/20 text-cream/40 touch-manipulation"
+        aria-label="Notifications push non supportées par ce navigateur"
+      >
+        <BellOff className="h-5 w-5" />
+      </Button>
     );
   }
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleToggle}
-              disabled={isLoading}
-              className={`border-gold/30 hover:border-gold/50 ${
-                isSubscribed
-                  ? "bg-gold/10 text-gold hover:bg-gold/20"
-                  : "text-cream/60 hover:text-cream"
-              }`}
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : isSubscribed ? (
-                <BellRing className="h-5 w-5" />
-              ) : (
-                <Bell className="h-5 w-5" />
-              )}
-            </Button>
-            {/* Status indicator dot */}
-            <span
-              className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-noir ${
-                isSubscribed
-                  ? "bg-green-500 animate-pulse"
-                  : permission === "denied"
-                  ? "bg-red-500"
-                  : "bg-cream/40"
-              }`}
-            />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="flex items-center gap-2">
-            <span
-              className={`h-2 w-2 rounded-full ${
-                isSubscribed
-                  ? "bg-green-500"
-                  : permission === "denied"
-                  ? "bg-red-500"
-                  : "bg-cream/40"
-              }`}
-            />
-            <p>
-              {isSubscribed
-                ? "Notifications push activées"
-                : permission === "denied"
-                ? "Notifications bloquées par le navigateur"
-                : "Notifications push désactivées"}
-            </p>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={handleToggle}
+      disabled={isLoading}
+      aria-label={getStatusText()}
+      className={`relative border-gold/30 hover:border-gold/50 touch-manipulation active:scale-95 transition-transform ${
+        isSubscribed
+          ? "bg-gold/10 text-gold hover:bg-gold/20"
+          : "text-cream/60 hover:text-cream"
+      }`}
+    >
+      {isLoading ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : isSubscribed ? (
+        <BellRing className="h-5 w-5" />
+      ) : (
+        <Bell className="h-5 w-5" />
+      )}
+      {/* Status indicator dot */}
+      <span
+        className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-noir pointer-events-none ${
+          isSubscribed
+            ? "bg-green-500 animate-pulse"
+            : permission === "denied"
+            ? "bg-red-500"
+            : "bg-cream/40"
+        }`}
+      />
+    </Button>
   );
 }
