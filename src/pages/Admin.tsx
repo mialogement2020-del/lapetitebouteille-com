@@ -17,7 +17,8 @@ import {
   RefreshCw,
   Users,
   Shield,
-  Lock
+  Lock,
+  Award
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -52,6 +53,7 @@ import { MLMDashboard } from "@/components/admin/MLMDashboard";
 import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsManager";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
+import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
 import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -140,6 +142,7 @@ const Admin = () => {
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
       { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
+      { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
       { id: 'stock-alerts', label: 'Alertes Stock', icon: Bell },
       { id: 'audit', label: 'Audit', icon: History },
@@ -684,6 +687,10 @@ const Admin = () => {
 
               <TabsContent value="audit" className="space-y-6">
                 <AuditLogsTable />
+              </TabsContent>
+
+              <TabsContent value="loyalty" className="space-y-6">
+                <LoyaltyDashboard />
               </TabsContent>
  
               <TabsContent value="mlm" className="space-y-6">
