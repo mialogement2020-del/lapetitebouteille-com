@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
+import { ComparatorButton } from "@/components/product/ComparatorButton";
 import { Product } from "@/hooks/useProducts";
 import { toast } from "sonner";
 import {
@@ -262,7 +263,27 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
         <div className="flex items-center gap-2 mt-auto pt-4 border-t border-cream/10">
           <WishlistButton 
             productId={product.id} 
-            className="flex-1 h-9 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full text-xs"
+            className="h-9 w-9 p-0 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full"
+          />
+          <ComparatorButton
+            product={{
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              price: product.price,
+              original_price: product.original_price,
+              image_url: product.image_url,
+              alcohol_percentage: product.alcohol_percentage,
+              volume_ml: product.volume_ml,
+              origin_country: product.origin_country,
+              region: product.region,
+              grape_variety: product.grape_variety,
+              tasting_notes: product.tasting_notes,
+              average_rating: product.average_rating,
+              review_count: product.review_count,
+            }}
+            variant="icon"
+            className="h-9 w-9 p-0 rounded-full"
           />
           <Button
             variant="outline"
