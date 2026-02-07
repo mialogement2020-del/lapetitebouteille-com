@@ -1,10 +1,11 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Scale, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProductComparator } from "@/hooks/useProductComparator";
 
-export function ComparatorFloatingBar() {
+export const ComparatorFloatingBar = forwardRef<HTMLDivElement>(function ComparatorFloatingBar(_, ref) {
   const { products, removeProduct, clearAll } = useProductComparator();
 
   if (products.length === 0) return null;
@@ -95,4 +96,6 @@ export function ComparatorFloatingBar() {
       </motion.div>
     </AnimatePresence>
   );
-}
+});
+
+ComparatorFloatingBar.displayName = "ComparatorFloatingBar";
