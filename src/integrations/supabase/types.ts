@@ -1946,6 +1946,7 @@ export type Database = {
         | "mlm"
         | "reviews"
         | "full_access"
+        | "loyalty"
       ambassador_rank: "bronze" | "silver" | "gold" | "diamond" | "elite"
       app_role: "admin" | "moderator" | "user"
       order_status:
@@ -2105,6 +2106,7 @@ export const Constants = {
         "mlm",
         "reviews",
         "full_access",
+        "loyalty",
       ],
       ambassador_rank: ["bronze", "silver", "gold", "diamond", "elite"],
       app_role: ["admin", "moderator", "user"],
