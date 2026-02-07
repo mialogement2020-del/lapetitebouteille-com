@@ -7,7 +7,11 @@ import {
   Wallet, 
   TrendingUp,
   ArrowLeft,
-  Settings
+  Settings,
+  Trophy,
+  Target,
+  Calculator,
+  ImageIcon
 } from "lucide-react";
 import { AmbassadorNotifications } from "@/components/ambassador/AmbassadorNotifications";
 import { PushNotificationSettings } from "@/components/ambassador/PushNotificationSettings";
@@ -30,6 +34,10 @@ import { WalletManager } from "@/components/ambassador/WalletManager";
 import { ReferralLink } from "@/components/ambassador/ReferralLink";
 import { LinkStats } from "@/components/ambassador/LinkStats";
 import { ShortLinkManager } from "@/components/ambassador/ShortLinkManager";
+import { MonthlyLeaderboard } from "@/components/ambassador/MonthlyLeaderboard";
+import { ChallengesList } from "@/components/ambassador/ChallengesList";
+import { IncomeSimulator } from "@/components/ambassador/IncomeSimulator";
+import { ShareableAssetsLibrary } from "@/components/ambassador/ShareableAssetsLibrary";
 
 export default function Ambassadeur() {
   const navigate = useNavigate();
@@ -130,7 +138,21 @@ export default function Ambassadeur() {
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <LayoutDashboard className="h-4 w-4 mr-2" />
-                    Vue d'ensemble
+                    Aperçu
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="leaderboard"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
+                  >
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Classement
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="challenges"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    Défis
                   </TabsTrigger>
                   <TabsTrigger
                     value="commissions"
@@ -153,6 +175,20 @@ export default function Ambassadeur() {
                     <Wallet className="h-4 w-4 mr-2" />
                     Portefeuille
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="simulator"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
+                  >
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Simulateur
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="assets"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
+                  >
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    Ressources
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -164,6 +200,18 @@ export default function Ambassadeur() {
                   {/* Link Performance Stats */}
                   <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
                     <LinkStats />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="leaderboard">
+                  <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
+                    <MonthlyLeaderboard currentUserId={user?.id} />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="challenges">
+                  <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
+                    <ChallengesList />
                   </div>
                 </TabsContent>
 
@@ -202,6 +250,18 @@ export default function Ambassadeur() {
                       isLoading={transactionsLoading || statsLoading}
                       refetchStats={refetchStats}
                     />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="simulator">
+                  <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
+                    <IncomeSimulator />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="assets">
+                  <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
+                    <ShareableAssetsLibrary />
                   </div>
                 </TabsContent>
               </Tabs>
