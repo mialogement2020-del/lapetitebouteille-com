@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, User, Crown, Check, X, Loader2, UserPlus } from "lucide-react";
+import { Shield, User, Crown, Check, X, Loader2, UserPlus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   useAdminPermissions, 
   PERMISSION_LABELS, 
@@ -27,7 +29,16 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   'audit',
   'mlm',
   'reviews',
+  'loyalty',
 ];
+
+interface SearchResult {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  isAlreadyAdmin: boolean;
+}
 
 export const AdminPermissionsManager = () => {
   const { user } = useAuthContext();
@@ -44,6 +55,18 @@ export const AdminPermissionsManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Add admin dialog state
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isPromoting, setIsPromoting] = useState(false);
+
+  // Remove admin dialog state
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+  const [userToRemove, setUserToRemove] = useState<AdminUser | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+
   if (!hasFullAccess) {
     return (
       <Card className="bg-noir/50 border-gold/20">
@@ -56,6 +79,128 @@ export const AdminPermissionsManager = () => {
       </Card>
     );
   }
+
+  const handleSearchUsers = async () => {
+    if (!searchQuery.trim() || searchQuery.length < 3) {
+      toast({
+        title: "Recherche trop courte",
+        description: "Entrez au moins 3 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // Search profiles by email or name
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("id, email, first_name, last_name")
+        .or(`email.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`)
+        .limit(10);
+
+      if (error) throw error;
+
+      // Check which ones are already admins
+      const adminUserIds = adminUsers.map(a => a.id);
+      
+      setSearchResults((profiles || []).map(p => ({
+        ...p,
+        isAlreadyAdmin: adminUserIds.includes(p.id),
+      })));
+    } catch (error) {
+      toast({
+        title: "Erreur de recherche",
+        description: "Impossible de rechercher les utilisateurs",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handlePromoteToAdmin = async (userId: string, userEmail: string) => {
+    setIsPromoting(true);
+    try {
+      // Add admin role
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: userId,
+          role: "admin",
+        });
+
+      if (roleError) throw roleError;
+
+      toast({
+        title: "Administrateur ajouté",
+        description: `${userEmail} est maintenant administrateur`,
+      });
+      
+      setIsAddDialogOpen(false);
+      setSearchQuery("");
+      setSearchResults([]);
+      refetchAdminUsers();
+    } catch (error: any) {
+      // Check if it's a duplicate key error
+      if (error.code === '23505') {
+        toast({
+          title: "Déjà administrateur",
+          description: "Cet utilisateur est déjà administrateur",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de promouvoir l'utilisateur",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsPromoting(false);
+    }
+  };
+
+  const handleRemoveAdmin = async () => {
+    if (!userToRemove) return;
+    
+    setIsRemoving(true);
+    try {
+      // Remove admin role
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", userToRemove.id)
+        .eq("role", "admin");
+
+      if (roleError) throw roleError;
+
+      // Also remove all permissions
+      const { error: permError } = await supabase
+        .from("admin_permissions")
+        .delete()
+        .eq("user_id", userToRemove.id);
+
+      if (permError) throw permError;
+
+      toast({
+        title: "Administrateur supprimé",
+        description: `${userToRemove.email} n'est plus administrateur`,
+      });
+      
+      setIsRemoveDialogOpen(false);
+      setUserToRemove(null);
+      refetchAdminUsers();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de retirer le rôle administrateur",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRemoving(false);
+    }
+  };
 
   const handleEditUser = (adminUser: AdminUser) => {
     setSelectedUser(adminUser);
@@ -132,7 +277,7 @@ export const AdminPermissionsManager = () => {
     <>
       <Card className="bg-noir/50 border-gold/20">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <CardTitle className="text-cream flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
@@ -142,6 +287,13 @@ export const AdminPermissionsManager = () => {
                 Attribuez des rôles spécifiques à chaque administrateur
               </CardDescription>
             </div>
+            <Button
+              onClick={() => setIsAddDialogOpen(true)}
+              className="bg-gradient-gold text-noir"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Ajouter un admin
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -216,6 +368,19 @@ export const AdminPermissionsManager = () => {
                     >
                       Modifier
                     </Button>
+                    {adminUser.id !== user?.id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setUserToRemove(adminUser);
+                          setIsRemoveDialogOpen(true);
+                        }}
+                        className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -295,6 +460,133 @@ export const AdminPermissionsManager = () => {
                   Enregistrer
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Admin Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+        setIsAddDialogOpen(open);
+        if (!open) {
+          setSearchQuery("");
+          setSearchResults([]);
+        }
+      }}>
+        <DialogContent className="bg-noir border-gold/20 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-cream flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-primary" />
+              Ajouter un administrateur
+            </DialogTitle>
+            <DialogDescription className="text-cream/60">
+              Recherchez un utilisateur existant pour lui donner les droits d'administration
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
+                <Input
+                  placeholder="Email ou nom..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchUsers()}
+                  className="pl-10 bg-noir/50 border-gold/20 text-cream"
+                />
+              </div>
+              <Button
+                onClick={handleSearchUsers}
+                disabled={isSearching}
+                className="bg-primary text-noir"
+              >
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Rechercher"}
+              </Button>
+            </div>
+
+            {searchResults.length > 0 && (
+              <ScrollArea className="max-h-64">
+                <div className="space-y-2">
+                  {searchResults.map((result) => (
+                    <div
+                      key={result.id}
+                      className="flex items-center justify-between p-3 bg-noir/30 border border-gold/10 rounded-lg"
+                    >
+                      <div>
+                        <p className="text-cream font-medium">
+                          {result.first_name || ""} {result.last_name || ""}
+                        </p>
+                        <p className="text-cream/60 text-sm">{result.email}</p>
+                      </div>
+                      {result.isAlreadyAdmin ? (
+                        <Badge variant="outline" className="border-primary/30 text-primary">
+                          Déjà admin
+                        </Badge>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => handlePromoteToAdmin(result.id, result.email || "")}
+                          disabled={isPromoting}
+                          className="bg-success hover:bg-success/90"
+                        >
+                          {isPromoting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <UserPlus className="h-4 w-4 mr-1" />
+                              Promouvoir
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+
+            {searchResults.length === 0 && searchQuery && !isSearching && (
+              <p className="text-center text-cream/40 py-4">
+                Aucun utilisateur trouvé. Vérifiez l'orthographe.
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Admin Confirmation Dialog */}
+      <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
+        <DialogContent className="bg-noir border-gold/20 max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-cream">Retirer les droits admin ?</DialogTitle>
+            <DialogDescription className="text-cream/60">
+              {userToRemove && (
+                <>
+                  <strong>{userToRemove.first_name || userToRemove.email}</strong> ne pourra plus accéder au dashboard d'administration.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsRemoveDialogOpen(false)}
+              className="border-gold/30 text-cream"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleRemoveAdmin}
+              disabled={isRemoving}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isRemoving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Retirer
             </Button>
           </DialogFooter>
         </DialogContent>
