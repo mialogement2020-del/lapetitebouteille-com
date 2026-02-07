@@ -1,10 +1,17 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Facebook, Instagram, Phone, Mail, MapPin, Twitter, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const Footer = () => {
+  const location = useLocation();
+  
+  // Hide newsletter on dashboard pages (admin, ambassador, account)
+  const hideNewsletter = ['/admin', '/ambassadeur', '/compte'].some(
+    path => location.pathname.startsWith(path)
+  );
+
   return (
     <footer className="bg-noir text-cream relative overflow-hidden">
       {/* Background decorations */}
@@ -13,41 +20,43 @@ const Footer = () => {
         <div className="absolute -bottom-40 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Newsletter Section */}
-      <div className="relative border-b border-gold/10">
-        <div className="container mx-auto px-4 py-16 lg:py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="max-w-2xl mx-auto text-center"
-          >
-            <span className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block">
-              Newsletter
-            </span>
-            <h3 className="font-display text-3xl lg:text-4xl font-semibold mb-4">
-              Restez informé de nos <span className="text-primary">exclusivités</span>
-            </h3>
-            <p className="text-cream/60 mb-8 max-w-lg mx-auto">
-              Inscrivez-vous pour recevoir en avant-première nos offres spéciales et nouvelles cuvées
-            </p>
-            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <Input
-                type="email"
-                placeholder="Votre adresse email"
-                className="flex-1 h-14 px-6 rounded-full bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary"
-              />
-              <Button
-                type="submit"
-                className="h-14 px-8 bg-gradient-gold text-noir font-semibold rounded-full hover:opacity-90 transition-opacity shine-effect"
-              >
-                <Send className="h-4 w-4 mr-2" />
-                S'inscrire
-              </Button>
-            </form>
-          </motion.div>
+      {/* Newsletter Section - Hidden on dashboard pages */}
+      {!hideNewsletter && (
+        <div className="relative border-b border-gold/10">
+          <div className="container mx-auto px-4 py-16 lg:py-20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-2xl mx-auto text-center"
+            >
+              <span className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block">
+                Newsletter
+              </span>
+              <h3 className="font-display text-3xl lg:text-4xl font-semibold mb-4">
+                Restez informé de nos <span className="text-primary">exclusivités</span>
+              </h3>
+              <p className="text-cream/60 mb-8 max-w-lg mx-auto">
+                Inscrivez-vous pour recevoir en avant-première nos offres spéciales et nouvelles cuvées
+              </p>
+              <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                <Input
+                  type="email"
+                  placeholder="Votre adresse email"
+                  className="flex-1 h-14 px-6 rounded-full bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary"
+                />
+                <Button
+                  type="submit"
+                  className="h-14 px-8 bg-gradient-gold text-noir font-semibold rounded-full hover:opacity-90 transition-opacity shine-effect"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  S'inscrire
+                </Button>
+              </form>
+            </motion.div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-16 lg:py-20 relative">
