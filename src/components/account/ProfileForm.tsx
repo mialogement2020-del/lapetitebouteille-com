@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, Calendar, Save, Loader2 } from "lucide-react";
+import { User, Mail, Phone, Calendar, Save, Loader2, Camera, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthContext } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Profile = Tables<"profiles">;
@@ -16,12 +19,89 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
+  const { user } = useAuthContext();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     first_name: profile.first_name || "",
     last_name: profile.last_name || "",
     phone: profile.phone || "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url || "");
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner une image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Erreur",
+        description: "L'image ne doit pas dépasser 5 Mo.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+
+    try {
+      // Generate unique filename
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      const newAvatarUrl = urlData.publicUrl;
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await onUpdate({ avatar_url: newAvatarUrl });
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(newAvatarUrl);
+      toast({
+        title: "Photo mise à jour",
+        description: "Votre photo de profil a été modifiée avec succès.",
+      });
+    } catch (error: any) {
+      console.error("Avatar upload error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger la photo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const getInitials = () => {
+    const first = formData.first_name?.[0] || profile.email?.[0] || "";
+    const last = formData.last_name?.[0] || "";
+    return (first + last).toUpperCase() || "U";
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -78,6 +158,57 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center gap-4 pb-4 border-b border-gold/10">
+              <div className="relative group">
+                <Avatar className="h-24 w-24 border-2 border-gold/30">
+                  <AvatarImage src={avatarUrl} alt="Photo de profil" />
+                  <AvatarFallback className="bg-primary/20 text-primary text-xl font-semibold">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingAvatar}
+                  className="absolute inset-0 flex items-center justify-center rounded-full bg-noir/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  {isUploadingAvatar ? (
+                    <Loader2 className="h-6 w-6 text-cream animate-spin" />
+                  ) : (
+                    <Camera className="h-6 w-6 text-cream" />
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingAvatar}
+                className="border-gold/30 text-cream/80 hover:bg-cream/10"
+              >
+                {isUploadingAvatar ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Téléchargement...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Changer la photo
+                  </>
+                )}
+              </Button>
+            </div>
+
             {/* Email (read-only) */}
             <div className="space-y-2">
               <Label className="text-cream/80">Email</Label>
