@@ -154,7 +154,7 @@ export const useAdminPermissions = () => {
         .from("admin_permissions")
         .insert({
           user_id: userId,
-          permission: permission,
+          permission: permission as any, // Type assertion - loyalty enum added via migration
           granted_by: user?.id,
         });
 
@@ -172,7 +172,7 @@ export const useAdminPermissions = () => {
         .from("admin_permissions")
         .delete()
         .eq("user_id", userId)
-        .eq("permission", permission);
+        .eq("permission", permission as any); // Type assertion - loyalty enum added via migration
 
       if (error) throw error;
     },
@@ -199,7 +199,7 @@ export const useAdminPermissions = () => {
           .insert(
             permissions.map(p => ({
               user_id: userId,
-              permission: p,
+              permission: p as any, // Type assertion - loyalty enum added via migration
               granted_by: user?.id,
             }))
           );
