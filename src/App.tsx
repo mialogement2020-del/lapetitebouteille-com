@@ -22,7 +22,9 @@ import Conditions from "./pages/Conditions";
 import Confidentialite from "./pages/Confidentialite";
 import SuiviCommande from "./pages/SuiviCommande";
 import ShortLinkRedirect from "./pages/ShortLinkRedirect";
+import Comparer from "./pages/Comparer";
 import { SommelierChat } from "./components/chat/SommelierChat";
+import { ComparatorFloatingBar } from "./components/product/ComparatorFloatingBar";
 
 const queryClient = new QueryClient();
 
@@ -51,10 +53,12 @@ const App = () => (
               <Route path="/confidentialite" element={<Confidentialite />} />
               <Route path="/suivi-commande" element={<SuiviCommande />} />
               <Route path="/r/:code" element={<ShortLinkRedirect />} />
+              <Route path="/comparer" element={<Comparer />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-             <SommelierChat />
+            <SommelierChat />
+            <ComparatorFloatingBar />
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>

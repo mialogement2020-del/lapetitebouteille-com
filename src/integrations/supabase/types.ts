@@ -161,6 +161,124 @@ export type Database = {
         }
         Relationships: []
       }
+      ambassador_challenges: {
+        Row: {
+          badge_color: string | null
+          badge_icon: string | null
+          bonus_amount: number
+          challenge_type: string
+          created_at: string
+          description: string | null
+          ends_at: string
+          id: string
+          is_active: boolean | null
+          starts_at: string
+          target_value: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          badge_color?: string | null
+          badge_icon?: string | null
+          bonus_amount: number
+          challenge_type: string
+          created_at?: string
+          description?: string | null
+          ends_at: string
+          id?: string
+          is_active?: boolean | null
+          starts_at: string
+          target_value: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          badge_color?: string | null
+          badge_icon?: string | null
+          bonus_amount?: number
+          challenge_type?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          id?: string
+          is_active?: boolean | null
+          starts_at?: string
+          target_value?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      asset_downloads: {
+        Row: {
+          asset_id: string
+          downloaded_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          asset_id: string
+          downloaded_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          asset_id?: string
+          downloaded_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_downloads_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "shareable_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      back_in_stock_alerts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_notified: boolean | null
+          notified_at: string | null
+          phone: string | null
+          product_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_notified?: boolean | null
+          notified_at?: string | null
+          phone?: string | null
+          product_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_notified?: boolean | null
+          notified_at?: string | null
+          phone?: string | null
+          product_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "back_in_stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cart_items: {
         Row: {
           created_at: string | null
@@ -242,6 +360,53 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_participations: {
+        Row: {
+          bonus_claimed: boolean | null
+          bonus_claimed_at: string | null
+          challenge_id: string
+          completed_at: string | null
+          created_at: string
+          current_progress: number | null
+          id: string
+          is_completed: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bonus_claimed?: boolean | null
+          bonus_claimed_at?: string | null
+          challenge_id: string
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number | null
+          id?: string
+          is_completed?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bonus_claimed?: boolean | null
+          bonus_claimed_at?: string | null
+          challenge_id?: string
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number | null
+          id?: string
+          is_completed?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_participations_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "ambassador_challenges"
             referencedColumns: ["id"]
           },
         ]
@@ -328,6 +493,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      flash_sale_products: {
+        Row: {
+          created_at: string
+          flash_price: number
+          flash_sale_id: string
+          id: string
+          max_quantity: number | null
+          product_id: string
+          sold_quantity: number | null
+        }
+        Insert: {
+          created_at?: string
+          flash_price: number
+          flash_sale_id: string
+          id?: string
+          max_quantity?: number | null
+          product_id: string
+          sold_quantity?: number | null
+        }
+        Update: {
+          created_at?: string
+          flash_price?: number
+          flash_sale_id?: string
+          id?: string
+          max_quantity?: number | null
+          product_id?: string
+          sold_quantity?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flash_sale_products_flash_sale_id_fkey"
+            columns: ["flash_sale_id"]
+            isOneToOne: false
+            referencedRelation: "flash_sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flash_sale_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flash_sales: {
+        Row: {
+          banner_image_url: string | null
+          created_at: string
+          description: string | null
+          discount_percentage: number
+          ends_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          banner_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          discount_percentage: number
+          ends_at: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          banner_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          ends_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       gift_packaging_options: {
         Row: {
@@ -942,6 +1191,38 @@ export type Database = {
         }
         Relationships: []
       }
+      recently_viewed: {
+        Row: {
+          id: string
+          product_id: string
+          user_id: string
+          view_count: number | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          user_id: string
+          view_count?: number | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          user_id?: string
+          view_count?: number | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recently_viewed_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_codes: {
         Row: {
           code: string
@@ -1138,6 +1419,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shareable_assets: {
+        Row: {
+          asset_type: string
+          created_at: string
+          description: string | null
+          display_order: number | null
+          download_count: number | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+          platform: string
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          asset_type: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          download_count?: number | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          platform: string
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          download_count?: number | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          platform?: string
+          thumbnail_url?: string | null
+          title?: string
+        }
+        Relationships: []
       }
       stock_alerts_history: {
         Row: {
@@ -1503,6 +1826,21 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_leaderboard: {
+        Row: {
+          avatar_url: string | null
+          badge_color: string | null
+          current_rank: Database["public"]["Enums"]["ambassador_rank"] | null
+          first_name: string | null
+          last_name: string | null
+          monthly_earnings: number | null
+          monthly_orders: number | null
+          new_referrals: number | null
+          rank_position: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       reviews_public: {
         Row: {
           comment: string | null
@@ -1579,6 +1917,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_asset_download: {
+        Args: { asset_uuid: string }
+        Returns: undefined
       }
       increment_referral_clicks: { Args: { _code: string }; Returns: Json }
       is_2fa_session_valid: { Args: { _user_id: string }; Returns: boolean }
