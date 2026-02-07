@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { ReportPreview } from "./ReportPreview";
 import { ReportHistory } from "./ReportHistory";
 
@@ -66,6 +68,8 @@ function isValidEmail(email: string): boolean {
 }
 
 export function WeeklyReportSettings() {
+  const { user } = useAuthContext();
+  const { profile } = useProfile();
   const [isSending, setIsSending] = useState(false);
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -80,6 +84,25 @@ export function WeeklyReportSettings() {
   const [emailError, setEmailError] = useState("");
   const [testEmail, setTestEmail] = useState("");
   const [testEmailError, setTestEmailError] = useState("");
+  const [hasAddedCurrentUser, setHasAddedCurrentUser] = useState(false);
+
+  // Get current user's email
+  const currentUserEmail = profile?.email || user?.email;
+
+  // Auto-add current user's email if no recipients configured (first load only)
+  useEffect(() => {
+    if (!hasAddedCurrentUser && currentUserEmail && recipientEmails.length === 0 && !isLoading) {
+      setRecipientEmails([currentUserEmail.toLowerCase()]);
+      setHasAddedCurrentUser(true);
+    }
+  }, [currentUserEmail, recipientEmails.length, isLoading, hasAddedCurrentUser]);
+
+  // Pre-fill test email with current user's email
+  useEffect(() => {
+    if (currentUserEmail && !testEmail) {
+      setTestEmail(currentUserEmail);
+    }
+  }, [currentUserEmail]);
 
   // Load existing configuration
   useEffect(() => {
@@ -100,7 +123,11 @@ export function WeeklyReportSettings() {
           setFrequency(data.frequency || "weekly");
           setSelectedDay(data.day_of_week || "1");
           setSelectedHour(data.hour?.toString() || "8");
-          setRecipientEmails(data.recipient_emails || []);
+          // Only set recipient emails if they exist in the config
+          if (data.recipient_emails && data.recipient_emails.length > 0) {
+            setRecipientEmails(data.recipient_emails);
+            setHasAddedCurrentUser(true); // Don't auto-add if config exists
+          }
         }
       } catch (error) {
         console.error("Error loading config:", error);
@@ -348,7 +375,7 @@ export function WeeklyReportSettings() {
           <div className="flex flex-wrap gap-2">
             {recipientEmails.length === 0 ? (
               <p className="text-sm text-cream/50 italic">
-                Aucun destinataire configuré. L'email sera envoyé à OWNER_EMAIL par défaut.
+                Aucun destinataire configuré.
               </p>
             ) : (
               recipientEmails.map((email) => (
