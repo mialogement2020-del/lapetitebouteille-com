@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -17,6 +17,9 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductDetails } from "@/components/product/ProductDetails";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { RecentlyViewed } from "@/components/product/RecentlyViewed";
+import { BackInStockAlert } from "@/components/product/BackInStockAlert";
+import { ComparatorButton } from "@/components/product/ComparatorButton";
 import { ProductShareButton } from "@/components/product/ProductShareButton";
 import { ProductQRCode } from "@/components/product/ProductQRCode";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
@@ -27,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { useProductReferral } from "@/hooks/useProductReferral";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("fr-FR").format(price);
@@ -40,10 +44,17 @@ const ProductPage = () => {
     product?.category_id || null
   );
   const [quantity, setQuantity] = useState(1);
+  const { trackView } = useRecentlyViewed();
   
   // Initialize product referral tracking (captures ?ref= from URL)
   useProductReferral();
-
+  
+  // Track product view
+  useEffect(() => {
+    if (product?.id) {
+      trackView(product.id);
+    }
+  }, [product?.id, trackView]);
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -251,6 +262,11 @@ const ProductPage = () => {
                 )}
               </div>
 
+              {/* Back in Stock Alert (shown only when out of stock) */}
+              {product.stock_quantity <= 0 && (
+                <BackInStockAlert productId={product.id} productName={product.name} />
+              )}
+
               {/* Quantity & Add to Cart */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex items-center border border-cream/20 rounded-full bg-cream/5">
@@ -286,8 +302,27 @@ const ProductPage = () => {
               </div>
 
               {/* Secondary Actions */}
-              <div className="flex gap-4">
+              <div className="flex gap-4 flex-wrap">
                 <WishlistButton productId={product.id} variant="full" className="border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full" />
+                <ComparatorButton
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    price: product.price,
+                    original_price: product.original_price,
+                    image_url: product.image_url,
+                    alcohol_percentage: product.alcohol_percentage,
+                    volume_ml: product.volume_ml,
+                    origin_country: product.origin_country,
+                    region: product.region,
+                    grape_variety: product.grape_variety,
+                    tasting_notes: product.tasting_notes,
+                    average_rating: product.average_rating,
+                    review_count: product.review_count,
+                  }}
+                  variant="full"
+                />
                 <ProductShareButton 
                   productSlug={product.slug}
                   productName={product.name}
@@ -367,6 +402,9 @@ const ProductPage = () => {
 
         {/* Related Products */}
         <RelatedProducts products={relatedProducts} />
+        
+        {/* Recently Viewed Products */}
+        <RecentlyViewed currentProductId={product.id} />
       </main>
 
       <Footer />

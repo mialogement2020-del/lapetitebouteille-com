@@ -5,10 +5,19 @@ import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 
-export function RecentlyViewed() {
+interface RecentlyViewedProps {
+  currentProductId?: string;
+}
+
+export function RecentlyViewed({ currentProductId }: RecentlyViewedProps) {
   const { recentlyViewed, isLoading, clearHistory } = useRecentlyViewed();
 
-  if (isLoading || recentlyViewed.length === 0) return null;
+  // Filter out current product and check if we have items to display
+  const filteredProducts = recentlyViewed.filter(
+    (item) => item.product_id !== currentProductId
+  );
+
+  if (isLoading || filteredProducts.length === 0) return null;
 
   return (
     <section className="py-12">
@@ -29,7 +38,7 @@ export function RecentlyViewed() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {recentlyViewed.slice(0, 6).map((item, index) => (
+        {filteredProducts.slice(0, 6).map((item, index) => (
           <motion.div
             key={item.product_id}
             initial={{ opacity: 0, y: 20 }}
