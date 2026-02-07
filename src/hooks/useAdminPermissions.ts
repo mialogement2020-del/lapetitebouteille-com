@@ -11,6 +11,7 @@ export type AdminPermission =
   | 'audit'
   | 'mlm'
   | 'reviews'
+  | 'loyalty'
   | 'full_access';
 
 export interface AdminUser {
@@ -37,6 +38,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   categories: ['categories'],
   'promo-codes': ['promo_codes'],
   reviews: ['reviews'],
+  loyalty: ['loyalty'],
   restock: ['stock', 'products'],
   'stock-alerts': ['stock'],
   audit: ['audit'],
@@ -54,6 +56,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   audit: '📋 Consultation des audits',
   mlm: '💰 Gestion MLM & retraits',
   reviews: '⭐ Modération des avis',
+  loyalty: '🎁 Gestion fidélité & points',
 };
 
 export const useAdminPermissions = () => {
