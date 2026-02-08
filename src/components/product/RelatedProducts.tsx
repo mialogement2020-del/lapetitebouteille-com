@@ -20,7 +20,7 @@ export const RelatedProducts = ({ products }: RelatedProductsProps) => {
           Vous aimerez aussi
         </h2>
 
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           {products.map((product, index) => (
             <motion.article
               key={product.id}
