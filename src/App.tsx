@@ -23,6 +23,7 @@ import Confidentialite from "./pages/Confidentialite";
 import SuiviCommande from "./pages/SuiviCommande";
 import ShortLinkRedirect from "./pages/ShortLinkRedirect";
 import Comparer from "./pages/Comparer";
+import ImportProducts from "./pages/ImportProducts";
 import { SommelierChat } from "./components/chat/SommelierChat";
 import { ComparatorFloatingBar } from "./components/product/ComparatorFloatingBar";
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/suivi-commande" element={<SuiviCommande />} />
               <Route path="/r/:code" element={<ShortLinkRedirect />} />
               <Route path="/comparer" element={<Comparer />} />
+              <Route path="/import-products" element={<ImportProducts />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
