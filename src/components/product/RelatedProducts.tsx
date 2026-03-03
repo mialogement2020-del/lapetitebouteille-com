@@ -30,11 +30,12 @@ export const RelatedProducts = ({ products }: RelatedProductsProps) => {
               className="group"
             >
               <Link to={`/produit/${product.slug}`}>
-                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted mb-3">
+                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gradient-to-b from-muted/30 to-muted/60 mb-3">
                   <img
                     src={product.image_url || "/placeholder.svg"}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
                   />
                 </div>
                 <h3 className="font-semibold line-clamp-2 group-hover:text-gold transition-colors">
