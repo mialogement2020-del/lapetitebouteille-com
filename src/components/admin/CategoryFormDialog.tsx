@@ -13,10 +13,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { AdminCategory, CategoryFormData } from "@/hooks/useAdmin";
 
 interface CategoryFormDialogProps {
   category: AdminCategory | null;
+  allCategories?: AdminCategory[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (data: CategoryFormData, id?: string) => Promise<void>;
@@ -34,6 +42,7 @@ const generateSlug = (name: string) => {
 
 export function CategoryFormDialog({
   category,
+  allCategories = [],
   open,
   onOpenChange,
   onSave,
@@ -49,6 +58,7 @@ export function CategoryFormDialog({
     display_order: 0,
     is_active: true,
     low_stock_threshold: null,
+    parent_id: null,
   });
 
   useEffect(() => {
@@ -61,6 +71,7 @@ export function CategoryFormDialog({
         display_order: category.display_order || 0,
         is_active: category.is_active ?? true,
         low_stock_threshold: category.low_stock_threshold,
+        parent_id: category.parent_id || null,
       });
     } else {
       setFormData({
@@ -71,6 +82,7 @@ export function CategoryFormDialog({
         display_order: 0,
         is_active: true,
         low_stock_threshold: null,
+        parent_id: null,
       });
     }
   }, [category, open]);
@@ -121,6 +133,27 @@ export function CategoryFormDialog({
               placeholder="vins-rouges"
               className="bg-cream/5 border-gold/20 text-cream font-mono text-sm"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-cream/80">Catégorie parente</Label>
+            <Select
+              value={formData.parent_id || "none"}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, parent_id: value === "none" ? null : value }))}
+            >
+              <SelectTrigger className="bg-cream/5 border-gold/20 text-cream">
+                <SelectValue placeholder="Aucune (catégorie racine)" />
+              </SelectTrigger>
+              <SelectContent className="bg-noir border-gold/20">
+                <SelectItem value="none" className="text-cream">Aucune (catégorie racine)</SelectItem>
+                {allCategories
+                  .filter(c => !c.parent_id && c.id !== category?.id)
+                  .map(c => (
+                    <SelectItem key={c.id} value={c.id} className="text-cream">{c.name}</SelectItem>
+                  ))
+                }
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

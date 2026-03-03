@@ -111,21 +111,44 @@ const FilterContent = ({ filters, onFiltersChange }: ProductFiltersProps) => {
           >
             Toutes les catégories
           </button>
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() =>
-                onFiltersChange({ ...filters, categorySlug: category.slug })
-              }
-              className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all ${
-                filters.categorySlug === category.slug
-                  ? "bg-primary/20 text-primary font-medium border border-primary/30"
-                  : "text-cream/70 hover:bg-cream/5 hover:text-cream"
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
+          {categories.filter(c => !c.parent_id).map((parent) => {
+            const children = categories.filter(c => c.parent_id === parent.id);
+            return (
+              <div key={parent.id}>
+                <button
+                  onClick={() =>
+                    onFiltersChange({ ...filters, categorySlug: parent.slug })
+                  }
+                  className={`block w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all font-medium ${
+                    filters.categorySlug === parent.slug
+                      ? "bg-primary/20 text-primary border border-primary/30"
+                      : "text-cream/80 hover:bg-cream/5 hover:text-cream"
+                  }`}
+                >
+                  {parent.name}
+                </button>
+                {children.length > 0 && (
+                  <div className="ml-4 border-l border-cream/10 pl-2 space-y-0.5">
+                    {children.map((child) => (
+                      <button
+                        key={child.id}
+                        onClick={() =>
+                          onFiltersChange({ ...filters, categorySlug: child.slug })
+                        }
+                        className={`block w-full text-left px-3 py-2 rounded-lg text-xs transition-all ${
+                          filters.categorySlug === child.slug
+                            ? "bg-primary/20 text-primary font-medium border border-primary/30"
+                            : "text-cream/60 hover:bg-cream/5 hover:text-cream/80"
+                        }`}
+                      >
+                        {child.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </CollapsibleContent>
       </Collapsible>
 

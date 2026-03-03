@@ -744,6 +744,7 @@ const Admin = () => {
       {/* Category Form Dialog */}
       <CategoryFormDialog
         category={selectedCategory}
+        allCategories={allCategories}
         open={isCategoryDialogOpen}
         onOpenChange={setIsCategoryDialogOpen}
         onSave={handleSaveCategory}
