@@ -49,11 +49,11 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
             <span className="w-8 h-px bg-gradient-gold" />
             Caractéristiques
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {details.map((detail, index) => (
               <motion.div 
                 key={index} 
-                className="flex items-start gap-4 p-4 rounded-xl bg-cream/5 hover:bg-cream/10 transition-colors"
+                className="flex items-start gap-3 p-4 rounded-xl bg-cream/5 hover:bg-cream/10 transition-colors overflow-hidden"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -61,9 +61,9 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <detail.icon className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="text-sm text-cream/50">{detail.label}</p>
-                  <p className="font-medium text-cream">{detail.value}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-cream/50 truncate">{detail.label}</p>
+                  <p className="font-medium text-cream break-words text-sm">{detail.value}</p>
                 </div>
               </motion.div>
             ))}
