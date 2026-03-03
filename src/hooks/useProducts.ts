@@ -41,6 +41,7 @@ export interface Category {
   description: string | null;
   image_url: string | null;
   display_order: number;
+  parent_id: string | null;
 }
 
 export interface ProductFilters {
@@ -65,7 +66,7 @@ export const useProducts = (filters: ProductFilters = {}) => {
         `)
         .eq("is_active", true);
 
-      // Filter by category
+      // Filter by category (including subcategories)
       if (filters.categorySlug) {
         const { data: category } = await supabase
           .from("categories")
@@ -74,7 +75,14 @@ export const useProducts = (filters: ProductFilters = {}) => {
           .maybeSingle();
         
         if (category) {
-          query = query.eq("category_id", category.id);
+          // Also get subcategories of this category
+          const { data: subcategories } = await supabase
+            .from("categories")
+            .select("id")
+            .eq("parent_id", category.id);
+          
+          const categoryIds = [category.id, ...(subcategories?.map(s => s.id) || [])];
+          query = query.in("category_id", categoryIds);
         }
       }
 

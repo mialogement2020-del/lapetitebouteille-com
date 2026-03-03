@@ -72,6 +72,7 @@ export interface AdminCategory {
   display_order: number | null;
   is_active: boolean | null;
   low_stock_threshold: number | null;
+  parent_id: string | null;
   created_at: string | null;
 }
 
@@ -117,6 +118,7 @@ export interface CategoryFormData {
   display_order?: number;
   is_active?: boolean;
   low_stock_threshold?: number | null;
+  parent_id?: string | null;
 }
 
 export interface PromoCodeFormData {

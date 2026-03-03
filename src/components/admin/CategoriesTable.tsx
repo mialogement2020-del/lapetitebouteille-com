@@ -155,7 +155,19 @@ export function CategoriesTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCategories.map((category, index) => (
+              {filteredCategories
+                .sort((a, b) => {
+                  // Parents first, then children grouped under parent
+                  if (!a.parent_id && !b.parent_id) return (a.display_order || 0) - (b.display_order || 0);
+                  if (!a.parent_id && b.parent_id) return b.parent_id === a.id ? -1 : (a.display_order || 0) - (b.display_order || 0);
+                  if (a.parent_id && !b.parent_id) return a.parent_id === b.id ? 1 : (a.display_order || 0) - (b.display_order || 0);
+                  if (a.parent_id === b.parent_id) return (a.display_order || 0) - (b.display_order || 0);
+                  return 0;
+                })
+                .map((category, index) => {
+                  const isChild = !!category.parent_id;
+                  const parentName = isChild ? categories.find(c => c.id === category.parent_id)?.name : null;
+                  return (
                 <motion.tr
                   key={category.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -164,7 +176,8 @@ export function CategoriesTable({
                   className="border-gold/10 hover:bg-cream/5 cursor-pointer group"
                 >
                   <TableCell>
-                    <div className="flex items-center gap-3">
+                    <div className={`flex items-center gap-3 ${isChild ? 'pl-6' : ''}`}>
+                      {isChild && <span className="text-cream/20 text-xs">└</span>}
                       {category.image_url ? (
                         <img
                           src={category.image_url}
@@ -176,7 +189,12 @@ export function CategoriesTable({
                           <FolderOpen className="h-5 w-5 text-cream/40" />
                         </div>
                       )}
-                      <span className="text-cream font-medium">{category.name}</span>
+                      <div>
+                        <span className="text-cream font-medium">{category.name}</span>
+                        {parentName && (
+                          <p className="text-cream/40 text-xs">{parentName}</p>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -240,7 +258,8 @@ export function CategoriesTable({
                     </div>
                   </TableCell>
                 </motion.tr>
-              ))}
+                  );
+                })}
             </TableBody>
           </Table>
         </div>

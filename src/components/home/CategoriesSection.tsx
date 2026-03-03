@@ -3,36 +3,43 @@
  import { ArrowRight } from "lucide-react";
  import { useRef } from "react";
  
- const categories = [
-   {
-     id: "vins",
-     title: "Vins",
-     description: "Grands crus et appellations prestigieuses",
-     image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?q=80&w=800",
-     href: "/catalogue?category=vins",
-   },
-   {
-     id: "champagnes",
-     title: "Champagnes",
-     description: "Les plus grandes maisons françaises",
-     image: "https://images.unsplash.com/photo-1578911373434-0cb395d2cbfb?q=80&w=800",
-     href: "/catalogue?category=champagnes",
-   },
-   {
-     id: "spiritueux",
-     title: "Spiritueux",
-     description: "Whisky, Cognac, Rhum d'exception",
-     image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?q=80&w=800",
-     href: "/catalogue?category=spiritueux",
-   },
-   {
-     id: "coffrets",
-     title: "Coffrets Cadeaux",
-     description: "L'art du cadeau raffiné",
-     image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?q=80&w=800",
-     href: "/catalogue?category=coffrets",
-   },
- ];
+const categories = [
+  {
+    id: "vins",
+    title: "Vins",
+    description: "Grands crus et appellations prestigieuses",
+    image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?q=80&w=800",
+    href: "/catalogue?category=vins",
+  },
+  {
+    id: "champagnes",
+    title: "Champagnes",
+    description: "Les plus grandes maisons françaises",
+    image: "https://images.unsplash.com/photo-1578911373434-0cb395d2cbfb?q=80&w=800",
+    href: "/catalogue?category=champagnes",
+  },
+  {
+    id: "spiritueux",
+    title: "Spiritueux",
+    description: "Whisky, Cognac, Rhum d'exception",
+    image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?q=80&w=800",
+    href: "/catalogue?category=spiritueux",
+  },
+  {
+    id: "vins-mousseux",
+    title: "Vins Mousseux",
+    description: "Prosecco, Cava, Crémant et bulles du monde",
+    image: "https://images.unsplash.com/photo-1549834125-82d3c48159a3?q=80&w=800",
+    href: "/catalogue?category=vins-mousseux",
+  },
+  {
+    id: "coffrets",
+    title: "Coffrets Cadeaux",
+    description: "L'art du cadeau raffiné",
+    image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?q=80&w=800",
+    href: "/catalogue?category=coffrets",
+  },
+];
  
  const CategoriesSection = () => {
    const sectionRef = useRef<HTMLElement>(null);
@@ -84,7 +91,7 @@
  
          {/* Categories Grid */}
           <motion.div 
-            className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-8"
+            className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-6"
            style={{ scale, opacity }}
          >
            {categories.map((category, index) => (
