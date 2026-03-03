@@ -143,11 +143,12 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
       className="group relative bg-cream/[0.03] rounded-2xl border border-cream/10 overflow-hidden hover:border-primary/30 hover:shadow-luxury transition-all duration-500 flex flex-col"
     >
       {/* Image Container */}
-      <Link to={`/produit/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-noir to-noir/80">
+      <Link to={`/produit/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/20 to-muted/40">
         <img
           src={product.image_url || "/placeholder.svg"}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
+          loading="lazy"
         />
         
         {/* Badges */}

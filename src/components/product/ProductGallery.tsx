@@ -36,7 +36,7 @@ export const ProductGallery = ({
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-noir group border border-cream/10 shadow-2xl">
+      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gradient-to-b from-muted/20 to-muted/40 group border border-cream/10 shadow-2xl">
         {/* Decorative corner accents */}
         <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-primary/30 rounded-tl-2xl pointer-events-none z-10" />
         <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-primary/30 rounded-tr-2xl pointer-events-none z-10" />
@@ -48,7 +48,7 @@ export const ProductGallery = ({
             key={selectedIndex}
             src={currentImage}
             alt={`${productName} - Image ${selectedIndex + 1}`}
-            className="w-full h-full object-cover cursor-zoom-in"
+            className="w-full h-full object-contain p-6 cursor-zoom-in"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -140,7 +140,7 @@ export const ProductGallery = ({
                 key={selectedIndex}
                 src={currentImage}
                 alt={productName}
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-full object-contain p-8"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}

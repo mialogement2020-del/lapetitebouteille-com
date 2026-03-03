@@ -37,7 +37,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
         {isLoading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-card rounded-xl overflow-hidden border border-border/50">
-                <Skeleton className="aspect-square w-full" />
+                <Skeleton className="aspect-[3/4] w-full" />
                 <div className="p-3 space-y-2">
                   <Skeleton className="h-3 w-12" />
                   <Skeleton className="h-4 w-3/4" />
@@ -61,11 +61,12 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
                 >
                   <div className="bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-card transition-all duration-500 border border-border/50">
                     <Link to={`/produit/${product.slug}`} className="block">
-                      <div className="relative aspect-square overflow-hidden bg-gradient-to-b from-cream to-cream-dark">
+                      <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/30 to-muted/60">
                         <img
                           src={product.image_url || "/placeholder.svg"}
                           alt={product.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
                         />
                         {hasDiscount && (
                           <span className="absolute top-2 left-2 px-2 py-1 bg-secondary text-secondary-foreground text-[10px] font-bold rounded-full">
