@@ -18,7 +18,8 @@ import {
   Users,
   Shield,
   Lock,
-  Award
+  Award,
+  ImageIcon
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -54,6 +55,7 @@ import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsMana
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
+import { ProductImageManager } from "@/components/admin/ProductImageManager";
 import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -140,6 +142,7 @@ const Admin = () => {
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
+      { id: 'images', label: 'Images', icon: ImageIcon },
       { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
       { id: 'loyalty', label: 'Fidélité', icon: Award },
@@ -630,6 +633,12 @@ const Admin = () => {
                     onDeleteCategory={handleDeleteCategory}
                     onRefresh={() => refetchCategories()}
                   />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="images" className="space-y-6">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <ProductImageManager />
                 </div>
               </TabsContent>
 
