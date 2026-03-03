@@ -226,7 +226,7 @@ export const ProductFilters = ({ filters, onFiltersChange }: ProductFiltersProps
     return (
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" className="gap-2 border-cream/20 text-cream hover:bg-cream/5 rounded-full">
+          <Button variant="outline" className="gap-2 border-cream/20 bg-transparent text-cream hover:bg-cream/5 rounded-full">
             <Filter className="w-4 h-4" />
             Filtres
           </Button>
