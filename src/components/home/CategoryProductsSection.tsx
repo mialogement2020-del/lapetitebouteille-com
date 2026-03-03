@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; categoryName: string }) => {
   const { data: products, isLoading } = useProducts({ categorySlug, sortBy: "popular" });
-  const displayProducts = products?.slice(0, 6) || [];
+  const displayProducts = products?.slice(0, 25) || [];
 
   if (!isLoading && displayProducts.length === 0) return null;
 
@@ -33,7 +33,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
         </Link>
       </motion.div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
         {isLoading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-card rounded-xl overflow-hidden border border-border/50">
