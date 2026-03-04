@@ -2,3 +2,6 @@ project_id = "bohtgmrlbaxtpwzbxhdq"
  
  [functions.sommelier-chat]
  verify_jwt = false
+
+ [functions.enhance-product-image]
+ verify_jwt = false
