@@ -101,7 +101,7 @@ export const useProducts = (filters: ProductFilters = {}) => {
 
       // Search
       if (filters.search) {
-        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        query = query.ilike("name", `%${filters.search}%`);
       }
 
       // Featured only
