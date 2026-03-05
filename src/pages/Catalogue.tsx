@@ -13,13 +13,15 @@ import { useRef } from "react";
 
 const Catalogue = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const initialSearch = searchParams.get("search") || "";
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const heroRef = useRef<HTMLElement>(null);
   
   const [filters, setFilters] = useState<Filters>({
     categorySlug: searchParams.get("category") || undefined,
     sortBy: (searchParams.get("sort") as Filters["sortBy"]) || "popular",
+    origin: searchParams.get("origin") || undefined,
   });
 
   const { data: products = [], isLoading } = useProducts({
@@ -45,14 +47,24 @@ const Catalogue = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Sync filters with URL
+  // Sync local search state when URL changes (header search, browser nav)
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    if (urlSearch !== searchQuery) {
+      setSearchQuery(urlSearch);
+      setDebouncedSearch(urlSearch);
+    }
+  }, [searchParams, searchQuery]);
+
+  // Sync filters + search with URL
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.categorySlug) params.set("category", filters.categorySlug);
     if (filters.sortBy && filters.sortBy !== "popular") params.set("sort", filters.sortBy);
     if (filters.origin) params.set("origin", filters.origin);
+    if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
     setSearchParams(params, { replace: true });
-  }, [filters, setSearchParams]);
+  }, [filters, debouncedSearch, setSearchParams]);
 
   // Get current category name
   const currentCategory = categories.find((c) => c.slug === filters.categorySlug);
@@ -162,6 +174,7 @@ const Catalogue = () => {
                 {/* Results Count */}
                 <span className="text-sm text-cream/50">
                   {products.length} produit{products.length !== 1 ? "s" : ""}
+                  {debouncedSearch ? ` pour “${debouncedSearch}”` : ""}
                 </span>
 
                 {/* Sort */}
