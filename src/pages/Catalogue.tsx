@@ -39,38 +39,50 @@ const Catalogue = () => {
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
 
-  // Debounce search
+  // Debounce search and sync to URL
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
+      syncToUrl(filters, searchQuery);
     }, 300);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   // Sync local search state when URL changes (header search, browser nav)
   useEffect(() => {
     const urlSearch = searchParams.get("search") || "";
-    if (urlSearch !== searchQuery) {
-      setSearchQuery(urlSearch);
-      setDebouncedSearch(urlSearch);
-    }
-  }, [searchParams, searchQuery]);
+    setSearchQuery(prev => prev !== urlSearch ? urlSearch : prev);
+    setDebouncedSearch(prev => prev !== urlSearch ? urlSearch : prev);
+    
+    const urlCategory = searchParams.get("category") || undefined;
+    const urlSort = (searchParams.get("sort") as Filters["sortBy"]) || "popular";
+    const urlOrigin = searchParams.get("origin") || undefined;
+    setFilters(prev => {
+      if (prev.categorySlug !== urlCategory || prev.sortBy !== urlSort || prev.origin !== urlOrigin) {
+        return { ...prev, categorySlug: urlCategory, sortBy: urlSort, origin: urlOrigin };
+      }
+      return prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
-  // Sync filters + search with URL
-  useEffect(() => {
+  // Sync filters + search with URL (only when user changes them locally)
+  const syncToUrl = (newFilters: Filters, search: string) => {
     const params = new URLSearchParams();
-    if (filters.categorySlug) params.set("category", filters.categorySlug);
-    if (filters.sortBy && filters.sortBy !== "popular") params.set("sort", filters.sortBy);
-    if (filters.origin) params.set("origin", filters.origin);
-    if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
+    if (newFilters.categorySlug) params.set("category", newFilters.categorySlug);
+    if (newFilters.sortBy && newFilters.sortBy !== "popular") params.set("sort", newFilters.sortBy);
+    if (newFilters.origin) params.set("origin", newFilters.origin);
+    if (search.trim()) params.set("search", search.trim());
     setSearchParams(params, { replace: true });
-  }, [filters, debouncedSearch, setSearchParams]);
+  };
 
   // Get current category name
   const currentCategory = categories.find((c) => c.slug === filters.categorySlug);
 
   const handleFiltersChange = (newFilters: Filters) => {
     setFilters(newFilters);
+    syncToUrl(newFilters, debouncedSearch);
   };
 
   return (
