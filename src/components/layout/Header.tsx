@@ -18,7 +18,17 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const { wishlistCount } = useWishlist();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      navigate(`/catalogue?search=${encodeURIComponent(searchValue)}`);
+      setIsSearchOpen(false);
+      setSearchValue("");
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -234,20 +244,23 @@ const Header = () => {
               className="overflow-hidden border-t border-gold/10"
             >
               <div className="py-6">
-                <div className="relative max-w-2xl mx-auto">
-                  <Input
-                    type="text"
-                    placeholder="Rechercher un vin, champagne, spiritueux..."
-                    className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary h-14 text-lg rounded-full px-6 pr-14"
-                    autoFocus
-                  />
-                  <Button 
-                    size="icon" 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 text-noir h-10 w-10"
-                  >
-                    <Search className="h-5 w-5" />
-                  </Button>
-                </div>
+              <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
+                <Input
+                  type="text"
+                  placeholder="Rechercher un vin, champagne, spiritueux..."
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary h-14 text-lg rounded-full px-6 pr-14"
+                  autoFocus
+                />
+                <Button 
+                  type="submit"
+                  size="icon" 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 text-noir h-10 w-10"
+                >
+                  <Search className="h-5 w-5" />
+                </Button>
+              </form>
               </div>
             </motion.div>
           )}
