@@ -132,7 +132,15 @@ export const useProducts = (filters: ProductFilters = {}) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data as Product[];
+      
+      // Deduplicate products by id
+      const seen = new Set<string>();
+      const unique = (data as Product[]).filter(p => {
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+      return unique;
     },
   });
 };
