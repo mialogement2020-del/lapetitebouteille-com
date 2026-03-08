@@ -228,7 +228,15 @@ export function useAdmin() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as AdminProduct[];
+      
+      // Deduplicate products by id
+      const seen = new Set<string>();
+      const unique = (data as AdminProduct[]).filter(p => {
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+      return unique;
     },
     enabled: isAdmin === true,
   });
