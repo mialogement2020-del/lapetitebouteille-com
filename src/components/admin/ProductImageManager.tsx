@@ -187,7 +187,16 @@ export const ProductImageManager = () => {
     const { data, error } = await supabase.functions.invoke("enhance-product-image", {
       body: { imageBase64: base64, mimeType },
     });
-    if (error) throw error;
+    if (error) {
+      // Try to extract the actual error from the response
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+      throw new Error("Le traitement IA a échoué. Vérifiez vos crédits ou réessayez plus tard.");
+    }
+    if (data?.error) {
+      throw new Error(data.error);
+    }
     if (data?.enhanced && data?.imageBase64) return data.imageBase64;
     return null; // AI couldn't enhance, use original
   };
