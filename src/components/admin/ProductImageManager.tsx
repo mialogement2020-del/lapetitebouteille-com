@@ -96,8 +96,37 @@ export const ProductImageManager = () => {
     });
   };
 
-  // Convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
+  // Compress image to max dimensions and return base64
+  const compressImage = (file: File | Blob, maxWidth = 800, maxHeight = 1067): Promise<{ base64: string; mimeType: string }> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        resolve({ base64: dataUrl.split(",")[1], mimeType: "image/jpeg" });
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file instanceof File ? file : file);
+    });
+  };
+
+  // Convert file to base64 (with compression)
+  const fileToBase64 = async (file: File): Promise<string> => {
+    // If file > 500KB, compress it
+    if (file.size > 500 * 1024) {
+      const { base64 } = await compressImage(file);
+      return base64;
+    }
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -109,12 +138,16 @@ export const ProductImageManager = () => {
     });
   };
 
-  // Fetch image from URL and convert to base64
+  // Fetch image from URL and convert to base64 (with compression)
   const urlToBase64 = async (url: string): Promise<{ base64: string; mimeType: string }> => {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
     const blob = await response.blob();
     if (blob.type.includes("text/html")) throw new Error("URL does not point to an image");
+    // Compress if > 500KB
+    if (blob.size > 500 * 1024) {
+      return compressImage(blob);
+    }
     const mimeType = blob.type || "image/png";
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
