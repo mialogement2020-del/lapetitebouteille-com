@@ -37,14 +37,43 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "google/gemini-3.1-flash-image-preview",
         messages: [
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "This is a wine or spirits product photo for an e-commerce catalog. Please enhance it: 1) Remove any background clutter and make the background clean white or transparent. 2) Center the bottle/product. 3) Improve lighting, contrast and sharpness. 4) Ensure the label is clearly readable. 5) Make it look professional and catalog-ready. 6) Keep the aspect ratio suitable for a 3:4 portrait product card. Return ONLY the enhanced image."
+                text: `You are a professional product photography retoucher specialized in wine and spirits bottles for e-commerce catalogs.
+
+MANDATORY REQUIREMENTS — follow ALL of them precisely:
+
+1. BACKGROUND: Remove the entire existing background completely. Replace it with a PURE WHITE background (#FFFFFF). No gradients, no shadows on the background, no grey tones — strictly pure white.
+
+2. BOTTLE CENTERING: Center the bottle perfectly in the frame, vertically and horizontally. Leave balanced margins on all sides.
+
+3. LABEL CLARITY & READABILITY: This is critical. Enhance the label text so every word, every letter is sharp, crisp and perfectly readable. If text on the label appears blurry, faded, or unclear:
+   - Sharpen the text edges
+   - Increase contrast on the label area specifically
+   - Ensure all typography on the label is legible at display size
+   - Preserve the original label design, colors and branding accurately
+
+4. LIGHTING & COLOR: Apply professional studio-quality lighting:
+   - Even, soft illumination that eliminates harsh shadows on the bottle
+   - Accurate color reproduction — the wine/spirit color through glass must look natural
+   - Subtle reflections on glass surfaces for a premium look
+   - No color cast, no yellowish or bluish tint
+
+5. SHARPNESS & DETAIL: The entire bottle must be tack-sharp:
+   - Crisp edges on the bottle silhouette
+   - Clear capsule/cork/cap details
+   - Visible texture on labels and embossing
+
+6. ASPECT RATIO: Maintain a 3:4 portrait orientation suitable for product cards.
+
+7. OUTPUT: Return ONLY the enhanced image. No text, no watermark, no border.
+
+The goal is a catalog-ready, professional product photo that could be used on a premium wine e-commerce website.`
               },
               {
                 type: "image_url",
