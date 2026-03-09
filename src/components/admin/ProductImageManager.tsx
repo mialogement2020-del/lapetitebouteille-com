@@ -138,12 +138,16 @@ export const ProductImageManager = () => {
     });
   };
 
-  // Fetch image from URL and convert to base64
+  // Fetch image from URL and convert to base64 (with compression)
   const urlToBase64 = async (url: string): Promise<{ base64: string; mimeType: string }> => {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
     const blob = await response.blob();
     if (blob.type.includes("text/html")) throw new Error("URL does not point to an image");
+    // Compress if > 500KB
+    if (blob.size > 500 * 1024) {
+      return compressImage(blob);
+    }
     const mimeType = blob.type || "image/png";
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
