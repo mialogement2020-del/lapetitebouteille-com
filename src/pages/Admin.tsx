@@ -19,7 +19,8 @@ import {
   Shield,
   Lock,
   Award,
-  ImageIcon
+  ImageIcon,
+  FileText
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
