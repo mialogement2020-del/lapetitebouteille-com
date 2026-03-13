@@ -161,7 +161,7 @@ export function useQuoteRequests() {
   return useQuery({
     queryKey: ["quote-requests"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("quote_requests")
         .select("*")
         .order("created_at", { ascending: false });
