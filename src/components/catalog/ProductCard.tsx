@@ -263,11 +263,11 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {product.alcohol_percentage && <span>{product.alcohol_percentage}%</span>}
         </div>
 
-        {/* Wholesale Pricing Preview - Carton de 6 only */}
+        {/* Wholesale Pricing Preview - Only admin-enabled tiers */}
         {(() => {
-          const carton6 = WHOLESALE_TIERS.find(t => t.type === "carton_6");
-          if (!carton6) return null;
-          const tierPrice = Math.round(product.price * carton6.quantity * (1 - carton6.discountPercent / 100));
+          const enabledCardTiers = WHOLESALE_TIERS.filter(t => tierConfig?.card_tiers?.includes(t.type));
+          if (enabledCardTiers.length === 0) return null;
+          const maxDiscount = Math.max(...enabledCardTiers.map(t => t.discountPercent));
           return (
             <Link
               to={`/produit/${product.slug}`}
@@ -279,14 +279,23 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                   <span className="text-[11px] font-semibold text-primary">EN GROS</span>
                 </div>
                 <Badge className="bg-green-500/20 text-green-400 border-0 text-[9px] px-1.5 py-0 h-4">
-                  -{carton6.discountPercent}%
+                  Jusqu'à -{maxDiscount}%
                 </Badge>
               </div>
-              <div className="flex items-center justify-between text-[10px] mt-1">
-                <span className="text-cream/50">{carton6.icon} {carton6.label}</span>
-                <span className="text-cream font-medium">{formatPrice(tierPrice)} FCFA</span>
+              <div className="space-y-0.5 mt-1">
+                {enabledCardTiers.map((tier) => {
+                  const tierPrice = Math.round(product.price * tier.quantity * (1 - tier.discountPercent / 100));
+                  return (
+                    <div key={tier.type} className="flex items-center justify-between text-[10px]">
+                      <span className="text-cream/50">{tier.icon} {tier.label}</span>
+                      <span className="text-cream font-medium">{formatPrice(tierPrice)} FCFA</span>
+                    </div>
+                  );
+                })}
               </div>
-              <p className="text-[9px] text-primary/60 mt-1">Voir plus d'options en gros →</p>
+              {(tierConfig?.visible_tiers?.length ?? 0) > enabledCardTiers.length && (
+                <p className="text-[9px] text-primary/60 mt-1">Voir plus d'options en gros →</p>
+              )}
             </Link>
           );
         })()}
