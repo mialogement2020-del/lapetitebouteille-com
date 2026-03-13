@@ -23,6 +23,7 @@ const formatPrice = (price: number) => {
 export function WholesalePanel({ product }: WholesalePanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<PackagingType | null>(null);
+  const [buyerType, setBuyerType] = useState<"individual" | "business">("individual");
   const [hasNIU, setHasNIU] = useState(false);
   const [niuValue, setNiuValue] = useState("");
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
