@@ -171,8 +171,8 @@ const Footer = () => {
                   </div>
                   <div>
                     <span className="text-cream/50 text-sm block">Téléphone</span>
-                    <a href="tel:+237600000000" className="text-cream hover:text-primary transition-colors text-sm">
-                      +237 6 00 00 00 00
+                    <a href="tel:+237674069458" className="text-cream hover:text-primary transition-colors text-sm">
+                      +237 674 069 458
                     </a>
                   </div>
                 </div>
