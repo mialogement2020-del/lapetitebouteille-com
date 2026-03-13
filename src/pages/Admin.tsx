@@ -58,6 +58,7 @@ import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
 import { ProductImageManager } from "@/components/admin/ProductImageManager";
 import { QuotesTable } from "@/components/admin/QuotesTable";
+import { WholesaleSettings } from "@/components/admin/WholesaleSettings";
 import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -702,6 +703,7 @@ const Admin = () => {
               </TabsContent>
 
               <TabsContent value="quotes" className="space-y-6">
+                <WholesaleSettings />
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <QuotesTable />
                 </div>
