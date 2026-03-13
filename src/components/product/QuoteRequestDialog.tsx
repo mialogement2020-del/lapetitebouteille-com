@@ -83,7 +83,7 @@ export function QuoteRequestDialog({
       });
 
       onOpenChange(false);
-      setFormData({ name: "", email: "", phone: "", company: "", niu: "", city: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", company: "", eventType: "", niu: "", city: "", message: "" });
     } catch {
       toast({
         title: "Erreur",
