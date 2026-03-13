@@ -263,39 +263,23 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {product.alcohol_percentage && <span>{product.alcohol_percentage}%</span>}
         </div>
 
-        {/* Wholesale Pricing Preview - Only admin-enabled tiers */}
+        {/* Wholesale "Acheter en gros" Button - Always visible */}
         {(() => {
           const enabledCardTiers = WHOLESALE_TIERS.filter(t => tierConfig?.card_tiers?.includes(t.type));
           if (enabledCardTiers.length === 0) return null;
           const maxDiscount = Math.max(...enabledCardTiers.map(t => t.discountPercent));
           return (
             <Link
-              to={`/produit/${product.slug}`}
-              className="mt-3 p-2.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors block"
+              to={`/produit/${product.slug}#wholesale`}
+              className="mt-3 flex items-center justify-between gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 hover:border-primary/60 hover:from-primary/30 hover:to-primary/20 transition-all group/wholesale"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Package className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[11px] font-semibold text-primary">EN GROS</span>
-                </div>
-                <Badge className="bg-green-500/20 text-green-400 border-0 text-[9px] px-1.5 py-0 h-4">
-                  Jusqu'à -{maxDiscount}%
-                </Badge>
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-primary" />
+                <span className="text-xs font-bold text-primary tracking-wide">ACHETER EN GROS</span>
               </div>
-              <div className="space-y-0.5 mt-1">
-                {enabledCardTiers.map((tier) => {
-                  const tierPrice = Math.round(product.price * tier.quantity * (1 - tier.discountPercent / 100));
-                  return (
-                    <div key={tier.type} className="flex items-center justify-between text-[10px]">
-                      <span className="text-cream/50">{tier.icon} {tier.label}</span>
-                      <span className="text-cream font-medium">{formatPrice(tierPrice)} FCFA</span>
-                    </div>
-                  );
-                })}
-              </div>
-              {(tierConfig?.visible_tiers?.length ?? 0) > enabledCardTiers.length && (
-                <p className="text-[9px] text-primary/60 mt-1">Voir plus d'options en gros →</p>
-              )}
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-[10px] px-2 py-0.5 h-5 group-hover/wholesale:bg-green-500/30 transition-colors">
+                Jusqu'à -{maxDiscount}%
+              </Badge>
             </Link>
           );
         })()}
