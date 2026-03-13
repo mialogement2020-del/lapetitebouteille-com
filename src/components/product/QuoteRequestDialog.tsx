@@ -15,6 +15,7 @@ interface QuoteRequestDialogProps {
   onOpenChange: (open: boolean) => void;
   product: Product;
   tier: WholesaleTierPrice;
+  buyerType: "individual" | "business";
   hasNIU: boolean;
   niuValue: string;
 }
@@ -28,6 +29,7 @@ export function QuoteRequestDialog({
   onOpenChange,
   product,
   tier,
+  buyerType,
   hasNIU,
   niuValue,
 }: QuoteRequestDialogProps) {
@@ -39,6 +41,7 @@ export function QuoteRequestDialog({
     email: "",
     phone: "",
     company: "",
+    eventType: "",
     niu: niuValue || "",
     city: "",
     message: "",
@@ -61,8 +64,8 @@ export function QuoteRequestDialog({
         client_name: formData.name.trim(),
         client_email: formData.email.trim(),
         client_phone: formData.phone.trim(),
-        company_name: formData.company.trim() || undefined,
-        niu: hasNIU ? formData.niu.trim() : undefined,
+        company_name: buyerType === "business" ? (formData.company.trim() || undefined) : (formData.eventType.trim() ? `[Événement] ${formData.eventType.trim()}` : undefined),
+        niu: buyerType === "business" && hasNIU ? formData.niu.trim() : undefined,
         city: formData.city.trim(),
         product_id: product.id,
         product_name: product.name,
@@ -80,7 +83,7 @@ export function QuoteRequestDialog({
       });
 
       onOpenChange(false);
-      setFormData({ name: "", email: "", phone: "", company: "", niu: "", city: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", company: "", eventType: "", niu: "", city: "", message: "" });
     } catch {
       toast({
         title: "Erreur",
@@ -159,15 +162,27 @@ export function QuoteRequestDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label className="text-cream/80 text-sm">Entreprise</Label>
-              <Input
-                value={formData.company}
-                onChange={(e) => updateField("company", e.target.value)}
-                placeholder="Nom de l'entreprise"
-                className="bg-cream/5 border-cream/20 text-cream placeholder:text-cream/30"
-              />
-            </div>
+            {buyerType === "business" ? (
+              <div>
+                <Label className="text-cream/80 text-sm">Entreprise</Label>
+                <Input
+                  value={formData.company}
+                  onChange={(e) => updateField("company", e.target.value)}
+                  placeholder="Nom de l'entreprise"
+                  className="bg-cream/5 border-cream/20 text-cream placeholder:text-cream/30"
+                />
+              </div>
+            ) : (
+              <div>
+                <Label className="text-cream/80 text-sm">Type d'événement</Label>
+                <Input
+                  value={formData.eventType}
+                  onChange={(e) => updateField("eventType", e.target.value)}
+                  placeholder="Mariage, anniversaire..."
+                  className="bg-cream/5 border-cream/20 text-cream placeholder:text-cream/30"
+                />
+              </div>
+            )}
             <div>
               <Label className="text-cream/80 text-sm">Ville *</Label>
               <Input
@@ -180,7 +195,7 @@ export function QuoteRequestDialog({
             </div>
           </div>
 
-          {hasNIU && (
+          {buyerType === "business" && hasNIU && (
             <div>
               <Label className="text-cream/80 text-sm">Numéro NIU</Label>
               <Input
