@@ -15,6 +15,7 @@ interface QuoteRequestDialogProps {
   onOpenChange: (open: boolean) => void;
   product: Product;
   tier: WholesaleTierPrice;
+  buyerType: "individual" | "business";
   hasNIU: boolean;
   niuValue: string;
 }
