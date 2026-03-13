@@ -28,7 +28,7 @@ WHOLESALE_TIERS.forEach((tier) => {
   }
 });
 
-export type PackagingType = "carton_6" | "carton_12" | "palette";
+export type PackagingType = "carton_6" | "caisse_bois_6" | "carton_12" | "caisse_bois_12" | "palette";
 
 export interface WholesalePricing {
   id: string;
