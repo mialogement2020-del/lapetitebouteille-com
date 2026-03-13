@@ -19,7 +19,8 @@ import {
   Shield,
   Lock,
   Award,
-  ImageIcon
+  ImageIcon,
+  FileText
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -56,6 +57,7 @@ import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
 import { ProductImageManager } from "@/components/admin/ProductImageManager";
+import { QuotesTable } from "@/components/admin/QuotesTable";
 import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -144,6 +146,7 @@ const Admin = () => {
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
       { id: 'images', label: 'Images', icon: ImageIcon },
       { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
+      { id: 'quotes', label: 'Devis Gros', icon: FileText },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
       { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
@@ -696,6 +699,12 @@ const Admin = () => {
 
               <TabsContent value="audit" className="space-y-6">
                 <AuditLogsTable />
+              </TabsContent>
+
+              <TabsContent value="quotes" className="space-y-6">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <QuotesTable />
+                </div>
               </TabsContent>
 
               <TabsContent value="loyalty" className="space-y-6">

@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { WholesalePanel } from "@/components/product/WholesalePanel";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -300,6 +301,9 @@ const ProductPage = () => {
                   disabled={product.stock_quantity <= 0}
                 />
               </div>
+
+              {/* Wholesale Panel */}
+              <WholesalePanel product={product} />
 
               {/* Secondary Actions */}
               <div className="flex gap-4 flex-wrap">
