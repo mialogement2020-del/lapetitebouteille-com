@@ -10,6 +10,7 @@ import { ComparatorButton } from "@/components/product/ComparatorButton";
 import { Product } from "@/hooks/useProducts";
 import { toast } from "sonner";
 import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
+import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import {
   Dialog,
   DialogContent,

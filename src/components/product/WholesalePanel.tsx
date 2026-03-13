@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Product } from "@/hooks/useProducts";
 import { useWholesalePricing, calculateWholesalePrices, WholesaleTierPrice, PackagingType } from "@/hooks/useWholesale";
+import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { useCartContext } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { QuoteRequestDialog } from "./QuoteRequestDialog";
