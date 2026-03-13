@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Star, Sparkles, Share2, Check, QrCode, Download, Copy } from "lucide-react";
+import { Star, Sparkles, Share2, Check, QrCode, Download, Copy, Package } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { ComparatorButton } from "@/components/product/ComparatorButton";
 import { Product } from "@/hooks/useProducts";
 import { toast } from "sonner";
+import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
 import {
   Dialog,
   DialogContent,
