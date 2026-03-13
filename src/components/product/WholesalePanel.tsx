@@ -53,6 +53,8 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
 
   const selectedTierData = tiers.find((t) => t.type === selectedTier);
 
+  if (tiers.length === 0) return null;
+
   return (
     <>
       <div className="mt-4">
