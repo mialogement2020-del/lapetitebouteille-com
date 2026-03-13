@@ -543,7 +543,7 @@ export function useAdmin() {
           stock_quantity: data.stock_quantity || 0,
           category_id: data.category_id || null,
           image_url: data.image_url || null,
-          is_active: data.is_active ?? true,
+          gallery_urls: data.gallery_urls || null,
           is_featured: data.is_featured ?? false,
           alcohol_percentage: data.alcohol_percentage || null,
           volume_ml: data.volume_ml || null,
