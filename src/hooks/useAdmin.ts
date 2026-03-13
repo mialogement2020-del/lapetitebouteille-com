@@ -591,6 +591,7 @@ export function useAdmin() {
           category_id: data.category_id,
           image_url: data.image_url,
           gallery_urls: data.gallery_urls,
+          is_active: data.is_active,
           is_featured: data.is_featured,
           alcohol_percentage: data.alcohol_percentage,
           volume_ml: data.volume_ml,
