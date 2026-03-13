@@ -195,7 +195,7 @@ export function QuoteRequestDialog({
             </div>
           </div>
 
-          {hasNIU && (
+          {buyerType === "business" && hasNIU && (
             <div>
               <Label className="text-cream/80 text-sm">Numéro NIU</Label>
               <Input
