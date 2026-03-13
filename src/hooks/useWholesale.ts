@@ -14,7 +14,9 @@ function getStoredDiscounts(): Record<string, number> {
 
 export const WHOLESALE_TIERS = [
   { type: "carton_6" as const, label: "Carton de 6 bouteilles", quantity: 6, discountPercent: 7, icon: "📦" },
+  { type: "caisse_bois_6" as const, label: "Caisse bois de 6 bouteilles", quantity: 6, discountPercent: 5, icon: "🪵" },
   { type: "carton_12" as const, label: "Carton de 12 bouteilles", quantity: 12, discountPercent: 15, icon: "📦" },
+  { type: "caisse_bois_12" as const, label: "Caisse bois de 12 bouteilles", quantity: 12, discountPercent: 10, icon: "🪵" },
   { type: "palette" as const, label: "Palette (60 bouteilles)", quantity: 60, discountPercent: 25, icon: "🏗️" },
 ];
 
