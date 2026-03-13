@@ -29,6 +29,7 @@ export function QuoteRequestDialog({
   onOpenChange,
   product,
   tier,
+  buyerType,
   hasNIU,
   niuValue,
 }: QuoteRequestDialogProps) {
