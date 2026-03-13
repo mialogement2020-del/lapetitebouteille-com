@@ -29,9 +29,11 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
   const [niuValue, setNiuValue] = useState("");
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
   const { data: customPricing } = useWholesalePricing(product.id);
+  const { data: tierConfig } = useWholesaleTierConfig();
   const { addItem } = useCartContext();
 
-  const tiers = calculateWholesalePrices(product.price, customPricing || [], hasNIU && niuValue.length >= 10);
+  const allTiers = calculateWholesalePrices(product.price, customPricing || [], hasNIU && niuValue.length >= 10);
+  const tiers = allTiers.filter(t => tierConfig?.visible_tiers?.includes(t.type));
 
   const handleAddToCart = async (tier: WholesaleTierPrice) => {
     try {
