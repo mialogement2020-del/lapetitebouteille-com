@@ -261,30 +261,33 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {product.alcohol_percentage && <span>{product.alcohol_percentage}%</span>}
         </div>
 
-        {/* Wholesale Pricing Preview */}
-        <Link
-          to={`/produit/${product.slug}`}
-          className="mt-3 p-2.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors block"
-        >
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Package className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[11px] font-semibold text-primary">EN GROS</span>
-            <Badge className="bg-green-500/20 text-green-400 border-0 text-[9px] px-1.5 py-0 h-4 ml-auto">
-              Jusqu'à -{WHOLESALE_TIERS[WHOLESALE_TIERS.length - 1].discountPercent}%
-            </Badge>
-          </div>
-          <div className="space-y-0.5">
-            {WHOLESALE_TIERS.map((tier) => {
-              const tierPrice = Math.round(product.price * tier.quantity * (1 - tier.discountPercent / 100));
-              return (
-                <div key={tier.type} className="flex items-center justify-between text-[10px]">
-                  <span className="text-cream/50">{tier.icon} {tier.quantity} btl</span>
-                  <span className="text-cream font-medium">{formatPrice(tierPrice)} FCFA <span className="text-green-400">(-{tier.discountPercent}%)</span></span>
+        {/* Wholesale Pricing Preview - Carton de 6 only */}
+        {(() => {
+          const carton6 = WHOLESALE_TIERS.find(t => t.type === "carton_6");
+          if (!carton6) return null;
+          const tierPrice = Math.round(product.price * carton6.quantity * (1 - carton6.discountPercent / 100));
+          return (
+            <Link
+              to={`/produit/${product.slug}`}
+              className="mt-3 p-2.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors block"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Package className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[11px] font-semibold text-primary">EN GROS</span>
                 </div>
-              );
-            })}
-          </div>
-        </Link>
+                <Badge className="bg-green-500/20 text-green-400 border-0 text-[9px] px-1.5 py-0 h-4">
+                  -{carton6.discountPercent}%
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between text-[10px] mt-1">
+                <span className="text-cream/50">{carton6.icon} {carton6.label}</span>
+                <span className="text-cream font-medium">{formatPrice(tierPrice)} FCFA</span>
+              </div>
+              <p className="text-[9px] text-primary/60 mt-1">Voir plus d'options en gros →</p>
+            </Link>
+          );
+        })()}
 
         {/* Action Buttons - Always visible at bottom */}
         <div className="flex items-center gap-2 mt-auto pt-4 border-t border-cream/10">
