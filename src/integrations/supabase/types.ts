@@ -1833,6 +1833,27 @@ export type Database = {
           },
         ]
       }
+      wholesale_tier_config: {
+        Row: {
+          card_tiers: string[]
+          id: string
+          updated_at: string | null
+          visible_tiers: string[]
+        }
+        Insert: {
+          card_tiers?: string[]
+          id?: string
+          updated_at?: string | null
+          visible_tiers?: string[]
+        }
+        Update: {
+          card_tiers?: string[]
+          id?: string
+          updated_at?: string | null
+          visible_tiers?: string[]
+        }
+        Relationships: []
+      }
       wishlist: {
         Row: {
           created_at: string | null
