@@ -118,7 +118,7 @@ export function useSubmitQuoteRequest() {
 
   return useMutation({
     mutationFn: async (data: QuoteRequestData) => {
-      const { data: result, error } = await supabase
+      const { data: result, error } = await (supabase as any)
         .from("quote_requests")
         .insert(data)
         .select()
