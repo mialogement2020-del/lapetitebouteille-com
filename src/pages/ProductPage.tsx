@@ -302,6 +302,9 @@ const ProductPage = () => {
                 />
               </div>
 
+              {/* Wholesale Panel */}
+              <WholesalePanel product={product} />
+
               {/* Secondary Actions */}
               <div className="flex gap-4 flex-wrap">
                 <WishlistButton productId={product.id} variant="full" className="border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full" />
