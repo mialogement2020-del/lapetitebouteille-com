@@ -160,7 +160,7 @@ const Footer = () => {
                   </div>
                   <div>
                     <span className="text-cream/50 text-sm block">Adresse</span>
-                    <span className="text-cream text-sm">Yaoundé, Cameroun</span>
+                    <span className="text-cream text-sm">Douala Bonamoussadi, Cameroun</span>
                   </div>
                 </div>
               </li>
