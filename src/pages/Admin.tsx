@@ -703,6 +703,7 @@ const Admin = () => {
               </TabsContent>
 
               <TabsContent value="quotes" className="space-y-6">
+                <WholesaleSettings />
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <QuotesTable />
                 </div>

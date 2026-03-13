@@ -2,11 +2,29 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 // Default wholesale tiers with discount percentages
+const STORAGE_KEY = "wholesale_default_discounts";
+
+function getStoredDiscounts(): Record<string, number> {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return {};
+}
+
 export const WHOLESALE_TIERS = [
   { type: "carton_6" as const, label: "Carton de 6 bouteilles", quantity: 6, discountPercent: 7, icon: "📦" },
   { type: "carton_12" as const, label: "Carton de 12 bouteilles", quantity: 12, discountPercent: 15, icon: "📦" },
   { type: "palette" as const, label: "Palette (60 bouteilles)", quantity: 60, discountPercent: 25, icon: "🏗️" },
 ];
+
+// Apply stored overrides on load
+const storedDiscounts = getStoredDiscounts();
+WHOLESALE_TIERS.forEach((tier) => {
+  if (storedDiscounts[tier.type] !== undefined) {
+    tier.discountPercent = storedDiscounts[tier.type];
+  }
+});
 
 export type PackagingType = "carton_6" | "carton_12" | "palette";
 
