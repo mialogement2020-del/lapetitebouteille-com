@@ -57,6 +57,7 @@ import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
 import { ProductImageManager } from "@/components/admin/ProductImageManager";
+import { QuotesTable } from "@/components/admin/QuotesTable";
 import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
