@@ -146,6 +146,7 @@ const Admin = () => {
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
       { id: 'images', label: 'Images', icon: ImageIcon },
       { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
+      { id: 'quotes', label: 'Devis Gros', icon: FileText },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
       { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
