@@ -41,6 +41,7 @@ export function QuoteRequestDialog({
     email: "",
     phone: "",
     company: "",
+    eventType: "",
     niu: niuValue || "",
     city: "",
     message: "",
