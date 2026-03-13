@@ -120,8 +120,8 @@ export default function OrderConfirmation() {
               className="text-cream/50 text-sm mt-8"
             >
               Des questions ? Contactez-nous au{" "}
-              <a href="tel:+237600000000" className="text-primary hover:underline">
-                +237 6 XX XX XX XX
+              <a href="tel:+237674069458" className="text-primary hover:underline">
+                +237 674 069 458
               </a>
             </motion.p>
           </div>

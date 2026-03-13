@@ -184,8 +184,8 @@ const Footer = () => {
                   </div>
                   <div>
                     <span className="text-cream/50 text-sm block">Email</span>
-                    <a href="mailto:contact@lapetitebouteille.cm" className="text-cream hover:text-primary transition-colors text-sm">
-                      contact@lapetitebouteille.cm
+                    <a href="mailto:contactlapetitebouteille@gmail.com" className="text-cream hover:text-primary transition-colors text-sm">
+                      contactlapetitebouteille@gmail.com
                     </a>
                   </div>
                 </div>
