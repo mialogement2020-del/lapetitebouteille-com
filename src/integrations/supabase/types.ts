@@ -1155,6 +1155,86 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_requests: {
+        Row: {
+          admin_notes: string | null
+          city: string
+          client_email: string
+          client_name: string
+          client_phone: string
+          company_name: string | null
+          created_at: string | null
+          id: string
+          message: string | null
+          niu: string | null
+          packaging_type: string
+          processed_at: string | null
+          processed_by: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          status: string
+          total_price: number
+          unit_price: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          city: string
+          client_email: string
+          client_name: string
+          client_phone: string
+          company_name?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          niu?: string | null
+          packaging_type: string
+          processed_at?: string | null
+          processed_by?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          status?: string
+          total_price: number
+          unit_price: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          city?: string
+          client_email?: string
+          client_name?: string
+          client_phone?: string
+          company_name?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          niu?: string | null
+          packaging_type?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          status?: string
+          total_price?: number
+          unit_price?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rank_config: {
         Row: {
           badge_color: string | null
@@ -1708,6 +1788,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wholesale_pricing: {
+        Row: {
+          created_at: string | null
+          custom_price: number | null
+          discount_percentage: number
+          id: string
+          is_active: boolean | null
+          packaging_type: string
+          product_id: string
+          quantity: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          custom_price?: number | null
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean | null
+          packaging_type: string
+          product_id: string
+          quantity: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          custom_price?: number | null
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean | null
+          packaging_type?: string
+          product_id?: string
+          quantity?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_pricing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wishlist: {
         Row: {
