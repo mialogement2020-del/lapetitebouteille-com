@@ -177,7 +177,7 @@ export function useUpdateQuoteStatus() {
 
   return useMutation({
     mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("quote_requests")
         .update({
           status,
