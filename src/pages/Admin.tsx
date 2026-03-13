@@ -701,6 +701,12 @@ const Admin = () => {
                 <AuditLogsTable />
               </TabsContent>
 
+              <TabsContent value="quotes" className="space-y-6">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <QuotesTable />
+                </div>
+              </TabsContent>
+
               <TabsContent value="loyalty" className="space-y-6">
                 <LoyaltyDashboard />
               </TabsContent>
