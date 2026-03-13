@@ -48,6 +48,7 @@ export interface AdminProduct {
   stock_quantity: number | null;
   category_id: string | null;
   image_url: string | null;
+  gallery_urls: string[] | null;
   is_active: boolean | null;
   is_featured: boolean | null;
   alcohol_percentage: number | null;
