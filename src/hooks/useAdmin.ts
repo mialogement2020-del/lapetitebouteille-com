@@ -590,7 +590,7 @@ export function useAdmin() {
           stock_quantity: data.stock_quantity,
           category_id: data.category_id,
           image_url: data.image_url,
-          is_active: data.is_active,
+          gallery_urls: data.gallery_urls,
           is_featured: data.is_featured,
           alcohol_percentage: data.alcohol_percentage,
           volume_ml: data.volume_ml,
