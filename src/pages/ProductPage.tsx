@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { WholesalePanel } from "@/components/product/WholesalePanel";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
