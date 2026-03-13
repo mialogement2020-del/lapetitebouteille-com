@@ -140,44 +140,75 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                   ))}
                 </div>
 
-                {/* NIU Section */}
-                <div className="p-4 rounded-xl border border-cream/10 bg-cream/5">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id="has-niu"
-                      checked={hasNIU}
-                      onCheckedChange={(checked) => setHasNIU(!!checked)}
-                      className="mt-0.5 border-cream/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    />
-                    <div className="flex-1">
-                      <Label htmlFor="has-niu" className="text-sm font-medium text-cream cursor-pointer">
-                        J'ai un numéro de contribuable (NIU)
-                      </Label>
-                      <p className="text-xs text-cream/50 mt-0.5">
-                        Les prix seront affichés Hors Taxes (HT) - TVA 19,25%
-                      </p>
-                    </div>
+                {/* Buyer Type Section */}
+                <div className="p-4 rounded-xl border border-cream/10 bg-cream/5 space-y-3">
+                  <p className="text-sm font-medium text-cream">Vous êtes :</p>
+                  <div className="flex gap-3">
+                    {[
+                      { value: "individual" as const, label: "🎉 Particulier / Événement", desc: "Mariage, fête, cérémonie..." },
+                      { value: "business" as const, label: "🏢 Entreprise / Pro", desc: "Restaurant, bar, hôtel..." },
+                    ].map((option) => (
+                      <div
+                        key={option.value}
+                        onClick={() => setBuyerType(option.value)}
+                        className={`flex-1 p-3 rounded-xl border cursor-pointer transition-all text-center ${
+                          buyerType === option.value
+                            ? "border-primary bg-primary/10"
+                            : "border-cream/10 bg-cream/5 hover:border-cream/20"
+                        }`}
+                      >
+                        <p className="text-sm font-medium text-cream">{option.label}</p>
+                        <p className="text-[10px] text-cream/50 mt-0.5">{option.desc}</p>
+                      </div>
+                    ))}
                   </div>
+
                   <AnimatePresence>
-                    {hasNIU && (
+                    {buyerType === "business" && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="mt-3"
+                        className="space-y-2"
                       >
-                        <Input
-                          placeholder="Entrez votre NIU (ex: M012345678901A)"
-                          value={niuValue}
-                          onChange={(e) => setNiuValue(e.target.value.toUpperCase())}
-                          className="bg-cream/5 border-cream/20 text-cream placeholder:text-cream/30 font-mono"
-                          maxLength={20}
-                        />
-                        {niuValue && niuValue.length < 10 && (
-                          <p className="text-xs text-secondary mt-1">
-                            Le NIU doit contenir au moins 10 caractères
-                          </p>
-                        )}
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            id="has-niu"
+                            checked={hasNIU}
+                            onCheckedChange={(checked) => setHasNIU(!!checked)}
+                            className="mt-0.5 border-cream/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          />
+                          <div className="flex-1">
+                            <Label htmlFor="has-niu" className="text-sm font-medium text-cream cursor-pointer">
+                              J'ai un numéro de contribuable (NIU)
+                            </Label>
+                            <p className="text-xs text-cream/50 mt-0.5">
+                              Prix affichés Hors Taxes (HT) - TVA 19,25%
+                            </p>
+                          </div>
+                        </div>
+                        <AnimatePresence>
+                          {hasNIU && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                            >
+                              <Input
+                                placeholder="Entrez votre NIU (ex: M012345678901A)"
+                                value={niuValue}
+                                onChange={(e) => setNiuValue(e.target.value.toUpperCase())}
+                                className="bg-cream/5 border-cream/20 text-cream placeholder:text-cream/30 font-mono"
+                                maxLength={20}
+                              />
+                              {niuValue && niuValue.length < 10 && (
+                                <p className="text-xs text-secondary mt-1">
+                                  Le NIU doit contenir au moins 10 caractères
+                                </p>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </motion.div>
                     )}
                   </AnimatePresence>
