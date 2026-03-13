@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Wine, Loader2, Image as ImageIcon } from "lucide-react";
+import { Wine, Loader2, Image as ImageIcon, Upload, X, Plus, GripVertical } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import type { AdminProduct, ProductFormData } from "@/hooks/useAdmin";
 
 interface ProductFormDialogProps {
@@ -41,6 +43,20 @@ const generateSlug = (name: string) => {
     .replace(/(^-|-$)/g, "");
 };
 
+const uploadImageToStorage = async (file: File): Promise<string> => {
+  const ext = file.name.split(".").pop() || "jpg";
+  const fileName = `${crypto.randomUUID()}-${Date.now()}.${ext}`;
+  
+  const { error } = await supabase.storage
+    .from("product-images")
+    .upload(fileName, file, { contentType: file.type, upsert: true });
+  
+  if (error) throw error;
+  
+  const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+  return urlData.publicUrl;
+};
+
 export function ProductFormDialog({
   product,
   open,
@@ -50,6 +66,10 @@ export function ProductFormDialog({
   isSaving,
 }: ProductFormDialogProps) {
   const isEditing = !!product;
+  const mainImageRef = useRef<HTMLInputElement>(null);
+  const galleryImageRef = useRef<HTMLInputElement>(null);
+  const [isUploadingMain, setIsUploadingMain] = useState(false);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
@@ -61,6 +81,7 @@ export function ProductFormDialog({
     stock_quantity: 0,
     category_id: undefined,
     image_url: "",
+    gallery_urls: [],
     is_active: true,
     is_featured: false,
     alcohol_percentage: undefined,
@@ -86,6 +107,7 @@ export function ProductFormDialog({
         stock_quantity: product.stock_quantity || 0,
         category_id: product.category_id || undefined,
         image_url: product.image_url || "",
+        gallery_urls: product.gallery_urls || [],
         is_active: product.is_active ?? true,
         is_featured: product.is_featured ?? false,
         alcohol_percentage: product.alcohol_percentage || undefined,
@@ -109,6 +131,7 @@ export function ProductFormDialog({
         stock_quantity: 0,
         category_id: undefined,
         image_url: "",
+        gallery_urls: [],
         is_active: true,
         is_featured: false,
         alcohol_percentage: undefined,
@@ -130,6 +153,51 @@ export function ProductFormDialog({
       name,
       slug: !isEditing || prev.slug === generateSlug(prev.name) ? generateSlug(name) : prev.slug,
     }));
+  };
+
+  const handleMainImageUpload = async (file: File) => {
+    setIsUploadingMain(true);
+    try {
+      const url = await uploadImageToStorage(file);
+      setFormData((prev) => ({ ...prev, image_url: url }));
+      toast({ title: "Image principale uploadée" });
+    } catch (err) {
+      toast({ title: "Erreur d'upload", description: err instanceof Error ? err.message : "Échec", variant: "destructive" });
+    } finally {
+      setIsUploadingMain(false);
+    }
+  };
+
+  const handleGalleryImageUpload = async (files: FileList) => {
+    setIsUploadingGallery(true);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        const url = await uploadImageToStorage(file);
+        urls.push(url);
+      }
+      setFormData((prev) => ({ ...prev, gallery_urls: [...(prev.gallery_urls || []), ...urls] }));
+      toast({ title: `${urls.length} image(s) ajoutée(s) à la galerie` });
+    } catch (err) {
+      toast({ title: "Erreur d'upload", description: err instanceof Error ? err.message : "Échec", variant: "destructive" });
+    } finally {
+      setIsUploadingGallery(false);
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      gallery_urls: (prev.gallery_urls || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const setAsMainImage = (galleryUrl: string, index: number) => {
+    const oldMain = formData.image_url;
+    const newGallery = [...(formData.gallery_urls || [])];
+    newGallery.splice(index, 1);
+    if (oldMain) newGallery.unshift(oldMain);
+    setFormData((prev) => ({ ...prev, image_url: galleryUrl, gallery_urls: newGallery }));
   };
 
   const handleSubmit = async () => {
@@ -200,28 +268,88 @@ export function ProductFormDialog({
                   className="bg-cream/5 border-gold/20 text-cream resize-none"
                 />
               </div>
+            </div>
 
+            {/* Images Section */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">
+                <ImageIcon className="inline h-4 w-4 mr-1" />
+                Images
+              </h3>
+
+              {/* Main Image */}
               <div className="space-y-2">
-                <Label className="text-cream/80">Image URL</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={formData.image_url}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
-                    placeholder="https://..."
-                    className="bg-cream/5 border-gold/20 text-cream flex-1"
-                  />
-                  {formData.image_url && (
-                    <div className="h-10 w-10 rounded-lg overflow-hidden bg-cream/10 flex-shrink-0">
-                      <img
-                        src={formData.image_url}
-                        alt="Preview"
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
+                <Label className="text-cream/80">Image principale</Label>
+                <div className="flex gap-3 items-start">
+                  {/* Preview */}
+                  <div className="w-20 h-24 rounded-lg bg-cream/5 border border-gold/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {formData.image_url ? (
+                      <img src={formData.image_url} alt="Preview" className="w-full h-full object-contain" 
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    ) : (
+                      <ImageIcon className="h-6 w-6 text-cream/20" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      value={formData.image_url}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
+                      placeholder="https://... ou uploadez un fichier"
+                      className="bg-cream/5 border-gold/20 text-cream text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <input type="file" accept="image/*" className="hidden" ref={mainImageRef}
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMainImageUpload(f); e.target.value = ""; }} />
+                      <Button type="button" size="sm" variant="outline" className="border-gold/20 text-cream hover:bg-cream/10"
+                        onClick={() => mainImageRef.current?.click()} disabled={isUploadingMain}>
+                        {isUploadingMain ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Upload className="h-3 w-3 mr-1" />}
+                        Uploader
+                      </Button>
+                      {formData.image_url && (
+                        <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive"
+                          onClick={() => setFormData((prev) => ({ ...prev, image_url: "" }))}>
+                          <X className="h-3 w-3 mr-1" /> Supprimer
+                        </Button>
+                      )}
                     </div>
-                  )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Gallery */}
+              <div className="space-y-2">
+                <Label className="text-cream/80">Galerie ({(formData.gallery_urls || []).length} images)</Label>
+                
+                {/* Gallery grid */}
+                {(formData.gallery_urls || []).length > 0 && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {(formData.gallery_urls || []).map((url, idx) => (
+                      <div key={idx} className="relative group aspect-[3/4] rounded-lg bg-cream/5 border border-gold/20 overflow-hidden">
+                        <img src={url} alt={`Galerie ${idx + 1}`} className="w-full h-full object-contain" />
+                        <div className="absolute inset-0 bg-noir/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                          <Button type="button" size="sm" variant="ghost" className="text-cream text-[10px] h-6 px-2"
+                            onClick={() => setAsMainImage(url, idx)}>
+                            ⭐ Principale
+                          </Button>
+                          <Button type="button" size="sm" variant="ghost" className="text-destructive text-[10px] h-6 px-2"
+                            onClick={() => removeGalleryImage(idx)}>
+                            <X className="h-3 w-3" /> Retirer
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add gallery images */}
+                <div className="flex gap-2">
+                  <input type="file" accept="image/*" multiple className="hidden" ref={galleryImageRef}
+                    onChange={(e) => { if (e.target.files?.length) handleGalleryImageUpload(e.target.files); e.target.value = ""; }} />
+                  <Button type="button" size="sm" variant="outline" className="border-gold/20 text-cream hover:bg-cream/10"
+                    onClick={() => galleryImageRef.current?.click()} disabled={isUploadingGallery}>
+                    {isUploadingGallery ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
+                    Ajouter des images
+                  </Button>
                 </div>
               </div>
             </div>
@@ -440,10 +568,10 @@ export function ProductFormDialog({
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {isEditing ? "Modification..." : "Création..."}
               </>
-            ) : isEditing ? (
-              "Enregistrer"
             ) : (
-              "Créer le produit"
+              <>
+                {isEditing ? "Enregistrer" : "Créer le produit"}
+              </>
             )}
           </Button>
         </div>
