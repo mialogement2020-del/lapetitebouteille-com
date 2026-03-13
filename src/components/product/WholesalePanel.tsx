@@ -248,6 +248,7 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
           onOpenChange={setShowQuoteDialog}
           product={product}
           tier={selectedTierData}
+          buyerType={buyerType}
           hasNIU={hasNIU}
           niuValue={niuValue}
         />
