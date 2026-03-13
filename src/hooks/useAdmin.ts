@@ -48,6 +48,7 @@ export interface AdminProduct {
   stock_quantity: number | null;
   category_id: string | null;
   image_url: string | null;
+  gallery_urls: string[] | null;
   is_active: boolean | null;
   is_featured: boolean | null;
   alcohol_percentage: number | null;
@@ -144,6 +145,7 @@ export interface ProductFormData {
   stock_quantity?: number;
   category_id?: string;
   image_url?: string;
+  gallery_urls?: string[];
   is_active?: boolean;
   is_featured?: boolean;
   alcohol_percentage?: number;
@@ -541,7 +543,7 @@ export function useAdmin() {
           stock_quantity: data.stock_quantity || 0,
           category_id: data.category_id || null,
           image_url: data.image_url || null,
-          is_active: data.is_active ?? true,
+          gallery_urls: data.gallery_urls || null,
           is_featured: data.is_featured ?? false,
           alcohol_percentage: data.alcohol_percentage || null,
           volume_ml: data.volume_ml || null,
@@ -588,7 +590,7 @@ export function useAdmin() {
           stock_quantity: data.stock_quantity,
           category_id: data.category_id,
           image_url: data.image_url,
-          is_active: data.is_active,
+          gallery_urls: data.gallery_urls,
           is_featured: data.is_featured,
           alcohol_percentage: data.alcohol_percentage,
           volume_ml: data.volume_ml,
