@@ -35,6 +35,7 @@ const formatPrice = (price: number) => {
 export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const [copied, setCopied] = useState(false);
   const [qrCopied, setQrCopied] = useState(false);
+  const { data: tierConfig } = useWholesaleTierConfig();
 
   const productQrUrl = `${PUBLISHED_URL}/produit/${product.slug}`;
 
