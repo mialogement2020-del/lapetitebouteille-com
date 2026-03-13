@@ -83,7 +83,7 @@ export function useWholesalePricing(productId: string) {
   return useQuery({
     queryKey: ["wholesale-pricing", productId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("wholesale_pricing")
         .select("*")
         .eq("product_id", productId)
