@@ -144,6 +144,7 @@ export interface ProductFormData {
   stock_quantity?: number;
   category_id?: string;
   image_url?: string;
+  gallery_urls?: string[];
   is_active?: boolean;
   is_featured?: boolean;
   alcohol_percentage?: number;
