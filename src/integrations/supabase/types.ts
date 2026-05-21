@@ -2045,6 +2045,10 @@ export type Database = {
       }
       generate_order_number: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
+      get_my_roles: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
       get_referrer_id_from_code: { Args: { _code: string }; Returns: string }
       get_user_rank: {
         Args: { _user_id: string }
@@ -2056,6 +2060,10 @@ export type Database = {
           _permission: Database["public"]["Enums"]["admin_permission"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_any_role: {
+        Args: { _roles: Database["public"]["Enums"]["app_role"][] }
         Returns: boolean
       }
       has_full_admin_access: { Args: { _user_id: string }; Returns: boolean }
@@ -2096,7 +2104,14 @@ export type Database = {
         | "full_access"
         | "loyalty"
       ambassador_rank: "bronze" | "silver" | "gold" | "diamond" | "elite"
-      app_role: "admin" | "moderator" | "user"
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "ambassador"
+        | "vendor"
+        | "wholesaler"
+        | "customer"
       order_status:
         | "pending"
         | "confirmed"
@@ -2257,7 +2272,15 @@ export const Constants = {
         "loyalty",
       ],
       ambassador_rank: ["bronze", "silver", "gold", "diamond", "elite"],
-      app_role: ["admin", "moderator", "user"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "ambassador",
+        "vendor",
+        "wholesaler",
+        "customer",
+      ],
       order_status: [
         "pending",
         "confirmed",
