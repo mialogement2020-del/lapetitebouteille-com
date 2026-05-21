@@ -2,16 +2,14 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Product } from "@/hooks/useProducts";
 import { optimizeProductImage } from "@/lib/imageOptimization";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 
 interface RelatedProductsProps {
   products: Product[];
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("fr-FR").format(price);
-};
-
 export const RelatedProducts = ({ products }: RelatedProductsProps) => {
+  const formatPrice = useFormatPrice();
   if (products.length === 0) return null;
 
   return (
@@ -44,7 +42,7 @@ export const RelatedProducts = ({ products }: RelatedProductsProps) => {
                   {product.name}
                 </h3>
                 <p className="text-gold font-bold mt-1">
-                  {formatPrice(product.price)} FCFA
+                  {formatPrice(product.price)}
                 </p>
               </Link>
             </motion.article>

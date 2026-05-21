@@ -5,7 +5,7 @@ import { Zap, Clock, ArrowRight } from "lucide-react";
 import { useActiveFlashSales, useFlashSaleProducts } from "@/hooks/useFlashSales";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/lib/utils";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 
 function CountdownTimer({ endsAt }: { endsAt: string }) {
@@ -53,6 +53,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
 }
 
 export function FlashSalesSection() {
+  const formatPrice = useFormatPrice();
   const { data: flashSales, isLoading } = useActiveFlashSales();
   const activeFlashSale = flashSales?.[0];
   const { data: products } = useFlashSaleProducts(activeFlashSale?.id);

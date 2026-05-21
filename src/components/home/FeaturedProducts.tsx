@@ -4,12 +4,13 @@ import { Heart, ShoppingCart, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
 import { useProducts } from "@/hooks/useProducts";
-import { formatPrice } from "@/lib/utils";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 
 const FeaturedProducts = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const formatPrice = useFormatPrice();
   const { data: products, isLoading } = useProducts({ featured: true, sortBy: "newest", limit: 4 });
   
   const { scrollYProgress } = useScroll({

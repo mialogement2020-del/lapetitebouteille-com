@@ -9,16 +9,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 import { Badge } from "@/components/ui/badge";
 import { useCartContext } from "@/contexts/CartContext";
 import { useProductReferral } from "@/hooks/useProductReferral";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 
 interface CartDrawerProps {
   children?: React.ReactNode;
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("fr-FR").format(price);
-};
-
 export function CartDrawer({ children }: CartDrawerProps) {
+  const formatPrice = useFormatPrice();
   const { items, isLoading, updateQuantity, removeItem, subtotal, itemCount } = useCartContext();
   const { hasStoredReferral, getStoredReferralCode } = useProductReferral();
   const [isAnimating, setIsAnimating] = useState(false);
@@ -160,7 +158,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
                       </Link>
                       
                       <p className="text-primary font-semibold mt-1">
-                        {formatPrice(item.product?.price || 0)} FCFA
+                        {formatPrice(item.product?.price || 0)}
                       </p>
 
                       {/* Quantity Controls */}
@@ -231,7 +229,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-cream/70">
                   <span>Sous-total</span>
-                  <span>{formatPrice(subtotal)} FCFA</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-cream/70">
                   <span>Livraison</span>
@@ -239,13 +237,13 @@ export function CartDrawer({ children }: CartDrawerProps) {
                     {deliveryFee === 0 ? (
                       <span className="text-primary">Gratuite</span>
                     ) : (
-                      `${formatPrice(deliveryFee)} FCFA`
+                      formatPrice(deliveryFee)
                     )}
                   </span>
                 </div>
                 {subtotal < 50000 && (
                   <p className="text-xs text-primary">
-                    Plus que {formatPrice(50000 - subtotal)} FCFA pour la livraison gratuite !
+                    Plus que {formatPrice(50000 - subtotal)} pour la livraison gratuite !
                   </p>
                 )}
               </div>
@@ -256,7 +254,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
               <div className="flex justify-between items-baseline">
                 <span className="text-lg font-semibold text-cream">Total</span>
                 <span className="text-2xl font-bold text-primary">
-                  {formatPrice(total)} FCFA
+                  {formatPrice(total)}
                 </span>
               </div>
 

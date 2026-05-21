@@ -32,12 +32,10 @@ import { WholesalePanel } from "@/components/product/WholesalePanel";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("fr-FR").format(price);
-};
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 
 const ProductPage = () => {
+  const formatPrice = useFormatPrice();
   const { slug } = useParams<{ slug: string }>();
   const { data: product, isLoading, error } = useProduct(slug || "");
   const { data: relatedProducts = [] } = useRelatedProducts(
@@ -234,11 +232,10 @@ const ProductPage = () => {
                   <span className="text-4xl md:text-5xl font-bold text-gradient-gold font-display">
                     {formatPrice(product.price)}
                   </span>
-                  <span className="text-lg text-cream/60 font-medium">FCFA</span>
                 </div>
                 {product.original_price && (
                   <span className="text-xl text-cream/40 line-through">
-                    {formatPrice(product.original_price)} FCFA
+                    {formatPrice(product.original_price)}
                   </span>
                 )}
               </div>

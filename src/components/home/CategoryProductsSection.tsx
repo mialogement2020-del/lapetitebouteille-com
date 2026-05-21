@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProducts, useCategories } from "@/hooks/useProducts";
-import { formatPrice } from "@/lib/utils";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 
 const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; categoryName: string }) => {
   const rowRef = useRef<HTMLDivElement>(null);
+  const formatPrice = useFormatPrice();
   const [shouldLoad, setShouldLoad] = useState(false);
   const { data: products, isLoading } = useProducts({ categorySlug, sortBy: "popular", limit: 10, enabled: shouldLoad });
   const displayProducts = products || [];

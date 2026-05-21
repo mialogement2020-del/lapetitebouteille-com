@@ -3,13 +3,14 @@ import { motion } from "framer-motion";
 import { Clock, X } from "lucide-react";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 
 interface RecentlyViewedProps {
   currentProductId?: string;
 }
 
 export function RecentlyViewed({ currentProductId }: RecentlyViewedProps) {
+  const formatPrice = useFormatPrice();
   const { recentlyViewed, isLoading, clearHistory } = useRecentlyViewed();
 
   // Filter out current product and check if we have items to display
