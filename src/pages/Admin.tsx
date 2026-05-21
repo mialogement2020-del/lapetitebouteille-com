@@ -161,6 +161,7 @@ const Admin = () => {
     return allTabs.filter(tab => {
       // Permissions and security tabs only for super admins or admins
       if (tab.id === 'permissions') return hasFullAccess;
+      if (tab.id === 'marketplace-roles') return hasFullAccess;
       if (tab.id === 'security') return canAccessTab('permissions') || hasFullAccess;
       return canAccessTab(tab.id);
     });
