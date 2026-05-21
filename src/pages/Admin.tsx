@@ -56,6 +56,7 @@ import { MLMDashboard } from "@/components/admin/MLMDashboard";
 import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsManager";
 import { MarketplaceRolesManager } from "@/components/admin/MarketplaceRolesManager";
 import { WholesalerApplicationsManager } from "@/components/admin/WholesalerApplicationsManager";
+import { WholesaleInvoicesManager } from "@/components/admin/WholesaleInvoicesManager";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
@@ -152,6 +153,7 @@ const Admin = () => {
       { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
       { id: 'quotes', label: 'Devis Gros', icon: FileText },
       { id: 'wholesaler-apps', label: 'Candidatures B2B', icon: Building2 },
+      { id: 'wholesale-invoices', label: 'Factures B2B', icon: FileText },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
       { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
@@ -736,6 +738,11 @@ const Admin = () => {
               {/* Wholesaler applications */}
               <TabsContent value="wholesaler-apps" className="space-y-6">
                 <WholesalerApplicationsManager />
+              </TabsContent>
+
+              {/* Wholesale invoices */}
+              <TabsContent value="wholesale-invoices" className="space-y-6">
+                <WholesaleInvoicesManager />
               </TabsContent>
 
               {/* Security Settings - 2FA */}
