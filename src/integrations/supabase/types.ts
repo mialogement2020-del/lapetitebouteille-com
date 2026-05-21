@@ -1943,6 +1943,120 @@ export type Database = {
         }
         Relationships: []
       }
+      wholesaler_applications: {
+        Row: {
+          admin_notes: string | null
+          business_type: string
+          city: string
+          company_name: string
+          contact_email: string | null
+          contact_phone: string
+          created_at: string
+          estimated_monthly_volume: number | null
+          id: string
+          message: string | null
+          niu: string | null
+          processed_at: string | null
+          processed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_type?: string
+          city: string
+          company_name: string
+          contact_email?: string | null
+          contact_phone: string
+          created_at?: string
+          estimated_monthly_volume?: number | null
+          id?: string
+          message?: string | null
+          niu?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          business_type?: string
+          city?: string
+          company_name?: string
+          contact_email?: string | null
+          contact_phone?: string
+          created_at?: string
+          estimated_monthly_volume?: number | null
+          id?: string
+          message?: string | null
+          niu?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wholesaler_profiles: {
+        Row: {
+          address: string | null
+          business_type: string
+          city: string | null
+          company_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          credit_limit: number
+          id: string
+          is_active: boolean
+          niu: string | null
+          payment_terms: string | null
+          total_orders: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          business_type?: string
+          city?: string | null
+          company_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          credit_limit?: number
+          id?: string
+          is_active?: boolean
+          niu?: string | null
+          payment_terms?: string | null
+          total_orders?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          business_type?: string
+          city?: string | null
+          company_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          credit_limit?: number
+          id?: string
+          is_active?: boolean
+          niu?: string | null
+          payment_terms?: string | null
+          total_orders?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wishlist: {
         Row: {
           created_at: string | null
@@ -2121,6 +2235,10 @@ export type Database = {
       }
     }
     Functions: {
+      approve_wholesaler_application: {
+        Args: { _app_id: string }
+        Returns: Json
+      }
       create_referral_relationship: {
         Args: { _referral_code: string }
         Returns: Json
