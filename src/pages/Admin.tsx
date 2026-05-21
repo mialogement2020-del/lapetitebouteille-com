@@ -53,6 +53,7 @@ import { WeeklyReportSettings } from "@/components/admin/WeeklyReportSettings";
 import { AuditLogsTable } from "@/components/admin/AuditLogsTable";
 import { MLMDashboard } from "@/components/admin/MLMDashboard";
 import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsManager";
+import { MarketplaceRolesManager } from "@/components/admin/MarketplaceRolesManager";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
