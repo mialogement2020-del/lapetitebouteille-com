@@ -4,10 +4,12 @@ import { CheckCircle2, Package, Truck, Phone, ArrowRight } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function OrderConfirmation() {
   const [searchParams] = useSearchParams();
   const orderNumber = searchParams.get("order");
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-noir">
@@ -32,14 +34,14 @@ export default function OrderConfirmation() {
               transition={{ delay: 0.4 }}
             >
               <h1 className="font-display text-4xl text-cream mb-4">
-                Commande confirmée !
+                {t("orderConfirmation.title")}
               </h1>
               <p className="text-cream/60 text-lg mb-2">
-                Merci pour votre commande
+                {t("orderConfirmation.thanks")}
               </p>
               {orderNumber && (
                 <p className="text-primary font-semibold text-xl mb-8">
-                  N° {orderNumber}
+                  {t("orderConfirmation.orderNumberPrefix")} {orderNumber}
                 </p>
               )}
             </motion.div>
@@ -52,7 +54,7 @@ export default function OrderConfirmation() {
               className="bg-cream/5 rounded-xl border border-gold/20 p-6 mb-8"
             >
               <h2 className="font-display text-xl text-cream mb-6">
-                Prochaines étapes
+                {t("orderConfirmation.nextSteps")}
               </h2>
               <div className="space-y-4">
                 <div className="flex items-center gap-4 text-left">
@@ -60,9 +62,9 @@ export default function OrderConfirmation() {
                     <Package className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium text-cream">Préparation en cours</p>
+                    <p className="font-medium text-cream">{t("orderConfirmation.preparingTitle")}</p>
                     <p className="text-sm text-cream/60">
-                      Votre commande est en cours de préparation avec soin
+                      {t("orderConfirmation.preparingDesc")}
                     </p>
                   </div>
                 </div>
@@ -71,9 +73,9 @@ export default function OrderConfirmation() {
                     <Truck className="h-5 w-5 text-cream/60" />
                   </div>
                   <div>
-                    <p className="font-medium text-cream/60">Livraison express</p>
+                    <p className="font-medium text-cream/60">{t("orderConfirmation.deliveryTitle")}</p>
                     <p className="text-sm text-cream/40">
-                      Livraison sous 24h à Yaoundé et Douala
+                      {t("orderConfirmation.deliveryDesc")}
                     </p>
                   </div>
                 </div>
@@ -82,9 +84,9 @@ export default function OrderConfirmation() {
                     <Phone className="h-5 w-5 text-cream/60" />
                   </div>
                   <div>
-                    <p className="font-medium text-cream/60">Confirmation par SMS</p>
+                    <p className="font-medium text-cream/60">{t("orderConfirmation.smsTitle")}</p>
                     <p className="text-sm text-cream/40">
-                      Vous recevrez un SMS avec les détails de livraison
+                      {t("orderConfirmation.smsDesc")}
                     </p>
                   </div>
                 </div>
@@ -100,14 +102,14 @@ export default function OrderConfirmation() {
             >
               <Link to="/catalogue">
                 <Button className="bg-gradient-gold text-noir font-semibold gap-2">
-                  Continuer mes achats
+                  {t("orderConfirmation.continueShopping")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/suivi-commande">
                 <Button variant="outline" className="border-gold/30 text-cream hover:bg-cream/10 gap-2">
                   <Package className="h-4 w-4" />
-                  Suivre ma commande
+                  {t("orderConfirmation.trackOrder")}
                 </Button>
               </Link>
             </motion.div>
@@ -119,7 +121,7 @@ export default function OrderConfirmation() {
               transition={{ delay: 1 }}
               className="text-cream/50 text-sm mt-8"
             >
-              Des questions ? Contactez-nous au{" "}
+              {t("orderConfirmation.questions")}{" "}
               <a href="tel:+237674069458" className="text-primary hover:underline">
                 +237 674 069 458
               </a>
