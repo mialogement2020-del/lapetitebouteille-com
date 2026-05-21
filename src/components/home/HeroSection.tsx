@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Star, ChevronDown } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import { Link } from "react-router-dom";
-import heroBackground from "@/assets/hero-wine-cellar.jpg";
+import heroBackground from "@/assets/hero-wine-cellar.webp";
 import { useRef } from "react";
  
  const HeroSection = () => {
@@ -34,6 +34,8 @@ import { useRef } from "react";
           src={heroBackground}
           alt=""
           aria-hidden="true"
+          width={1920}
+          height={1080}
           className="h-full w-full object-cover object-center"
           loading="eager"
           decoding="async"
