@@ -6,6 +6,7 @@ import { useProducts, useCategories } from "@/hooks/useProducts";
 import { formatPrice } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
+import { optimizeProductImage } from "@/lib/imageOptimization";
 
 const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; categoryName: string }) => {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -84,7 +85,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
                     <Link to={`/produit/${product.slug}`} className="block">
                       <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/30 to-muted/60">
                         <img
-                          src={product.image_url || "/placeholder.svg"}
+                          src={optimizeProductImage(product.image_url, { width: 320, height: 426 })}
                           alt={product.name}
                           className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"
