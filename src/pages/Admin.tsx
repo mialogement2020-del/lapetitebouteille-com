@@ -20,7 +20,8 @@ import {
   Lock,
   Award,
   ImageIcon,
-  FileText
+  FileText,
+  Building2
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
