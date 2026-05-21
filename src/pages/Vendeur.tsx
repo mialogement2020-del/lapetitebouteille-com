@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Store, Loader2, Save, ExternalLink, Plus, Package, Shield, BadgeCheck } from "lucide-react";
+import { Store, Loader2, Save, ExternalLink, Plus, Package, Shield, BadgeCheck, ShoppingBag, TrendingUp } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useMyVendorShop, useVendorShopProducts } from "@/hooks/useVendorShop";
+import { useVendorOrders, type VendorFulfillmentStatus, type VendorOrderLine } from "@/hooks/useVendorOrders";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -22,6 +24,7 @@ const VendeurPage = () => {
   const { isVendor, isLoading: rolesLoading } = useUserRoles();
   const { data: shop, isLoading: shopLoading, createShop, updateShop } = useMyVendorShop();
   const { data: products = [], isLoading: productsLoading } = useVendorShopProducts(shop?.id);
+  const { data: orderLines = [], isLoading: ordersLoading, updateStatus } = useVendorOrders(shop?.id);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) navigate("/connexion");
@@ -77,6 +80,7 @@ const VendeurPage = () => {
           {!shop ? <CreateShopCard onCreate={(d) => createShop.mutateAsync(d)} loading={createShop.isPending} /> : (
             <>
               <ShopSettingsCard shop={shop} onSave={(d) => updateShop.mutateAsync(d)} loading={updateShop.isPending} />
+              <OrdersCard lines={orderLines} loading={ordersLoading} onUpdate={(itemId, status) => updateStatus.mutateAsync({ itemId, status })} updating={updateStatus.isPending} />
               <ProductsCard shopId={shop.id} products={products} loading={productsLoading} />
             </>
           )}
