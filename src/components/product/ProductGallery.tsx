@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { optimizeProductImage } from "@/lib/imageOptimization";
 
 interface ProductGalleryProps {
   mainImage: string | null;
@@ -46,7 +47,7 @@ export const ProductGallery = ({
         <AnimatePresence mode="wait">
           <motion.img
             key={selectedIndex}
-            src={currentImage}
+            src={optimizeProductImage(currentImage, { width: 900, height: 1200, quality: 84 })}
             alt={`${productName} - Image ${selectedIndex + 1}`}
             className="w-full h-full object-contain p-6 cursor-zoom-in"
             initial={{ opacity: 0 }}
@@ -113,9 +114,11 @@ export const ProductGallery = ({
               }`}
             >
               <img
-                src={image}
+                src={optimizeProductImage(image, { width: 120, height: 120, quality: 70 })}
                 alt={`${productName} - Thumbnail ${index + 1}`}
                 className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
             </motion.button>
           ))}
