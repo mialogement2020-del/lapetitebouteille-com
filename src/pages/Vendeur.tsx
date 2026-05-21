@@ -240,6 +240,113 @@ const ProductsCard = ({ shopId, products, loading }: { shopId: string; products:
   </Card>
 );
 
+const STATUS_LABELS: Record<VendorFulfillmentStatus, string> = {
+  pending: "En attente",
+  preparing: "En préparation",
+  shipped: "Expédié",
+  delivered: "Livré",
+  cancelled: "Annulé",
+};
+
+const STATUS_COLORS: Record<VendorFulfillmentStatus, string> = {
+  pending: "border-yellow-500/40 text-yellow-400",
+  preparing: "border-blue-500/40 text-blue-400",
+  shipped: "border-purple-500/40 text-purple-400",
+  delivered: "border-green-500/40 text-green-400",
+  cancelled: "border-red-500/40 text-red-400",
+};
+
+const OrdersCard = ({
+  lines,
+  loading,
+  onUpdate,
+  updating,
+}: {
+  lines: VendorOrderLine[];
+  loading: boolean;
+  onUpdate: (itemId: string, status: VendorFulfillmentStatus) => Promise<any>;
+  updating: boolean;
+}) => {
+  const pendingCount = lines.filter((l) => l.vendor_status === "pending" || l.vendor_status === "preparing").length;
+  const revenue = lines
+    .filter((l) => l.vendor_status === "delivered")
+    .reduce((sum, l) => sum + Number(l.total_price), 0);
+
+  return (
+    <Card className="bg-noir/50 border-gold/20">
+      <CardHeader>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <CardTitle className="text-cream flex items-center gap-2">
+              <ShoppingBag className="h-5 w-5 text-primary" /> Mes commandes
+            </CardTitle>
+            <CardDescription className="text-cream/60">
+              {lines.length} ligne{lines.length > 1 ? "s" : ""} · {pendingCount} à traiter
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-cream/70">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <span>{formatPrice(revenue)} FCFA livrés</span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+        ) : lines.length === 0 ? (
+          <p className="text-cream/60 text-sm py-8 text-center">
+            Aucune commande pour le moment. Dès qu'un client achètera un de vos produits, elle apparaîtra ici.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {lines.map((line) => (
+              <motion.div
+                key={line.item_id}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3 p-3 rounded-lg bg-noir/30 border border-gold/10"
+              >
+                <img
+                  src={line.product_image ?? "/placeholder.svg"}
+                  alt={line.product_name}
+                  className="w-12 h-12 object-cover rounded shrink-0"
+                  loading="lazy"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-cream truncate font-medium">{line.product_name}</p>
+                  <p className="text-xs text-cream/50 truncate">
+                    #{line.order_number} · {line.shipping_full_name ?? "Client"} · {line.shipping_city ?? "—"}
+                  </p>
+                  <p className="text-xs text-cream/40">
+                    {line.quantity} × {formatPrice(line.unit_price)} = {formatPrice(line.total_price)} FCFA
+                  </p>
+                </div>
+                <Badge variant="outline" className={`${STATUS_COLORS[line.vendor_status]} hidden sm:inline-flex`}>
+                  {STATUS_LABELS[line.vendor_status]}
+                </Badge>
+                <Select
+                  value={line.vendor_status}
+                  onValueChange={(v) => onUpdate(line.item_id, v as VendorFulfillmentStatus)}
+                  disabled={updating}
+                >
+                  <SelectTrigger className="w-32 bg-noir/50 border-gold/20 text-cream text-xs h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(STATUS_LABELS) as VendorFulfillmentStatus[]).map((s) => (
+                      <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 const Field = ({ label, value, onChange, textarea }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean }) => (
   <div className="space-y-1.5">
     <Label className="text-cream/80 text-sm">{label}</Label>
