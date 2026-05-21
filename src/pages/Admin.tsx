@@ -20,7 +20,8 @@ import {
   Lock,
   Award,
   ImageIcon,
-  FileText
+  FileText,
+  Building2
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -54,6 +55,7 @@ import { AuditLogsTable } from "@/components/admin/AuditLogsTable";
 import { MLMDashboard } from "@/components/admin/MLMDashboard";
 import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsManager";
 import { MarketplaceRolesManager } from "@/components/admin/MarketplaceRolesManager";
+import { WholesalerApplicationsManager } from "@/components/admin/WholesalerApplicationsManager";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
@@ -149,6 +151,7 @@ const Admin = () => {
       { id: 'images', label: 'Images', icon: ImageIcon },
       { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
       { id: 'quotes', label: 'Devis Gros', icon: FileText },
+      { id: 'wholesaler-apps', label: 'Candidatures B2B', icon: Building2 },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
       { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
@@ -728,6 +731,11 @@ const Admin = () => {
               {/* Marketplace Roles - Super Admin Only */}
               <TabsContent value="marketplace-roles" className="space-y-6">
                 <MarketplaceRolesManager />
+              </TabsContent>
+
+              {/* Wholesaler applications */}
+              <TabsContent value="wholesaler-apps" className="space-y-6">
+                <WholesalerApplicationsManager />
               </TabsContent>
 
               {/* Security Settings - 2FA */}

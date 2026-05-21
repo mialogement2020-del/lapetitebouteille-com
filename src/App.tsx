@@ -27,6 +27,7 @@ const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const Comparer = lazy(() => import("./pages/Comparer"));
 const Vendeur = lazy(() => import("./pages/Vendeur"));
 const Boutique = lazy(() => import("./pages/Boutique"));
+const Grossiste = lazy(() => import("./pages/Grossiste"));
 
 const SommelierChat = lazy(() =>
   import("./components/chat/SommelierChat").then((m) => ({ default: m.SommelierChat }))
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="/comparer" element={<Comparer />} />
               <Route path="/vendeur" element={<Vendeur />} />
               <Route path="/boutique/:slug" element={<Boutique />} />
+              <Route path="/grossiste" element={<Grossiste />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
