@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "catalogue": "Catalogue",
+    "wines": "Wines",
+    "champagnes": "Champagnes",
+    "spirits": "Spirits",
+    "tracking": "Tracking",
+    "login": "Sign in",
+    "signup": "Sign up",
+    "logout": "Sign out",
+    "account": "My account",
+    "ambassador": "Ambassador area",
+    "admin": "Administration",
+    "wishlist": "Wishlist",
+    "search": "Search a product..."
+  },
+  "common": {
+    "addToCart": "Add to cart",
+    "buyNow": "Buy now",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "language": "Language",
+    "currency": "Currency"
+  },
+  "footer": {
+    "newsletter": "Stay informed about our exclusives",
+    "newsletterDesc": "Subscribe to receive our special offers and new vintages first",
+    "emailPlaceholder": "Your email address",
+    "subscribe": "Subscribe"
+  }
+}
