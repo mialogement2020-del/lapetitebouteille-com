@@ -57,6 +57,7 @@ import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsMana
 import { MarketplaceRolesManager } from "@/components/admin/MarketplaceRolesManager";
 import { WholesalerApplicationsManager } from "@/components/admin/WholesalerApplicationsManager";
 import { WholesaleInvoicesManager } from "@/components/admin/WholesaleInvoicesManager";
+import { EmbeddingsManager } from "@/components/admin/EmbeddingsManager";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
@@ -649,6 +650,7 @@ const Admin = () => {
               </TabsContent>
 
               <TabsContent value="images" className="space-y-6">
+                <EmbeddingsManager />
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <ProductImageManager />
                 </div>
