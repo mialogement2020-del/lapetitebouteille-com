@@ -60,7 +60,8 @@ import { WholesaleInvoicesManager } from "@/components/admin/WholesaleInvoicesMa
 import { EmbeddingsManager } from "@/components/admin/EmbeddingsManager";
 import { FraudManager } from "@/components/admin/FraudManager";
 import { ProductModerationManager } from "@/components/admin/ProductModerationManager";
-import { ShieldAlert, Sparkles } from "lucide-react";
+import { BusinessAnalyticsDashboard } from "@/components/admin/BusinessAnalyticsDashboard";
+import { ShieldAlert, Sparkles, LineChart } from "lucide-react";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
@@ -160,6 +161,7 @@ const Admin = () => {
       { id: 'wholesale-invoices', label: 'Factures B2B', icon: FileText },
       { id: 'fraud', label: 'Anti-fraude', icon: ShieldAlert },
       { id: 'moderation', label: 'Modération IA', icon: Sparkles },
+      { id: 'analytics', label: 'Analytics', icon: LineChart },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
       { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
@@ -760,6 +762,11 @@ const Admin = () => {
               {/* IA moderation */}
               <TabsContent value="moderation" className="space-y-6">
                 <ProductModerationManager />
+              </TabsContent>
+
+              {/* Business analytics */}
+              <TabsContent value="analytics" className="space-y-6">
+                <BusinessAnalyticsDashboard />
               </TabsContent>
 
               {/* Security Settings - 2FA */}
