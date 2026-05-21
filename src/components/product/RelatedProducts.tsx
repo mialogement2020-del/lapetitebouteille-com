@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Product } from "@/hooks/useProducts";
+import { optimizeProductImage } from "@/lib/imageOptimization";
 
 interface RelatedProductsProps {
   products: Product[];
@@ -32,10 +33,11 @@ export const RelatedProducts = ({ products }: RelatedProductsProps) => {
               <Link to={`/produit/${product.slug}`}>
                 <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gradient-to-b from-muted/30 to-muted/60 mb-3">
                   <img
-                    src={product.image_url || "/placeholder.svg"}
+                    src={optimizeProductImage(product.image_url, { width: 320, height: 426 })}
                     alt={product.name}
                     className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <h3 className="font-semibold line-clamp-2 group-hover:text-gold transition-colors">

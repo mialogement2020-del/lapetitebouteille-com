@@ -11,6 +11,7 @@ import { Product } from "@/hooks/useProducts";
 import { toast } from "sonner";
 import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
 import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
+import { optimizeProductImage } from "@/lib/imageOptimization";
 import {
   Dialog,
   DialogContent,
@@ -148,11 +149,12 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
       {/* Image Container */}
       <Link to={`/produit/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/20 to-muted/40">
         <img
-          src={product.image_url || "/placeholder.svg"}
+          src={optimizeProductImage(product.image_url, { width: 420, height: 560 })}
           alt={product.name}
           className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
-          loading="lazy"
+          loading={index < 4 ? "eager" : "lazy"}
           decoding="async"
+          fetchPriority={index < 4 ? "high" : "auto"}
         />
         
         {/* Badges */}

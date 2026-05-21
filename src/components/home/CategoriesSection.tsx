@@ -8,35 +8,35 @@ const categories = [
     id: "vins",
     title: "Vins",
     description: "Grands crus et appellations prestigieuses",
-    image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?q=80&w=800",
+    image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?auto=format&fit=crop&q=72&w=520",
     href: "/catalogue?category=vins",
   },
   {
     id: "champagnes",
     title: "Champagnes",
     description: "Les plus grandes maisons françaises",
-    image: "https://images.unsplash.com/photo-1578911373434-0cb395d2cbfb?q=80&w=800",
+    image: "https://images.unsplash.com/photo-1578911373434-0cb395d2cbfb?auto=format&fit=crop&q=72&w=520",
     href: "/catalogue?category=champagnes",
   },
   {
     id: "spiritueux",
     title: "Spiritueux",
     description: "Whisky, Cognac, Rhum d'exception",
-    image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?q=80&w=800",
+    image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?auto=format&fit=crop&q=72&w=520",
     href: "/catalogue?category=spiritueux",
   },
   {
     id: "vins-mousseux",
     title: "Vins Mousseux",
     description: "Prosecco, Cava, Crémant et bulles du monde",
-    image: "https://images.unsplash.com/photo-1549834125-82d3c48159a3?q=80&w=800",
+    image: "https://images.unsplash.com/photo-1549834125-82d3c48159a3?auto=format&fit=crop&q=72&w=520",
     href: "/catalogue?category=vins-mousseux",
   },
   {
     id: "coffrets",
     title: "Coffrets Cadeaux",
     description: "L'art du cadeau raffiné",
-    image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?q=80&w=800",
+    image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?auto=format&fit=crop&q=72&w=520",
     href: "/catalogue?category=coffrets",
   },
 ];
@@ -116,6 +116,8 @@ const categories = [
                    src={category.image}
                    alt={category.title}
                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
+                    decoding="async"
                  />
                  
                  {/* Overlay */}

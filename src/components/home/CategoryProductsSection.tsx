@@ -5,15 +5,37 @@ import { Button } from "@/components/ui/button";
 import { useProducts, useCategories } from "@/hooks/useProducts";
 import { formatPrice } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useRef, useState } from "react";
+import { optimizeProductImage } from "@/lib/imageOptimization";
 
 const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; categoryName: string }) => {
-  const { data: products, isLoading } = useProducts({ categorySlug, sortBy: "popular" });
-  const displayProducts = products?.slice(0, 25) || [];
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const { data: products, isLoading } = useProducts({ categorySlug, sortBy: "popular", limit: 10, enabled: shouldLoad });
+  const displayProducts = products || [];
 
-  if (!isLoading && displayProducts.length === 0) return null;
+  useEffect(() => {
+    const node = rowRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "700px 0px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  if (shouldLoad && !isLoading && displayProducts.length === 0) return null;
 
   return (
-    <div className="mb-16 last:mb-0">
+    <div ref={rowRef} className="mb-16 last:mb-0 min-h-[520px]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -34,7 +56,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
       </motion.div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
-        {isLoading
+        {!shouldLoad || isLoading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-card rounded-xl overflow-hidden border border-border/50">
                 <Skeleton className="aspect-[3/4] w-full" />
@@ -63,10 +85,11 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
                     <Link to={`/produit/${product.slug}`} className="block">
                       <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/30 to-muted/60">
                         <img
-                          src={product.image_url || "/placeholder.svg"}
+                          src={optimizeProductImage(product.image_url, { width: 320, height: 426 })}
                           alt={product.name}
                           className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"
+                          decoding="async"
                         />
                         {hasDiscount && (
                           <span className="absolute top-2 left-2 px-2 py-1 bg-secondary text-secondary-foreground text-[10px] font-bold rounded-full">
