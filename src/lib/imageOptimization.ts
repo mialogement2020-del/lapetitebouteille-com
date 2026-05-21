@@ -18,6 +18,7 @@ export const optimizeProductImage = (url: string | null | undefined, size: Image
     if (size.height) params.set("height", String(size.height));
     params.set("resize", "contain");
     params.set("quality", String(size.quality ?? 78));
+    if (!params.has("format")) params.set("format", "origin");
 
     return `${projectUrl}/storage/v1/render/image/public/product-images/${objectPath}?${params.toString()}`;
   }
