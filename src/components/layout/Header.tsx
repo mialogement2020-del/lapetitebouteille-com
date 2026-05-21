@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useWishlist } from "@/hooks/useWishlist";
+import { LanguageCurrencySwitcher } from "@/components/layout/LanguageCurrencySwitcher";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -153,6 +154,9 @@ const Header = () => {
 
             {/* Cart */}
             <CartDrawer />
+
+            {/* Language & Currency */}
+            <LanguageCurrencySwitcher />
 
             {/* User Account */}
             {isAuthenticated ? (
