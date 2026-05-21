@@ -77,7 +77,7 @@ const BoutiquePage = () => {
                 {shop.city && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{shop.city}</span>}
                 {shop.contact_email && <span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{shop.contact_email}</span>}
                 {shop.contact_phone && <span className="inline-flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{shop.contact_phone}</span>}
-                <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 text-primary fill-primary" />{Number(shop.trust_score).toFixed(1)}/10</span>
+                <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 text-primary fill-primary" />{Number(shop.trust_score).toFixed(0)}/100</span>
               </div>
             </div>
           </motion.div>

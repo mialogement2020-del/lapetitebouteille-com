@@ -733,6 +733,9 @@ export type Database = {
           quantity: number
           total_price: number
           unit_price: number
+          vendor_id: string | null
+          vendor_status: Database["public"]["Enums"]["vendor_fulfillment_status"]
+          vendor_updated_at: string
         }
         Insert: {
           created_at?: string | null
@@ -744,6 +747,9 @@ export type Database = {
           quantity: number
           total_price: number
           unit_price: number
+          vendor_id?: string | null
+          vendor_status?: Database["public"]["Enums"]["vendor_fulfillment_status"]
+          vendor_updated_at?: string
         }
         Update: {
           created_at?: string | null
@@ -755,6 +761,9 @@ export type Database = {
           quantity?: number
           total_price?: number
           unit_price?: number
+          vendor_id?: string | null
+          vendor_status?: Database["public"]["Enums"]["vendor_fulfillment_status"]
+          vendor_updated_at?: string
         }
         Relationships: [
           {
@@ -769,6 +778,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_shops"
             referencedColumns: ["id"]
           },
         ]
@@ -2125,6 +2141,27 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["ambassador_rank"]
       }
+      get_vendor_order_lines: {
+        Args: never
+        Returns: {
+          item_id: string
+          order_created_at: string
+          order_id: string
+          order_number: string
+          order_status: string
+          product_id: string
+          product_image: string
+          product_name: string
+          quantity: number
+          shipping_city: string
+          shipping_full_name: string
+          shipping_phone: string
+          total_price: number
+          unit_price: number
+          vendor_status: Database["public"]["Enums"]["vendor_fulfillment_status"]
+          vendor_updated_at: string
+        }[]
+      }
       has_2fa_enabled: { Args: { _user_id: string }; Returns: boolean }
       has_admin_permission: {
         Args: {
@@ -2154,6 +2191,10 @@ export type Database = {
       lookup_guest_order: {
         Args: { _identifier: string; _method?: string; _order_number: string }
         Returns: Json
+      }
+      recompute_vendor_trust_score: {
+        Args: { _shop_id: string }
+        Returns: number
       }
       redeem_loyalty_points: {
         Args: { _points: number; _user_id: string }
@@ -2196,6 +2237,12 @@ export type Database = {
         | "cash_on_delivery"
         | "credit_card"
       payment_status: "pending" | "completed" | "failed" | "refunded"
+      vendor_fulfillment_status:
+        | "pending"
+        | "preparing"
+        | "shipped"
+        | "delivered"
+        | "cancelled"
       wallet_transaction_type:
         | "commission"
         | "bonus"
@@ -2367,6 +2414,13 @@ export const Constants = {
         "credit_card",
       ],
       payment_status: ["pending", "completed", "failed", "refunded"],
+      vendor_fulfillment_status: [
+        "pending",
+        "preparing",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ],
       wallet_transaction_type: [
         "commission",
         "bonus",
