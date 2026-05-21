@@ -1878,6 +1878,124 @@ export type Database = {
         }
         Relationships: []
       }
+      wholesale_invoices: {
+        Row: {
+          amount_ht: number
+          amount_paid: number
+          amount_ttc: number
+          amount_tva: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issued_at: string
+          notes: string | null
+          payment_terms: string
+          quote_id: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          tva_rate: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_ht: number
+          amount_paid?: number
+          amount_ttc: number
+          amount_tva?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issued_at?: string
+          notes?: string | null
+          payment_terms?: string
+          quote_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          tva_rate?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_ht?: number
+          amount_paid?: number
+          amount_ttc?: number
+          amount_tva?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issued_at?: string
+          notes?: string | null
+          payment_terms?: string
+          quote_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          tva_rate?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_invoices_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wholesale_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          notes: string | null
+          paid_at: string
+          payment_method: string
+          recorded_by: string | null
+          reference: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          paid_at?: string
+          payment_method?: string
+          recorded_by?: string | null
+          reference?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          paid_at?: string
+          payment_method?: string
+          recorded_by?: string | null
+          reference?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wholesale_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "wholesale_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wholesale_pricing: {
         Row: {
           created_at: string | null
@@ -2239,10 +2357,15 @@ export type Database = {
         Args: { _app_id: string }
         Returns: Json
       }
+      create_invoice_from_quote: {
+        Args: { _due_days?: number; _quote_id: string }
+        Returns: Json
+      }
       create_referral_relationship: {
         Args: { _referral_code: string }
         Returns: Json
       }
+      generate_invoice_number: { Args: never; Returns: string }
       generate_mlm_commissions: {
         Args: { _order_id: string; _order_total: number; _referrer_id: string }
         Returns: Json
@@ -2279,6 +2402,10 @@ export type Database = {
           vendor_status: Database["public"]["Enums"]["vendor_fulfillment_status"]
           vendor_updated_at: string
         }[]
+      }
+      get_wholesaler_outstanding: {
+        Args: { _user_id: string }
+        Returns: number
       }
       has_2fa_enabled: { Args: { _user_id: string }; Returns: boolean }
       has_admin_permission: {
@@ -2318,6 +2445,16 @@ export type Database = {
         Args: { _points: number; _user_id: string }
         Returns: Json
       }
+      register_invoice_payment: {
+        Args: {
+          _amount: number
+          _invoice_id: string
+          _method?: string
+          _notes?: string
+          _reference?: string
+        }
+        Returns: Json
+      }
       validate_referral_code: { Args: { _code: string }; Returns: Json }
       verify_2fa_session: { Args: { _user_id: string }; Returns: undefined }
     }
@@ -2342,6 +2479,13 @@ export type Database = {
         | "vendor"
         | "wholesaler"
         | "customer"
+      invoice_status:
+        | "draft"
+        | "sent"
+        | "partial"
+        | "paid"
+        | "overdue"
+        | "cancelled"
       order_status:
         | "pending"
         | "confirmed"
@@ -2516,6 +2660,14 @@ export const Constants = {
         "vendor",
         "wholesaler",
         "customer",
+      ],
+      invoice_status: [
+        "draft",
+        "sent",
+        "partial",
+        "paid",
+        "overdue",
+        "cancelled",
       ],
       order_status: [
         "pending",
