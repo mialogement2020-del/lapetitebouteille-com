@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, Loader2, Save, Send, FileText, ShoppingCart, Shield, BadgeCheck, Clock, XCircle } from "lucide-react";
+import { Building2, Loader2, Save, Send, FileText, ShoppingCart, Shield, BadgeCheck, Clock, XCircle, Receipt, AlertCircle, Wallet } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
   type WholesalerProfile,
   type WholesalerApplication,
 } from "@/hooks/useWholesaler";
+import { useMyInvoices, useMyOutstanding, type WholesaleInvoice, type InvoiceStatus } from "@/hooks/useWholesaleInvoices";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -30,6 +31,8 @@ const GrossistePage = () => {
   const { data: profile, isLoading: profileLoading, updateProfile } = useMyWholesalerProfile();
   const { data: applications = [], isLoading: appsLoading, apply } = useMyWholesalerApplications();
   const { data: quotes = [], isLoading: quotesLoading } = useMyQuotes();
+  const { data: invoices = [], isLoading: invoicesLoading } = useMyInvoices();
+  const { data: outstanding = 0 } = useMyOutstanding();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) navigate("/connexion");
@@ -72,6 +75,8 @@ const GrossistePage = () => {
           {isWholesaler && profile ? (
             <>
               <ProfileCard profile={profile} onSave={(d) => updateProfile.mutateAsync(d)} loading={updateProfile.isPending} />
+              <BalanceCard profile={profile} outstanding={outstanding} />
+              <InvoicesCard invoices={invoices} loading={invoicesLoading} />
               <QuotesCard quotes={quotes} loading={quotesLoading} />
             </>
           ) : pendingApp ? (
