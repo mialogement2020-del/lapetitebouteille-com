@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const FeaturedProducts = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const { data: products, isLoading } = useProducts({ featured: true, sortBy: "newest" });
+  const { data: products, isLoading } = useProducts({ featured: true, sortBy: "newest", limit: 4 });
   
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -19,7 +19,7 @@ const FeaturedProducts = () => {
   const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
   const y = useTransform(scrollYProgress, [0, 0.3], [80, 0]);
 
-  const displayProducts = products?.slice(0, 4) || [];
+  const displayProducts = products || [];
 
   if (!isLoading && displayProducts.length === 0) return null;
   
@@ -116,8 +116,9 @@ const FeaturedProducts = () => {
                           src={product.image_url || "/placeholder.svg"}
                           alt={product.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                          loading="lazy"
+                          loading={index < 2 ? "eager" : "lazy"}
                           decoding="async"
+                          fetchPriority={index < 2 ? "high" : "auto"}
                         />
                         
                         {/* Badges */}
