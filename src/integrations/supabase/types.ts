@@ -959,6 +959,7 @@ export type Database = {
           stock_quantity: number | null
           tasting_notes: string | null
           updated_at: string | null
+          vendor_id: string | null
           vintage_year: number | null
           volume_ml: number | null
         }
@@ -989,6 +990,7 @@ export type Database = {
           stock_quantity?: number | null
           tasting_notes?: string | null
           updated_at?: string | null
+          vendor_id?: string | null
           vintage_year?: number | null
           volume_ml?: number | null
         }
@@ -1019,6 +1021,7 @@ export type Database = {
           stock_quantity?: number | null
           tasting_notes?: string | null
           updated_at?: string | null
+          vendor_id?: string | null
           vintage_year?: number | null
           volume_ml?: number | null
         }
@@ -1028,6 +1031,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_shops"
             referencedColumns: ["id"]
           },
         ]
@@ -1709,6 +1719,66 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_shops: {
+        Row: {
+          banner_url: string | null
+          city: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_verified: boolean
+          logo_url: string | null
+          name: string
+          owner_id: string
+          slug: string
+          total_sales: number
+          trust_score: number
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          logo_url?: string | null
+          name: string
+          owner_id: string
+          slug: string
+          total_sales?: number
+          trust_score?: number
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          logo_url?: string | null
+          name?: string
+          owner_id?: string
+          slug?: string
+          total_sales?: number
+          trust_score?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -2049,6 +2119,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"][]
       }
+      get_my_shop_id: { Args: never; Returns: string }
       get_referrer_id_from_code: { Args: { _code: string }; Returns: string }
       get_user_rank: {
         Args: { _user_id: string }
