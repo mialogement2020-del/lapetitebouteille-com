@@ -33,8 +33,10 @@ import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
+import { useTranslation } from "react-i18next";
 
 const ProductPage = () => {
+  const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const { slug } = useParams<{ slug: string }>();
   const { data: product, isLoading, error } = useProduct(slug || "");
@@ -84,13 +86,13 @@ const ProductPage = () => {
         <main className="pt-24 pb-12">
           <div className="container mx-auto px-4 text-center py-20">
             <h1 className="font-display text-3xl font-bold mb-4">
-              Produit non trouvé
+              {t("productPage.notFoundTitle")}
             </h1>
             <p className="text-muted-foreground mb-8">
-              Le produit que vous recherchez n'existe pas ou n'est plus disponible.
+              {t("productPage.notFoundDesc")}
             </p>
             <Button asChild>
-              <Link to="/catalogue">Retour au catalogue</Link>
+              <Link to="/catalogue">{t("productPage.backToCatalogue")}</Link>
             </Button>
           </div>
         </main>
@@ -124,11 +126,11 @@ const ProductPage = () => {
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-cream/60 mb-8">
             <Link to="/" className="hover:text-primary transition-colors">
-              Accueil
+              {t("productPage.home")}
             </Link>
             <ChevronRight className="h-4 w-4 text-cream/40" />
             <Link to="/catalogue" className="hover:text-primary transition-colors">
-              Catalogue
+              {t("productPage.catalogue")}
             </Link>
             {product.category && (
               <>
@@ -182,7 +184,7 @@ const ProductPage = () => {
                 {isNew && (
                   <Badge className="bg-gradient-gold text-noir font-semibold">
                     <Sparkles className="h-3 w-3 mr-1" />
-                    Nouveau
+                    {t("productPage.newBadge")}
                   </Badge>
                 )}
                 {discount > 0 && (
@@ -214,7 +216,7 @@ const ProductPage = () => {
                     {product.average_rating.toFixed(1)}
                   </span>
                   <span className="text-cream/50">
-                    ({product.review_count} avis)
+                    ({t("productPage.reviews", { count: product.review_count })})
                   </span>
                 </div>
               )}
@@ -245,17 +247,17 @@ const ProductPage = () => {
                 {product.stock_quantity > 0 ? (
                   <>
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="text-primary font-medium">En stock</span>
+                    <span className="text-primary font-medium">{t("productPage.inStock")}</span>
                     {product.stock_quantity <= 5 && (
                       <span className="text-secondary text-sm">
-                        (Plus que {product.stock_quantity} disponibles)
+                        {t("productPage.lowStock", { count: product.stock_quantity })}
                       </span>
                     )}
                   </>
                 ) : (
                   <>
                     <span className="w-2 h-2 rounded-full bg-destructive" />
-                    <span className="text-destructive font-medium">Rupture de stock</span>
+                    <span className="text-destructive font-medium">{t("productPage.outOfStock")}</span>
                   </>
                 )}
               </div>
@@ -342,7 +344,7 @@ const ProductPage = () => {
                     <Truck className="h-5 w-5 text-primary" />
                   </div>
                   <p className="text-xs text-cream/60">
-                    Livraison Yaoundé & Douala
+                    {t("productPage.deliveryBadge")}
                   </p>
                 </div>
                 <div className="text-center">
@@ -350,7 +352,7 @@ const ProductPage = () => {
                     <Shield className="h-5 w-5 text-primary" />
                   </div>
                   <p className="text-xs text-cream/60">
-                    Paiement sécurisé
+                    {t("productPage.securePayment")}
                   </p>
                 </div>
                 <div className="text-center">
@@ -358,7 +360,7 @@ const ProductPage = () => {
                     <Gift className="h-5 w-5 text-primary" />
                   </div>
                   <p className="text-xs text-cream/60">
-                    Parrainez & Gagnez
+                    {t("productPage.referEarn")}
                   </p>
                 </div>
               </div>
@@ -378,13 +380,13 @@ const ProductPage = () => {
                   value="details"
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary text-cream/60 px-6 py-4 font-medium"
                 >
-                  Détails du produit
+                  {t("productPage.tabDetails")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary text-cream/60 px-6 py-4 font-medium"
                 >
-                  Avis clients ({product.review_count})
+                  {t("productPage.tabReviews", { count: product.review_count })}
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="details" className="pt-8">

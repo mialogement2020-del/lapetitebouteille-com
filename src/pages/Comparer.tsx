@@ -8,20 +8,22 @@ import { Badge } from "@/components/ui/badge";
 import { useProductComparator } from "@/hooks/useProductComparator";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { formatPrice } from "@/lib/utils";
-
-const comparisonFields: { key: string; label: string; format: (v: any) => string }[] = [
-  { key: "price", label: "Prix", format: (v: number) => formatPrice(v) },
-  { key: "alcohol_percentage", label: "Alcool", format: (v: number | null) => v ? `${v}%` : "-" },
-  { key: "volume_ml", label: "Volume", format: (v: number | null) => v ? `${v} ml` : "-" },
-  { key: "origin_country", label: "Origine", format: (v: string | null) => v || "-" },
-  { key: "region", label: "Région", format: (v: string | null) => v || "-" },
-  { key: "grape_variety", label: "Cépage", format: (v: string | null) => v || "-" },
-  { key: "average_rating", label: "Note", format: (v: number | null) => v ? `${v.toFixed(1)} / 5` : "-" },
-  { key: "review_count", label: "Avis", format: (v: number | null) => v ? `${v} avis` : "-" },
-];
+import { useTranslation } from "react-i18next";
 
 export default function Comparer() {
+  const { t } = useTranslation();
   const { products, removeProduct, clearAll } = useProductComparator();
+
+  const comparisonFields: { key: string; labelKey: string; format: (v: any) => string }[] = [
+    { key: "price", labelKey: "compare.fieldPrice", format: (v: number) => formatPrice(v) },
+    { key: "alcohol_percentage", labelKey: "compare.fieldAlcohol", format: (v: number | null) => v ? `${v}%` : "-" },
+    { key: "volume_ml", labelKey: "compare.fieldVolume", format: (v: number | null) => v ? `${v} ml` : "-" },
+    { key: "origin_country", labelKey: "compare.fieldOrigin", format: (v: string | null) => v || "-" },
+    { key: "region", labelKey: "compare.fieldRegion", format: (v: string | null) => v || "-" },
+    { key: "grape_variety", labelKey: "compare.fieldGrape", format: (v: string | null) => v || "-" },
+    { key: "average_rating", labelKey: "compare.fieldRating", format: (v: number | null) => v ? t("compare.ratingSuffix", { value: v.toFixed(1) }) : "-" },
+    { key: "review_count", labelKey: "compare.fieldReviewsCount", format: (v: number | null) => v ? t("compare.reviewsSuffix", { count: v }) : "-" },
+  ];
 
   return (
     <div className="min-h-screen bg-noir">
@@ -35,7 +37,7 @@ export default function Comparer() {
             className="inline-flex items-center gap-2 text-cream/60 hover:text-primary transition-colors mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour au catalogue
+            {t("compare.back")}
           </Link>
 
           {/* Page Header */}
@@ -49,8 +51,8 @@ export default function Comparer() {
                 <Scale className="h-7 w-7 text-noir" />
               </div>
               <div>
-                <h1 className="font-display text-3xl text-cream">Comparateur</h1>
-                <p className="text-cream/60">Comparez jusqu'à 3 produits côte à côte</p>
+                <h1 className="font-display text-3xl text-cream">{t("compare.title")}</h1>
+                <p className="text-cream/60">{t("compare.subtitle")}</p>
               </div>
             </div>
             {products.length > 0 && (
@@ -60,7 +62,7 @@ export default function Comparer() {
                 className="border-gold/30 text-cream hover:bg-cream/10"
               >
                 <X className="h-4 w-4 mr-2" />
-                Vider le comparateur
+                {t("compare.clearAll")}
               </Button>
             )}
           </motion.div>
@@ -72,14 +74,14 @@ export default function Comparer() {
               className="text-center py-16"
             >
               <Scale className="h-16 w-16 text-cream/20 mx-auto mb-4" />
-              <h2 className="text-xl text-cream mb-2">Aucun produit à comparer</h2>
+              <h2 className="text-xl text-cream mb-2">{t("compare.emptyTitle")}</h2>
               <p className="text-cream/60 mb-6">
-                Ajoutez des produits depuis le catalogue pour les comparer
+                {t("compare.emptyDesc")}
               </p>
               <Button asChild className="bg-primary hover:bg-primary/90 text-noir">
                 <Link to="/catalogue">
                   <Plus className="h-4 w-4 mr-2" />
-                  Parcourir le catalogue
+                  {t("compare.browse")}
                 </Link>
               </Button>
             </motion.div>
@@ -89,7 +91,7 @@ export default function Comparer() {
                 <thead>
                   <tr>
                     <th className="p-4 text-left text-cream/60 font-medium border-b border-gold/10 w-40">
-                      Caractéristiques
+                      {t("compare.characteristics")}
                     </th>
                     {products.map((product, index) => (
                       <th key={product.id} className="p-4 border-b border-gold/10">
@@ -135,7 +137,7 @@ export default function Comparer() {
                         >
                           <div className="text-center">
                             <Plus className="h-8 w-8 text-cream/30 mx-auto mb-2" />
-                            <span className="text-sm text-cream/40">Ajouter</span>
+                            <span className="text-sm text-cream/40">{t("compare.add")}</span>
                           </div>
                         </Link>
                       </th>
@@ -146,7 +148,7 @@ export default function Comparer() {
                   {comparisonFields.map((field, rowIndex) => (
                     <tr key={field.key} className={rowIndex % 2 === 0 ? "bg-noir-light/20" : ""}>
                       <td className="p-4 text-cream/60 font-medium border-b border-gold/5">
-                        {field.label}
+                        {t(field.labelKey)}
                       </td>
                       {products.map((product) => {
                         const value = (product as Record<string, any>)[field.key];
@@ -179,12 +181,12 @@ export default function Comparer() {
                             </span>
                             {isBestPrice && (
                               <Badge className="ml-2 bg-success/20 text-success text-xs">
-                                Meilleur prix
+                                {t("compare.bestPrice")}
                               </Badge>
                             )}
                             {isBestRating && (
                               <Badge className="ml-2 bg-success/20 text-success text-xs">
-                                Mieux noté
+                                {t("compare.bestRated")}
                               </Badge>
                             )}
                           </td>
@@ -197,7 +199,7 @@ export default function Comparer() {
                   {/* Tasting notes (special row) */}
                   <tr className="bg-noir-light/20">
                     <td className="p-4 text-cream/60 font-medium border-b border-gold/5 align-top">
-                      Notes de dégustation
+                      {t("compare.tastingNotes")}
                     </td>
                     {products.map((product) => (
                       <td

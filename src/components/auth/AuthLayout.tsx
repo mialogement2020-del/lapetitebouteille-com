@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Wine } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -9,6 +10,7 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-noir flex">
       {/* Left side - Form */}
@@ -50,25 +52,25 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
               <Wine className="w-16 h-16 text-noir" />
             </div>
             <h2 className="font-display text-4xl font-bold text-cream mb-4">
-              L'Excellence du Vin
+              {t("authLayout.headline")}
             </h2>
             <p className="text-cream/70 text-lg max-w-sm mx-auto">
-              Découvrez notre sélection de vins, champagnes et spiritueux d'exception, livrés au Cameroun.
+              {t("authLayout.tagline")}
             </p>
             <div className="mt-8 flex items-center justify-center gap-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary">500+</div>
-                <div className="text-cream/60 text-sm">Références</div>
+                <div className="text-cream/60 text-sm">{t("authLayout.statReferences")}</div>
               </div>
               <div className="w-px h-12 bg-gold/30" />
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary">24h</div>
-                <div className="text-cream/60 text-sm">Livraison</div>
+                <div className="text-cream/60 text-sm">{t("authLayout.statDelivery")}</div>
               </div>
               <div className="w-px h-12 bg-gold/30" />
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary">100%</div>
-                <div className="text-cream/60 text-sm">Authentique</div>
+                <div className="text-cream/60 text-sm">{t("authLayout.statAuthentic")}</div>
               </div>
             </div>
           </div>

@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -57,8 +59,8 @@ export default function ResetPassword() {
 
     if (!password || !confirmPassword) {
       toast({
-        title: "Champs requis",
-        description: "Veuillez remplir tous les champs.",
+        title: t("resetPassword.fieldsRequiredTitle"),
+        description: t("resetPassword.fieldsRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -66,8 +68,8 @@ export default function ResetPassword() {
 
     if (password.length < 6) {
       toast({
-        title: "Mot de passe trop court",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
+        title: t("resetPassword.passwordShortTitle"),
+        description: t("resetPassword.passwordShortDesc"),
         variant: "destructive",
       });
       return;
@@ -75,8 +77,8 @@ export default function ResetPassword() {
 
     if (password !== confirmPassword) {
       toast({
-        title: "Mots de passe différents",
-        description: "Les mots de passe ne correspondent pas.",
+        title: t("resetPassword.passwordMismatchTitle"),
+        description: t("resetPassword.passwordMismatchDesc"),
         variant: "destructive",
       });
       return;
@@ -92,7 +94,7 @@ export default function ResetPassword() {
 
     if (error) {
       toast({
-        title: "Erreur",
+        title: t("resetPassword.errorTitle"),
         description: error.message,
         variant: "destructive",
       });
@@ -101,8 +103,8 @@ export default function ResetPassword() {
 
     setIsSuccess(true);
     toast({
-      title: "Mot de passe modifié !",
-      description: "Votre mot de passe a été réinitialisé avec succès.",
+      title: t("resetPassword.toastSuccessTitle"),
+      description: t("resetPassword.toastSuccessDesc"),
     });
 
     // Redirect to login after 3 seconds
@@ -115,8 +117,8 @@ export default function ResetPassword() {
   if (isValidSession === null) {
     return (
       <AuthLayout
-        title="Vérification..."
-        subtitle="Veuillez patienter"
+        title={t("resetPassword.checking")}
+        subtitle={t("resetPassword.pleaseWait")}
       >
         <div className="flex justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -129,8 +131,8 @@ export default function ResetPassword() {
   if (isValidSession === false) {
     return (
       <AuthLayout
-        title="Lien invalide ou expiré"
-        subtitle="Le lien de réinitialisation n'est plus valide"
+        title={t("resetPassword.invalidTitle")}
+        subtitle={t("resetPassword.invalidSubtitle")}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -143,14 +145,14 @@ export default function ResetPassword() {
           </div>
           <div>
             <p className="text-cream/60 mb-4">
-              Ce lien a peut-être expiré ou a déjà été utilisé. Veuillez demander un nouveau lien de réinitialisation.
+              {t("resetPassword.invalidDesc")}
             </p>
           </div>
           <Button
             onClick={() => navigate("/mot-de-passe-oublie")}
             className="bg-gradient-gold text-noir font-semibold hover:opacity-90"
           >
-            Demander un nouveau lien
+            {t("resetPassword.requestNew")}
           </Button>
         </motion.div>
       </AuthLayout>
@@ -159,8 +161,8 @@ export default function ResetPassword() {
 
   return (
     <AuthLayout
-      title="Nouveau mot de passe"
-      subtitle="Choisissez un nouveau mot de passe sécurisé"
+      title={t("resetPassword.title")}
+      subtitle={t("resetPassword.subtitle")}
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -174,10 +176,10 @@ export default function ResetPassword() {
             </div>
             <div>
               <h3 className="text-xl font-semibold text-cream mb-2">
-                Mot de passe modifié !
+                {t("resetPassword.successTitle")}
               </h3>
               <p className="text-cream/60">
-                Vous allez être redirigé vers la page de connexion...
+                {t("resetPassword.successDesc")}
               </p>
             </div>
           </div>
@@ -185,7 +187,7 @@ export default function ResetPassword() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* New Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-cream/80">Nouveau mot de passe</Label>
+              <Label htmlFor="password" className="text-cream/80">{t("resetPassword.newPassword")}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -208,7 +210,7 @@ export default function ResetPassword() {
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-cream/80">Confirmer le mot de passe</Label>
+              <Label htmlFor="confirmPassword" className="text-cream/80">{t("resetPassword.confirmPassword")}</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -237,10 +239,10 @@ export default function ResetPassword() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Modification en cours...
+                  {t("resetPassword.submitting")}
                 </>
               ) : (
-                "Réinitialiser le mot de passe"
+                t("resetPassword.submit")
               )}
             </Button>
           </form>

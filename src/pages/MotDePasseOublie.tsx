@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export default function MotDePasseOublie() {
   const { resetPassword } = useAuthContext();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -20,8 +22,8 @@ export default function MotDePasseOublie() {
 
     if (!email) {
       toast({
-        title: "Email requis",
-        description: "Veuillez entrer votre adresse email.",
+        title: t("forgotPassword.emailRequiredTitle"),
+        description: t("forgotPassword.emailRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -35,7 +37,7 @@ export default function MotDePasseOublie() {
 
     if (error) {
       toast({
-        title: "Erreur",
+        title: t("forgotPassword.errorTitle"),
         description: error.message,
         variant: "destructive",
       });
@@ -47,8 +49,8 @@ export default function MotDePasseOublie() {
 
   return (
     <AuthLayout
-      title="Mot de passe oublié"
-      subtitle="Nous vous enverrons un lien pour réinitialiser votre mot de passe"
+      title={t("forgotPassword.title")}
+      subtitle={t("forgotPassword.subtitle")}
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -62,29 +64,29 @@ export default function MotDePasseOublie() {
             </div>
             <div>
               <h3 className="text-xl font-semibold text-cream mb-2">
-                Email envoyé !
+                {t("forgotPassword.emailSentTitle")}
               </h3>
               <p className="text-cream/60">
-                Si un compte existe avec l'adresse <strong className="text-cream">{email}</strong>, vous recevrez un lien pour réinitialiser votre mot de passe.
+                {t("forgotPassword.emailSentDesc", { email })}
               </p>
             </div>
             <Link to="/connexion">
               <Button variant="outline" className="border-gold/30 text-cream hover:bg-cream/10">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour à la connexion
+                {t("forgotPassword.backToLogin")}
               </Button>
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-cream/80">Email</Label>
+              <Label htmlFor="email" className="text-cream/80">{t("auth.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="jean@exemple.com"
+                  placeholder={t("forgotPassword.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -101,17 +103,17 @@ export default function MotDePasseOublie() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Envoi en cours...
+                  {t("forgotPassword.sending")}
                 </>
               ) : (
-                "Envoyer le lien"
+                t("forgotPassword.sendLink")
               )}
             </Button>
 
             <p className="text-center">
               <Link to="/connexion" className="text-primary hover:underline text-sm">
                 <ArrowLeft className="inline mr-1 h-3 w-3" />
-                Retour à la connexion
+                {t("forgotPassword.backToLogin")}
               </Link>
             </p>
           </form>
