@@ -6,6 +6,7 @@ import { useActiveFlashSales, useFlashSaleProducts } from "@/hooks/useFlashSales
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
+import { optimizeProductImage } from "@/lib/imageOptimization";
 
 function CountdownTimer({ endsAt }: { endsAt: string }) {
   const [timeLeft, setTimeLeft] = useState({
@@ -124,9 +125,11 @@ export function FlashSalesSection() {
                   <div className="aspect-square rounded-xl overflow-hidden bg-noir-light/50 border-2 border-destructive/30 group-hover:border-destructive/60 transition-colors">
                     {item.product?.image_url ? (
                       <img
-                        src={item.product.image_url}
+                        src={optimizeProductImage(item.product.image_url, { width: 360, height: 360 })}
                         alt={item.product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-cream/30">
