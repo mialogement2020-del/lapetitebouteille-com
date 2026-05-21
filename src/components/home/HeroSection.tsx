@@ -4,8 +4,10 @@ import { ArrowRight, Star, ChevronDown } from "lucide-react";
  import { Link } from "react-router-dom";
 import heroBackground from "@/assets/hero-wine-cellar.webp";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
  
  const HeroSection = () => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLElement>(null);
   
   const { scrollYProgress } = useScroll({
@@ -86,7 +88,7 @@ import { useRef } from "react";
              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm"
            >
              <Star className="h-4 w-4 text-primary fill-primary animate-pulse" />
-             <span className="text-sm font-medium text-primary tracking-wide">Collection Premium 2026</span>
+             <span className="text-sm font-medium text-primary tracking-wide">{t("hero.badge")}</span>
            </motion.div>
  
            {/* Heading */}
@@ -96,9 +98,9 @@ import { useRef } from "react";
              transition={{ duration: 0.6, delay: 0.1 }}
              className="font-display text-5xl md:text-6xl lg:text-8xl font-semibold text-cream leading-[0.95] mb-8"
            >
-             L'Art de la
+             {t("hero.titleLine1")}
              <br />
-             <span className="text-gradient-gold">Dégustation</span>
+             <span className="text-gradient-gold">{t("hero.titleHighlight")}</span>
            </motion.h1>
  
            {/* Subtitle */}
@@ -108,8 +110,7 @@ import { useRef } from "react";
              transition={{ duration: 0.6, delay: 0.2 }}
              className="text-lg md:text-xl text-cream/70 mb-12 max-w-2xl mx-auto leading-relaxed font-light"
            >
-             Explorez notre collection exclusive de grands crus, champagnes prestigieux 
-             et spiritueux d'exception. Livraison express au Cameroun.
+             {t("hero.subtitle")}
            </motion.p>
  
            {/* CTA Buttons */}
@@ -125,7 +126,7 @@ import { useRef } from "react";
                className="bg-gradient-gold text-noir font-semibold text-lg px-10 py-7 hover:opacity-90 shadow-gold shine-effect rounded-full"
              >
                <Link to="/catalogue">
-                 Découvrir la Collection
+                 {t("hero.ctaPrimary")}
                  <ArrowRight className="ml-2 h-5 w-5" />
                </Link>
              </Button>
@@ -136,7 +137,7 @@ import { useRef } from "react";
                className="border-cream/20 text-cream hover:bg-cream/5 text-lg px-10 py-7 rounded-full backdrop-blur-sm"
              >
                <Link to="/ambassadeur">
-                 Devenir Ambassadeur
+                 {t("hero.ctaSecondary")}
                </Link>
              </Button>
            </motion.div>
@@ -149,9 +150,9 @@ import { useRef } from "react";
              className="grid grid-cols-3 gap-8 max-w-2xl mx-auto"
            >
              {[
-               { value: "500+", label: "Crus d'Exception" },
-               { value: "2000+", label: "Clients Satisfaits" },
-               { value: "24h", label: "Livraison Express" },
+               { value: "500+", label: t("hero.stat1") },
+               { value: "2000+", label: t("hero.stat2") },
+               { value: "24h", label: t("hero.stat3") },
              ].map((stat, index) => (
                <motion.div 
                  key={index} 
@@ -197,7 +198,7 @@ import { useRef } from "react";
          >
            <div className="w-px h-24 bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
            <span className="text-xs text-cream/30 tracking-widest transform -rotate-90 whitespace-nowrap">
-             EXCELLENCE DEPUIS 2020
+             {t("hero.since")}
            </span>
            <div className="w-px h-24 bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
          </motion.div>

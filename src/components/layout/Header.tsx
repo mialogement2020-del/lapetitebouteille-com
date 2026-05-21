@@ -12,8 +12,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useWishlist } from "@/hooks/useWishlist";
 import { LanguageCurrencySwitcher } from "@/components/layout/LanguageCurrencySwitcher";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthenticated, signOut } = useAuthContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -56,11 +58,11 @@ const Header = () => {
   });
 
   const navLinks = [
-    { href: "/catalogue", label: "Catalogue" },
-    { href: "/catalogue?category=vins", label: "Vins" },
-    { href: "/catalogue?category=champagnes", label: "Champagnes" },
-    { href: "/catalogue?category=spiritueux", label: "Spiritueux" },
-    { href: "/suivi-commande", label: "Suivi" },
+    { href: "/catalogue", label: t("nav.catalogue") },
+    { href: "/catalogue?category=vins", label: t("nav.wines") },
+    { href: "/catalogue?category=champagnes", label: t("nav.champagnes") },
+    { href: "/catalogue?category=spiritueux", label: t("nav.spirits") },
+    { href: "/suivi-commande", label: t("nav.tracking") },
   ];
 
   return (
@@ -181,14 +183,14 @@ const Header = () => {
                     onClick={() => navigate("/compte")}
                   >
                     <User className="mr-2 h-4 w-4" />
-                    Mon Compte
+                    {t("nav.account")}
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     className="text-primary focus:text-primary focus:bg-primary/10 cursor-pointer"
                     onClick={() => navigate("/ambassadeur")}
                   >
                     <Users className="mr-2 h-4 w-4" />
-                    Espace Ambassadeur
+                    {t("nav.ambassador")}
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem 
@@ -196,7 +198,7 @@ const Header = () => {
                       onClick={() => navigate("/admin")}
                     >
                       <Shield className="mr-2 h-4 w-4" />
-                      Administration
+                      {t("nav.admin")}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator className="bg-gold/20" />
@@ -204,12 +206,12 @@ const Header = () => {
                     className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
                     onClick={async () => {
                       await signOut();
-                      toast({ title: "Déconnexion réussie" });
+                      toast({ title: t("header.logoutSuccess") });
                       navigate("/");
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Se déconnecter
+                    {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -251,7 +253,7 @@ const Header = () => {
               <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
                 <Input
                   type="text"
-                  placeholder="Rechercher un vin, champagne, spiritueux..."
+                  placeholder={t("header.searchPlaceholder")}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary h-14 text-lg rounded-full px-6 pr-14"
@@ -318,7 +320,7 @@ const Header = () => {
                       }}
                     >
                       <Users className="mr-2 h-4 w-4" />
-                      Espace Ambassadeur
+                      {t("nav.ambassador")}
                     </Button>
                     {isAdmin && (
                       <Button 
@@ -330,7 +332,7 @@ const Header = () => {
                         }}
                       >
                         <Shield className="mr-2 h-4 w-4" />
-                        Administration
+                        {t("nav.admin")}
                       </Button>
                     )}
                     <Button 
@@ -341,32 +343,32 @@ const Header = () => {
                         navigate("/compte");
                       }}
                     >
-                      Mon compte
+                      {t("nav.account")}
                     </Button>
                     <Button 
                       variant="outline"
                       className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 h-14 text-lg"
                       onClick={async () => {
                         await signOut();
-                        toast({ title: "Déconnexion réussie" });
+                        toast({ title: t("header.logoutSuccess") });
                         setIsMenuOpen(false);
                         navigate("/");
                       }}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
-                      Se déconnecter
+                      {t("nav.logout")}
                     </Button>
                   </>
                 ) : (
                   <>
                     <Link to="/connexion" onClick={() => setIsMenuOpen(false)}>
                       <Button className="w-full bg-gradient-gold text-noir font-semibold hover:opacity-90 h-14 text-lg">
-                        Se connecter
+                        {t("header.signIn")}
                       </Button>
                     </Link>
                     <Link to="/inscription" onClick={() => setIsMenuOpen(false)}>
                       <Button variant="outline" className="w-full border-gold/20 text-cream hover:bg-cream/10 h-14 text-lg">
-                        Créer un compte
+                        {t("header.createAccount")}
                       </Button>
                     </Link>
                   </>
