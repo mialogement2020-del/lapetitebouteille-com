@@ -52,6 +52,7 @@ export interface ProductFilters {
   search?: string;
   sortBy?: "price_asc" | "price_desc" | "newest" | "popular" | "rating";
   featured?: boolean;
+  limit?: number;
 }
 
 export const useProducts = (filters: ProductFilters = {}) => {
@@ -127,6 +128,10 @@ export const useProducts = (filters: ProductFilters = {}) => {
         default:
           query = query.order("review_count", { ascending: false });
           break;
+      }
+
+      if (filters.limit) {
+        query = query.limit(filters.limit);
       }
 
       const { data, error } = await query;
