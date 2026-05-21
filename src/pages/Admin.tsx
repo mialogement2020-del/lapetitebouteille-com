@@ -155,6 +155,7 @@ const Admin = () => {
       { id: 'audit', label: 'Audit', icon: History },
       { id: 'mlm', label: 'MLM', icon: Users },
       { id: 'permissions', label: 'Permissions', icon: Shield },
+      { id: 'marketplace-roles', label: 'Rôles Marketplace', icon: Users },
       { id: 'security', label: 'Sécurité', icon: Lock },
     ];
     
