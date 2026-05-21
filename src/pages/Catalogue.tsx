@@ -10,8 +10,10 @@ import { SortSelect } from "@/components/catalog/SortSelect";
 import { Input } from "@/components/ui/input";
 import { useProducts, ProductFilters as Filters, useCategories } from "@/hooks/useProducts";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 const Catalogue = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const [searchQuery, setSearchQuery] = useState(initialSearch);
@@ -134,16 +136,16 @@ const Catalogue = () => {
               >
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium text-primary tracking-wide">
-                  {products.length} Produit{products.length !== 1 ? "s" : ""} d'Exception
+                  {t("catalogue.productsCount", { count: products.length })}
                 </span>
               </motion.div>
               
               <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold text-cream mb-6 leading-[0.95]">
-                {currentCategory ? currentCategory.name : "Notre Collection"}
+                {currentCategory ? currentCategory.name : t("catalogue.title")}
               </h1>
               <p className="text-cream/60 max-w-2xl mx-auto text-lg leading-relaxed">
                 {currentCategory?.description ||
-                  "Découvrez notre sélection exclusive de vins, champagnes et spiritueux d'exception"}
+                  t("catalogue.subtitle")}
               </p>
             </motion.div>
           </div>
@@ -170,7 +172,7 @@ const Catalogue = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
                 <Input
                   type="search"
-                  placeholder="Rechercher un produit..."
+                  placeholder={t("catalogue.searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-11 bg-cream/5 border-cream/10 text-cream placeholder:text-cream/40 rounded-full h-12 focus:border-primary/50 focus:ring-primary/20"
@@ -185,8 +187,8 @@ const Catalogue = () => {
 
                 {/* Results Count */}
                 <span className="text-sm text-cream/50">
-                  {products.length} produit{products.length !== 1 ? "s" : ""}
-                  {debouncedSearch ? ` pour “${debouncedSearch}”` : ""}
+                  {t("catalogue.resultsCount", { count: products.length })}
+                  {debouncedSearch ? " " + t("catalogue.forQuery", { query: debouncedSearch }) : ""}
                 </span>
 
                 {/* Sort */}
