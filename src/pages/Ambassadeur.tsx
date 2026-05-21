@@ -38,9 +38,11 @@ import { MonthlyLeaderboard } from "@/components/ambassador/MonthlyLeaderboard";
 import { ChallengesList } from "@/components/ambassador/ChallengesList";
 import { IncomeSimulator } from "@/components/ambassador/IncomeSimulator";
 import { ShareableAssetsLibrary } from "@/components/ambassador/ShareableAssetsLibrary";
+import { useTranslation } from "react-i18next";
 
 export default function Ambassadeur() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuthContext();
 
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useAmbassadorStats();
@@ -78,7 +80,7 @@ export default function Ambassadeur() {
             className="inline-flex items-center gap-2 text-cream/60 hover:text-primary transition-colors mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour à l'accueil
+            {t("ambassador.backHome")}
           </Link>
 
           {/* Page Header */}
@@ -92,15 +94,15 @@ export default function Ambassadeur() {
                 <LayoutDashboard className="h-7 w-7 text-noir" />
               </div>
               <div>
-                <h1 className="font-display text-3xl text-cream">Espace Ambassadeur</h1>
-                <p className="text-cream/60">Gérez votre réseau et vos gains</p>
+                <h1 className="font-display text-3xl text-cream">{t("ambassador.title")}</h1>
+                <p className="text-cream/60">{t("ambassador.subtitle")}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <AmbassadorNotifications />
               <Button variant="outline" className="border-gold/30 text-cream hover:bg-cream/10">
                 <Settings className="h-4 w-4 mr-2" />
-                Paramètres
+                {t("ambassador.settings")}
               </Button>
             </div>
           </motion.div>
@@ -138,56 +140,56 @@ export default function Ambassadeur() {
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <LayoutDashboard className="h-4 w-4 mr-2" />
-                    Aperçu
+                    {t("ambassador.tabOverview")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="leaderboard"
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <Trophy className="h-4 w-4 mr-2" />
-                    Classement
+                    {t("ambassador.tabLeaderboard")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="challenges"
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <Target className="h-4 w-4 mr-2" />
-                    Défis
+                    {t("ambassador.tabChallenges")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="commissions"
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <TrendingUp className="h-4 w-4 mr-2" />
-                    Commissions
+                    {t("ambassador.tabCommissions")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="network"
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <Users className="h-4 w-4 mr-2" />
-                    Réseau
+                    {t("ambassador.tabNetwork")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="wallet"
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <Wallet className="h-4 w-4 mr-2" />
-                    Portefeuille
+                    {t("ambassador.tabWallet")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="simulator"
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <Calculator className="h-4 w-4 mr-2" />
-                    Simulateur
+                    {t("ambassador.tabSimulator")}
                   </TabsTrigger>
                   <TabsTrigger
                     value="assets"
                     className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
                   >
                     <ImageIcon className="h-4 w-4 mr-2" />
-                    Ressources
+                    {t("ambassador.tabAssets")}
                   </TabsTrigger>
                 </TabsList>
 
@@ -218,7 +220,7 @@ export default function Ambassadeur() {
                 <TabsContent value="commissions">
                   <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
                     <h3 className="font-display text-xl text-cream mb-6">
-                      Historique des commissions
+                      {t("ambassador.commissionsHistory")}
                     </h3>
                     <CommissionHistory
                       commissions={commissions || []}
@@ -230,7 +232,7 @@ export default function Ambassadeur() {
                 <TabsContent value="network">
                   <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
                     <h3 className="font-display text-xl text-cream mb-6">
-                      Arbre de parrainage
+                      {t("ambassador.referralTree")}
                     </h3>
                     <ReferralTree
                       referrals={referrals || []}
@@ -242,7 +244,7 @@ export default function Ambassadeur() {
                 <TabsContent value="wallet">
                   <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
                     <h3 className="font-display text-xl text-cream mb-6">
-                      Gestion du portefeuille
+                      {t("ambassador.walletManagement")}
                     </h3>
                     <WalletManager
                       stats={stats!}

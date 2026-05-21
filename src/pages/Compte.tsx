@@ -17,9 +17,11 @@ import { MyWishlist } from "@/components/account/MyWishlist";
 import { LoyaltyCard } from "@/components/account/LoyaltyCard";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { useTranslation } from "react-i18next";
 
 export default function Compte() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { profile, orders, loading, ordersLoading, updateProfile } = useProfile();
   const { reviewableProducts } = useReviews();
@@ -68,7 +70,7 @@ export default function Compte() {
               onClick={() => navigate("/")}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour à l'accueil
+              {t("account.backHome")}
             </Button>
           </motion.div>
 
@@ -84,10 +86,10 @@ export default function Compte() {
               </div>
               <div>
                 <h1 className="font-display text-3xl lg:text-4xl font-bold text-cream">
-                  Mon Compte
+                  {t("account.title")}
                 </h1>
                 <p className="text-cream/60 mt-1">
-                  Gérez votre profil et suivez vos commandes
+                  {t("account.subtitle")}
                 </p>
               </div>
             </div>
@@ -100,20 +102,20 @@ export default function Compte() {
                 value="profile"
                 className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
               >
-                Mon profil
+                {t("account.tabProfile")}
               </TabsTrigger>
               <TabsTrigger
                 value="addresses"
                 className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
               >
                 <MapPin className="h-4 w-4 mr-1.5" />
-                Mes adresses
+                {t("account.tabAddresses")}
               </TabsTrigger>
               <TabsTrigger
                 value="orders"
                 className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
               >
-                Mes commandes
+                {t("account.tabOrders")}
                 {orders.length > 0 && (
                   <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">
                     {orders.length}
@@ -125,7 +127,7 @@ export default function Compte() {
                 className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
               >
                 <MessageSquare className="h-4 w-4 mr-1.5" />
-                Mes avis
+                {t("account.tabReviews")}
                 {reviewableProducts.length > 0 && (
                   <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">
                     {reviewableProducts.length}
@@ -137,7 +139,7 @@ export default function Compte() {
                 className="data-[state=active]:bg-primary data-[state=active]:text-noir text-cream/60"
               >
                 <Heart className="h-4 w-4 mr-1.5" />
-                Favoris
+                {t("account.tabWishlist")}
                 {wishlistCount > 0 && (
                   <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">
                     {wishlistCount}

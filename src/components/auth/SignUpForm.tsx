@@ -9,11 +9,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { lovable } from "@/integrations/lovable/index";
+import { useTranslation } from "react-i18next";
 
 export function SignUpForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signUp } = useAuthContext();
+  const { t } = useTranslation();
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -91,8 +93,8 @@ export function SignUpForm() {
     // Validations
     if (!formData.dateOfBirth || !isValidDateFormat(formData.dateOfBirth)) {
       toast({
-        title: "Date de naissance requise",
-        description: "Veuillez entrer une date valide au format JJ/MM/AAAA.",
+        title: t("signup.dobRequiredTitle"),
+        description: t("signup.dobRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -100,8 +102,8 @@ export function SignUpForm() {
 
     if (!isOver18) {
       toast({
-        title: "Âge minimum requis",
-        description: "Vous devez avoir au moins 18 ans pour vous inscrire.",
+        title: t("signup.ageRequiredTitle"),
+        description: t("signup.ageRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -109,8 +111,8 @@ export function SignUpForm() {
 
     if (!ageConfirmed) {
       toast({
-        title: "Confirmation requise",
-        description: "Veuillez confirmer que vous avez 18 ans ou plus.",
+        title: t("signup.ageConfirmTitle"),
+        description: t("signup.ageConfirmDesc"),
         variant: "destructive",
       });
       return;
@@ -118,8 +120,8 @@ export function SignUpForm() {
 
     if (!termsAccepted) {
       toast({
-        title: "Conditions requises",
-        description: "Veuillez accepter les conditions d'utilisation.",
+        title: t("signup.termsRequiredTitle"),
+        description: t("signup.termsRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -127,8 +129,8 @@ export function SignUpForm() {
 
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Mots de passe différents",
-        description: "Les mots de passe ne correspondent pas.",
+        title: t("signup.passwordMismatchTitle"),
+        description: t("signup.passwordMismatchDesc"),
         variant: "destructive",
       });
       return;
@@ -136,8 +138,8 @@ export function SignUpForm() {
 
     if (formData.password.length < 6) {
       toast({
-        title: "Mot de passe trop court",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
+        title: t("signup.passwordShortTitle"),
+        description: t("signup.passwordShortDesc"),
         variant: "destructive",
       });
       return;
@@ -157,7 +159,7 @@ export function SignUpForm() {
 
     if (error) {
       toast({
-        title: "Erreur d'inscription",
+        title: t("signup.errorTitle"),
         description: error.message,
         variant: "destructive",
       });
@@ -165,8 +167,8 @@ export function SignUpForm() {
     }
 
     toast({
-      title: "Inscription réussie !",
-      description: "Veuillez vérifier votre email pour confirmer votre compte.",
+      title: t("signup.successTitle"),
+      description: t("signup.successDesc"),
     });
 
     navigate("/connexion?registered=true");
@@ -182,8 +184,8 @@ export function SignUpForm() {
     if (error) {
       setIsGoogleLoading(false);
       toast({
-        title: "Erreur d'inscription",
-        description: "Impossible de s'inscrire avec Google. Veuillez réessayer.",
+        title: t("signup.errorTitle"),
+        description: t("signup.errorGoogle"),
         variant: "destructive",
       });
     }
@@ -199,8 +201,8 @@ export function SignUpForm() {
     if (error) {
       setIsAppleLoading(false);
       toast({
-        title: "Erreur d'inscription",
-        description: "Impossible de s'inscrire avec Apple. Veuillez réessayer.",
+        title: t("signup.errorTitle"),
+        description: t("signup.errorApple"),
         variant: "destructive",
       });
     }
@@ -242,7 +244,7 @@ export function SignUpForm() {
             />
           </svg>
         )}
-        S'inscrire avec Google
+        {t("auth.signupGoogle")}
       </Button>
 
       {/* Apple Sign-Up Button */}
@@ -260,7 +262,7 @@ export function SignUpForm() {
             <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
           </svg>
         )}
-        S'inscrire avec Apple
+        {t("auth.signupApple")}
       </Button>
 
       {/* Separator */}
@@ -269,7 +271,7 @@ export function SignUpForm() {
           <span className="w-full border-t border-gold/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-noir px-2 text-cream/50">ou</span>
+          <span className="bg-noir px-2 text-cream/50">{t("auth.or")}</span>
         </div>
       </div>
 
@@ -277,14 +279,14 @@ export function SignUpForm() {
       {/* Nom et Prénom */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName" className="text-cream/80">Prénom</Label>
+          <Label htmlFor="firstName" className="text-cream/80">{t("auth.firstName")}</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
             <Input
               id="firstName"
               name="firstName"
               type="text"
-              placeholder="Jean"
+              placeholder={t("signup.firstNamePlaceholder")}
               value={formData.firstName}
               onChange={handleChange}
               required
@@ -293,12 +295,12 @@ export function SignUpForm() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="lastName" className="text-cream/80">Nom</Label>
+          <Label htmlFor="lastName" className="text-cream/80">{t("auth.lastName")}</Label>
           <Input
             id="lastName"
             name="lastName"
             type="text"
-            placeholder="Dupont"
+            placeholder={t("signup.lastNamePlaceholder")}
             value={formData.lastName}
             onChange={handleChange}
             required
@@ -309,14 +311,14 @@ export function SignUpForm() {
 
       {/* Email */}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-cream/80">Email</Label>
+        <Label htmlFor="email" className="text-cream/80">{t("auth.email")}</Label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder="jean@exemple.com"
+            placeholder={t("signup.emailPlaceholder")}
             value={formData.email}
             onChange={handleChange}
             required
@@ -327,14 +329,14 @@ export function SignUpForm() {
 
       {/* Téléphone */}
       <div className="space-y-2">
-        <Label htmlFor="phone" className="text-cream/80">Téléphone</Label>
+        <Label htmlFor="phone" className="text-cream/80">{t("auth.phone")}</Label>
         <div className="relative">
           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
           <Input
             id="phone"
             name="phone"
             type="tel"
-            placeholder="+237 6XX XXX XXX"
+            placeholder={t("signup.phonePlaceholder")}
             value={formData.phone}
             onChange={handleChange}
             className="pl-10 bg-cream/10 border-gold/30 text-cream placeholder:text-cream/40 focus:border-primary"
@@ -345,7 +347,7 @@ export function SignUpForm() {
       {/* Date de naissance */}
       <div className="space-y-2">
         <Label htmlFor="dateOfBirth" className="text-cream/80">
-          Date de naissance <span className="text-destructive">*</span>
+          {t("auth.dateOfBirth")} <span className="text-destructive">*</span>
         </Label>
         <div className="relative">
           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
@@ -353,7 +355,7 @@ export function SignUpForm() {
             id="dateOfBirth"
             name="dateOfBirth"
             type="text"
-            placeholder="JJ/MM/AAAA"
+            placeholder={t("signup.dobPlaceholder")}
             value={formData.dateOfBirth}
             onChange={handleDateChange}
             required
@@ -363,25 +365,25 @@ export function SignUpForm() {
         </div>
         {formData.dateOfBirth && formData.dateOfBirth.length === 10 && !isValidDateFormat(formData.dateOfBirth) && (
           <p className="text-destructive text-sm">
-            Format invalide. Utilisez JJ/MM/AAAA.
+            {t("signup.dobInvalidFormat")}
           </p>
         )}
         {formData.dateOfBirth && isValidDateFormat(formData.dateOfBirth) && !isOver18 && (
           <p className="text-destructive text-sm">
-            Vous devez avoir au moins 18 ans pour vous inscrire.
+            {t("signup.ageMinError")}
           </p>
         )}
       </div>
 
       {/* Mot de passe */}
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-cream/80">Mot de passe</Label>
+        <Label htmlFor="password" className="text-cream/80">{t("auth.password")}</Label>
         <div className="relative">
           <Input
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
+            placeholder={t("signup.passwordPlaceholder")}
             value={formData.password}
             onChange={handleChange}
             required
@@ -400,13 +402,13 @@ export function SignUpForm() {
 
       {/* Confirmer mot de passe */}
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword" className="text-cream/80">Confirmer le mot de passe</Label>
+        <Label htmlFor="confirmPassword" className="text-cream/80">{t("auth.confirmPassword")}</Label>
         <div className="relative">
           <Input
             id="confirmPassword"
             name="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
-            placeholder="••••••••"
+            placeholder={t("signup.passwordPlaceholder")}
             value={formData.confirmPassword}
             onChange={handleChange}
             required
@@ -425,7 +427,7 @@ export function SignUpForm() {
       {/* Code parrain */}
       <div className="space-y-2">
         <Label htmlFor="referralCode" className="text-cream/80">
-          Code parrain <span className="text-cream/40">(optionnel)</span>
+          {t("auth.referralCode")} <span className="text-cream/40">{t("auth.optional")}</span>
         </Label>
         <div className="relative">
           <Gift className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
@@ -433,14 +435,14 @@ export function SignUpForm() {
             id="referralCode"
             name="referralCode"
             type="text"
-            placeholder="ABC123"
+            placeholder={t("signup.referralPlaceholder")}
             value={formData.referralCode}
             onChange={handleChange}
             className="pl-10 bg-cream/10 border-gold/30 text-cream placeholder:text-cream/40 focus:border-primary uppercase"
           />
         </div>
         <p className="text-cream/40 text-xs">
-          Avez-vous été recommandé par quelqu'un ? Entrez son code.
+          {t("auth.referralHint")}
         </p>
       </div>
 
@@ -453,7 +455,7 @@ export function SignUpForm() {
           className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-0.5"
         />
         <label htmlFor="ageConfirmed" className="text-sm text-cream/80 cursor-pointer">
-          Je confirme avoir <strong className="text-primary">18 ans ou plus</strong> et être autorisé(e) à acheter des boissons alcoolisées au Cameroun.
+          {t("signup.ageConfirmBefore")} <strong className="text-primary">{t("signup.ageConfirmStrong")}</strong> {t("signup.ageConfirmAfter")}
         </label>
       </div>
 
@@ -466,13 +468,13 @@ export function SignUpForm() {
           className="border-gold/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-0.5"
         />
         <label htmlFor="termsAccepted" className="text-sm text-cream/60 cursor-pointer">
-          J'accepte les{" "}
+          {t("signup.termsPrefix")}{" "}
           <Link to="/conditions" className="text-primary hover:underline">
-            conditions d'utilisation
+            {t("signup.termsLink")}
           </Link>{" "}
-          et la{" "}
+          {t("signup.termsAnd")}{" "}
           <Link to="/confidentialite" className="text-primary hover:underline">
-            politique de confidentialité
+            {t("signup.privacyLink")}
           </Link>
           .
         </label>
@@ -487,18 +489,18 @@ export function SignUpForm() {
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Inscription en cours...
+            {t("signup.submitting")}
           </>
         ) : (
-          "Créer mon compte"
+          t("signup.submit")
         )}
       </Button>
 
       {/* Link to login */}
       <p className="text-center text-cream/60">
-        Déjà un compte ?{" "}
+        {t("signup.haveAccount")}{" "}
         <Link to="/connexion" className="text-primary hover:underline font-medium">
-          Se connecter
+          {t("signup.signIn")}
         </Link>
       </p>
       </form>
