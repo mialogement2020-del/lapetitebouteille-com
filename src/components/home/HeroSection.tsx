@@ -25,14 +25,20 @@ import { useRef } from "react";
        {/* Background Image with Overlay */}
       <motion.div
         className="absolute inset-[-20%] bg-cover bg-center bg-no-repeat will-change-transform"
-         style={{
-          backgroundImage: `url(${heroBackground})`,
-          y: backgroundY,
-         }}
+         style={{ y: backgroundY }}
         initial={{ scale: 1.1 }}
         animate={{ scale: 1 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
        >
+        <img
+          src={heroBackground}
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover object-center"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-noir/90 via-noir/60 to-noir" />
       </motion.div>
  
