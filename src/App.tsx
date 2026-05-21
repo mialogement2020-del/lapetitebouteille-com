@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,26 +7,31 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
-import Catalogue from "./pages/Catalogue";
-import ProductPage from "./pages/ProductPage";
-import Inscription from "./pages/Inscription";
-import Connexion from "./pages/Connexion";
-import MotDePasseOublie from "./pages/MotDePasseOublie";
-import ResetPassword from "./pages/ResetPassword";
-import Checkout from "./pages/Checkout";
-import OrderConfirmation from "./pages/OrderConfirmation";
-import Ambassadeur from "./pages/Ambassadeur";
-import Compte from "./pages/Compte";
-import Admin from "./pages/Admin";
-import NotFound from "./pages/NotFound";
-import Conditions from "./pages/Conditions";
-import Confidentialite from "./pages/Confidentialite";
-import SuiviCommande from "./pages/SuiviCommande";
-import ShortLinkRedirect from "./pages/ShortLinkRedirect";
-import Comparer from "./pages/Comparer";
 
-import { SommelierChat } from "./components/chat/SommelierChat";
-import { ComparatorFloatingBar } from "./components/product/ComparatorFloatingBar";
+const Catalogue = lazy(() => import("./pages/Catalogue"));
+const ProductPage = lazy(() => import("./pages/ProductPage"));
+const Inscription = lazy(() => import("./pages/Inscription"));
+const Connexion = lazy(() => import("./pages/Connexion"));
+const MotDePasseOublie = lazy(() => import("./pages/MotDePasseOublie"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
+const Ambassadeur = lazy(() => import("./pages/Ambassadeur"));
+const Compte = lazy(() => import("./pages/Compte"));
+const Admin = lazy(() => import("./pages/Admin"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Conditions = lazy(() => import("./pages/Conditions"));
+const Confidentialite = lazy(() => import("./pages/Confidentialite"));
+const SuiviCommande = lazy(() => import("./pages/SuiviCommande"));
+const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
+const Comparer = lazy(() => import("./pages/Comparer"));
+
+const SommelierChat = lazy(() =>
+  import("./components/chat/SommelierChat").then((m) => ({ default: m.SommelierChat }))
+);
+const ComparatorFloatingBar = lazy(() =>
+  import("./components/product/ComparatorFloatingBar").then((m) => ({ default: m.ComparatorFloatingBar }))
+);
 
 const queryClient = new QueryClient();
 
@@ -37,6 +43,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <Suspense fallback={null}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/catalogue" element={<Catalogue />} />
@@ -61,6 +68,7 @@ const App = () => (
             </Routes>
             <SommelierChat />
             <ComparatorFloatingBar />
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
