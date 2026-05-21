@@ -151,8 +151,9 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           src={product.image_url || "/placeholder.svg"}
           alt={product.name}
           className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
-          loading="lazy"
+          loading={index < 4 ? "eager" : "lazy"}
           decoding="async"
+          fetchPriority={index < 4 ? "high" : "auto"}
         />
         
         {/* Badges */}
