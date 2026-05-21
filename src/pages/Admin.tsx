@@ -53,6 +53,7 @@ import { WeeklyReportSettings } from "@/components/admin/WeeklyReportSettings";
 import { AuditLogsTable } from "@/components/admin/AuditLogsTable";
 import { MLMDashboard } from "@/components/admin/MLMDashboard";
 import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsManager";
+import { MarketplaceRolesManager } from "@/components/admin/MarketplaceRolesManager";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
@@ -155,12 +156,14 @@ const Admin = () => {
       { id: 'audit', label: 'Audit', icon: History },
       { id: 'mlm', label: 'MLM', icon: Users },
       { id: 'permissions', label: 'Permissions', icon: Shield },
+      { id: 'marketplace-roles', label: 'Rôles Marketplace', icon: Users },
       { id: 'security', label: 'Sécurité', icon: Lock },
     ];
     
     return allTabs.filter(tab => {
       // Permissions and security tabs only for super admins or admins
       if (tab.id === 'permissions') return hasFullAccess;
+      if (tab.id === 'marketplace-roles') return hasFullAccess;
       if (tab.id === 'security') return canAccessTab('permissions') || hasFullAccess;
       return canAccessTab(tab.id);
     });
@@ -720,6 +723,11 @@ const Admin = () => {
               {/* Permissions Management - Super Admin Only */}
               <TabsContent value="permissions" className="space-y-6">
                 <AdminPermissionsManager />
+              </TabsContent>
+
+              {/* Marketplace Roles - Super Admin Only */}
+              <TabsContent value="marketplace-roles" className="space-y-6">
+                <MarketplaceRolesManager />
               </TabsContent>
 
               {/* Security Settings - 2FA */}
