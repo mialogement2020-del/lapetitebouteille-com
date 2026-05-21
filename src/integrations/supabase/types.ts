@@ -279,6 +279,33 @@ export type Database = {
           },
         ]
       }
+      blocked_entities: {
+        Row: {
+          blocked_by: string | null
+          created_at: string
+          entity_type: string
+          entity_value: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_by?: string | null
+          created_at?: string
+          entity_type: string
+          entity_value: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_by?: string | null
+          created_at?: string
+          entity_type?: string
+          entity_value?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string | null
@@ -578,6 +605,42 @@ export type Database = {
         }
         Relationships: []
       }
+      fraud_rules: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          label: string
+          rule_key: string
+          threshold: number
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          label: string
+          rule_key: string
+          threshold?: number
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          rule_key?: string
+          threshold?: number
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       gift_packaging_options: {
         Row: {
           created_at: string | null
@@ -788,6 +851,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      order_risk_scores: {
+        Row: {
+          created_at: string
+          factors: Json
+          id: string
+          order_id: string
+          review_notes: string | null
+          review_status: Database["public"]["Enums"]["fraud_review_status"]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_level: Database["public"]["Enums"]["fraud_risk_level"]
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          factors?: Json
+          id?: string
+          order_id: string
+          review_notes?: string | null
+          review_status?: Database["public"]["Enums"]["fraud_review_status"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: Database["public"]["Enums"]["fraud_risk_level"]
+          score?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          factors?: Json
+          id?: string
+          order_id?: string
+          review_notes?: string | null
+          review_status?: Database["public"]["Enums"]["fraud_review_status"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: Database["public"]["Enums"]["fraud_risk_level"]
+          score?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       order_status_history: {
         Row: {
@@ -2390,6 +2495,7 @@ export type Database = {
         Args: { _app_id: string }
         Returns: Json
       }
+      calculate_order_risk_score: { Args: { _order_id: string }; Returns: Json }
       create_invoice_from_quote: {
         Args: { _due_days?: number; _quote_id: string }
         Returns: Json
@@ -2529,6 +2635,8 @@ export type Database = {
         | "vendor"
         | "wholesaler"
         | "customer"
+      fraud_review_status: "pending" | "approved" | "rejected" | "auto_blocked"
+      fraud_risk_level: "low" | "medium" | "high" | "critical"
       invoice_status:
         | "draft"
         | "sent"
@@ -2711,6 +2819,8 @@ export const Constants = {
         "wholesaler",
         "customer",
       ],
+      fraud_review_status: ["pending", "approved", "rejected", "auto_blocked"],
+      fraud_risk_level: ["low", "medium", "high", "critical"],
       invoice_status: [
         "draft",
         "sent",

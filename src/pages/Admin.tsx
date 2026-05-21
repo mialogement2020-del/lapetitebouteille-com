@@ -58,6 +58,8 @@ import { MarketplaceRolesManager } from "@/components/admin/MarketplaceRolesMana
 import { WholesalerApplicationsManager } from "@/components/admin/WholesalerApplicationsManager";
 import { WholesaleInvoicesManager } from "@/components/admin/WholesaleInvoicesManager";
 import { EmbeddingsManager } from "@/components/admin/EmbeddingsManager";
+import { FraudManager } from "@/components/admin/FraudManager";
+import { ShieldAlert } from "lucide-react";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
@@ -155,6 +157,7 @@ const Admin = () => {
       { id: 'quotes', label: 'Devis Gros', icon: FileText },
       { id: 'wholesaler-apps', label: 'Candidatures B2B', icon: Building2 },
       { id: 'wholesale-invoices', label: 'Factures B2B', icon: FileText },
+      { id: 'fraud', label: 'Anti-fraude', icon: ShieldAlert },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
       { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
@@ -745,6 +748,11 @@ const Admin = () => {
               {/* Wholesale invoices */}
               <TabsContent value="wholesale-invoices" className="space-y-6">
                 <WholesaleInvoicesManager />
+              </TabsContent>
+
+              {/* Anti-fraud */}
+              <TabsContent value="fraud" className="space-y-6">
+                <FraudManager />
               </TabsContent>
 
               {/* Security Settings - 2FA */}
