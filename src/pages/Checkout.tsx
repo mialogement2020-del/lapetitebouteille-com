@@ -10,13 +10,15 @@ import { PaymentMethodSelect } from "@/components/checkout/PaymentMethodSelect";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { useCartContext } from "@/contexts/CartContext";
 import { useCheckout } from "@/hooks/useCheckout";
+import { useTranslation } from "react-i18next";
 
 const STEPS = [
-  { id: "address", label: "Livraison", icon: MapPin },
-  { id: "payment", label: "Paiement", icon: CreditCard },
+  { id: "address", labelKey: "checkout.stepDelivery", icon: MapPin },
+  { id: "payment", labelKey: "checkout.stepPayment", icon: CreditCard },
 ];
 
 export default function Checkout() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { items, isLoading: cartLoading } = useCartContext();
   const {
@@ -63,7 +65,7 @@ export default function Checkout() {
             className="inline-flex items-center gap-2 text-cream/60 hover:text-primary transition-colors mb-8"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour au catalogue
+            {t("checkout.back")}
           </Link>
 
           {/* Page Title */}
@@ -72,8 +74,8 @@ export default function Checkout() {
               <ShoppingBag className="h-6 w-6 text-noir" />
             </div>
             <div>
-              <h1 className="font-display text-3xl text-cream">Finaliser ma commande</h1>
-              <p className="text-cream/60">Livraison express à Yaoundé et Douala</p>
+              <h1 className="font-display text-3xl text-cream">{t("checkout.title")}</h1>
+              <p className="text-cream/60">{t("checkout.subtitle")}</p>
             </div>
           </div>
 
@@ -97,7 +99,7 @@ export default function Checkout() {
                   ) : (
                     <s.icon className="h-4 w-4" />
                   )}
-                  <span className="text-sm">{s.label}</span>
+                  <span className="text-sm">{t(s.labelKey)}</span>
                 </button>
                 {index < STEPS.length - 1 && (
                   <div
@@ -140,7 +142,7 @@ export default function Checkout() {
                         className="mb-4 text-cream/60 hover:text-primary"
                       >
                         <ArrowLeft className="h-4 w-4 mr-2" />
-                        Modifier l'adresse
+                        {t("checkout.editAddress")}
                       </Button>
                       <PaymentMethodSelect onSubmit={handlePaymentSubmit} isLoading={isLoading} />
                     </motion.div>

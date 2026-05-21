@@ -64,5 +64,66 @@
     "email": "Email",
     "rights": "© 2026 La Petite Bouteille. All rights reserved.",
     "alcoholWarning": "Alcohol abuse is dangerous for your health."
+  },
+  "catalogue": {
+    "title": "Our Collection",
+    "subtitle": "Discover our exclusive selection of exceptional wines, champagnes and spirits",
+    "productsCount_one": "{{count}} Exceptional Product",
+    "productsCount_other": "{{count}} Exceptional Products",
+    "searchPlaceholder": "Search a product...",
+    "resultsCount_one": "{{count}} product",
+    "resultsCount_other": "{{count}} products",
+    "forQuery": "for \"{{query}}\"",
+    "sortBy": "Sort by",
+    "sort": {
+      "popular": "Popularity",
+      "newest": "Newest",
+      "price_asc": "Price: low to high",
+      "price_desc": "Price: high to low",
+      "rating": "Top rated"
+    }
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginSubtitle": "Access your La Petite Bouteille account",
+    "signupTitle": "Create account",
+    "signupSubtitle": "Join La Petite Bouteille and enjoy our exclusive offers",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot password?",
+    "signingIn": "Signing in...",
+    "signIn": "Sign in",
+    "signUp": "Create my account",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already registered?",
+    "createAccount": "Create account",
+    "continueGoogle": "Continue with Google",
+    "continueApple": "Continue with Apple",
+    "signupGoogle": "Sign up with Google",
+    "signupApple": "Sign up with Apple",
+    "or": "or",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone",
+    "dateOfBirth": "Date of birth",
+    "referralCode": "Referral code",
+    "optional": "(optional)",
+    "referralHint": "Have you been referred? Enter their code.",
+    "ageConfirm": "I confirm that I am 18 or older and authorized to buy alcoholic beverages in Cameroon.",
+    "acceptTerms": "I accept the terms of use and the privacy policy.",
+    "loginSuccess": "Successfully signed in!",
+    "welcomeBack": "Welcome back to La Petite Bouteille.",
+    "loginError": "Sign-in error",
+    "invalidCredentials": "Incorrect email or password.",
+    "emailNotConfirmed": "Please confirm your email before signing in."
+  },
+  "checkout": {
+    "back": "Back to catalogue",
+    "title": "Complete my order",
+    "subtitle": "Express delivery in Yaoundé and Douala",
+    "stepDelivery": "Delivery",
+    "stepPayment": "Payment",
+    "editAddress": "Edit address"
   }
-}
+ }

@@ -1,11 +1,13 @@
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { SignUpForm } from "@/components/auth/SignUpForm";
+import { useTranslation } from "react-i18next";
 
 export default function Inscription() {
+  const { t } = useTranslation();
   return (
     <AuthLayout
-      title="Créer un compte"
-      subtitle="Rejoignez PrestigeVins et profitez de nos offres exclusives"
+      title={t("auth.signupTitle")}
+      subtitle={t("auth.signupSubtitle")}
     >
       <SignUpForm />
     </AuthLayout>

@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { lovable } from "@/integrations/lovable/index";
+import { useTranslation } from "react-i18next";
 
 export function LoginForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signIn } = useAuthContext();
@@ -46,13 +48,13 @@ export function LoginForm() {
       let errorMessage = error.message;
       
       if (error.message === "Invalid login credentials") {
-        errorMessage = "Email ou mot de passe incorrect.";
+        errorMessage = t("auth.invalidCredentials");
       } else if (error.message === "Email not confirmed") {
-        errorMessage = "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.";
+        errorMessage = t("auth.emailNotConfirmed");
       }
       
       toast({
-        title: "Erreur de connexion",
+        title: t("auth.loginError"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -60,8 +62,8 @@ export function LoginForm() {
     }
 
     toast({
-      title: "Connexion réussie !",
-      description: "Bienvenue sur PrestigeVins.",
+      title: t("auth.loginSuccess"),
+      description: t("auth.welcomeBack"),
     });
 
     // Redirect to home or intended page
@@ -151,7 +153,7 @@ export function LoginForm() {
             />
           </svg>
         )}
-        Continuer avec Google
+        {t("auth.continueGoogle")}
       </Button>
 
       {/* Apple Sign-In Button */}
@@ -169,7 +171,7 @@ export function LoginForm() {
             <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
           </svg>
         )}
-        Continuer avec Apple
+        {t("auth.continueApple")}
       </Button>
 
       {/* Separator */}
@@ -178,14 +180,14 @@ export function LoginForm() {
           <span className="w-full border-t border-gold/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-noir px-2 text-cream/50">ou</span>
+          <span className="bg-noir px-2 text-cream/50">{t("auth.or")}</span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Email */}
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-cream/80">Email</Label>
+          <Label htmlFor="email" className="text-cream/80">{t("auth.email")}</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
             <Input
@@ -203,12 +205,12 @@ export function LoginForm() {
         {/* Password */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-cream/80">Mot de passe</Label>
+            <Label htmlFor="password" className="text-cream/80">{t("auth.password")}</Label>
             <Link
               to="/mot-de-passe-oublie"
               className="text-sm text-primary hover:underline"
             >
-              Mot de passe oublié ?
+              {t("auth.forgotPassword")}
             </Link>
           </div>
           <div className="relative">
@@ -240,18 +242,18 @@ export function LoginForm() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Connexion en cours...
+              {t("auth.signingIn")}
             </>
           ) : (
-            "Se connecter"
+            t("auth.signIn")
           )}
         </Button>
 
         {/* Link to signup */}
         <p className="text-center text-cream/60">
-          Pas encore de compte ?{" "}
+          {t("auth.noAccount")}{" "}
           <Link to="/inscription" className="text-primary hover:underline font-medium">
-            Créer un compte
+            {t("auth.createAccount")}
           </Link>
         </p>
       </form>
