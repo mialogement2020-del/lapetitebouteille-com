@@ -6,6 +6,7 @@ import { useRef } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { formatPrice } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { optimizeProductImage } from "@/lib/imageOptimization";
 
 const FeaturedProducts = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -113,7 +114,7 @@ const FeaturedProducts = () => {
                       {/* Image Container */}
                       <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-cream to-cream-dark">
                         <img
-                          src={product.image_url || "/placeholder.svg"}
+                          src={optimizeProductImage(product.image_url, { width: 420, height: 560 })}
                           alt={product.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           loading={index < 2 ? "eager" : "lazy"}
