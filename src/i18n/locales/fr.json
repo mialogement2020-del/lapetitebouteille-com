@@ -64,5 +64,67 @@
     "email": "Email",
     "rights": "© 2026 La Petite Bouteille. Tous droits réservés.",
     "alcoholWarning": "L'abus d'alcool est dangereux pour la santé."
+  },
+  "catalogue": {
+    "title": "Notre Collection",
+    "subtitle": "Découvrez notre sélection exclusive de vins, champagnes et spiritueux d'exception",
+    "productsCount_one": "{{count}} Produit d'Exception",
+    "productsCount_other": "{{count}} Produits d'Exception",
+    "searchPlaceholder": "Rechercher un produit...",
+    "resultsCount_one": "{{count}} produit",
+    "resultsCount_other": "{{count}} produits",
+    "forQuery": "pour « {{query}} »",
+    "sortBy": "Trier par",
+    "sort": {
+      "popular": "Popularité",
+      "newest": "Nouveautés",
+      "price_asc": "Prix croissant",
+      "price_desc": "Prix décroissant",
+      "rating": "Meilleures notes"
+    }
+  },
+  "auth": {
+    "loginTitle": "Connexion",
+    "loginSubtitle": "Accédez à votre compte La Petite Bouteille",
+    "signupTitle": "Créer un compte",
+    "signupSubtitle": "Rejoignez La Petite Bouteille et profitez de nos offres exclusives",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "signingIn": "Connexion en cours...",
+    "signIn": "Se connecter",
+    "signUp": "Créer mon compte",
+    "noAccount": "Pas encore de compte ?",
+    "haveAccount": "Déjà inscrit ?",
+    "createAccount": "Créer un compte",
+    "continueGoogle": "Continuer avec Google",
+    "continueApple": "Continuer avec Apple",
+    "signupGoogle": "S'inscrire avec Google",
+    "signupApple": "S'inscrire avec Apple",
+    "or": "ou",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "phone": "Téléphone",
+    "dateOfBirth": "Date de naissance",
+    "referralCode": "Code parrain",
+    "optional": "(optionnel)",
+    "referralHint": "Avez-vous été recommandé par quelqu'un ? Entrez son code.",
+    "ageConfirm": "Je confirme avoir 18 ans ou plus et être autorisé(e) à acheter des boissons alcoolisées au Cameroun.",
+    "acceptTerms": "J'accepte les conditions d'utilisation et la politique de confidentialité.",
+    "loginSuccess": "Connexion réussie !",
+    "welcomeBack": "Bienvenue sur La Petite Bouteille.",
+    "loginError": "Erreur de connexion",
+    "invalidCredentials": "Email ou mot de passe incorrect.",
+    "emailNotConfirmed": "Veuillez confirmer votre email avant de vous connecter."
+  },
+  "checkout": {
+    "back": "Retour au catalogue",
+    "title": "Finaliser ma commande",
+    "subtitle": "Livraison express à Yaoundé et Douala",
+    "stepDelivery": "Livraison",
+    "stepPayment": "Paiement",
+    "editAddress": "Modifier l'adresse"
   }
+ }
 }
