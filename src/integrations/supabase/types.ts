@@ -954,6 +954,9 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
+          embedding: string | null
+          embedding_source: string | null
+          embedding_updated_at: string | null
           food_pairing: string | null
           gallery_urls: string[] | null
           grape_variety: string | null
@@ -985,6 +988,9 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          embedding?: string | null
+          embedding_source?: string | null
+          embedding_updated_at?: string | null
           food_pairing?: string | null
           gallery_urls?: string[] | null
           grape_variety?: string | null
@@ -1016,6 +1022,9 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          embedding?: string | null
+          embedding_source?: string | null
+          embedding_updated_at?: string | null
           food_pairing?: string | null
           gallery_urls?: string[] | null
           grape_variety?: string | null
@@ -1795,6 +1804,30 @@ export type Database = {
         }
         Relationships: []
       }
+      visual_searches: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          match_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          match_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          match_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -2436,6 +2469,23 @@ export type Database = {
       lookup_guest_order: {
         Args: { _identifier: string; _method?: string; _order_number: string }
         Returns: Json
+      }
+      match_products_by_embedding: {
+        Args: {
+          match_count?: number
+          min_similarity?: number
+          query_embedding: string
+        }
+        Returns: {
+          category_id: string
+          id: string
+          image_url: string
+          name: string
+          price: number
+          short_description: string
+          similarity: number
+          slug: string
+        }[]
       }
       recompute_vendor_trust_score: {
         Args: { _shop_id: string }
