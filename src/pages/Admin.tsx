@@ -59,7 +59,8 @@ import { WholesalerApplicationsManager } from "@/components/admin/WholesalerAppl
 import { WholesaleInvoicesManager } from "@/components/admin/WholesaleInvoicesManager";
 import { EmbeddingsManager } from "@/components/admin/EmbeddingsManager";
 import { FraudManager } from "@/components/admin/FraudManager";
-import { ShieldAlert } from "lucide-react";
+import { ProductModerationManager } from "@/components/admin/ProductModerationManager";
+import { ShieldAlert, Sparkles } from "lucide-react";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
 import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
@@ -158,6 +159,7 @@ const Admin = () => {
       { id: 'wholesaler-apps', label: 'Candidatures B2B', icon: Building2 },
       { id: 'wholesale-invoices', label: 'Factures B2B', icon: FileText },
       { id: 'fraud', label: 'Anti-fraude', icon: ShieldAlert },
+      { id: 'moderation', label: 'Modération IA', icon: Sparkles },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
       { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
@@ -753,6 +755,11 @@ const Admin = () => {
               {/* Anti-fraud */}
               <TabsContent value="fraud" className="space-y-6">
                 <FraudManager />
+              </TabsContent>
+
+              {/* IA moderation */}
+              <TabsContent value="moderation" className="space-y-6">
+                <ProductModerationManager />
               </TabsContent>
 
               {/* Security Settings - 2FA */}
