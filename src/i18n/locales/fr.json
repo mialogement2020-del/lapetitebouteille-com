@@ -23,10 +23,47 @@
     "language": "Langue",
     "currency": "Devise"
   },
+  "header": {
+    "searchPlaceholder": "Rechercher un vin, champagne, spiritueux...",
+    "logoutSuccess": "Déconnexion réussie",
+    "createAccount": "Créer un compte",
+    "signIn": "Se connecter"
+  },
+  "hero": {
+    "badge": "Collection Premium 2026",
+    "titleLine1": "L'Art de la",
+    "titleHighlight": "Dégustation",
+    "subtitle": "Explorez notre collection exclusive de grands crus, champagnes prestigieux et spiritueux d'exception. Livraison express au Cameroun.",
+    "ctaPrimary": "Découvrir la Collection",
+    "ctaSecondary": "Devenir Ambassadeur",
+    "scroll": "Découvrir",
+    "since": "EXCELLENCE DEPUIS 2020",
+    "stat1": "Crus d'Exception",
+    "stat2": "Clients Satisfaits",
+    "stat3": "Livraison Express"
+  },
   "footer": {
     "newsletter": "Restez informé de nos exclusivités",
     "newsletterDesc": "Inscrivez-vous pour recevoir en avant-première nos offres spéciales et nouvelles cuvées",
     "emailPlaceholder": "Votre adresse email",
-    "subscribe": "S'inscrire"
+    "subscribe": "S'inscrire",
+    "newsletterLabel": "Newsletter",
+    "tagline": "Votre destination premium pour les meilleurs vins, champagnes et spiritueux au Cameroun. L'excellence à portée de main.",
+    "navigation": "Navigation",
+    "information": "Informations",
+    "contact": "Contact",
+    "allCollection": "Toute la Collection",
+    "giftBoxes": "Coffrets Cadeaux",
+    "becomeAmbassador": "Devenir Ambassadeur",
+    "delivery": "Livraison",
+    "terms": "CGV",
+    "legal": "Mentions Légales",
+    "contactUs": "Nous Contacter",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "email": "Email",
+    "rights": "© 2026 La Petite Bouteille. Tous droits réservés.",
+    "alcoholWarning": "L'abus d'alcool est dangereux pour la santé."
+  }
   }
 }

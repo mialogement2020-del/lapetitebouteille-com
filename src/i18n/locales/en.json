@@ -23,10 +23,47 @@
     "language": "Language",
     "currency": "Currency"
   },
+  "header": {
+    "searchPlaceholder": "Search wine, champagne, spirits...",
+    "logoutSuccess": "Successfully signed out",
+    "createAccount": "Create an account",
+    "signIn": "Sign in"
+  },
+  "hero": {
+    "badge": "Premium Collection 2026",
+    "titleLine1": "The Art of",
+    "titleHighlight": "Tasting",
+    "subtitle": "Explore our exclusive selection of grand crus, prestigious champagnes and exceptional spirits. Express delivery in Cameroon.",
+    "ctaPrimary": "Discover the Collection",
+    "ctaSecondary": "Become Ambassador",
+    "scroll": "Discover",
+    "since": "EXCELLENCE SINCE 2020",
+    "stat1": "Exceptional Vintages",
+    "stat2": "Happy Customers",
+    "stat3": "Express Delivery"
+  },
   "footer": {
     "newsletter": "Stay informed about our exclusives",
     "newsletterDesc": "Subscribe to receive our special offers and new vintages first",
     "emailPlaceholder": "Your email address",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "newsletterLabel": "Newsletter",
+    "tagline": "Your premium destination for the finest wines, champagnes and spirits in Cameroon. Excellence at your fingertips.",
+    "navigation": "Navigation",
+    "information": "Information",
+    "contact": "Contact",
+    "allCollection": "Full Collection",
+    "giftBoxes": "Gift Boxes",
+    "becomeAmbassador": "Become Ambassador",
+    "delivery": "Delivery",
+    "terms": "Terms",
+    "legal": "Legal Notice",
+    "contactUs": "Contact us",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "rights": "© 2026 La Petite Bouteille. All rights reserved.",
+    "alcoholWarning": "Alcohol abuse is dangerous for your health."
+  }
   }
 }

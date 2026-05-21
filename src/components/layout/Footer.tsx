@@ -3,8 +3,10 @@ import { Facebook, Instagram, Phone, Mail, MapPin, Twitter, Send } from "lucide-
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   
   // Hide newsletter on dashboard pages (admin, ambassador, account)
@@ -31,18 +33,18 @@ const Footer = () => {
               className="max-w-2xl mx-auto text-center"
             >
               <span className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block">
-                Newsletter
+                {t("footer.newsletterLabel")}
               </span>
               <h3 className="font-display text-3xl lg:text-4xl font-semibold mb-4">
-                Restez informé de nos <span className="text-primary">exclusivités</span>
+                {t("footer.newsletter")}
               </h3>
               <p className="text-cream/60 mb-8 max-w-lg mx-auto">
-                Inscrivez-vous pour recevoir en avant-première nos offres spéciales et nouvelles cuvées
+                {t("footer.newsletterDesc")}
               </p>
               <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                 <Input
                   type="email"
-                  placeholder="Votre adresse email"
+                  placeholder={t("footer.emailPlaceholder")}
                   className="flex-1 h-14 px-6 rounded-full bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary"
                 />
                 <Button
@@ -50,7 +52,7 @@ const Footer = () => {
                   className="h-14 px-8 bg-gradient-gold text-noir font-semibold rounded-full hover:opacity-90 transition-opacity shine-effect"
                 >
                   <Send className="h-4 w-4 mr-2" />
-                  S'inscrire
+                  {t("footer.subscribe")}
                 </Button>
               </form>
             </motion.div>
@@ -79,8 +81,7 @@ const Footer = () => {
               </div>
             </Link>
             <p className="text-cream/50 text-sm leading-relaxed mb-8">
-              Votre destination premium pour les meilleurs vins, champagnes et spiritueux au Cameroun. 
-              L'excellence à portée de main.
+              {t("footer.tagline")}
             </p>
             <div className="flex gap-3">
               {[
@@ -103,14 +104,14 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-6 text-cream">Navigation</h4>
+            <h4 className="font-display text-lg font-semibold mb-6 text-cream">{t("footer.navigation")}</h4>
             <ul className="space-y-4">
               {[
-                { href: "/catalogue", label: "Toute la Collection" },
-                { href: "/catalogue?category=vins", label: "Vins" },
-                { href: "/catalogue?category=champagnes", label: "Champagnes" },
-                { href: "/catalogue?category=spiritueux", label: "Spiritueux" },
-                { href: "/catalogue?category=coffrets", label: "Coffrets Cadeaux" },
+                { href: "/catalogue", label: t("footer.allCollection") },
+                { href: "/catalogue?category=vins", label: t("nav.wines") },
+                { href: "/catalogue?category=champagnes", label: t("nav.champagnes") },
+                { href: "/catalogue?category=spiritueux", label: t("nav.spirits") },
+                { href: "/catalogue?category=coffrets", label: t("footer.giftBoxes") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -127,14 +128,14 @@ const Footer = () => {
 
           {/* Information */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-6 text-cream">Informations</h4>
+            <h4 className="font-display text-lg font-semibold mb-6 text-cream">{t("footer.information")}</h4>
             <ul className="space-y-4">
               {[
-                { href: "/ambassadeur", label: "Devenir Ambassadeur" },
-                { href: "/livraison", label: "Livraison" },
-                { href: "/cgv", label: "CGV" },
-                { href: "/mentions-legales", label: "Mentions Légales" },
-                { href: "/contact", label: "Nous Contacter" },
+                { href: "/ambassadeur", label: t("footer.becomeAmbassador") },
+                { href: "/livraison", label: t("footer.delivery") },
+                { href: "/cgv", label: t("footer.terms") },
+                { href: "/mentions-legales", label: t("footer.legal") },
+                { href: "/contact", label: t("footer.contactUs") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -151,7 +152,7 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-6 text-cream">Contact</h4>
+            <h4 className="font-display text-lg font-semibold mb-6 text-cream">{t("footer.contact")}</h4>
             <ul className="space-y-5">
               <li>
                 <div className="flex items-start gap-4">
@@ -159,7 +160,7 @@ const Footer = () => {
                     <MapPin className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <span className="text-cream/50 text-sm block">Adresse</span>
+                    <span className="text-cream/50 text-sm block">{t("footer.address")}</span>
                     <span className="text-cream text-sm">Douala Bonamoussadi, Cameroun</span>
                   </div>
                 </div>
@@ -170,7 +171,7 @@ const Footer = () => {
                     <Phone className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <span className="text-cream/50 text-sm block">Téléphone</span>
+                    <span className="text-cream/50 text-sm block">{t("footer.phone")}</span>
                     <a href="tel:+237674069458" className="text-cream hover:text-primary transition-colors text-sm">
                       +237 674 069 458
                     </a>
@@ -183,7 +184,7 @@ const Footer = () => {
                     <Mail className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <span className="text-cream/50 text-sm block">Email</span>
+                    <span className="text-cream/50 text-sm block">{t("footer.email")}</span>
                     <a href="mailto:contactlapetitebouteille@gmail.com" className="text-cream hover:text-primary transition-colors text-sm">
                       contactlapetitebouteille@gmail.com
                     </a>
@@ -199,9 +200,9 @@ const Footer = () => {
       <div className="border-t border-gold/10 relative">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-cream/40">
-            <p>© 2026 La Petite Bouteille. Tous droits réservés.</p>
+            <p>{t("footer.rights")}</p>
             <p className="flex items-center gap-1">
-              L'abus d'alcool est dangereux pour la santé. 
+              {t("footer.alcoholWarning")}
               <span className="px-2 py-1 rounded-full bg-primary/10 text-primary font-medium text-xs">18+</span>
             </p>
           </div>
