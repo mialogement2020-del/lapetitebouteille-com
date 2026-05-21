@@ -750,6 +750,11 @@ const Admin = () => {
                 <WholesaleInvoicesManager />
               </TabsContent>
 
+              {/* Anti-fraud */}
+              <TabsContent value="fraud" className="space-y-6">
+                <FraudManager />
+              </TabsContent>
+
               {/* Security Settings - 2FA */}
               <TabsContent value="security" className="space-y-6">
                 <div className="max-w-2xl">
