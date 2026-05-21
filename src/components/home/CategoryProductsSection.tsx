@@ -7,8 +7,8 @@ import { formatPrice } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; categoryName: string }) => {
-  const { data: products, isLoading } = useProducts({ categorySlug, sortBy: "popular" });
-  const displayProducts = products?.slice(0, 25) || [];
+  const { data: products, isLoading } = useProducts({ categorySlug, sortBy: "popular", limit: 10 });
+  const displayProducts = products || [];
 
   if (!isLoading && displayProducts.length === 0) return null;
 
@@ -67,6 +67,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
                           alt={product.name}
                           className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"
+                          decoding="async"
                         />
                         {hasDiscount && (
                           <span className="absolute top-2 left-2 px-2 py-1 bg-secondary text-secondary-foreground text-[10px] font-bold rounded-full">
