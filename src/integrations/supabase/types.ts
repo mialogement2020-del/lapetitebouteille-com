@@ -1052,6 +1052,54 @@ export type Database = {
           },
         ]
       }
+      product_moderations: {
+        Row: {
+          analyzed_image_url: string | null
+          compliance_ok: boolean
+          counterfeit_risk: number
+          created_at: string
+          id: string
+          issues: Json
+          model_used: string | null
+          product_id: string
+          quality_score: number
+          reviewed_by: string | null
+          suggestions: Json
+          summary: string | null
+          verdict: Database["public"]["Enums"]["product_moderation_verdict"]
+        }
+        Insert: {
+          analyzed_image_url?: string | null
+          compliance_ok?: boolean
+          counterfeit_risk?: number
+          created_at?: string
+          id?: string
+          issues?: Json
+          model_used?: string | null
+          product_id: string
+          quality_score?: number
+          reviewed_by?: string | null
+          suggestions?: Json
+          summary?: string | null
+          verdict?: Database["public"]["Enums"]["product_moderation_verdict"]
+        }
+        Update: {
+          analyzed_image_url?: string | null
+          compliance_ok?: boolean
+          counterfeit_risk?: number
+          created_at?: string
+          id?: string
+          issues?: Json
+          model_used?: string | null
+          product_id?: string
+          quality_score?: number
+          reviewed_by?: string | null
+          suggestions?: Json
+          summary?: string | null
+          verdict?: Database["public"]["Enums"]["product_moderation_verdict"]
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           alcohol_percentage: number | null
@@ -1070,6 +1118,7 @@ export type Database = {
           is_active: boolean | null
           is_featured: boolean | null
           low_stock_threshold: number | null
+          moderation_status: Database["public"]["Enums"]["product_moderation_status"]
           name: string
           origin_country: string | null
           original_price: number | null
@@ -1104,6 +1153,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           low_stock_threshold?: number | null
+          moderation_status?: Database["public"]["Enums"]["product_moderation_status"]
           name: string
           origin_country?: string | null
           original_price?: number | null
@@ -1138,6 +1188,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           low_stock_threshold?: number | null
+          moderation_status?: Database["public"]["Enums"]["product_moderation_status"]
           name?: string
           origin_country?: string | null
           original_price?: number | null
@@ -2657,6 +2708,8 @@ export type Database = {
         | "cash_on_delivery"
         | "credit_card"
       payment_status: "pending" | "completed" | "failed" | "refunded"
+      product_moderation_status: "pending" | "approved" | "flagged" | "rejected"
+      product_moderation_verdict: "approved" | "review" | "rejected"
       vendor_fulfillment_status:
         | "pending"
         | "preparing"
@@ -2844,6 +2897,8 @@ export const Constants = {
         "credit_card",
       ],
       payment_status: ["pending", "completed", "failed", "refunded"],
+      product_moderation_status: ["pending", "approved", "flagged", "rejected"],
+      product_moderation_verdict: ["approved", "review", "rejected"],
       vendor_fulfillment_status: [
         "pending",
         "preparing",
