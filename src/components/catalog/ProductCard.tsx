@@ -152,6 +152,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           alt={product.name}
           className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
           loading="lazy"
+          decoding="async"
         />
         
         {/* Badges */}
@@ -231,19 +232,6 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           <motion.div
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            animate={{ 
-              boxShadow: [
-                "0 0 0 0 rgba(212, 175, 55, 0.4)",
-                "0 0 0 8px rgba(212, 175, 55, 0)",
-              ]
-            }}
-            transition={{
-              boxShadow: {
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeOut"
-              }
-            }}
             className="rounded-full"
           >
             <AddToCartButton
