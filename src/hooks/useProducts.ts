@@ -53,11 +53,13 @@ export interface ProductFilters {
   sortBy?: "price_asc" | "price_desc" | "newest" | "popular" | "rating";
   featured?: boolean;
   limit?: number;
+  enabled?: boolean;
 }
 
 export const useProducts = (filters: ProductFilters = {}) => {
   return useQuery({
     queryKey: ["products", filters],
+    enabled: filters.enabled ?? true,
     queryFn: async () => {
       let query = supabase
         .from("products")
