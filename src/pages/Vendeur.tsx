@@ -160,7 +160,7 @@ const ShopSettingsCard = ({ shop, onSave, loading }: { shop: any; onSave: (d: an
               {shop.is_verified && <BadgeCheck className="h-5 w-5 text-primary" />}
             </CardTitle>
             <CardDescription className="text-cream/60">
-              /boutique/{shop.slug} · Score confiance {Number(shop.trust_score).toFixed(1)}/10
+              /boutique/{shop.slug} · Score confiance {Number(shop.trust_score).toFixed(0)}/100
             </CardDescription>
           </div>
           <Button asChild variant="outline" size="sm" className="border-gold/30 text-cream">
