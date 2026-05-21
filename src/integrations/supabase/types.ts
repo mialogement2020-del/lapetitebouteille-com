@@ -2542,6 +2542,65 @@ export type Database = {
       }
     }
     Functions: {
+      analytics_customer_cohorts: {
+        Args: { _months_back?: number }
+        Returns: {
+          cohort_month: string
+          cohort_size: number
+          retained_m1: number
+          retained_m3: number
+          retained_m6: number
+          total_revenue: number
+        }[]
+      }
+      analytics_customer_ltv: {
+        Args: { _limit?: number }
+        Returns: {
+          avg_order_value: number
+          customer_key: string
+          customer_label: string
+          days_active: number
+          first_order_at: string
+          last_order_at: string
+          order_count: number
+          total_spent: number
+          user_id: string
+        }[]
+      }
+      analytics_mlm_attribution: {
+        Args: { _days?: number }
+        Returns: {
+          ambassador_count: number
+          avg_commission: number
+          commission_count: number
+          level: number
+          total_attributed_revenue: number
+          total_commissions: number
+        }[]
+      }
+      analytics_revenue_breakdown: {
+        Args: { _days?: number }
+        Returns: {
+          day: string
+          direct_revenue: number
+          marketplace_revenue: number
+          order_count: number
+          referral_revenue: number
+          total_revenue: number
+        }[]
+      }
+      analytics_top_ambassadors: {
+        Args: { _days?: number; _limit?: number }
+        Returns: {
+          ambassador_email: string
+          ambassador_id: string
+          ambassador_name: string
+          attributed_revenue: number
+          conversion_rate: number
+          referral_count: number
+          total_commissions: number
+        }[]
+      }
       approve_wholesaler_application: {
         Args: { _app_id: string }
         Returns: Json
