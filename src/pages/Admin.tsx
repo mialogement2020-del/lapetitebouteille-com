@@ -724,6 +724,11 @@ const Admin = () => {
                 <AdminPermissionsManager />
               </TabsContent>
 
+              {/* Marketplace Roles - Super Admin Only */}
+              <TabsContent value="marketplace-roles" className="space-y-6">
+                <MarketplaceRolesManager />
+              </TabsContent>
+
               {/* Security Settings - 2FA */}
               <TabsContent value="security" className="space-y-6">
                 <div className="max-w-2xl">
