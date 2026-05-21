@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, Loader2, Save, Send, FileText, ShoppingCart, Shield, BadgeCheck, Clock, XCircle } from "lucide-react";
+import { Building2, Loader2, Save, Send, FileText, ShoppingCart, Shield, BadgeCheck, Clock, XCircle, Receipt, AlertCircle, Wallet } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
   type WholesalerProfile,
   type WholesalerApplication,
 } from "@/hooks/useWholesaler";
+import { useMyInvoices, useMyOutstanding, type WholesaleInvoice, type InvoiceStatus } from "@/hooks/useWholesaleInvoices";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -30,6 +31,8 @@ const GrossistePage = () => {
   const { data: profile, isLoading: profileLoading, updateProfile } = useMyWholesalerProfile();
   const { data: applications = [], isLoading: appsLoading, apply } = useMyWholesalerApplications();
   const { data: quotes = [], isLoading: quotesLoading } = useMyQuotes();
+  const { data: invoices = [], isLoading: invoicesLoading } = useMyInvoices();
+  const { data: outstanding = 0 } = useMyOutstanding();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) navigate("/connexion");
@@ -72,6 +75,8 @@ const GrossistePage = () => {
           {isWholesaler && profile ? (
             <>
               <ProfileCard profile={profile} onSave={(d) => updateProfile.mutateAsync(d)} loading={updateProfile.isPending} />
+              <BalanceCard profile={profile} outstanding={outstanding} />
+              <InvoicesCard invoices={invoices} loading={invoicesLoading} />
               <QuotesCard quotes={quotes} loading={quotesLoading} />
             </>
           ) : pendingApp ? (
@@ -269,6 +274,107 @@ const QUOTE_LABELS: Record<string, { label: string; color: string }> = {
   traite: { label: "Traité", color: "border-green-500/40 text-green-400" },
   refuse: { label: "Refusé", color: "border-red-500/40 text-red-400" },
 };
+
+const INVOICE_LABELS: Record<InvoiceStatus, { label: string; color: string }> = {
+  draft: { label: "Brouillon", color: "border-cream/20 text-cream/60" },
+  sent: { label: "À régler", color: "border-yellow-500/40 text-yellow-400" },
+  partial: { label: "Partiel", color: "border-orange-500/40 text-orange-400" },
+  paid: { label: "Payée", color: "border-green-500/40 text-green-400" },
+  overdue: { label: "En retard", color: "border-red-500/40 text-red-400" },
+  cancelled: { label: "Annulée", color: "border-cream/20 text-cream/40" },
+};
+
+const BalanceCard = ({ profile, outstanding }: { profile: WholesalerProfile; outstanding: number }) => {
+  const limit = Number(profile.credit_limit ?? 0);
+  const usage = limit > 0 ? Math.min((outstanding / limit) * 100, 100) : 0;
+  const overLimit = limit > 0 && outstanding > limit;
+
+  return (
+    <Card className="bg-noir/50 border-gold/20">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-cream flex items-center gap-2 text-base">
+          <Wallet className="h-5 w-5 text-primary" /> Encours & crédit
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-lg bg-noir/40 border border-gold/10 p-3">
+            <p className="text-xs text-cream/50 uppercase tracking-wide">Encours impayé</p>
+            <p className="text-cream font-display text-xl mt-1">{formatPrice(outstanding)} FCFA</p>
+          </div>
+          <div className="rounded-lg bg-noir/40 border border-gold/10 p-3">
+            <p className="text-xs text-cream/50 uppercase tracking-wide">Plafond de crédit</p>
+            <p className="text-cream font-display text-xl mt-1">
+              {limit > 0 ? `${formatPrice(limit)} FCFA` : "—"}
+            </p>
+          </div>
+        </div>
+        {limit > 0 && (
+          <div className="space-y-1.5">
+            <div className="h-2 rounded-full bg-noir/60 overflow-hidden">
+              <div
+                className={`h-full transition-all ${overLimit ? "bg-red-500" : "bg-gradient-gold"}`}
+                style={{ width: `${usage}%` }}
+              />
+            </div>
+            <p className={`text-xs ${overLimit ? "text-red-400" : "text-cream/50"} flex items-center gap-1.5`}>
+              {overLimit && <AlertCircle className="h-3.5 w-3.5" />}
+              {overLimit
+                ? "Plafond dépassé — règlement requis avant nouvelle commande"
+                : `${usage.toFixed(0)}% du plafond utilisé`}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+const InvoicesCard = ({ invoices, loading }: { invoices: WholesaleInvoice[]; loading: boolean }) => (
+  <Card className="bg-noir/50 border-gold/20">
+    <CardHeader>
+      <CardTitle className="text-cream flex items-center gap-2">
+        <Receipt className="h-5 w-5 text-primary" /> Mes factures
+      </CardTitle>
+      <CardDescription className="text-cream/60">
+        {invoices.length} facture{invoices.length > 1 ? "s" : ""}
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      {loading ? (
+        <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+      ) : invoices.length === 0 ? (
+        <p className="text-cream/60 text-sm py-8 text-center">Aucune facture émise pour le moment.</p>
+      ) : (
+        <div className="space-y-2">
+          {invoices.map((inv) => {
+            const status = INVOICE_LABELS[inv.status];
+            const remaining = Number(inv.amount_ttc) - Number(inv.amount_paid);
+            return (
+              <div key={inv.id} className="flex items-center gap-3 p-3 rounded-lg bg-noir/30 border border-gold/10">
+                <div className="flex-1 min-w-0">
+                  <p className="text-cream font-medium truncate">{inv.invoice_number}</p>
+                  <p className="text-xs text-cream/50 truncate">{inv.description}</p>
+                  <p className="text-xs text-cream/40 mt-0.5">
+                    Émise le {new Date(inv.issued_at).toLocaleDateString("fr-FR")}
+                    {inv.due_date && <> · échéance {new Date(inv.due_date).toLocaleDateString("fr-FR")}</>}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-cream font-display">{formatPrice(inv.amount_ttc)} FCFA</p>
+                  {remaining > 0 && inv.status !== "cancelled" && (
+                    <p className="text-xs text-yellow-400">Reste {formatPrice(remaining)} FCFA</p>
+                  )}
+                </div>
+                <Badge variant="outline" className={status.color}>{status.label}</Badge>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </CardContent>
+  </Card>
+);
 
 const QuotesCard = ({ quotes, loading }: { quotes: any[]; loading: boolean }) => (
   <Card className="bg-noir/50 border-gold/20">
