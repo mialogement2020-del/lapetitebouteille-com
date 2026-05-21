@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface OrderDetails {
   order_number: string;
@@ -28,24 +29,25 @@ interface OrderDetails {
   }>;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; step: number }> = {
-  pending: { label: "En attente", color: "text-yellow-500", icon: Clock, step: 1 },
-  confirmed: { label: "Confirmée", color: "text-blue-500", icon: CheckCircle2, step: 2 },
-  processing: { label: "En préparation", color: "text-purple-500", icon: Package, step: 3 },
-  shipped: { label: "En livraison", color: "text-orange-500", icon: Truck, step: 4 },
-  delivered: { label: "Livrée", color: "text-green-500", icon: CheckCircle2, step: 5 },
-  cancelled: { label: "Annulée", color: "text-red-500", icon: XCircle, step: 0 },
+const STATUS_CONFIG: Record<string, { key: string; color: string; icon: any; step: number }> = {
+  pending: { key: "pending", color: "text-yellow-500", icon: Clock, step: 1 },
+  confirmed: { key: "confirmed", color: "text-blue-500", icon: CheckCircle2, step: 2 },
+  processing: { key: "processing", color: "text-purple-500", icon: Package, step: 3 },
+  shipped: { key: "shipped", color: "text-orange-500", icon: Truck, step: 4 },
+  delivered: { key: "delivered", color: "text-green-500", icon: CheckCircle2, step: 5 },
+  cancelled: { key: "cancelled", color: "text-red-500", icon: XCircle, step: 0 },
 };
 
 const STEPS = [
-  { key: "pending", label: "En attente" },
-  { key: "confirmed", label: "Confirmée" },
-  { key: "processing", label: "Préparation" },
-  { key: "shipped", label: "Livraison" },
-  { key: "delivered", label: "Livrée" },
+  { key: "pending" },
+  { key: "confirmed" },
+  { key: "processing" },
+  { key: "shipped" },
+  { key: "delivered" },
 ];
 
 export default function SuiviCommande() {
+  const { t, i18n } = useTranslation();
   const [searchMethod, setSearchMethod] = useState<"phone" | "email">("phone");
   const [orderNumber, setOrderNumber] = useState("");
   const [identifier, setIdentifier] = useState("");
@@ -59,7 +61,7 @@ export default function SuiviCommande() {
     setOrder(null);
 
     if (!orderNumber.trim() || !identifier.trim()) {
-      setError("Veuillez remplir tous les champs");
+      setError(t("trackOrder.fillAllFields"));
       return;
     }
 
@@ -75,7 +77,7 @@ export default function SuiviCommande() {
 
       if (rpcError) {
         console.error("Search error:", rpcError);
-        setError("Une erreur est survenue lors de la recherche. Veuillez réessayer.");
+        setError(t("trackOrder.searchError"));
         return;
       }
 
@@ -83,8 +85,12 @@ export default function SuiviCommande() {
       const result = data as { success: boolean; error?: string; order?: any; items?: any[] };
 
       if (!result.success) {
-        setError(result.error || "Aucune commande trouvée. Vérifiez le numéro de commande et votre " + 
-          (searchMethod === "phone" ? "téléphone" : "email") + ".");
+        setError(
+          result.error ||
+            (searchMethod === "phone"
+              ? t("trackOrder.notFoundPhone")
+              : t("trackOrder.notFoundEmail"))
+        );
         return;
       }
 
@@ -102,23 +108,23 @@ export default function SuiviCommande() {
       });
 
       toast({
-        title: "Commande trouvée !",
-        description: `Commande ${result.order.order_number}`,
+        title: t("trackOrder.foundTitle"),
+        description: t("trackOrder.foundDesc", { order: result.order.order_number }),
       });
     } catch (err: any) {
       console.error("Search error:", err);
-      setError("Une erreur est survenue. Veuillez réessayer.");
+      setError(t("trackOrder.genericError"));
     } finally {
       setIsLoading(false);
     }
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
+    return new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR").format(price) + " FCFA";
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateString).toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -141,7 +147,7 @@ export default function SuiviCommande() {
             className="inline-flex items-center gap-2 text-cream/60 hover:text-primary transition-colors mb-8"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour à l'accueil
+            {t("trackOrder.back")}
           </Link>
 
           <div className="max-w-2xl mx-auto">
@@ -155,10 +161,10 @@ export default function SuiviCommande() {
                 <Package className="h-8 w-8 text-noir" />
               </div>
               <h1 className="font-display text-3xl md:text-4xl text-cream mb-2">
-                Suivre ma commande
+                {t("trackOrder.title")}
               </h1>
               <p className="text-cream/60">
-                Entrez votre numéro de commande et votre téléphone ou email
+                {t("trackOrder.subtitle")}
               </p>
             </motion.div>
 
@@ -172,19 +178,19 @@ export default function SuiviCommande() {
               <form onSubmit={handleSearch} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="orderNumber" className="text-cream">
-                    Numéro de commande
+                    {t("trackOrder.orderNumber")}
                   </Label>
                   <Input
                     id="orderNumber"
                     value={orderNumber}
                     onChange={(e) => setOrderNumber(e.target.value)}
-                    placeholder="Ex: CMD-20260205-1234"
+                    placeholder={t("trackOrder.orderNumberPlaceholder")}
                     className="bg-noir/50 border-gold/30 text-cream placeholder:text-cream/40"
                   />
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-cream">Méthode de vérification</Label>
+                  <Label className="text-cream">{t("trackOrder.verifyMethod")}</Label>
                   <RadioGroup
                     value={searchMethod}
                     onValueChange={(v) => setSearchMethod(v as "phone" | "email")}
@@ -194,14 +200,14 @@ export default function SuiviCommande() {
                       <RadioGroupItem value="phone" id="phone" className="border-gold/30" />
                       <Label htmlFor="phone" className="text-cream/80 cursor-pointer flex items-center gap-2">
                         <Phone className="h-4 w-4" />
-                        Téléphone
+                        {t("trackOrder.phone")}
                       </Label>
                     </div>
                     <div className="flex items-center gap-2">
                       <RadioGroupItem value="email" id="email" className="border-gold/30" />
                       <Label htmlFor="email" className="text-cream/80 cursor-pointer flex items-center gap-2">
                         <Mail className="h-4 w-4" />
-                        Email
+                        {t("trackOrder.email")}
                       </Label>
                     </div>
                   </RadioGroup>
@@ -209,14 +215,14 @@ export default function SuiviCommande() {
 
                 <div className="space-y-2">
                   <Label htmlFor="identifier" className="text-cream">
-                    {searchMethod === "phone" ? "Numéro de téléphone" : "Adresse email"}
+                    {searchMethod === "phone" ? t("trackOrder.phoneLabel") : t("trackOrder.emailLabel")}
                   </Label>
                   <Input
                     id="identifier"
                     type={searchMethod === "phone" ? "tel" : "email"}
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder={searchMethod === "phone" ? "Ex: 6XX XXX XXX" : "Ex: votre@email.com"}
+                    placeholder={searchMethod === "phone" ? t("trackOrder.phonePlaceholder") : t("trackOrder.emailPlaceholder")}
                     className="bg-noir/50 border-gold/30 text-cream placeholder:text-cream/40"
                   />
                 </div>
@@ -233,12 +239,12 @@ export default function SuiviCommande() {
                   {isLoading ? (
                     <span className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-noir border-t-transparent" />
-                      Recherche...
+                      {t("trackOrder.searching")}
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
                       <Search className="h-4 w-4" />
-                      Rechercher ma commande
+                      {t("trackOrder.searchBtn")}
                     </span>
                   )}
                 </Button>
@@ -256,12 +262,12 @@ export default function SuiviCommande() {
                 <div className="bg-noir-light/50 rounded-xl border border-gold/20 p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <p className="text-cream/60 text-sm">Commande</p>
+                      <p className="text-cream/60 text-sm">{t("trackOrder.orderLabel")}</p>
                       <p className="text-primary font-semibold text-lg">{order.order_number}</p>
                     </div>
                     <div className={`flex items-center gap-2 ${statusConfig.color}`}>
                       <statusConfig.icon className="h-5 w-5" />
-                      <span className="font-medium">{statusConfig.label}</span>
+                      <span className="font-medium">{t(`trackOrder.status.${statusConfig.key}`)}</span>
                     </div>
                   </div>
 
@@ -292,7 +298,7 @@ export default function SuiviCommande() {
                                   isActive ? "text-primary" : "text-cream/40"
                                 }`}
                               >
-                                {step.label}
+                                {t(`trackOrder.stepLabel.${step.key}`)}
                               </span>
                             </div>
                           );
@@ -311,26 +317,26 @@ export default function SuiviCommande() {
 
                 {/* Order Info */}
                 <div className="bg-noir-light/50 rounded-xl border border-gold/20 p-6">
-                  <h3 className="font-display text-lg text-cream mb-4">Détails de la commande</h3>
+                  <h3 className="font-display text-lg text-cream mb-4">{t("trackOrder.detailsTitle")}</h3>
                   
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-cream/60">Date</span>
+                      <span className="text-cream/60">{t("trackOrder.date")}</span>
                       <span className="text-cream">{formatDate(order.created_at)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-cream/60">Destinataire</span>
+                      <span className="text-cream/60">{t("trackOrder.recipient")}</span>
                       <span className="text-cream">{order.shipping_full_name}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-cream/60">Adresse</span>
+                      <span className="text-cream/60">{t("trackOrder.address")}</span>
                       <span className="text-cream text-right">
                         {order.shipping_city}
                         {order.shipping_neighborhood && `, ${order.shipping_neighborhood}`}
                       </span>
                     </div>
                     <div className="border-t border-gold/20 pt-3 flex justify-between">
-                      <span className="text-cream font-medium">Total</span>
+                      <span className="text-cream font-medium">{t("trackOrder.total")}</span>
                       <span className="text-primary font-semibold">{formatPrice(order.total)}</span>
                     </div>
                   </div>
@@ -339,7 +345,7 @@ export default function SuiviCommande() {
                 {/* Order Items */}
                 {order.items.length > 0 && (
                   <div className="bg-noir-light/50 rounded-xl border border-gold/20 p-6">
-                    <h3 className="font-display text-lg text-cream mb-4">Articles commandés</h3>
+                    <h3 className="font-display text-lg text-cream mb-4">{t("trackOrder.itemsTitle")}</h3>
                     <div className="space-y-3">
                       {order.items.map((item, index) => (
                         <div key={index} className="flex items-center gap-4">
@@ -374,7 +380,7 @@ export default function SuiviCommande() {
                 {/* Contact Support */}
                 <div className="text-center">
                   <p className="text-cream/50 text-sm">
-                    Des questions ? Contactez-nous au{" "}
+                    {t("trackOrder.supportQuestions")}{" "}
                     <a href="tel:+237600000000" className="text-primary hover:underline">
                       +237 6 XX XX XX XX
                     </a>
