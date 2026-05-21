@@ -1,0 +1,32 @@
+{
+  "nav": {
+    "catalogue": "Catalogue",
+    "wines": "Vins",
+    "champagnes": "Champagnes",
+    "spirits": "Spiritueux",
+    "tracking": "Suivi",
+    "login": "Connexion",
+    "signup": "Inscription",
+    "logout": "Déconnexion",
+    "account": "Mon compte",
+    "ambassador": "Espace ambassadeur",
+    "admin": "Administration",
+    "wishlist": "Favoris",
+    "search": "Rechercher un produit..."
+  },
+  "common": {
+    "addToCart": "Ajouter au panier",
+    "buyNow": "Acheter",
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "language": "Langue",
+    "currency": "Devise"
+  },
+  "footer": {
+    "newsletter": "Restez informé de nos exclusivités",
+    "newsletterDesc": "Inscrivez-vous pour recevoir en avant-première nos offres spéciales et nouvelles cuvées",
+    "emailPlaceholder": "Votre adresse email",
+    "subscribe": "S'inscrire"
+  }
+}
