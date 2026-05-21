@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
 import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { optimizeProductImage } from "@/lib/imageOptimization";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 import {
   Dialog,
   DialogContent,
@@ -29,11 +30,8 @@ interface ProductCardProps {
   index?: number;
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("fr-FR").format(price);
-};
-
 export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
+  const formatPrice = useFormatPrice();
   const [copied, setCopied] = useState(false);
   const [qrCopied, setQrCopied] = useState(false);
   const { data: tierConfig } = useWholesaleTierConfig();
@@ -222,11 +220,10 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
               <span className="text-xl font-bold text-gradient-gold font-display">
                 {formatPrice(product.price)}
               </span>
-              <span className="text-xs text-cream/50">FCFA</span>
             </div>
             {product.original_price && (
               <span className="text-sm text-cream/40 line-through">
-                {formatPrice(product.original_price)} FCFA
+                {formatPrice(product.original_price)}
               </span>
             )}
           </div>

@@ -4,10 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCartContext } from "@/contexts/CartContext";
 import { UnifiedCodeInput, AppliedCode } from "./UnifiedCodeInput";
 import { GiftPackagingSelect } from "./GiftPackagingSelect";
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("fr-FR").format(price);
-};
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 
 interface GiftPackagingOption {
   id: string;
@@ -37,6 +34,7 @@ export function OrderSummary({
   onGiftPackagingChange,
   onGiftMessageChange,
 }: OrderSummaryProps) {
+  const formatPrice = useFormatPrice();
   const { items, subtotal, itemCount } = useCartContext();
 
   // Calculate discount only if it's a promo code
@@ -73,7 +71,7 @@ export function OrderSummary({
               </Link>
               <p className="text-cream/60 text-xs mt-1">Qté: {item.quantity}</p>
               <p className="text-primary font-semibold text-sm mt-1">
-                {formatPrice((item.product?.price || 0) * item.quantity)} FCFA
+                {formatPrice((item.product?.price || 0) * item.quantity)}
               </p>
             </div>
           </div>
@@ -110,7 +108,7 @@ export function OrderSummary({
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
           <span className="text-cream/70">Sous-total</span>
-          <span className="text-cream">{formatPrice(subtotal)} FCFA</span>
+          <span className="text-cream">{formatPrice(subtotal)}</span>
         </div>
 
         {giftPackagingPrice > 0 && giftPackaging && (
@@ -119,7 +117,7 @@ export function OrderSummary({
               <Gift className="h-3 w-3" />
               {giftPackaging.name}
             </span>
-            <span className="text-cream">+{formatPrice(giftPackagingPrice)} FCFA</span>
+            <span className="text-cream">+{formatPrice(giftPackagingPrice)}</span>
           </div>
         )}
 
@@ -128,7 +126,7 @@ export function OrderSummary({
             <span className="text-cream/70 flex items-center gap-1">
               Réduction ({appliedCode.data.code})
             </span>
-            <span className="text-green-500">-{formatPrice(discountAmount)} FCFA</span>
+            <span className="text-green-500">-{formatPrice(discountAmount)}</span>
           </div>
         )}
 
@@ -138,13 +136,13 @@ export function OrderSummary({
             Livraison
           </span>
           <span className={deliveryFee === 0 ? "text-primary" : "text-cream"}>
-            {deliveryFee === 0 ? "Gratuite" : `${formatPrice(deliveryFee)} FCFA`}
+            {deliveryFee === 0 ? "Gratuite" : formatPrice(deliveryFee)}
           </span>
         </div>
 
         {subtotal < 50000 && (
           <p className="text-xs text-primary bg-primary/10 rounded-lg p-2">
-            Plus que {formatPrice(50000 - subtotal)} FCFA pour la livraison gratuite !
+            Plus que {formatPrice(50000 - subtotal)} pour la livraison gratuite !
           </p>
         )}
 
@@ -153,7 +151,7 @@ export function OrderSummary({
         <div className="flex justify-between items-baseline">
           <span className="text-lg font-semibold text-cream">Total</span>
           <span className="text-2xl font-bold text-primary">
-            {formatPrice(total)} FCFA
+            {formatPrice(total)}
           </span>
         </div>
       </div>
