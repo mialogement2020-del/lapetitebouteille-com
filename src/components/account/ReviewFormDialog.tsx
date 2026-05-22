@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import type { PurchasedProduct, ReviewWithProduct, ReviewFormData } from "@/hooks/useReviews";
+import { useTranslation } from "react-i18next";
 
 interface ReviewFormDialogProps {
   open: boolean;
@@ -32,13 +33,14 @@ export function ReviewFormDialog({
   onSubmit,
   isSubmitting,
 }: ReviewFormDialogProps) {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(existingReview?.rating || 0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [title, setTitle] = useState(existingReview?.title || "");
   const [comment, setComment] = useState(existingReview?.comment || "");
 
   const isEdit = !!existingReview;
-  const productName = product?.product_name || existingReview?.product?.name || "Produit";
+  const productName = product?.product_name || existingReview?.product?.name || t("reviewForm.defaultProduct");
   const productImage = product?.product_image || existingReview?.product?.image_url;
   const productId = product?.product_id || existingReview?.product_id || "";
 
@@ -46,17 +48,17 @@ export function ReviewFormDialog({
     e.preventDefault();
 
     if (rating === 0) {
-      toast.error("Veuillez sélectionner une note");
+      toast.error(t("reviewForm.errorRating"));
       return;
     }
 
     if (title.trim().length > 100) {
-      toast.error("Le titre doit faire moins de 100 caractères");
+      toast.error(t("reviewForm.errorTitleLong"));
       return;
     }
 
     if (comment.trim().length > 1000) {
-      toast.error("Le commentaire doit faire moins de 1000 caractères");
+      toast.error(t("reviewForm.errorCommentLong"));
       return;
     }
 
@@ -68,16 +70,14 @@ export function ReviewFormDialog({
         comment: comment.trim() || undefined,
       });
 
-      toast.success(isEdit ? "Avis modifié !" : "Avis envoyé !", {
-        description: isEdit 
-          ? "Votre avis a été mis à jour."
-          : "Votre avis sera visible après modération.",
+      toast.success(isEdit ? t("reviewForm.editedTitle") : t("reviewForm.sentTitle"), {
+        description: isEdit ? t("reviewForm.editedDesc") : t("reviewForm.sentDesc"),
       });
 
       onOpenChange(false);
       resetForm();
     } catch (error) {
-      toast.error("Erreur lors de l'envoi de l'avis");
+      toast.error(t("reviewForm.errorSubmit"));
     }
   };
 
@@ -94,13 +94,10 @@ export function ReviewFormDialog({
       <DialogContent className="bg-noir border-gold/30 max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-cream font-display text-xl">
-            {isEdit ? "Modifier mon avis" : "Laisser un avis"}
+            {isEdit ? t("reviewForm.editTitle") : t("reviewForm.newTitle")}
           </DialogTitle>
           <DialogDescription className="text-cream/60">
-            {isEdit 
-              ? "Modifiez votre avis sur ce produit"
-              : "Partagez votre expérience avec ce produit"
-            }
+            {isEdit ? t("reviewForm.editDesc") : t("reviewForm.newDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -120,7 +117,7 @@ export function ReviewFormDialog({
           <div className="flex-1 min-w-0">
             <p className="text-cream font-medium truncate">{productName}</p>
             {product?.order_number && (
-              <p className="text-cream/50 text-sm">Commande {product.order_number}</p>
+              <p className="text-cream/50 text-sm">{t("reviewForm.orderLabel", { order: product.order_number })}</p>
             )}
           </div>
         </div>
@@ -128,7 +125,7 @@ export function ReviewFormDialog({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Star Rating */}
           <div className="space-y-2">
-            <Label className="text-cream">Votre note *</Label>
+            <Label className="text-cream">{t("reviewForm.ratingLabel")}</Label>
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <motion.button
@@ -151,7 +148,7 @@ export function ReviewFormDialog({
                 </motion.button>
               ))}
               <span className="ml-3 text-cream/60 text-sm">
-                {rating > 0 ? `${rating}/5` : "Sélectionnez une note"}
+                {rating > 0 ? `${rating}/5` : t("reviewForm.ratingPlaceholder")}
               </span>
             </div>
           </div>
@@ -159,42 +156,41 @@ export function ReviewFormDialog({
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title" className="text-cream">
-              Titre de l'avis (optionnel)
+              {t("reviewForm.titleLabel")}
             </Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Excellent rapport qualité-prix"
+              placeholder={t("reviewForm.titlePlaceholder")}
               maxLength={100}
               className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
             />
-            <p className="text-cream/40 text-xs">{title.length}/100 caractères</p>
+            <p className="text-cream/40 text-xs">{t("reviewForm.chars", { count: title.length, max: 100 })}</p>
           </div>
 
           {/* Comment */}
           <div className="space-y-2">
             <Label htmlFor="comment" className="text-cream">
-              Votre commentaire (optionnel)
+              {t("reviewForm.commentLabel")}
             </Label>
             <Textarea
               id="comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Décrivez votre expérience avec ce produit..."
+              placeholder={t("reviewForm.commentPlaceholder")}
               maxLength={1000}
               rows={4}
               className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 resize-none"
             />
-            <p className="text-cream/40 text-xs">{comment.length}/1000 caractères</p>
+            <p className="text-cream/40 text-xs">{t("reviewForm.chars", { count: comment.length, max: 1000 })}</p>
           </div>
 
           {/* Info Notice */}
           {!isEdit && (
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
               <p className="text-primary text-sm">
-                Votre avis sera vérifié avant d'être publié. Les avis vérifiés aident 
-                les autres clients à faire leur choix.
+                {t("reviewForm.infoNotice")}
               </p>
             </div>
           )}
@@ -207,7 +203,7 @@ export function ReviewFormDialog({
               onClick={() => onOpenChange(false)}
               className="border-gold/30 text-cream hover:bg-cream/10"
             >
-              Annuler
+              {t("reviewForm.cancel")}
             </Button>
             <Button
               type="submit"
@@ -217,12 +213,12 @@ export function ReviewFormDialog({
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Envoi...
+                  {t("reviewForm.sending")}
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  {isEdit ? "Modifier" : "Envoyer"}
+                  {isEdit ? t("reviewForm.edit") : t("reviewForm.submit")}
                 </>
               )}
             </Button>
