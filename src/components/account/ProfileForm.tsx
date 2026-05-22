@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
+import { useTranslation } from "react-i18next";
 
 type Profile = Tables<"profiles">;
 
@@ -20,6 +21,7 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
+  const { t, i18n } = useTranslation();
   const { user } = useAuthContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -38,8 +40,8 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
 
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner une image.",
+        title: t("profile.errorTitle"),
+        description: t("profile.errorImageType"),
         variant: "destructive",
       });
       return;
@@ -47,8 +49,8 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Erreur",
-        description: "L'image ne doit pas dépasser 5 Mo.",
+        title: t("profile.errorTitle"),
+        description: t("profile.errorImageSize"),
         variant: "destructive",
       });
       return;
@@ -77,14 +79,14 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
 
       setAvatarUrl(newAvatarUrl);
       toast({
-        title: "Photo mise à jour",
-        description: "Votre photo de profil a été modifiée avec succès.",
+        title: t("profile.photoUpdated"),
+        description: t("profile.photoUpdatedDesc"),
       });
     } catch (error: any) {
       console.error("Avatar upload error:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de télécharger la photo.",
+        title: t("profile.errorTitle"),
+        description: t("profile.uploadError"),
         variant: "destructive",
       });
     } finally {
@@ -102,7 +104,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
     if (formData.first_name || formData.last_name) {
       return `${formData.first_name} ${formData.last_name}`.trim();
     }
-    return profile.email || "Utilisateur";
+    return profile.email || t("profile.defaultUser");
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,16 +122,16 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
 
     if (error) {
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le profil.",
+        title: t("profile.errorTitle"),
+        description: t("profile.updateError"),
         variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: "Profil mis à jour",
-      description: "Vos informations ont été enregistrées.",
+      title: t("profile.updated"),
+      description: t("profile.updatedDesc"),
     });
     setIsOpen(false);
   };
@@ -149,7 +151,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                   {/* Avatar compact */}
                   <div className="relative">
                     <Avatar className="h-14 w-14 border-2 border-gold/30">
-                      <AvatarImage src={avatarUrl} alt="Photo de profil" />
+                      <AvatarImage src={avatarUrl} alt={t("profile.photoAlt")} />
                       <AvatarFallback className="bg-primary/20 text-primary text-lg font-semibold">
                         {getInitials()}
                       </AvatarFallback>
@@ -169,7 +171,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                   {/* Toggle button */}
                   <div className="flex items-center gap-2">
                     <span className="text-cream/40 text-xs hidden sm:block">
-                      {isOpen ? "Fermer" : "Modifier"}
+                      {isOpen ? t("profile.close") : t("profile.edit")}
                     </span>
                     <div className="p-2 rounded-full bg-cream/5 group-hover:bg-cream/10 transition-colors">
                       {isOpen ? (
@@ -200,7 +202,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                         <div className="flex flex-col items-center gap-3 pb-4">
                           <div className="relative group">
                             <Avatar className="h-20 w-20 border-2 border-gold/30">
-                              <AvatarImage src={avatarUrl} alt="Photo de profil" />
+                              <AvatarImage src={avatarUrl} alt={t("profile.photoAlt")} />
                               <AvatarFallback className="bg-primary/20 text-primary text-xl font-semibold">
                                 {getInitials()}
                               </AvatarFallback>
@@ -236,12 +238,12 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                             {isUploadingAvatar ? (
                               <>
                                 <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                                Téléchargement...
+                                {t("profile.uploading")}
                               </>
                             ) : (
                               <>
                                 <Upload className="mr-1.5 h-3 w-3" />
-                                Changer la photo
+                                {t("profile.changePhoto")}
                               </>
                             )}
                           </Button>
@@ -249,7 +251,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
 
                         {/* Email (read-only) */}
                         <div className="space-y-1.5">
-                          <Label className="text-cream/70 text-xs">Email</Label>
+                          <Label className="text-cream/70 text-xs">{t("profile.email")}</Label>
                           <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
                             <Input
@@ -264,7 +266,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1.5">
                             <Label htmlFor="first_name" className="text-cream/70 text-xs">
-                              Prénom
+                              {t("profile.firstName")}
                             </Label>
                             <Input
                               id="first_name"
@@ -277,7 +279,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                           </div>
                           <div className="space-y-1.5">
                             <Label htmlFor="last_name" className="text-cream/70 text-xs">
-                              Nom
+                              {t("profile.lastName")}
                             </Label>
                             <Input
                               id="last_name"
@@ -293,7 +295,7 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                         {/* Phone */}
                         <div className="space-y-1.5">
                           <Label htmlFor="phone" className="text-cream/70 text-xs">
-                            Téléphone
+                            {t("profile.phone")}
                           </Label>
                           <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
@@ -312,17 +314,17 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                         {/* Date of Birth (read-only) */}
                         {profile.date_of_birth && (
                           <div className="space-y-1.5">
-                            <Label className="text-cream/70 text-xs">Date de naissance</Label>
+                            <Label className="text-cream/70 text-xs">{t("profile.dob")}</Label>
                             <div className="relative">
                               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
                               <Input
-                                value={new Date(profile.date_of_birth).toLocaleDateString("fr-FR")}
+                                value={new Date(profile.date_of_birth).toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR")}
                                 disabled
                                 className="pl-10 h-10 bg-cream/5 border-gold/15 text-cream/50 text-sm"
                               />
                             </div>
                             {profile.is_age_verified && (
-                              <p className="text-xs text-green-500">✓ Âge vérifié (18+)</p>
+                              <p className="text-xs text-green-500">{t("profile.ageVerified")}</p>
                             )}
                           </div>
                         )}
@@ -337,12 +339,12 @@ export function ProfileForm({ profile, onUpdate }: ProfileFormProps) {
                           {isLoading ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Enregistrement...
+                              {t("profile.saving")}
                             </>
                           ) : (
                             <>
                               <Save className="mr-2 h-4 w-4" />
-                              Enregistrer
+                              {t("profile.save")}
                             </>
                           )}
                         </Button>

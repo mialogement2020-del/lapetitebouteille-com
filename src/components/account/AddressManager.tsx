@@ -19,10 +19,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Tables } from "@/integrations/supabase/types";
+import { useTranslation } from "react-i18next";
 
 type Address = Tables<"addresses">;
 
 export function AddressManager() {
+  const { t } = useTranslation();
   const { addresses, loading, addAddress, updateAddress, deleteAddress, setDefaultAddress } = useAddresses();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
@@ -31,13 +33,9 @@ export function AddressManager() {
   const handleAddAddress = async (data: Omit<Address, "id" | "user_id" | "created_at" | "updated_at">) => {
     const { error } = await addAddress(data);
     if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter l'adresse",
-        variant: "destructive",
-      });
+      toast({ title: t("addresses.errorTitle"), description: t("addresses.errorAdd"), variant: "destructive" });
     } else {
-      toast({ title: "Adresse ajoutée avec succès" });
+      toast({ title: t("addresses.addedSuccess") });
       setIsDialogOpen(false);
     }
   };
@@ -46,13 +44,9 @@ export function AddressManager() {
     if (!editingAddress) return;
     const { error } = await updateAddress(editingAddress.id, data);
     if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de modifier l'adresse",
-        variant: "destructive",
-      });
+      toast({ title: t("addresses.errorTitle"), description: t("addresses.errorUpdate"), variant: "destructive" });
     } else {
-      toast({ title: "Adresse modifiée avec succès" });
+      toast({ title: t("addresses.updatedSuccess") });
       setEditingAddress(null);
     }
   };
@@ -61,13 +55,9 @@ export function AddressManager() {
     if (!deletingAddressId) return;
     const { error } = await deleteAddress(deletingAddressId);
     if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer l'adresse",
-        variant: "destructive",
-      });
+      toast({ title: t("addresses.errorTitle"), description: t("addresses.errorDelete"), variant: "destructive" });
     } else {
-      toast({ title: "Adresse supprimée" });
+      toast({ title: t("addresses.deletedSuccess") });
     }
     setDeletingAddressId(null);
   };
@@ -75,13 +65,9 @@ export function AddressManager() {
   const handleSetDefault = async (id: string) => {
     const { error } = await setDefaultAddress(id);
     if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de définir comme adresse par défaut",
-        variant: "destructive",
-      });
+      toast({ title: t("addresses.errorTitle"), description: t("addresses.errorDefault"), variant: "destructive" });
     } else {
-      toast({ title: "Adresse par défaut mise à jour" });
+      toast({ title: t("addresses.defaultUpdated") });
     }
   };
 
@@ -123,10 +109,10 @@ export function AddressManager() {
             <div>
               <CardTitle className="text-cream flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-primary" />
-                Mes adresses de livraison
+                {t("addresses.title")}
               </CardTitle>
               <CardDescription className="text-cream/60">
-                Gérez vos adresses pour une livraison plus rapide
+                {t("addresses.subtitle")}
               </CardDescription>
             </div>
             <Button
@@ -134,7 +120,7 @@ export function AddressManager() {
               className="bg-primary text-noir hover:bg-primary/90"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter
+              {t("addresses.add")}
             </Button>
           </div>
         </CardHeader>
@@ -142,9 +128,9 @@ export function AddressManager() {
           {addresses.length === 0 ? (
             <div className="text-center py-12">
               <MapPin className="h-16 w-16 mx-auto text-cream/20 mb-4" />
-              <p className="text-cream/60 text-lg mb-2">Aucune adresse enregistrée</p>
+              <p className="text-cream/60 text-lg mb-2">{t("addresses.empty")}</p>
               <p className="text-cream/40 text-sm mb-6">
-                Ajoutez une adresse pour faciliter vos prochaines commandes
+                {t("addresses.emptyDesc")}
               </p>
               <Button
                 variant="outline"
@@ -152,7 +138,7 @@ export function AddressManager() {
                 onClick={() => setIsDialogOpen(true)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Ajouter une adresse
+                {t("addresses.addAddress")}
               </Button>
             </div>
           ) : (
@@ -172,12 +158,12 @@ export function AddressManager() {
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex items-center gap-2 text-cream/80">
                       {getLabelIcon(address.label)}
-                      <span className="font-medium">{address.label || "Domicile"}</span>
+                      <span className="font-medium">{address.label || t("addresses.typeHome")}</span>
                     </div>
                     {address.is_default && (
                       <Badge className="bg-primary/20 text-primary border-primary/30">
                         <Star className="h-3 w-3 mr-1 fill-primary" />
-                        Par défaut
+                        {t("addresses.defaultLabel")}
                       </Badge>
                     )}
                   </div>
@@ -211,7 +197,7 @@ export function AddressManager() {
                         onClick={() => handleSetDefault(address.id)}
                       >
                         <Star className="h-4 w-4 mr-1" />
-                        Par défaut
+                        {t("addresses.defaultLabel")}
                       </Button>
                     )}
                     <Button
@@ -221,7 +207,7 @@ export function AddressManager() {
                       onClick={() => setEditingAddress(address)}
                     >
                       <Edit2 className="h-4 w-4 mr-1" />
-                      Modifier
+                      {t("addresses.edit")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -230,7 +216,7 @@ export function AddressManager() {
                       onClick={() => setDeletingAddressId(address.id)}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Supprimer
+                      {t("addresses.delete")}
                     </Button>
                   </div>
                 </motion.div>
@@ -245,7 +231,7 @@ export function AddressManager() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSubmit={handleAddAddress}
-        title="Ajouter une adresse"
+        title={t("addresses.addDialogTitle")}
       />
 
       {/* Edit Address Dialog */}
@@ -254,27 +240,27 @@ export function AddressManager() {
         onOpenChange={(open) => !open && setEditingAddress(null)}
         onSubmit={handleUpdateAddress}
         initialData={editingAddress || undefined}
-        title="Modifier l'adresse"
+        title={t("addresses.editDialogTitle")}
       />
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deletingAddressId} onOpenChange={(open) => !open && setDeletingAddressId(null)}>
         <AlertDialogContent className="bg-noir border-gold/30">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-cream">Supprimer l'adresse ?</AlertDialogTitle>
+            <AlertDialogTitle className="text-cream">{t("addresses.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription className="text-cream/60">
-              Cette action est irréversible. L'adresse sera définitivement supprimée.
+              {t("addresses.deleteDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-gold/30 text-cream hover:bg-cream/10">
-              Annuler
+              {t("addresses.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAddress}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Supprimer
+              {t("addresses.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

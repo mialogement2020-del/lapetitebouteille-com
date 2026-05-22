@@ -6,28 +6,29 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { OrderWithItems } from "@/hooks/useProfile";
+import { useTranslation } from "react-i18next";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 
 interface OrderHistoryProps {
   orders: OrderWithItems[];
   loading: boolean;
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
-  pending: { label: "En attente", color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30", icon: Clock },
-  confirmed: { label: "Confirmée", color: "bg-blue-500/20 text-blue-500 border-blue-500/30", icon: CheckCircle },
-  processing: { label: "En préparation", color: "bg-purple-500/20 text-purple-500 border-purple-500/30", icon: Package },
-  shipped: { label: "Expédiée", color: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30", icon: Truck },
-  delivered: { label: "Livrée", color: "bg-green-500/20 text-green-500 border-green-500/30", icon: CheckCircle },
-  cancelled: { label: "Annulée", color: "bg-red-500/20 text-red-500 border-red-500/30", icon: XCircle },
+const statusConfig: Record<string, { labelKey: string; color: string; icon: any }> = {
+  pending: { labelKey: "orderHistory.status.pending", color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30", icon: Clock },
+  confirmed: { labelKey: "orderHistory.status.confirmed", color: "bg-blue-500/20 text-blue-500 border-blue-500/30", icon: CheckCircle },
+  processing: { labelKey: "orderHistory.status.processing", color: "bg-purple-500/20 text-purple-500 border-purple-500/30", icon: Package },
+  shipped: { labelKey: "orderHistory.status.shipped", color: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30", icon: Truck },
+  delivered: { labelKey: "orderHistory.status.delivered", color: "bg-green-500/20 text-green-500 border-green-500/30", icon: CheckCircle },
+  cancelled: { labelKey: "orderHistory.status.cancelled", color: "bg-red-500/20 text-red-500 border-red-500/30", icon: XCircle },
 };
 
 export function OrderHistory({ orders, loading }: OrderHistoryProps) {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
-  };
+  const { t, i18n } = useTranslation();
+  const formatPrice = useFormatPrice();
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
+    return new Date(dateStr).toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -62,26 +63,26 @@ export function OrderHistory({ orders, loading }: OrderHistoryProps) {
         <CardHeader>
           <CardTitle className="text-cream flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
-            Historique des commandes
+            {t("orderHistory.title")}
           </CardTitle>
           <CardDescription className="text-cream/60">
-            Suivez vos commandes et consultez leur historique
+            {t("orderHistory.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {orders.length === 0 ? (
             <div className="text-center py-12">
               <Package className="h-16 w-16 mx-auto text-cream/20 mb-4" />
-              <p className="text-cream/60 text-lg mb-2">Aucune commande</p>
+              <p className="text-cream/60 text-lg mb-2">{t("orderHistory.empty")}</p>
               <p className="text-cream/40 text-sm mb-6">
-                Vous n'avez pas encore passé de commande
+                {t("orderHistory.emptyDesc")}
               </p>
               <Button
                 variant="outline"
                 className="border-primary text-primary hover:bg-primary/10"
                 onClick={() => window.location.href = "/catalogue"}
               >
-                Découvrir le catalogue
+                {t("orderHistory.discover")}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -115,7 +116,7 @@ export function OrderHistory({ orders, loading }: OrderHistoryProps) {
                         <div className="flex items-center gap-3 sm:ml-auto">
                           <Badge className={`${status.color} border`}>
                             <StatusIcon className="h-3 w-3 mr-1" />
-                            {status.label}
+                            {t(status.labelKey)}
                           </Badge>
                           <span className="text-primary font-semibold">
                             {formatPrice(order.total)}
@@ -127,7 +128,7 @@ export function OrderHistory({ orders, loading }: OrderHistoryProps) {
                       <div className="space-y-4 pt-2">
                         {/* Order Items */}
                         <div className="space-y-2">
-                          <p className="text-cream/60 text-sm font-medium">Articles</p>
+                          <p className="text-cream/60 text-sm font-medium">{t("orderHistory.items")}</p>
                           <div className="space-y-2">
                             {order.items.map((item) => (
                               <div
@@ -146,7 +147,7 @@ export function OrderHistory({ orders, loading }: OrderHistoryProps) {
                                     {item.product_name}
                                   </p>
                                   <p className="text-cream/50 text-xs">
-                                    Qté: {item.quantity} × {formatPrice(item.unit_price)}
+                                    {t("orderHistory.qty")}: {item.quantity} × {formatPrice(item.unit_price)}
                                   </p>
                                 </div>
                                 <p className="text-cream font-medium text-sm">
@@ -160,7 +161,7 @@ export function OrderHistory({ orders, loading }: OrderHistoryProps) {
                         {/* Delivery Info */}
                         {order.shipping_full_name && (
                           <div className="space-y-2">
-                            <p className="text-cream/60 text-sm font-medium">Livraison</p>
+                            <p className="text-cream/60 text-sm font-medium">{t("orderHistory.delivery")}</p>
                             <div className="p-3 rounded-lg bg-cream/5 text-sm">
                               <p className="text-cream">{order.shipping_full_name}</p>
                               <p className="text-cream/60">{order.shipping_street}</p>
@@ -175,23 +176,23 @@ export function OrderHistory({ orders, loading }: OrderHistoryProps) {
                         {/* Order Summary */}
                         <div className="border-t border-gold/20 pt-3 space-y-1 text-sm">
                           <div className="flex justify-between text-cream/60">
-                            <span>Sous-total</span>
+                            <span>{t("orderHistory.subtotal")}</span>
                             <span>{formatPrice(order.subtotal)}</span>
                           </div>
                           {order.delivery_fee && order.delivery_fee > 0 && (
                             <div className="flex justify-between text-cream/60">
-                              <span>Livraison</span>
+                              <span>{t("orderHistory.deliveryFee")}</span>
                               <span>{formatPrice(order.delivery_fee)}</span>
                             </div>
                           )}
                           {order.discount_amount && order.discount_amount > 0 && (
                             <div className="flex justify-between text-green-500">
-                              <span>Réduction</span>
+                              <span>{t("orderHistory.discount")}</span>
                               <span>-{formatPrice(order.discount_amount)}</span>
                             </div>
                           )}
                           <div className="flex justify-between text-cream font-semibold text-base pt-2 border-t border-gold/10">
-                            <span>Total</span>
+                            <span>{t("orderHistory.total")}</span>
                             <span className="text-primary">{formatPrice(order.total)}</span>
                           </div>
                         </div>
