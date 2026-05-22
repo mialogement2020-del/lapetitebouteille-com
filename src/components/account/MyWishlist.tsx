@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWishlist } from "@/hooks/useWishlist";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("fr-FR").format(price);
-};
+import { useTranslation } from "react-i18next";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 
 export const MyWishlist = () => {
+  const { t } = useTranslation();
+  const formatPrice = useFormatPrice();
   const { wishlistItems, isLoading, removeFromWishlist } = useWishlist();
 
   if (isLoading) {
@@ -27,12 +27,12 @@ export const MyWishlist = () => {
     return (
       <div className="text-center py-12">
         <Heart className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Votre liste de favoris est vide</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("wishlist.emptyTitle")}</h3>
         <p className="text-muted-foreground mb-6">
-          Parcourez notre catalogue et ajoutez vos produits préférés
+          {t("wishlist.emptyDesc")}
         </p>
         <Button asChild>
-          <Link to="/catalogue">Découvrir nos produits</Link>
+          <Link to="/catalogue">{t("wishlist.discover")}</Link>
         </Button>
       </div>
     );
@@ -42,7 +42,7 @@ export const MyWishlist = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
-          {wishlistItems.length} produit{wishlistItems.length > 1 ? "s" : ""} dans vos favoris
+          {t("wishlist.count", { count: wishlistItems.length })}
         </h3>
       </div>
 
@@ -102,12 +102,12 @@ export const MyWishlist = () => {
                 {/* Price */}
                 <div className="flex items-center gap-2 mt-2">
                   <span className="font-bold text-foreground">
-                    {formatPrice(product.price)} FCFA
+                    {formatPrice(product.price)}
                   </span>
                   {discount > 0 && (
                     <>
                       <span className="text-sm text-muted-foreground line-through">
-                        {formatPrice(product.original_price!)} FCFA
+                        {formatPrice(product.original_price!)}
                       </span>
                       <span className="text-xs bg-burgundy text-white px-2 py-0.5 rounded">
                         -{discount}%
@@ -118,7 +118,7 @@ export const MyWishlist = () => {
 
                 {/* Stock Status */}
                 {product.stock_quantity <= 0 && (
-                  <p className="text-sm text-destructive mt-1">Rupture de stock</p>
+                  <p className="text-sm text-destructive mt-1">{t("wishlist.outOfStock")}</p>
                 )}
               </div>
 

@@ -93,7 +93,7 @@ export function AddToCartButton({
       ) : (
         <ShoppingCart className="h-5 w-5 mr-2" />
       )}
-      {showText && (justAdded ? "Ajouté !" : "Ajouter au panier")}
+      {showText && (justAdded ? t("cart.added") : t("cart.addToCart"))}
     </Button>
   );
 }

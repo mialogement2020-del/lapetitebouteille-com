@@ -82,6 +82,7 @@ export const WishlistButton = ({
           "h-4 w-4 transition-all",
           inWishlist && "fill-burgundy"
         )}
+        aria-label={inWishlist ? t("wishlist.inWishlist") : t("wishlist.favorites")}
       />
     </Button>
   );
