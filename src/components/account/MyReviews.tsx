@@ -27,8 +27,10 @@ import {
 import { toast } from "sonner";
 import { useReviews, type ReviewWithProduct, type PurchasedProduct, type ReviewFormData } from "@/hooks/useReviews";
 import { ReviewFormDialog } from "./ReviewFormDialog";
+import { useTranslation } from "react-i18next";
 
 export function MyReviews() {
+  const { t, i18n } = useTranslation();
   const { 
     reviews, 
     isLoadingReviews, 
@@ -45,7 +47,7 @@ export function MyReviews() {
   const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
+    return new Date(dateStr).toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -77,11 +79,9 @@ export function MyReviews() {
 
     try {
       await deleteReview.mutateAsync(reviewToDelete);
-      toast.success("Avis supprimé", {
-        description: "Votre avis a été supprimé avec succès.",
-      });
+      toast.success(t("myReviews.deleted"), { description: t("myReviews.deletedDesc") });
     } catch (error) {
-      toast.error("Erreur lors de la suppression");
+      toast.error(t("myReviews.deleteError"));
     } finally {
       setReviewToDelete(null);
     }
@@ -118,10 +118,10 @@ export function MyReviews() {
           <CardHeader>
             <CardTitle className="text-cream flex items-center gap-2">
               <ShoppingBag className="h-5 w-5 text-primary" />
-              Produits à évaluer
+              {t("myReviews.productsToReview")}
             </CardTitle>
             <CardDescription className="text-cream/60">
-              Partagez votre avis sur vos achats récents
+              {t("myReviews.productsToReviewDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -147,7 +147,7 @@ export function MyReviews() {
                   <div className="flex-1 min-w-0">
                     <p className="text-cream font-medium truncate">{product.product_name}</p>
                     <p className="text-cream/50 text-sm">
-                      Livré le {formatDate(product.order_date)}
+                      {t("myReviews.deliveredOn", { date: formatDate(product.order_date) })}
                     </p>
                   </div>
                   <Button
@@ -156,7 +156,7 @@ export function MyReviews() {
                     className="bg-primary text-noir hover:bg-primary/90"
                   >
                     <Plus className="h-4 w-4 mr-1" />
-                    Évaluer
+                    {t("myReviews.rate")}
                   </Button>
                 </motion.div>
               ))}
@@ -170,7 +170,7 @@ export function MyReviews() {
         <CardHeader>
           <CardTitle className="text-cream flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-primary" />
-            Mes avis
+            {t("myReviews.myReviews")}
             {reviews.length > 0 && (
               <Badge variant="secondary" className="bg-primary/20 text-primary ml-2">
                 {reviews.length}
@@ -178,18 +178,18 @@ export function MyReviews() {
             )}
           </CardTitle>
           <CardDescription className="text-cream/60">
-            Consultez et gérez vos avis publiés
+            {t("myReviews.myReviewsDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {reviews.length === 0 ? (
             <div className="text-center py-12">
               <MessageSquare className="h-16 w-16 mx-auto text-cream/20 mb-4" />
-              <p className="text-cream/60 text-lg mb-2">Aucun avis</p>
+              <p className="text-cream/60 text-lg mb-2">{t("myReviews.empty")}</p>
               <p className="text-cream/40 text-sm mb-4">
                 {reviewableProducts.length > 0 
-                  ? "Vous n'avez pas encore donné d'avis. Partagez votre expérience !"
-                  : "Passez une commande et recevez-la pour pouvoir laisser un avis."
+                  ? t("myReviews.emptyHasProducts")
+                  : t("myReviews.emptyNoProducts")
                 }
               </p>
             </div>
@@ -222,7 +222,7 @@ export function MyReviews() {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <p className="text-cream font-medium">
-                              {review.product?.name || "Produit"}
+                              {review.product?.name || t("myReviews.defaultProduct")}
                             </p>
                             {/* Rating Stars */}
                             <div className="flex items-center gap-1 mt-1">
@@ -249,12 +249,12 @@ export function MyReviews() {
                             {review.is_approved ? (
                               <>
                                 <CheckCircle className="h-3 w-3 mr-1" />
-                                Publié
+                                {t("myReviews.published")}
                               </>
                             ) : (
                               <>
                                 <Clock className="h-3 w-3 mr-1" />
-                                En attente
+                                {t("myReviews.pending")}
                               </>
                             )}
                           </Badge>
@@ -281,7 +281,7 @@ export function MyReviews() {
                               className="text-cream/60 hover:text-cream hover:bg-cream/10"
                             >
                               <Edit2 className="h-4 w-4 mr-1" />
-                              Modifier
+                              {t("myReviews.edit")}
                             </Button>
                             <Button
                               variant="ghost"
@@ -290,7 +290,7 @@ export function MyReviews() {
                               className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
-                              Supprimer
+                              {t("myReviews.delete")}
                             </Button>
                           </div>
                         </div>
@@ -318,20 +318,20 @@ export function MyReviews() {
       <AlertDialog open={!!reviewToDelete} onOpenChange={() => setReviewToDelete(null)}>
         <AlertDialogContent className="bg-noir border-gold/30">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-cream">Supprimer cet avis ?</AlertDialogTitle>
+            <AlertDialogTitle className="text-cream">{t("myReviews.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription className="text-cream/60">
-              Cette action est irréversible. Votre avis sera définitivement supprimé.
+              {t("myReviews.deleteDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-gold/30 text-cream hover:bg-cream/10">
-              Annuler
+              {t("myReviews.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteReview}
               className="bg-red-500 text-white hover:bg-red-600"
             >
-              Supprimer
+              {t("myReviews.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -10,12 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { useCartContext } from "@/contexts/CartContext";
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
+import { useTranslation } from "react-i18next";
 
 interface CartDrawerProps {
   children?: React.ReactNode;
 }
 
 export function CartDrawer({ children }: CartDrawerProps) {
+  const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const { items, isLoading, updateQuantity, removeItem, subtotal, itemCount } = useCartContext();
   const { hasStoredReferral, getStoredReferralCode } = useProductReferral();
@@ -98,10 +100,10 @@ export function CartDrawer({ children }: CartDrawerProps) {
         <SheetHeader className="p-6 border-b border-gold/20">
           <SheetTitle className="font-display text-2xl text-cream flex items-center gap-3">
             <ShoppingBag className="h-6 w-6 text-primary" />
-            Mon Panier
+            {t("cart.title")}
             {itemCount > 0 && (
               <span className="text-sm font-normal text-cream/60">
-                ({itemCount} article{itemCount > 1 ? "s" : ""})
+                ({t("cart.items", { count: itemCount })})
               </span>
             )}
           </SheetTitle>
@@ -113,15 +115,15 @@ export function CartDrawer({ children }: CartDrawerProps) {
               <ShoppingBag className="h-12 w-12 text-cream/30" />
             </div>
             <h3 className="font-display text-xl text-cream mb-2">
-              Votre panier est vide
+              {t("cart.empty")}
             </h3>
             <p className="text-cream/60 mb-6">
-              Découvrez notre sélection de vins et spiritueux d'exception.
+              {t("cart.emptyDesc")}
             </p>
             <SheetClose asChild>
               <Link to="/catalogue">
                 <Button className="bg-gradient-gold text-noir font-semibold gap-2">
-                  Explorer le catalogue
+                  {t("cart.explore")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -213,10 +215,10 @@ export function CartDrawer({ children }: CartDrawerProps) {
                   <Gift className="h-5 w-5 text-primary flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-cream">
-                      Parrainage actif
+                      {t("cart.referralActive")}
                     </p>
                     <p className="text-xs text-cream/60 truncate">
-                      Code <span className="font-mono text-primary">{referralCode}</span> sera appliqué automatiquement
+                      <span dangerouslySetInnerHTML={{ __html: t("cart.referralAutoApplied", { code: `<span class='font-mono text-primary'>${referralCode}</span>` }) }} />
                     </p>
                   </div>
                   <Badge variant="secondary" className="bg-primary/20 text-primary border-0 text-xs">
@@ -228,14 +230,14 @@ export function CartDrawer({ children }: CartDrawerProps) {
               {/* Subtotals */}
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-cream/70">
-                  <span>Sous-total</span>
+                  <span>{t("cart.subtotal")}</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-cream/70">
-                  <span>Livraison</span>
+                  <span>{t("cart.delivery")}</span>
                   <span>
                     {deliveryFee === 0 ? (
-                      <span className="text-primary">Gratuite</span>
+                      <span className="text-primary">{t("cart.free")}</span>
                     ) : (
                       formatPrice(deliveryFee)
                     )}
@@ -243,7 +245,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
                 </div>
                 {subtotal < 50000 && (
                   <p className="text-xs text-primary">
-                    Plus que {formatPrice(50000 - subtotal)} pour la livraison gratuite !
+                    {t("cart.freeHint", { amount: formatPrice(50000 - subtotal) })}
                   </p>
                 )}
               </div>
@@ -252,7 +254,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
 
               {/* Total */}
               <div className="flex justify-between items-baseline">
-                <span className="text-lg font-semibold text-cream">Total</span>
+                <span className="text-lg font-semibold text-cream">{t("cart.total")}</span>
                 <span className="text-2xl font-bold text-primary">
                   {formatPrice(total)}
                 </span>
@@ -262,7 +264,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
               <SheetClose asChild>
                 <Link to="/checkout" className="block">
                   <Button className="w-full bg-gradient-gold text-noir font-semibold h-12 gap-2">
-                    Passer la commande
+                    {t("cart.checkout")}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -272,7 +274,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
               <SheetClose asChild>
                 <Link to="/catalogue" className="block">
                   <Button variant="outline" className="w-full border-gold/30 text-cream hover:bg-cream/10">
-                    Continuer mes achats
+                    {t("cart.continueShopping")}
                   </Button>
                 </Link>
               </SheetClose>

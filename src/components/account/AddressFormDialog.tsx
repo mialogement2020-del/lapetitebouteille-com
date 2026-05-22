@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Tables } from "@/integrations/supabase/types";
+import { useTranslation } from "react-i18next";
 
 type Address = Tables<"addresses">;
 
@@ -75,6 +76,7 @@ export function AddressFormDialog({
   initialData,
   title,
 }: AddressFormDialogProps) {
+  const { t } = useTranslation();
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
     defaultValues: {
@@ -134,7 +136,7 @@ export function AddressFormDialog({
         <DialogHeader>
           <DialogTitle className="text-cream">{title}</DialogTitle>
           <DialogDescription className="text-cream/60">
-            Remplissez les informations de livraison
+            {t("addresses.formDesc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -146,22 +148,22 @@ export function AddressFormDialog({
               name="label"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-cream/80">Type d'adresse</FormLabel>
+                  <FormLabel className="text-cream/80">{t("addresses.type")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="bg-cream/10 border-gold/30 text-cream">
-                        <SelectValue placeholder="Sélectionner un type" />
+                        <SelectValue placeholder={t("addresses.typePlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-noir border-gold/30">
                       <SelectItem value="Domicile" className="text-cream hover:bg-cream/10">
-                        Domicile
+                        {t("addresses.typeHome")}
                       </SelectItem>
                       <SelectItem value="Bureau" className="text-cream hover:bg-cream/10">
-                        Bureau
+                        {t("addresses.typeOffice")}
                       </SelectItem>
                       <SelectItem value="Autre" className="text-cream hover:bg-cream/10">
-                        Autre
+                        {t("addresses.typeOther")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -176,11 +178,11 @@ export function AddressFormDialog({
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-cream/80">Nom complet *</FormLabel>
+                  <FormLabel className="text-cream/80">{t("addresses.fullName")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="Jean Dupont"
+                      placeholder={t("addresses.fullNamePlaceholder")}
                       className="bg-cream/10 border-gold/30 text-cream placeholder:text-cream/40"
                     />
                   </FormControl>
@@ -195,12 +197,12 @@ export function AddressFormDialog({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-cream/80">Téléphone *</FormLabel>
+                  <FormLabel className="text-cream/80">{t("addresses.phone")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       type="tel"
-                      placeholder="+237 6XX XXX XXX"
+                      placeholder={t("addresses.phonePlaceholder")}
                       className="bg-cream/10 border-gold/30 text-cream placeholder:text-cream/40"
                     />
                   </FormControl>
@@ -215,11 +217,11 @@ export function AddressFormDialog({
               name="street_address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-cream/80">Adresse complète *</FormLabel>
+                  <FormLabel className="text-cream/80">{t("addresses.addressFull")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="123 Rue de l'Indépendance"
+                      placeholder={t("addresses.addressFullPlaceholder")}
                       className="bg-cream/10 border-gold/30 text-cream placeholder:text-cream/40"
                     />
                   </FormControl>
@@ -234,12 +236,12 @@ export function AddressFormDialog({
               name="neighborhood"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-cream/80">Quartier</FormLabel>
+                  <FormLabel className="text-cream/80">{t("addresses.neighborhood")}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       value={field.value || ""}
-                      placeholder="Akwa, Bonanjo, etc."
+                      placeholder={t("addresses.neighborhoodPlaceholder")}
                       className="bg-cream/10 border-gold/30 text-cream placeholder:text-cream/40"
                     />
                   </FormControl>
@@ -254,11 +256,11 @@ export function AddressFormDialog({
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-cream/80">Ville *</FormLabel>
+                  <FormLabel className="text-cream/80">{t("addresses.city")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="bg-cream/10 border-gold/30 text-cream">
-                        <SelectValue placeholder="Sélectionner une ville" />
+                        <SelectValue placeholder={t("addresses.cityPlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-noir border-gold/30">
@@ -284,12 +286,12 @@ export function AddressFormDialog({
               name="additional_info"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-cream/80">Informations complémentaires</FormLabel>
+                  <FormLabel className="text-cream/80">{t("addresses.info")}</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
                       value={field.value || ""}
-                      placeholder="Indications pour le livreur (étage, code, etc.)"
+                      placeholder={t("addresses.infoPlaceholder")}
                       className="bg-cream/10 border-gold/30 text-cream placeholder:text-cream/40 resize-none"
                       rows={2}
                     />
@@ -313,7 +315,7 @@ export function AddressFormDialog({
                     />
                   </FormControl>
                   <FormLabel className="text-cream/80 font-normal cursor-pointer">
-                    Définir comme adresse par défaut
+                    {t("addresses.makeDefault")}
                   </FormLabel>
                 </FormItem>
               )}
@@ -327,14 +329,14 @@ export function AddressFormDialog({
                 className="flex-1 border-gold/30 text-cream hover:bg-cream/10"
                 onClick={() => onOpenChange(false)}
               >
-                Annuler
+                {t("addresses.cancel")}
               </Button>
               <Button
                 type="submit"
                 className="flex-1 bg-primary text-noir hover:bg-primary/90"
                 disabled={form.formState.isSubmitting}
               >
-                {form.formState.isSubmitting ? "Enregistrement..." : "Enregistrer"}
+                {form.formState.isSubmitting ? t("addresses.saving") : t("addresses.save")}
               </Button>
             </div>
           </form>

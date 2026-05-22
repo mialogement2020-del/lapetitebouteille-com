@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 interface LoyaltyData {
   total_points: number;
@@ -45,28 +46,28 @@ interface LoyaltyTransaction {
 const tierConfig = {
   bronze: { 
     color: "bg-amber-700", 
-    label: "Bronze", 
+    labelKey: "loyalty.tier.bronze", 
     icon: "🥉",
     nextTier: "silver",
     pointsNeeded: 2000,
   },
   silver: { 
     color: "bg-gray-400", 
-    label: "Argent", 
+    labelKey: "loyalty.tier.silver", 
     icon: "🥈",
     nextTier: "gold",
     pointsNeeded: 5000,
   },
   gold: { 
     color: "bg-yellow-500", 
-    label: "Or", 
+    labelKey: "loyalty.tier.gold", 
     icon: "🥇",
     nextTier: "platinum",
     pointsNeeded: 10000,
   },
   platinum: { 
     color: "bg-gradient-to-r from-gray-300 to-gray-500", 
-    label: "Platine", 
+    labelKey: "loyalty.tier.platinum", 
     icon: "💎",
     nextTier: null,
     pointsNeeded: null,
@@ -74,6 +75,7 @@ const tierConfig = {
 };
 
 export function LoyaltyCard() {
+  const { t, i18n } = useTranslation();
   const { user } = useAuthContext();
   const [loyalty, setLoyalty] = useState<LoyaltyData | null>(null);
   const [config, setConfig] = useState<LoyaltyConfig | null>(null);
@@ -145,7 +147,8 @@ export function LoyaltyCard() {
     ? Math.floor((loyalty?.total_points || 0) / config.min_points_redeem) * config.min_points_redeem * config.points_value_fcfa
     : 0;
 
-  const formatPoints = (points: number) => new Intl.NumberFormat("fr-FR").format(points);
+  const formatPoints = (points: number) => new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR").format(points);
+  const dateLocale = i18n.language === "en" ? enUS : fr;
 
   return (
     <Card className="bg-noir border-gold/20 overflow-hidden">
@@ -156,10 +159,10 @@ export function LoyaltyCard() {
             <span className="text-3xl">{tier.icon}</span>
             <div>
               <h3 className="font-display font-bold text-white text-lg">
-                Programme Fidélité
+                {t("loyalty.title")}
               </h3>
               <Badge className="bg-white/20 text-white border-0">
-                Niveau {tier.label}
+                {t("loyalty.level", { tier: t(tier.labelKey) })}
               </Badge>
             </div>
           </div>
@@ -171,12 +174,12 @@ export function LoyaltyCard() {
         {/* Points Balance */}
         <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
           <div>
-            <p className="text-sm text-cream/60">Vos points</p>
+            <p className="text-sm text-cream/60">{t("loyalty.points")}</p>
             <p className="text-3xl font-bold text-primary">
               {formatPoints(loyalty?.total_points || 0)}
             </p>
             <p className="text-xs text-cream/50 mt-1">
-              = {formatPoints(potentialDiscount)} FCFA de réduction
+              {t("loyalty.equivalent", { amount: formatPoints(potentialDiscount) })}
             </p>
           </div>
           <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
@@ -188,9 +191,9 @@ export function LoyaltyCard() {
         {nextTier && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-cream/60">Prochain niveau: {nextTier.label}</span>
+              <span className="text-cream/60">{t("loyalty.nextTier", { tier: t(nextTier.labelKey) })}</span>
               <span className="text-primary font-medium">
-                {formatPoints(pointsToNext)} pts restants
+                {t("loyalty.pointsRemaining", { count: formatPoints(pointsToNext) as any })}
               </span>
             </div>
             <Progress value={progressToNext} className="h-2" />
@@ -201,16 +204,16 @@ export function LoyaltyCard() {
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 rounded-lg bg-cream/5 border border-gold/10">
             <TrendingUp className="h-5 w-5 text-green-500 mb-2" />
-            <p className="text-xs text-cream/60">Gagnez</p>
+            <p className="text-xs text-cream/60">{t("loyalty.earn")}</p>
             <p className="text-sm text-cream font-medium">
-              1 pt / {formatPoints(config?.fcfa_per_point || 100)} FCFA
+              {t("loyalty.earnRate", { amount: formatPoints(config?.fcfa_per_point || 100) })}
             </p>
           </div>
           <div className="p-3 rounded-lg bg-cream/5 border border-gold/10">
             <Gift className="h-5 w-5 text-primary mb-2" />
-            <p className="text-xs text-cream/60">Utilisez</p>
+            <p className="text-xs text-cream/60">{t("loyalty.redeem")}</p>
             <p className="text-sm text-cream font-medium">
-              {config?.min_points_redeem || 500}+ pts
+              {t("loyalty.redeemRate", { points: config?.min_points_redeem || 500 })}
             </p>
           </div>
         </div>
@@ -223,7 +226,7 @@ export function LoyaltyCard() {
               className="w-full border-gold/30 text-cream hover:bg-cream/10"
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              Voir l'historique
+              {t("loyalty.viewHistory")}
               <ChevronRight className="h-4 w-4 ml-auto" />
             </Button>
           </DialogTrigger>
@@ -231,10 +234,10 @@ export function LoyaltyCard() {
             <DialogHeader>
               <DialogTitle className="text-cream flex items-center gap-2">
                 <Star className="h-5 w-5 text-primary" />
-                Historique des points
+                {t("loyalty.historyTitle")}
               </DialogTitle>
               <DialogDescription className="text-cream/60">
-                Vos dernières transactions de points
+                {t("loyalty.historyDesc")}
               </DialogDescription>
             </DialogHeader>
 
@@ -242,9 +245,9 @@ export function LoyaltyCard() {
               {transactions.length === 0 ? (
                 <div className="py-8 text-center">
                   <Star className="h-10 w-10 text-cream/20 mx-auto mb-3" />
-                  <p className="text-cream/60">Aucune transaction</p>
+                  <p className="text-cream/60">{t("loyalty.emptyTitle")}</p>
                   <p className="text-cream/40 text-sm">
-                    Passez une commande pour gagner des points !
+                    {t("loyalty.emptyDesc")}
                   </p>
                 </div>
               ) : (
@@ -261,7 +264,7 @@ export function LoyaltyCard() {
                           {tx.description || tx.type}
                         </p>
                         <p className="text-xs text-cream/50">
-                          {format(new Date(tx.created_at), "d MMM yyyy", { locale: fr })}
+                          {format(new Date(tx.created_at), "d MMM yyyy", { locale: dateLocale })}
                         </p>
                       </div>
                       <div className="text-right">
@@ -271,7 +274,7 @@ export function LoyaltyCard() {
                           {tx.points > 0 ? "+" : ""}{formatPoints(tx.points)} pts
                         </p>
                         <p className="text-xs text-cream/50">
-                          Solde: {formatPoints(tx.balance_after)}
+                          {t("loyalty.balance", { value: formatPoints(tx.balance_after) })}
                         </p>
                       </div>
                     </motion.div>

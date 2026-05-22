@@ -3,6 +3,7 @@ import { ShoppingCart, Check, Loader2 } from "lucide-react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { useCartContext } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface AddToCartButtonProps extends Omit<ButtonProps, "onClick"> {
   productId: string;
@@ -23,6 +24,7 @@ export function AddToCartButton({
   className,
   ...props
 }: AddToCartButtonProps) {
+  const { t } = useTranslation();
   const { addItem } = useCartContext();
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
@@ -40,16 +42,16 @@ export function AddToCartButton({
       setJustAdded(true);
       
       toast({
-        title: "Ajouté au panier",
-        description: `${productName} (${quantity}) a été ajouté à votre panier.`,
+        title: t("cart.addedTitle"),
+        description: t("cart.addedDesc", { name: productName, qty: quantity }),
       });
 
       // Reset the "just added" state after 2 seconds
       setTimeout(() => setJustAdded(false), 2000);
     } catch (error) {
       toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter le produit au panier.",
+        title: t("cart.errorTitle"),
+        description: t("cart.errorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -91,7 +93,7 @@ export function AddToCartButton({
       ) : (
         <ShoppingCart className="h-5 w-5 mr-2" />
       )}
-      {showText && (justAdded ? "Ajouté !" : "Ajouter au panier")}
+      {showText && (justAdded ? t("cart.added") : t("cart.addToCart"))}
     </Button>
   );
 }
