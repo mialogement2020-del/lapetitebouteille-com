@@ -5,6 +5,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface WishlistButtonProps {
   productId: string;
@@ -19,6 +20,7 @@ export const WishlistButton = ({
   className,
   size = "icon",
 }: WishlistButtonProps) => {
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const { isInWishlist, toggleWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -31,7 +33,7 @@ export const WishlistButton = ({
     e.stopPropagation();
     
     if (!user) {
-      toast.error("Connectez-vous pour ajouter aux favoris");
+      toast.error(t("wishlist.loginRequired"));
       navigate("/connexion");
       return;
     }
@@ -58,7 +60,7 @@ export const WishlistButton = ({
             inWishlist && "fill-burgundy text-burgundy"
           )}
         />
-        {inWishlist ? "Dans mes favoris" : "Favoris"}
+        {inWishlist ? t("wishlist.inWishlist") : t("wishlist.favorites")}
       </Button>
     );
   }
