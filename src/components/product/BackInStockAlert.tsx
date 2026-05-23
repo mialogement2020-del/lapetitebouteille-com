@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBackInStockAlerts } from "@/hooks/useBackInStockAlerts";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface BackInStockAlertProps {
   productId: string;
@@ -12,6 +13,7 @@ interface BackInStockAlertProps {
 }
 
 export function BackInStockAlert({ productId, productName }: BackInStockAlertProps) {
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const { hasAlert, subscribe, unsubscribe, isSubscribing, isUnsubscribing } =
     useBackInStockAlerts(productId);
@@ -51,7 +53,7 @@ export function BackInStockAlert({ productId, productName }: BackInStockAlertPro
         ) : (
           <BellOff className="h-4 w-4 mr-2" />
         )}
-        Alerte activée - Cliquez pour désactiver
+        {t("backInStock.active")}
       </Button>
     );
   }
@@ -74,7 +76,7 @@ export function BackInStockAlert({ productId, productName }: BackInStockAlertPro
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Votre email"
+                placeholder={t("backInStock.emailPlaceholder")}
                 required
                 className="pl-9 bg-noir-light/50 border-gold/20 text-cream"
               />
@@ -87,7 +89,7 @@ export function BackInStockAlert({ productId, productName }: BackInStockAlertPro
               {isSubscribing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "OK"
+                t("backInStock.ok")
               )}
             </Button>
             <Button
@@ -96,7 +98,7 @@ export function BackInStockAlert({ productId, productName }: BackInStockAlertPro
               onClick={() => setShowEmailInput(false)}
               className="text-cream/60"
             >
-              Annuler
+              {t("backInStock.cancel")}
             </Button>
           </motion.form>
         ) : (
@@ -117,14 +119,14 @@ export function BackInStockAlert({ productId, productName }: BackInStockAlertPro
               ) : (
                 <Bell className="h-4 w-4 mr-2" />
               )}
-              Me prévenir du retour en stock
+              {t("backInStock.subscribe")}
             </Button>
           </motion.div>
         )}
       </AnimatePresence>
 
       <p className="text-xs text-cream/50 text-center">
-        Recevez une notification dès que "{productName}" est de nouveau disponible
+        {t("backInStock.info", { name: productName })}
       </p>
     </div>
   );

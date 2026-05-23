@@ -13,6 +13,7 @@ import { useProductReferral } from "@/hooks/useProductReferral";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import logoIcon from "@/assets/logo-icon.png";
+import { useTranslation } from "react-i18next";
 
 interface ProductQRCodeProps {
   productSlug: string;
@@ -20,6 +21,7 @@ interface ProductQRCodeProps {
 }
 
 export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [qrLink, setQrLink] = useState<string>("");
@@ -46,10 +48,10 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
     try {
       await navigator.clipboard.writeText(qrLink);
       setCopied(true);
-      toast.success("Lien copié !");
+      toast.success(t("qr.linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Erreur lors de la copie");
+      toast.error(t("qr.copyError"));
     }
   };
 
@@ -75,7 +77,7 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
         link.download = `qr-${productSlug}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
-        toast.success("QR code téléchargé !");
+        toast.success(t("qr.downloaded"));
       }
     };
 
@@ -89,7 +91,7 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
           variant="outline"
           size="icon"
           className="border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full"
-          title="Afficher le QR code"
+          title={t("qr.show")}
         >
           <QrCode className="h-4 w-4" />
         </Button>
@@ -97,11 +99,11 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
       <DialogContent className="bg-noir-light border-gold/20 max-w-sm" aria-describedby="qr-description">
         <DialogHeader>
           <DialogTitle className="text-cream font-display text-xl">
-            QR Code de partage
+            {t("qr.title")}
           </DialogTitle>
         </DialogHeader>
         <p id="qr-description" className="sr-only">
-          Scannez ce QR code ou copiez le lien pour partager ce produit.
+          {t("qr.desc")}
         </p>
 
         {qrLink && (
@@ -138,14 +140,14 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
               {user && qrLink.includes("?ref=") && (
                 <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-3 py-1.5">
                   <span className="text-xs text-primary font-medium">
-                    ✨ Lien de parrainage inclus
+                    {t("qr.referralIncluded")}
                   </span>
                 </div>
               )}
 
               {/* Link Display */}
               <div className="w-full bg-noir/50 rounded-lg p-3">
-                <p className="text-xs text-cream/50 mb-1">Lien du produit :</p>
+                <p className="text-xs text-cream/50 mb-1">{t("qr.linkLabel")}</p>
                 <p className="text-xs text-cream font-mono break-all">
                   {qrLink}
                 </p>
@@ -163,23 +165,23 @@ export function ProductQRCode({ productSlug, productName }: ProductQRCodeProps) 
                   ) : (
                     <Copy className="h-4 w-4 mr-2" />
                   )}
-                  Copier
+                  {t("qr.copy")}
                 </Button>
                 <Button
                   className="flex-1 bg-gradient-gold text-noir font-semibold hover:opacity-90"
                   onClick={handleDownloadQR}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Télécharger
+                  {t("qr.download")}
                 </Button>
               </div>
 
               {/* Info */}
               <p className="text-xs text-cream/40 text-center">
-                Scannez ce QR code pour accéder directement au produit
+                {t("qr.info")}
                 {user && qrLink.includes("?ref=") && (
                   <span className="block mt-1 text-primary/70">
-                    Vos commissions seront automatiquement créditées !
+                    {t("qr.infoReferral")}
                   </span>
                 )}
               </p>

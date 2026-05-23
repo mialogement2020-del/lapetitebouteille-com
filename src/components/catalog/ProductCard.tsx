@@ -13,6 +13,7 @@ import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
 import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
+  const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const [copied, setCopied] = useState(false);
   const [qrCopied, setQrCopied] = useState(false);
@@ -60,7 +62,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
         link.download = `qr-${product.slug}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
-        toast.success("QR code téléchargé !");
+        toast.success(t("productCard.qrDownloaded"));
       }
     };
 
@@ -71,10 +73,10 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     try {
       await navigator.clipboard.writeText(productQrUrl);
       setQrCopied(true);
-      toast.success("Lien copié !");
+      toast.success(t("productCard.linkCopied"));
       setTimeout(() => setQrCopied(false), 2000);
     } catch {
-      toast.error("Impossible de copier le lien");
+      toast.error(t("productCard.linkCopyError"));
     }
   };
 
@@ -83,7 +85,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
       try {
         await navigator.share({
           title: product.name,
-          text: `Découvrez ${product.name}`,
+          text: t("productShare.discoverText", { name: product.name }),
           url: productQrUrl,
         });
       } catch (error) {
@@ -111,7 +113,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
       try {
         await navigator.share({
           title: product.name,
-          text: product.short_description || `Découvrez ${product.name}`,
+          text: product.short_description || t("productShare.discoverText", { name: product.name }),
           url: url,
         });
       } catch (error) {
@@ -129,10 +131,10 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success("Lien copié !");
+      toast.success(t("productCard.linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Impossible de copier le lien");
+      toast.error(t("productCard.linkCopyError"));
     }
   };
 
@@ -160,7 +162,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {isNew && (
             <Badge className="bg-gradient-gold text-noir font-semibold shadow-gold">
               <Sparkles className="h-3 w-3 mr-1" />
-              Nouveau
+              {t("productCard.newBadge")}
             </Badge>
           )}
           {discount > 0 && (
@@ -174,7 +176,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
         {product.stock_quantity <= 0 && (
           <div className="absolute inset-0 bg-noir/70 backdrop-blur-sm flex items-center justify-center">
             <span className="bg-cream text-noir px-4 py-2 rounded-full font-semibold text-sm">
-              Rupture de stock
+              {t("productCard.outOfStock")}
             </span>
           </div>
         )}
@@ -208,7 +210,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             <Star className="h-4 w-4 fill-primary text-primary" />
             <span className="text-sm font-medium text-cream">{product.average_rating.toFixed(1)}</span>
             <span className="text-sm text-cream/50">
-              ({product.review_count} avis)
+              {t("productCard.reviewsCount", { count: product.review_count })}
             </span>
           </div>
         )}
@@ -250,7 +252,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {product.alcohol_percentage && <span>{product.alcohol_percentage}%</span>}
         </div>
 
-        {/* Wholesale "Acheter en gros" Button - Always visible */}
+        {/* Wholesale CTA */}
         {(() => {
           const enabledCardTiers = WHOLESALE_TIERS.filter(t => tierConfig?.card_tiers?.includes(t.type));
           if (enabledCardTiers.length === 0) return null;
@@ -262,10 +264,10 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             >
               <div className="flex items-center gap-2">
                 <Package className="h-4 w-4 text-primary" />
-                <span className="text-xs font-bold text-primary tracking-wide">ACHETER EN GROS</span>
+                <span className="text-xs font-bold text-primary tracking-wide">{t("productCard.wholesaleCta")}</span>
               </div>
               <Badge className="bg-green-500/20 text-green-400 border-0 text-[10px] px-2 py-0.5 h-5 group-hover/wholesale:bg-green-500/30 transition-colors">
-                Jusqu'à -{maxDiscount}%
+                {t("productCard.wholesaleDiscount", { percent: maxDiscount })}
               </Badge>
             </Link>
           );
@@ -304,7 +306,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             className="flex-1 h-9 gap-1.5 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full text-xs"
           >
             {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
-            {copied ? "Copié" : "Partager"}
+            {copied ? t("productCard.copied") : t("productCard.share")}
           </Button>
           <Dialog>
             <DialogTrigger asChild>
@@ -320,11 +322,11 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             <DialogContent className="bg-noir-light border-gold/20 max-w-xs" aria-describedby={`qr-desc-${product.id}`}>
               <DialogHeader>
                 <DialogTitle className="text-cream font-display text-lg">
-                  QR Code
+                {t("productCard.qrTitle")}
                 </DialogTitle>
               </DialogHeader>
               <p id={`qr-desc-${product.id}`} className="sr-only">
-                Scannez ce QR code pour accéder au produit.
+              {t("productCard.qrDesc")}
               </p>
               <div className="flex flex-col items-center space-y-3">
                 <div className="bg-white p-3 rounded-xl relative">
@@ -354,7 +356,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 
                 {/* Link Display */}
                 <div className="w-full bg-noir/50 rounded-lg p-2">
-                  <p className="text-[10px] text-cream/50 mb-0.5">Lien :</p>
+                  <p className="text-[10px] text-cream/50 mb-0.5">{t("productCard.qrLink")}</p>
                   <p className="text-[10px] text-cream font-mono break-all line-clamp-2">
                     {productQrUrl}
                   </p>
@@ -369,7 +371,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                     onClick={handleCopyQrLink}
                   >
                     {qrCopied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                    {qrCopied ? "Copié" : "Copier"}
+                    {qrCopied ? t("productCard.copied") : t("productCard.copy")}
                   </Button>
                   <Button
                     variant="outline"
@@ -378,7 +380,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                     onClick={handleShareQR}
                   >
                     <Share2 className="h-3 w-3" />
-                    Partager
+                    {t("productCard.share")}
                   </Button>
                   <Button
                     size="sm"
@@ -386,7 +388,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                     onClick={handleDownloadQR}
                   >
                     <Download className="h-3 w-3" />
-                    PNG
+                    {t("productCard.download")}
                   </Button>
                 </div>
               </div>

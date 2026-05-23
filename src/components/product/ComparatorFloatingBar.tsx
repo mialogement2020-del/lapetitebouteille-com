@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Scale, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProductComparator } from "@/hooks/useProductComparator";
+import { useTranslation } from "react-i18next";
 
 export const ComparatorFloatingBar = forwardRef<HTMLDivElement>(function ComparatorFloatingBar(_, ref) {
+  const { t } = useTranslation();
   const { products, removeProduct, clearAll } = useProductComparator();
 
   if (products.length === 0) return null;
@@ -77,7 +79,7 @@ export const ComparatorFloatingBar = forwardRef<HTMLDivElement>(function Compara
                 onClick={clearAll}
                 className="text-cream/60 hover:text-cream"
               >
-                Vider
+                {t("comparator.clear")}
               </Button>
               <Button
                 asChild
@@ -86,7 +88,7 @@ export const ComparatorFloatingBar = forwardRef<HTMLDivElement>(function Compara
                 className="bg-primary hover:bg-primary/90 text-noir"
               >
                 <Link to="/comparer">
-                  Comparer
+                  {t("comparator.compare")}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>

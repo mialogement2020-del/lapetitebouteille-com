@@ -9,6 +9,7 @@ import {
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface ProductShareButtonProps {
   productSlug: string;
@@ -21,6 +22,7 @@ export function ProductShareButton({
   productName,
   shortDescription,
 }: ProductShareButtonProps) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [referralLink, setReferralLink] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export function ProductShareButton({
 
     const shareData = {
       title: productName,
-      text: shortDescription || `Découvrez ${productName} sur Cameroon Spirits`,
+      text: shortDescription || t("productShare.discoverText", { name: productName }),
       url: shareUrl,
     };
 
@@ -55,7 +57,7 @@ export function ProductShareButton({
       try {
         await navigator.share(shareData);
         if (includeReferral) {
-          toast.success("Lien de parrainage partagé !");
+          toast.success(t("productShare.sharedReferral"));
         }
       } catch {
         // User cancelled or error
@@ -65,8 +67,8 @@ export function ProductShareButton({
       setCopied(true);
       toast.success(
         includeReferral 
-          ? "Lien de parrainage copié ! Partagez-le pour gagner des commissions."
-          : "Lien copié dans le presse-papier"
+          ? t("productShare.copiedReferral")
+          : t("productShare.copied")
       );
       setTimeout(() => setCopied(false), 2000);
     }
@@ -82,7 +84,7 @@ export function ProductShareButton({
         onClick={() => handleShare(false)}
       >
         {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-        Partager
+        {t("productShare.share")}
       </Button>
     );
   }
@@ -95,12 +97,12 @@ export function ProductShareButton({
           className="gap-2 border-primary/40 text-cream bg-cream/5 hover:bg-primary/20 hover:border-primary rounded-full"
         >
           <Share2 className="h-4 w-4" />
-          Partager
+          {t("productShare.share")}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 bg-noir-light border-gold/20 p-4" align="end">
         <div className="space-y-3">
-          <h4 className="font-medium text-cream">Partager ce produit</h4>
+          <h4 className="font-medium text-cream">{t("productShare.title")}</h4>
           
           {/* Regular Share */}
           <Button
@@ -109,7 +111,7 @@ export function ProductShareButton({
             onClick={() => handleShare(false)}
           >
             <Share2 className="h-4 w-4" />
-            Partager le lien
+            {t("productShare.shareLink")}
           </Button>
 
           {/* Referral Share - highlighted */}
@@ -118,11 +120,11 @@ export function ProductShareButton({
             onClick={() => handleShare(true)}
           >
             <Gift className="h-4 w-4" />
-            Partager & Gagner des commissions
+            {t("productShare.shareReferral")}
           </Button>
 
           <p className="text-xs text-cream/50 mt-2">
-            💡 Partagez avec votre lien de parrainage : si votre ami achète, vous gagnez une commission automatiquement !
+            {t("productShare.hint")}
           </p>
         </div>
       </PopoverContent>
