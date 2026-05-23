@@ -12,6 +12,7 @@ import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { useCartContext } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 import { QuoteRequestDialog } from "./QuoteRequestDialog";
+import { useTranslation } from "react-i18next";
 
 interface WholesalePanelProps {
   product: Product;
@@ -22,6 +23,7 @@ const formatPrice = (price: number) => {
 };
 
 export function WholesalePanel({ product }: WholesalePanelProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<PackagingType | null>(null);
   const [buyerType, setBuyerType] = useState<"individual" | "business">("individual");
@@ -39,13 +41,13 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
     try {
       await addItem(product.id, tier.quantity);
       toast({
-        title: "📦 Ajouté au panier en gros",
-        description: `${tier.label} de ${product.name} ajouté au panier`,
+        title: t("wholesale.addedTitle"),
+        description: t("wholesale.addedDesc", { label: tier.label, name: product.name }),
       });
     } catch {
       toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter au panier",
+        title: t("wholesale.errorTitle"),
+        description: t("wholesale.errorDesc"),
         variant: "destructive",
       });
     }
@@ -65,7 +67,7 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
         >
           <span className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            📦 ACHETER EN GROS
+            {t("wholesale.cta")}
           </span>
           {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
@@ -84,10 +86,10 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <Building2 className="h-5 w-5 text-primary" />
                   <h3 className="font-display text-lg font-semibold text-cream">
-                    Tarifs professionnels
+                    {t("wholesale.proTitle")}
                   </h3>
                   <Badge className="bg-primary/20 text-primary border-0 text-xs">
-                    Jusqu'à -25%
+                    {t("wholesale.upTo")}
                   </Badge>
                 </div>
 
@@ -121,7 +123,7 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                               {tier.icon} {tier.label}
                             </p>
                             <p className="text-xs text-cream/50">
-                              {tier.quantity} bouteilles × {formatPrice(Math.round(tier.totalPrice / tier.quantity))} FCFA
+                              {tier.quantity} {t("wholesale.bottles")} × {formatPrice(Math.round(tier.totalPrice / tier.quantity))} FCFA
                             </p>
                           </div>
                         </div>
@@ -129,17 +131,17 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                           <p className="font-bold text-cream">
                             {formatPrice(tier.totalPrice)} FCFA
                             {hasNIU && niuValue.length >= 10 && (
-                              <span className="text-xs text-cream/40 ml-1">HT</span>
+                              <span className="text-xs text-cream/40 ml-1">{t("wholesale.ht")}</span>
                             )}
                           </p>
                           <p className="text-xs font-semibold text-green-400">
-                            Économie: {formatPrice(tier.savings)} FCFA (-{tier.discountPercent}%)
+                            {t("wholesale.savings", { amount: formatPrice(tier.savings), percent: tier.discountPercent })}
                           </p>
                         </div>
                       </div>
                       {tier.isCustom && (
                         <Badge className="absolute top-2 right-2 bg-secondary/20 text-secondary border-0 text-[10px]">
-                          Prix spécial
+                          {t("wholesale.specialPrice")}
                         </Badge>
                       )}
                     </motion.div>
@@ -148,11 +150,11 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
 
                 {/* Buyer Type Section */}
                 <div className="p-4 rounded-xl border border-cream/10 bg-cream/5 space-y-3">
-                  <p className="text-sm font-medium text-cream">Vous êtes :</p>
+                  <p className="text-sm font-medium text-cream">{t("wholesale.youAre")}</p>
                   <div className="flex gap-3">
                     {[
-                      { value: "individual" as const, label: "🎉 Particulier / Événement", desc: "Mariage, fête, cérémonie..." },
-                      { value: "business" as const, label: "🏢 Entreprise / Pro", desc: "Restaurant, bar, hôtel..." },
+                      { value: "individual" as const, label: t("wholesale.individualLabel"), desc: t("wholesale.individualDesc") },
+                      { value: "business" as const, label: t("wholesale.businessLabel"), desc: t("wholesale.businessDesc") },
                     ].map((option) => (
                       <div
                         key={option.value}
@@ -186,10 +188,10 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                           />
                           <div className="flex-1">
                             <Label htmlFor="has-niu" className="text-sm font-medium text-cream cursor-pointer">
-                              J'ai un numéro de contribuable (NIU)
+                              {t("wholesale.hasNiu")}
                             </Label>
                             <p className="text-xs text-cream/50 mt-0.5">
-                              Prix affichés Hors Taxes (HT) - TVA 19,25%
+                              {t("wholesale.niuHint")}
                             </p>
                           </div>
                         </div>
@@ -201,7 +203,7 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                               exit={{ opacity: 0, height: 0 }}
                             >
                               <Input
-                                placeholder="Entrez votre NIU (ex: M012345678901A)"
+                                placeholder={t("wholesale.niuPlaceholder")}
                                 value={niuValue}
                                 onChange={(e) => setNiuValue(e.target.value.toUpperCase())}
                                 className="bg-cream/5 border-cream/20 text-cream placeholder:text-cream/30 font-mono"
@@ -209,7 +211,7 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                               />
                               {niuValue && niuValue.length < 10 && (
                                 <p className="text-xs text-secondary mt-1">
-                                  Le NIU doit contenir au moins 10 caractères
+                                  {t("wholesale.niuTooShort")}
                                 </p>
                               )}
                             </motion.div>
@@ -228,7 +230,7 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                     className="flex-1 bg-gradient-gold text-noir font-semibold gap-2 rounded-full h-11"
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    Ajouter au panier
+                    {t("wholesale.addToCart")}
                   </Button>
                   <Button
                     onClick={() => setShowQuoteDialog(true)}
@@ -237,7 +239,7 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
                     className="flex-1 border-cream/20 text-cream hover:bg-cream/10 gap-2 rounded-full h-11"
                   >
                     <FileText className="h-4 w-4" />
-                    Demander un devis
+                    {t("wholesale.requestQuote")}
                   </Button>
                 </div>
               </div>

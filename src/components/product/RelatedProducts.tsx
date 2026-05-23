@@ -3,12 +3,14 @@ import { motion } from "framer-motion";
 import { Product } from "@/hooks/useProducts";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
+import { useTranslation } from "react-i18next";
 
 interface RelatedProductsProps {
   products: Product[];
 }
 
 export const RelatedProducts = ({ products }: RelatedProductsProps) => {
+  const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   if (products.length === 0) return null;
 
@@ -16,7 +18,7 @@ export const RelatedProducts = ({ products }: RelatedProductsProps) => {
     <section className="py-12 border-t">
       <div className="container mx-auto px-4">
         <h2 className="font-display text-2xl md:text-3xl font-bold mb-8">
-          Vous aimerez aussi
+          {t("related.title")}
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">

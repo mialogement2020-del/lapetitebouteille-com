@@ -2,6 +2,7 @@ import { Scale, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProductComparator } from "@/hooks/useProductComparator";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface ComparatorButtonProps {
   product: {
@@ -29,6 +30,7 @@ export function ComparatorButton({
   variant = "icon",
   className = "",
 }: ComparatorButtonProps) {
+  const { t } = useTranslation();
   const { addProduct, removeProduct, isInComparator, products } =
     useProductComparator();
   const isAdded = isInComparator(product.id);
@@ -36,20 +38,20 @@ export function ComparatorButton({
   const handleClick = () => {
     if (isAdded) {
       removeProduct(product.id);
-      toast.success("Retiré du comparateur");
+      toast.success(t("comparator.removed"));
     } else {
       const success = addProduct(product);
       if (success) {
-        toast.success("Ajouté au comparateur", {
-          description: `${products.length + 1}/3 produits`,
+        toast.success(t("comparator.added"), {
+          description: t("comparator.addedDesc", { count: products.length + 1 }),
           action: {
-            label: "Comparer",
+            label: t("comparator.compareAction"),
             onClick: () => (window.location.href = "/comparer"),
           },
         });
       } else {
-        toast.error("Comparateur plein", {
-          description: "Retirez un produit pour en ajouter un nouveau (max 3)",
+        toast.error(t("comparator.full"), {
+          description: t("comparator.fullDesc"),
         });
       }
     }
@@ -89,12 +91,12 @@ export function ComparatorButton({
       {isAdded ? (
         <>
           <Check className="h-4 w-4 mr-2" />
-          Dans le comparateur
+          {t("comparator.inCompare")}
         </>
       ) : (
         <>
           <Scale className="h-4 w-4 mr-2" />
-          Comparer
+          {t("comparator.compare")}
         </>
       )}
     </Button>

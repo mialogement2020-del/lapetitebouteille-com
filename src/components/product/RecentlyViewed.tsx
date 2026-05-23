@@ -4,12 +4,14 @@ import { Clock, X } from "lucide-react";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { Button } from "@/components/ui/button";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
+import { useTranslation } from "react-i18next";
 
 interface RecentlyViewedProps {
   currentProductId?: string;
 }
 
 export function RecentlyViewed({ currentProductId }: RecentlyViewedProps) {
+  const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const { recentlyViewed, isLoading, clearHistory } = useRecentlyViewed();
 
@@ -25,7 +27,7 @@ export function RecentlyViewed({ currentProductId }: RecentlyViewedProps) {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Clock className="h-5 w-5 text-primary" />
-          <h2 className="font-display text-2xl text-cream">Vus récemment</h2>
+          <h2 className="font-display text-2xl text-cream">{t("recentlyViewed.title")}</h2>
         </div>
         <Button
           variant="ghost"
@@ -34,7 +36,7 @@ export function RecentlyViewed({ currentProductId }: RecentlyViewedProps) {
           className="text-cream/60 hover:text-cream"
         >
           <X className="h-4 w-4 mr-1" />
-          Effacer
+          {t("recentlyViewed.clear")}
         </Button>
       </div>
 
@@ -64,7 +66,7 @@ export function RecentlyViewed({ currentProductId }: RecentlyViewedProps) {
                 )}
               </div>
               <h3 className="text-sm text-cream font-medium line-clamp-2 group-hover:text-primary transition-colors">
-                {item.product?.name || "Produit"}
+                {item.product?.name || t("recentlyViewed.defaultProduct")}
               </h3>
               <p className="text-primary font-semibold text-sm mt-1">
                 {item.product?.price ? formatPrice(item.product.price) : ""}

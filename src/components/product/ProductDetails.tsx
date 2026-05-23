@@ -1,36 +1,38 @@
 import { Wine, Thermometer, Utensils, Grape, MapPin, Calendar } from "lucide-react";
 import { Product } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface ProductDetailsProps {
   product: Product;
 }
 
 export const ProductDetails = ({ product }: ProductDetailsProps) => {
+  const { t } = useTranslation();
   const details = [
     {
       icon: Wine,
-      label: "Degré d'alcool",
+      label: t("productDetails.alcohol"),
       value: product.alcohol_percentage ? `${product.alcohol_percentage}%` : null,
     },
     {
       icon: Grape,
-      label: "Cépage",
+      label: t("productDetails.grape"),
       value: product.grape_variety,
     },
     {
       icon: MapPin,
-      label: "Région",
+      label: t("productDetails.region"),
       value: product.region || product.origin_country,
     },
     {
       icon: Calendar,
-      label: "Millésime",
+      label: t("productDetails.vintage"),
       value: product.vintage_year?.toString(),
     },
     {
       icon: Thermometer,
-      label: "Température de service",
+      label: t("productDetails.servingTemp"),
       value: product.serving_temperature,
     },
   ].filter((d) => d.value);
@@ -47,7 +49,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
         >
           <h3 className="font-display text-xl font-semibold mb-6 text-cream flex items-center gap-2">
             <span className="w-8 h-px bg-gradient-gold" />
-            Caractéristiques
+            {t("productDetails.characteristics")}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {details.map((detail, index) => (
@@ -83,7 +85,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
             <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
               <Wine className="h-5 w-5 text-secondary" />
             </div>
-            Notes de dégustation
+            {t("productDetails.tastingNotes")}
           </h3>
           <p className="text-cream/70 leading-relaxed pl-[52px]">
             {product.tasting_notes}
@@ -103,7 +105,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
               <Utensils className="h-5 w-5 text-primary" />
             </div>
-            Accords mets-vins
+            {t("productDetails.foodPairing")}
           </h3>
           <p className="text-cream/70 leading-relaxed pl-[52px]">
             {product.food_pairing}
@@ -120,7 +122,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
         >
           <h3 className="font-display text-xl font-semibold mb-4 text-cream flex items-center gap-2">
             <span className="w-8 h-px bg-gradient-gold" />
-            Description
+            {t("productDetails.description")}
           </h3>
           <p className="text-cream/70 leading-relaxed whitespace-pre-line">
             {product.description}

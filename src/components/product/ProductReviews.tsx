@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 interface ProductReviewsProps {
   productId: string;
@@ -31,6 +32,8 @@ export const ProductReviews = ({
   averageRating,
   reviewCount,
 }: ProductReviewsProps) => {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "en" ? enUS : fr;
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ["product-reviews", productId],
     queryFn: async () => {
@@ -86,9 +89,9 @@ export const ProductReviews = ({
   if (reviews.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>Aucun avis pour le moment.</p>
+        <p>{t("productReviews.empty")}</p>
         <p className="text-sm mt-2">
-          Soyez le premier à donner votre avis sur ce produit.
+          {t("productReviews.emptyDesc")}
         </p>
       </div>
     );
@@ -118,7 +121,7 @@ export const ProductReviews = ({
                 ))}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                Basé sur {reviewCount} avis
+                {t("productReviews.basedOn", { count: reviewCount })}
               </p>
             </div>
           </div>
@@ -156,10 +159,10 @@ export const ProductReviews = ({
                   <User className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">Client vérifié</p>
+                  <p className="font-medium text-foreground">{t("productReviews.verifiedCustomer")}</p>
                   <p className="text-sm text-muted-foreground">
                     {format(new Date(review.created_at), "d MMMM yyyy", {
-                      locale: fr,
+                      locale: dateLocale,
                     })}
                   </p>
                 </div>
@@ -190,7 +193,7 @@ export const ProductReviews = ({
             {review.is_verified_purchase && (
               <div className="flex items-center gap-1 mt-3 text-sm text-gold">
                 <CheckCircle className="h-4 w-4" />
-                <span>Achat vérifié</span>
+                <span>{t("productReviews.verifiedPurchase")}</span>
               </div>
             )}
           </motion.div>
