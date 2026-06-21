@@ -2,8 +2,10 @@ import { Bell, BellOff, Loader2, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export function PushNotificationToggle() {
+  const { t } = useTranslation();
   const {
     isSupported,
     permission,
@@ -19,32 +21,32 @@ export function PushNotificationToggle() {
     if (isSubscribed) {
       const success = await unsubscribe();
       if (success) {
-        toast.success("Notifications push désactivées");
+        toast.success(t("adminPush.disabled"));
       } else {
-        toast.error("Erreur lors de la désactivation");
+        toast.error(t("adminPush.disableError"));
       }
     } else {
       const success = await subscribe();
       if (success) {
-        toast.success("Notifications push activées !", {
-          description: "Vous recevrez les alertes de stock même quand le navigateur est fermé.",
+        toast.success(t("adminPush.enabled"), {
+          description: t("adminPush.enabledDesc"),
         });
       } else if (permission === "denied") {
-        toast.error("Notifications bloquées", {
-          description: "Veuillez autoriser les notifications dans les paramètres de votre navigateur.",
+        toast.error(t("adminPush.blocked"), {
+          description: t("adminPush.blockedDesc"),
         });
       } else {
-        toast.error("Erreur lors de l'activation");
+        toast.error(t("adminPush.enableError"));
       }
     }
   };
 
   // Get status text for accessibility
   const getStatusText = () => {
-    if (!isSupported) return "Notifications push non supportées";
-    if (isSubscribed) return "Notifications push activées";
-    if (permission === "denied") return "Notifications bloquées par le navigateur";
-    return "Notifications push désactivées";
+    if (!isSupported) return t("adminPush.notSupported");
+    if (isSubscribed) return t("adminPush.statusEnabled");
+    if (permission === "denied") return t("adminPush.statusBlocked");
+    return t("adminPush.statusDisabled");
   };
 
   if (!isSupported) {
@@ -54,7 +56,7 @@ export function PushNotificationToggle() {
         size="icon"
         disabled
         className="border-cream/20 text-cream/40 touch-manipulation"
-        aria-label="Notifications push non supportées par ce navigateur"
+        aria-label={t("adminPush.ariaNotSupported")}
       >
         <BellOff className="h-5 w-5" />
       </Button>
