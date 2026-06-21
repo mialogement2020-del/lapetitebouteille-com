@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowRight, Minus, Plus, Equal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -57,6 +58,7 @@ function computeDiff(oldObj: Record<string, unknown> | null, newObj: Record<stri
 }
 
 export function AuditLogDiffView({ oldValues, newValues }: AuditLogDiffViewProps) {
+  const { t } = useTranslation();
   const diff = useMemo(() => {
     const oldObj = oldValues && typeof oldValues === "object" && !Array.isArray(oldValues)
       ? (oldValues as Record<string, unknown>)
@@ -73,7 +75,7 @@ export function AuditLogDiffView({ oldValues, newValues }: AuditLogDiffViewProps
   if (!hasChanges && diff.length === 0) {
     return (
       <div className="text-center py-6 text-cream/50">
-        <p className="text-sm">Aucun détail de modification disponible</p>
+        <p className="text-sm">{t("adminAuditExtra.diff.noChanges")}</p>
       </div>
     );
   }
@@ -88,25 +90,25 @@ export function AuditLogDiffView({ oldValues, newValues }: AuditLogDiffViewProps
         {changedEntries.filter((d) => d.type === "added").length > 0 && (
           <Badge className="bg-success/20 text-success border-success/30 text-xs">
             <Plus className="h-3 w-3 mr-1" />
-            {changedEntries.filter((d) => d.type === "added").length} ajouté(s)
+            {changedEntries.filter((d) => d.type === "added").length} {t("adminAuditExtra.diff.added")}
           </Badge>
         )}
         {changedEntries.filter((d) => d.type === "removed").length > 0 && (
           <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-xs">
             <Minus className="h-3 w-3 mr-1" />
-            {changedEntries.filter((d) => d.type === "removed").length} supprimé(s)
+            {changedEntries.filter((d) => d.type === "removed").length} {t("adminAuditExtra.diff.removed")}
           </Badge>
         )}
         {changedEntries.filter((d) => d.type === "changed").length > 0 && (
           <Badge className="bg-warning/20 text-warning border-warning/30 text-xs">
             <ArrowRight className="h-3 w-3 mr-1" />
-            {changedEntries.filter((d) => d.type === "changed").length} modifié(s)
+            {changedEntries.filter((d) => d.type === "changed").length} {t("adminAuditExtra.diff.changed")}
           </Badge>
         )}
         {unchangedEntries.length > 0 && (
           <Badge variant="outline" className="border-cream/20 text-cream/50 text-xs">
             <Equal className="h-3 w-3 mr-1" />
-            {unchangedEntries.length} inchangé(s)
+            {unchangedEntries.length} {t("adminAuditExtra.diff.unchanged")}
           </Badge>
         )}
       </div>
@@ -122,7 +124,7 @@ export function AuditLogDiffView({ oldValues, newValues }: AuditLogDiffViewProps
           {/* Unchanged entries (collapsed by default, but shown dimmed) */}
           {unchangedEntries.length > 0 && changedEntries.length > 0 && (
             <div className="pt-2 border-t border-gold/10 mt-2">
-              <p className="text-xs text-cream/40 mb-1">Valeurs inchangées</p>
+              <p className="text-xs text-cream/40 mb-1">{t("adminAuditExtra.diff.unchangedValues")}</p>
               {unchangedEntries.map((entry) => (
                 <DiffRow key={entry.key} entry={entry} />
               ))}
