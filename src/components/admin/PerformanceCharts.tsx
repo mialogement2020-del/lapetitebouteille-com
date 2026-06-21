@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ExportReportButton } from "./ExportReportButton";
+import { useTranslation } from "react-i18next";
 import type { AdminOrder, AdminProduct } from "@/hooks/useAdmin";
 
 interface PerformanceChartsProps {
@@ -48,13 +49,14 @@ const COLORS = [
 ];
 
 export function PerformanceCharts({ orders, products }: PerformanceChartsProps) {
+  const { t, i18n } = useTranslation();
   const [period, setPeriod] = useState<PeriodType>("7days");
   const chartsContainerRef = useRef<HTMLDivElement>(null);
 
   const periodLabels: Record<PeriodType, string> = {
-    "7days": "7 derniers jours",
-    "30days": "30 derniers jours",
-    "3months": "3 derniers mois",
+    "7days": t("adminPerf.period7"),
+    "30days": t("adminPerf.period30"),
+    "3months": t("adminPerf.period3m"),
   };
 
   // Calculate sales data by period
@@ -85,16 +87,17 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
       let key: string;
       let label: string;
 
+      const locale = i18n.language === "en" ? "en-US" : "fr-FR";
       if (period === "3months") {
         // Group by week
         const weekStart = new Date(orderDate);
         weekStart.setDate(orderDate.getDate() - orderDate.getDay());
         key = weekStart.toISOString().split("T")[0];
-        label = `Sem. ${weekStart.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}`;
+        label = t("adminPerf.weekPrefix", { date: weekStart.toLocaleDateString(locale, { day: "2-digit", month: "short" }) });
       } else {
         // Group by day
         key = orderDate.toISOString().split("T")[0];
-        label = orderDate.toLocaleDateString("fr-FR", { 
+        label = orderDate.toLocaleDateString(locale, { 
           weekday: period === "7days" ? "short" : undefined,
           day: "2-digit", 
           month: "short" 
@@ -161,12 +164,12 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
     });
 
     const statusLabels: Record<string, string> = {
-      pending: "En attente",
-      confirmed: "Confirmée",
-      processing: "En préparation",
-      shipped: "Expédiée",
-      delivered: "Livrée",
-      cancelled: "Annulée",
+      pending: t("adminPerf.statusPending"),
+      confirmed: t("adminPerf.statusConfirmed"),
+      processing: t("adminPerf.statusProcessing"),
+      shipped: t("adminPerf.statusShipped"),
+      delivered: t("adminPerf.statusDelivered"),
+      cancelled: t("adminPerf.statusCancelled"),
     };
 
     return Object.entries(statusCounts)
@@ -178,7 +181,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
   }, [orders]);
 
   const formatPrice = (value: number) => {
-    return new Intl.NumberFormat("fr-FR", { notation: "compact" }).format(value) + " FCFA";
+    return new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR", { notation: "compact" }).format(value) + " FCFA";
   };
 
   // Calculate stats for PDF export
@@ -228,7 +231,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
           <p className="text-cream font-medium mb-1">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.name === "CA" ? formatPrice(entry.value) : entry.value}
+              {entry.name}: {entry.name === t("adminPerf.revenue") ? formatPrice(entry.value) : entry.value}
             </p>
           ))}
         </div>
@@ -242,7 +245,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
       return (
         <div className="bg-noir border border-gold/30 rounded-lg p-3 shadow-lg">
           <p className="text-cream font-medium">{payload[0].name}</p>
-          <p className="text-sm text-cream/70">{payload[0].value} commande(s)</p>
+          <p className="text-sm text-cream/70">{t("adminPerf.ordersCount", { count: payload[0].value })}</p>
         </div>
       );
     }
@@ -261,7 +264,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-display font-semibold text-cream">
-            Graphiques de performance
+            {t("adminPerf.title")}
           </h2>
         </div>
         <div className="flex items-center gap-3">
@@ -286,19 +289,19 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
                 className="text-cream hover:bg-cream/10 cursor-pointer"
                 onClick={() => setPeriod("7days")}
               >
-                7 derniers jours
+                {t("adminPerf.period7")}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 className="text-cream hover:bg-cream/10 cursor-pointer"
                 onClick={() => setPeriod("30days")}
               >
-                30 derniers jours
+                {t("adminPerf.period30")}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 className="text-cream hover:bg-cream/10 cursor-pointer"
                 onClick={() => setPeriod("3months")}
               >
-                3 derniers mois
+                {t("adminPerf.period3m")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -312,7 +315,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
           <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream text-lg font-medium">
-              Évolution des ventes
+              {t("adminPerf.salesEvolution")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -331,7 +334,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
                     stroke="hsl(var(--cream) / 0.5)"
                     fontSize={12}
                     tickLine={false}
-                    tickFormatter={(value) => new Intl.NumberFormat("fr-FR", { notation: "compact" }).format(value)}
+                    tickFormatter={(value) => new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR", { notation: "compact" }).format(value)}
                   />
                   <YAxis 
                     yAxisId="right"
@@ -349,7 +352,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
                     yAxisId="left"
                     type="monotone" 
                     dataKey="revenue" 
-                    name="CA"
+                    name={t("adminPerf.revenue")}
                     stroke="hsl(var(--primary))" 
                     strokeWidth={2}
                     dot={{ fill: "hsl(var(--primary))", strokeWidth: 0, r: 4 }}
@@ -359,7 +362,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
                     yAxisId="right"
                     type="monotone" 
                     dataKey="orders" 
-                    name="Commandes"
+                    name={t("adminPerf.orders")}
                     stroke="hsl(var(--chart-2))" 
                     strokeWidth={2}
                     dot={{ fill: "hsl(var(--chart-2))", strokeWidth: 0, r: 4 }}
@@ -369,7 +372,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
               </ResponsiveContainer>
             ) : (
               <div className="h-[280px] flex items-center justify-center text-cream/40">
-                Aucune donnée pour cette période
+                {t("adminPerf.noDataPeriod")}
               </div>
             )}
           </CardContent>
@@ -379,7 +382,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream text-lg font-medium">
-              Répartition des commandes
+              {t("adminPerf.statusDistribution")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -411,7 +414,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
               </ResponsiveContainer>
             ) : (
               <div className="h-[280px] flex items-center justify-center text-cream/40">
-                Aucune commande
+                {t("adminPerf.noOrders")}
               </div>
             )}
           </CardContent>
@@ -423,7 +426,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
         <CardHeader className="pb-2">
           <CardTitle className="text-cream text-lg font-medium flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
-            Produits les plus vendus
+            {t("adminPerf.popularProducts")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -440,7 +443,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
                   stroke="hsl(var(--cream) / 0.5)"
                   fontSize={12}
                   tickLine={false}
-                  tickFormatter={(value) => new Intl.NumberFormat("fr-FR", { notation: "compact" }).format(value)}
+                  tickFormatter={(value) => new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR", { notation: "compact" }).format(value)}
                 />
                 <YAxis 
                   type="category"
@@ -456,13 +459,13 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
                 />
                 <Bar 
                   dataKey="revenue" 
-                  name="CA"
+                  name={t("adminPerf.revenue")}
                   fill="hsl(var(--primary))" 
                   radius={[0, 4, 4, 0]}
                 />
                 <Bar 
                   dataKey="quantity" 
-                  name="Quantité"
+                  name={t("adminPerf.quantity")}
                   fill="hsl(var(--chart-2))" 
                   radius={[0, 4, 4, 0]}
                 />
@@ -470,7 +473,7 @@ export function PerformanceCharts({ orders, products }: PerformanceChartsProps) 
             </ResponsiveContainer>
           ) : (
             <div className="h-[300px] flex items-center justify-center text-cream/40">
-              Aucune vente enregistrée
+              {t("adminPerf.noSales")}
             </div>
           )}
         </CardContent>

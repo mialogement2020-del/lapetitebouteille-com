@@ -19,24 +19,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { ReportPreview } from "./ReportPreview";
 import { ReportHistory } from "./ReportHistory";
-
-// Frequency options for the report
-const FREQUENCY_OPTIONS = [
-  { value: "daily", label: "Quotidien", description: "Tous les jours" },
-  { value: "weekly", label: "Hebdomadaire", description: "Une fois par semaine" },
-  { value: "biweekly", label: "Bi-mensuel", description: "Le 1er et 15 de chaque mois" },
-  { value: "monthly", label: "Mensuel", description: "Le 1er de chaque mois" },
-];
-
-const DAY_OPTIONS = [
-  { value: "1", label: "Lundi" },
-  { value: "2", label: "Mardi" },
-  { value: "3", label: "Mercredi" },
-  { value: "4", label: "Jeudi" },
-  { value: "5", label: "Vendredi" },
-  { value: "6", label: "Samedi" },
-  { value: "0", label: "Dimanche" },
-];
+import { useTranslation } from "react-i18next";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({
   value: i.toString(),
@@ -68,6 +51,22 @@ function isValidEmail(email: string): boolean {
 }
 
 export function WeeklyReportSettings() {
+  const { t, i18n } = useTranslation();
+  const FREQUENCY_OPTIONS = [
+    { value: "daily", label: t("adminReports.daily"), description: t("adminReports.dailyDesc") },
+    { value: "weekly", label: t("adminReports.weekly"), description: t("adminReports.weeklyDesc") },
+    { value: "biweekly", label: t("adminReports.biweekly"), description: t("adminReports.biweeklyDesc") },
+    { value: "monthly", label: t("adminReports.monthly"), description: t("adminReports.monthlyDesc") },
+  ];
+  const DAY_OPTIONS = [
+    { value: "1", label: t("adminReports.monday") },
+    { value: "2", label: t("adminReports.tuesday") },
+    { value: "3", label: t("adminReports.wednesday") },
+    { value: "4", label: t("adminReports.thursday") },
+    { value: "5", label: t("adminReports.friday") },
+    { value: "6", label: t("adminReports.saturday") },
+    { value: "0", label: t("adminReports.sunday") },
+  ];
   const { user } = useAuthContext();
   const { profile } = useProfile();
   const [isSending, setIsSending] = useState(false);
@@ -143,22 +142,22 @@ export function WeeklyReportSettings() {
     const trimmedEmail = newEmail.trim().toLowerCase();
     
     if (!trimmedEmail) {
-      setEmailError("Veuillez entrer une adresse email");
+      setEmailError(t("adminReports.emailRequired"));
       return;
     }
     
     if (!isValidEmail(trimmedEmail)) {
-      setEmailError("Adresse email invalide");
+      setEmailError(t("adminReports.invalidEmail"));
       return;
     }
     
     if (recipientEmails.includes(trimmedEmail)) {
-      setEmailError("Cette adresse est déjà dans la liste");
+      setEmailError(t("adminReports.emailExists"));
       return;
     }
     
     if (recipientEmails.length >= 10) {
-      setEmailError("Maximum 10 destinataires autorisés");
+      setEmailError(t("adminReports.maxRecipients"));
       return;
     }
     
@@ -182,12 +181,12 @@ export function WeeklyReportSettings() {
     const trimmedTestEmail = testEmail.trim().toLowerCase();
     
     if (!trimmedTestEmail) {
-      setTestEmailError("Veuillez entrer une adresse email");
+      setTestEmailError(t("adminReports.emailRequired"));
       return;
     }
     
     if (!isValidEmail(trimmedTestEmail)) {
-      setTestEmailError("Adresse email invalide");
+      setTestEmailError(t("adminReports.invalidEmail"));
       return;
     }
     
@@ -201,14 +200,14 @@ export function WeeklyReportSettings() {
 
       if (error) throw error;
 
-      toast.success("Email de test envoyé", {
-        description: `Le rapport de test a été envoyé à ${trimmedTestEmail}`,
+      toast.success(t("adminReports.testSent"), {
+        description: t("adminReports.testSentDesc", { email: trimmedTestEmail }),
       });
       setTestEmail("");
     } catch (error) {
       console.error("Error sending test report:", error);
-      toast.error("Erreur lors de l'envoi", {
-        description: "Impossible d'envoyer l'email de test. Réessayez plus tard.",
+      toast.error(t("adminReports.sendError"), {
+        description: t("adminReports.sendErrorDesc"),
       });
     } finally {
       setIsSendingTest(false);
@@ -226,13 +225,13 @@ export function WeeklyReportSettings() {
       if (error) throw error;
 
       setLastSentAt(new Date());
-      toast.success("Rapport envoyé avec succès", {
-        description: `Le rapport a été envoyé à ${recipientEmails.length > 0 ? recipientEmails.length : 1} destinataire(s).`,
+      toast.success(t("adminReports.sendNowSuccess"), {
+        description: t("adminReports.sendNowSuccessDesc", { count: recipientEmails.length > 0 ? recipientEmails.length : 1 }),
       });
     } catch (error) {
       console.error("Error sending report:", error);
-      toast.error("Erreur lors de l'envoi", {
-        description: "Impossible d'envoyer le rapport. Réessayez plus tard.",
+      toast.error(t("adminReports.sendError"), {
+        description: t("adminReports.sendNowError"),
       });
     } finally {
       setIsSending(false);
@@ -259,15 +258,15 @@ export function WeeklyReportSettings() {
       if (error) throw error;
 
       setScheduleUpdated(true);
-      toast.success("Planification mise à jour", {
+      toast.success(t("adminReports.scheduleSaved"), {
         description: getCurrentScheduleDescription(),
       });
 
       setTimeout(() => setScheduleUpdated(false), 5000);
     } catch (error) {
       console.error("Error updating schedule:", error);
-      toast.error("Erreur lors de la mise à jour", {
-        description: "Impossible de modifier la planification. Réessayez plus tard.",
+      toast.error(t("adminReports.scheduleSaveError"), {
+        description: t("adminReports.scheduleSaveErrorDesc"),
       });
     } finally {
       setIsSaving(false);
@@ -280,13 +279,13 @@ export function WeeklyReportSettings() {
 
     switch (frequency) {
       case "daily":
-        return `Tous les jours à ${hour}:00`;
+        return t("adminReports.dailyAt", { hour });
       case "weekly":
-        return `Chaque ${day?.label.toLowerCase()} à ${hour}:00`;
+        return t("adminReports.weeklyAt", { day: day?.label.toLowerCase() ?? "", hour });
       case "biweekly":
-        return `Le 1er et 15 de chaque mois à ${hour}:00`;
+        return t("adminReports.biweeklyAt", { hour });
       case "monthly":
-        return `Le 1er de chaque mois à ${hour}:00`;
+        return t("adminReports.monthlyAt", { hour });
       default:
         return "";
     }
@@ -298,7 +297,7 @@ export function WeeklyReportSettings() {
         <CardContent className="py-8">
           <div className="flex items-center justify-center gap-2 text-cream/60">
             <RefreshCw className="h-4 w-4 animate-spin" />
-            <span>Chargement de la configuration...</span>
+            <span>{t("adminReports.loadingConfig")}</span>
           </div>
         </CardContent>
       </Card>
@@ -310,10 +309,10 @@ export function WeeklyReportSettings() {
       <CardHeader>
         <CardTitle className="text-cream flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
-          Rapport hebdomadaire de stock
+          {t("adminReports.weeklyReport")}
         </CardTitle>
         <CardDescription className="text-cream/60">
-          Envoi automatique par email d'un résumé du stock et des alertes
+          {t("adminReports.description")}
         </CardDescription>
       </CardHeader>
 
@@ -324,13 +323,13 @@ export function WeeklyReportSettings() {
             <Calendar className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div>
               <h4 className="text-sm font-medium text-cream mb-1">
-                Planification actuelle
+                {t("adminReports.currentSchedule")}
               </h4>
               <p className="text-sm text-cream/70">
                 {getCurrentScheduleDescription()}
               </p>
               <p className="text-xs text-cream/50 mt-2">
-                Le rapport inclut : statistiques de stock, produits en alerte, tendances et recommandations.
+                {t("adminReports.scheduleInclude")}
               </p>
             </div>
           </div>
@@ -340,14 +339,14 @@ export function WeeklyReportSettings() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" />
-            <Label className="text-cream font-medium">Destinataires du rapport</Label>
+            <Label className="text-cream font-medium">{t("adminReports.recipients")}</Label>
           </div>
           
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
                 type="email"
-                placeholder="Ajouter une adresse email..."
+                placeholder={t("adminReports.addEmail")}
                 value={newEmail}
                 onChange={(e) => {
                   setNewEmail(e.target.value);
@@ -360,6 +359,7 @@ export function WeeklyReportSettings() {
             <Button
               type="button"
               onClick={handleAddEmail}
+              aria-label={t("adminReports.add")}
               variant="outline"
               className="border-gold/30 hover:bg-cream/5 text-cream px-3"
             >
@@ -375,7 +375,7 @@ export function WeeklyReportSettings() {
           <div className="flex flex-wrap gap-2">
             {recipientEmails.length === 0 ? (
               <p className="text-sm text-cream/50 italic">
-                Aucun destinataire configuré.
+                {t("adminReports.noRecipients")}
               </p>
             ) : (
               recipientEmails.map((email) => (
@@ -389,7 +389,7 @@ export function WeeklyReportSettings() {
                   <button
                     onClick={() => handleRemoveEmail(email)}
                     className="ml-1 hover:text-red-400 transition-colors"
-                    aria-label={`Supprimer ${email}`}
+                    aria-label={t("adminReports.removeEmail", { email })}
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -400,7 +400,7 @@ export function WeeklyReportSettings() {
           
           {recipientEmails.length > 0 && (
             <p className="text-xs text-cream/50">
-              {recipientEmails.length} destinataire(s) configuré(s) • Maximum 10
+              {t("adminReports.recipientsCount", { count: recipientEmails.length })}
             </p>
           )}
         </div>
@@ -409,7 +409,7 @@ export function WeeklyReportSettings() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Frequency */}
           <div className="space-y-2">
-            <Label className="text-cream">Fréquence</Label>
+            <Label className="text-cream">{t("adminReports.frequency")}</Label>
             <Select value={frequency} onValueChange={setFrequency}>
               <SelectTrigger className="bg-noir border-gold/30 text-cream">
                 <SelectValue />
@@ -431,7 +431,7 @@ export function WeeklyReportSettings() {
           {/* Day of week (only for weekly) */}
           {frequency === "weekly" && (
             <div className="space-y-2">
-              <Label className="text-cream">Jour d'envoi</Label>
+              <Label className="text-cream">{t("adminReports.sendDay")}</Label>
               <Select value={selectedDay} onValueChange={setSelectedDay}>
                 <SelectTrigger className="bg-noir border-gold/30 text-cream">
                   <SelectValue />
@@ -453,7 +453,7 @@ export function WeeklyReportSettings() {
 
           {/* Hour */}
           <div className="space-y-2">
-            <Label className="text-cream">Heure d'envoi</Label>
+            <Label className="text-cream">{t("adminReports.sendHour")}</Label>
             <Select value={selectedHour} onValueChange={setSelectedHour}>
               <SelectTrigger className="bg-noir border-gold/30 text-cream">
                 <SelectValue />
@@ -483,12 +483,12 @@ export function WeeklyReportSettings() {
           {isSaving ? (
             <>
               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Mise à jour en cours...
+              {t("adminReports.saving")}
             </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Enregistrer la planification
+              {t("adminReports.saveSchedule")}
             </>
           )}
         </Button>
@@ -502,7 +502,7 @@ export function WeeklyReportSettings() {
           >
             <Check className="h-5 w-5 text-primary" />
             <span className="text-primary text-sm">
-              Planification mise à jour : {getCurrentScheduleDescription()}
+              {t("adminReports.scheduleUpdated", { schedule: getCurrentScheduleDescription() })}
             </span>
           </motion.div>
         )}
@@ -511,17 +511,16 @@ export function WeeklyReportSettings() {
         <div className="bg-cream/5 border border-gold/10 rounded-lg p-4 space-y-3">
           <div className="flex items-center gap-2">
             <TestTube className="h-4 w-4 text-primary" />
-            <Label className="text-cream font-medium">Envoyer un email de test</Label>
+            <Label className="text-cream font-medium">{t("adminReports.sendTestTitle")}</Label>
           </div>
           <p className="text-xs text-cream/50">
-            Testez le rapport en l'envoyant à une seule adresse avant l'envoi global. 
-            L'email de test ne sera pas enregistré dans l'historique.
+            {t("adminReports.sendTestHelp")}
           </p>
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
                 type="email"
-                placeholder="votre-email@exemple.com"
+                placeholder={t("adminReports.testPlaceholder")}
                 value={testEmail}
                 onChange={(e) => {
                   setTestEmail(e.target.value);
@@ -547,7 +546,7 @@ export function WeeklyReportSettings() {
               ) : (
                 <>
                   <TestTube className="h-4 w-4 mr-2" />
-                  Tester
+                  {t("adminReports.testButton")}
                 </>
               )}
             </Button>
@@ -568,12 +567,12 @@ export function WeeklyReportSettings() {
             {isSending ? (
               <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Envoi en cours...
+                {t("adminReports.sending")}
               </>
             ) : (
               <>
                 <Send className="h-4 w-4 mr-2" />
-                Envoyer le rapport maintenant
+                {t("adminReports.sendNow")}
               </>
             )}
           </Button>
@@ -588,8 +587,10 @@ export function WeeklyReportSettings() {
           >
             <Check className="h-5 w-5 text-green-500" />
             <span className="text-green-400 text-sm">
-              Rapport envoyé le {lastSentAt.toLocaleDateString("fr-FR")} à{" "}
-              {lastSentAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+              {t("adminReports.lastSent", {
+                date: lastSentAt.toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR"),
+                time: lastSentAt.toLocaleTimeString(i18n.language === "en" ? "en-US" : "fr-FR", { hour: "2-digit", minute: "2-digit" }),
+              })}
             </span>
           </motion.div>
         )}

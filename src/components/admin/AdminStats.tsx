@@ -10,6 +10,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 interface AdminStatsProps {
   stats: {
@@ -28,48 +29,49 @@ interface AdminStatsProps {
 }
 
 export function AdminStats({ stats }: AdminStatsProps) {
+  const { t, i18n } = useTranslation();
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
+    return new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR").format(price) + " FCFA";
   };
 
   const orderStats = [
     { 
-      label: "Total commandes", 
+      label: t("adminStats.totalOrders"), 
       value: stats.total, 
       icon: Package, 
       color: "text-cream",
       bgColor: "bg-cream/10"
     },
     { 
-      label: "En attente", 
+      label: t("adminStats.pending"), 
       value: stats.pending, 
       icon: Clock, 
       color: "text-yellow-500",
       bgColor: "bg-yellow-500/10"
     },
     { 
-      label: "En préparation", 
+      label: t("adminStats.inPreparation"), 
       value: stats.confirmed + stats.processing, 
       icon: Package, 
       color: "text-purple-500",
       bgColor: "bg-purple-500/10"
     },
     { 
-      label: "Expédiées", 
+      label: t("adminStats.shipped"), 
       value: stats.shipped, 
       icon: Truck, 
       color: "text-indigo-500",
       bgColor: "bg-indigo-500/10"
     },
     { 
-      label: "Livrées", 
+      label: t("adminStats.delivered"), 
       value: stats.delivered, 
       icon: CheckCircle, 
       color: "text-green-500",
       bgColor: "bg-green-500/10"
     },
     { 
-      label: "Annulées", 
+      label: t("adminStats.cancelled"), 
       value: stats.cancelled, 
       icon: XCircle, 
       color: "text-destructive",
@@ -79,21 +81,21 @@ export function AdminStats({ stats }: AdminStatsProps) {
 
   const productStats = stats.totalProducts !== undefined ? [
     { 
-      label: "Produits total", 
+      label: t("adminStats.totalProducts"), 
       value: stats.totalProducts, 
       icon: Wine, 
       color: "text-cream",
       bgColor: "bg-cream/10"
     },
     { 
-      label: "Produits actifs", 
+      label: t("adminStats.activeProducts"), 
       value: stats.activeProducts || 0, 
       icon: CheckCircle, 
       color: "text-green-500",
       bgColor: "bg-green-500/10"
     },
     { 
-      label: "Stock faible", 
+      label: t("adminStats.lowStock"), 
       value: stats.lowStock || 0, 
       icon: AlertTriangle, 
       color: "text-orange-500",
@@ -118,12 +120,12 @@ export function AdminStats({ stats }: AdminStatsProps) {
                   <TrendingUp className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-cream/60 text-xs mb-0.5">Chiffre d'affaires</p>
+                  <p className="text-cream/60 text-xs mb-0.5">{t("adminStats.revenue")}</p>
                   <p className="text-2xl font-display font-bold text-primary">
                     {formatPrice(stats.totalRevenue)}
                   </p>
                   <p className="text-cream/50 text-xs">
-                    {stats.total - stats.cancelled} commande{stats.total - stats.cancelled > 1 ? "s" : ""} validée{stats.total - stats.cancelled > 1 ? "s" : ""}
+                    {t("adminStats.validatedOrders", { count: stats.total - stats.cancelled })}
                   </p>
                 </div>
               </div>
@@ -135,12 +137,12 @@ export function AdminStats({ stats }: AdminStatsProps) {
                     <Wine className="h-6 w-6 text-cream" />
                   </div>
                   <div>
-                    <p className="text-cream/60 text-xs mb-0.5">Catalogue</p>
+                    <p className="text-cream/60 text-xs mb-0.5">{t("adminStats.catalogue")}</p>
                     <p className="text-2xl font-display font-bold text-cream">
-                      {stats.totalProducts} <span className="text-base font-normal text-cream/50">produits</span>
+                      {stats.totalProducts} <span className="text-base font-normal text-cream/50">{t("adminStats.productsLabel")}</span>
                     </p>
                     <p className="text-cream/50 text-xs">
-                      {stats.activeProducts} actifs • {stats.lowStock} stock faible
+                      {t("adminStats.activeAndLow", { active: stats.activeProducts, low: stats.lowStock })}
                     </p>
                   </div>
                 </div>
