@@ -2082,6 +2082,26 @@
     "enabled": "Notifications push activées !",
     "disabled": "Notifications push désactivées",
     "blocked": "Notifications bloquées",
-    "notSupported": "Notifications push non supportées"
+    "notSupported": "Notifications push non supportées",
+    "enabledDesc": "Vous recevrez les alertes de stock même quand le navigateur est fermé.",
+    "disableError": "Erreur lors de la désactivation",
+    "blockedDesc": "Veuillez autoriser les notifications dans les paramètres de votre navigateur.",
+    "enableError": "Erreur lors de l'activation",
+    "statusEnabled": "Notifications push activées",
+    "statusBlocked": "Notifications bloquées par le navigateur",
+    "statusDisabled": "Notifications push désactivées",
+    "ariaNotSupported": "Notifications push non supportées par ce navigateur"
+  },
+  "adminNotif": {
+    "notifications": "Notifications",
+    "newCount": "{{count}} nouvelle",
+    "newCount_plural": "{{count}} nouvelles",
+    "markAllRead": "Tout lire",
+    "loading": "Chargement...",
+    "noRecentOrders": "Aucune commande récente",
+    "ordersInfo": "Les nouvelles commandes des dernières 24h apparaîtront ici",
+    "newOrder": "Nouvelle commande",
+    "footer24h": "Commandes des dernières 24h • {{count}} notification",
+    "footer24h_plural": "Commandes des dernières 24h • {{count}} notifications"
   }
 }

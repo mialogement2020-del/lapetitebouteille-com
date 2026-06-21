@@ -2082,6 +2082,26 @@
     "enabled": "Push notifications enabled!",
     "disabled": "Push notifications disabled",
     "blocked": "Notifications blocked",
-    "notSupported": "Push notifications not supported"
+    "notSupported": "Push notifications not supported",
+    "enabledDesc": "You'll receive stock alerts even when the browser is closed.",
+    "disableError": "Error disabling notifications",
+    "blockedDesc": "Please allow notifications in your browser settings.",
+    "enableError": "Error enabling notifications",
+    "statusEnabled": "Push notifications enabled",
+    "statusBlocked": "Notifications blocked by the browser",
+    "statusDisabled": "Push notifications disabled",
+    "ariaNotSupported": "Push notifications not supported by this browser"
+  },
+  "adminNotif": {
+    "notifications": "Notifications",
+    "newCount": "{{count}} new",
+    "newCount_plural": "{{count}} new",
+    "markAllRead": "Mark all as read",
+    "loading": "Loading...",
+    "noRecentOrders": "No recent orders",
+    "ordersInfo": "New orders from the last 24h will appear here",
+    "newOrder": "New order",
+    "footer24h": "Orders from the last 24h • {{count}} notification",
+    "footer24h_plural": "Orders from the last 24h • {{count}} notifications"
   }
 }
