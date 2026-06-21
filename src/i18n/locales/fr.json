@@ -829,5 +829,271 @@
     "successDesc": "Notre équipe commerciale vous contactera sous 24h.",
     "errorTitle": "Erreur",
     "errorDesc": "Impossible d'envoyer la demande. Réessayez."
+  },
+  "pushNotificationSettings": {
+    "title": "Notifications Push",
+    "description": "Recevez des alertes en temps réel pour vos commissions et parrainages",
+    "statusChecking": "Vérification...",
+    "statusActive": "Notifications activées",
+    "statusInactive": "Notifications désactivées",
+    "statusSubChecking": "Veuillez patienter",
+    "statusSubActive": "Vous recevrez des alertes en temps réel",
+    "statusSubInactive": "Activez pour recevoir des alertes",
+    "btnEnable": "Activer",
+    "btnDisable": "Désactiver",
+    "deniedWarning": "Les notifications sont bloquées par votre navigateur. Pour les activer :",
+    "deniedStep1": "Cliquez sur l'icône cadenas dans la barre d'adresse",
+    "deniedStep2": "Trouvez l'autorisation « Notifications »",
+    "deniedStep3": "Passez-la sur « Autoriser » puis rechargez la page",
+    "alertsFooter": "Alertes pour les commissions, nouvelles commandes et activités du réseau",
+    "notSupported": {
+      "title": "Non supporté",
+      "description": "Votre navigateur ne prend pas en charge les notifications push."
+    },
+    "toast": {
+      "autoEnabled": "Notifications activées !",
+      "autoEnabledDesc": "Vous recevrez désormais des alertes en temps réel.",
+      "enabled": "Notifications activées !",
+      "enabledDesc": "Vous recevrez des alertes pour vos commissions et parrainages.",
+      "disabled": "Notifications désactivées.",
+      "disabledError": "Impossible de désactiver les notifications. Veuillez réessayer.",
+      "enableError": "Impossible d'activer les notifications.",
+      "enableErrorDesc": "Une erreur est survenue. Veuillez réessayer.",
+      "blockedTitle": "Notifications bloquées",
+      "blockedDesc": "Veuillez autoriser les notifications dans les paramètres de votre navigateur."
+    }
+  },
+  "referralLink": {
+    "title": "Mon Lien de Parrainage",
+    "subtitle": "Partagez votre lien et gagnez des commissions",
+    "yourCode": "Votre code",
+    "fullLink": "Lien complet",
+    "shareBtn": "Partager mon lien",
+    "clicks": "Clics",
+    "signups": "Inscriptions",
+    "orders": "Commandes",
+    "shareTitle": "Rejoignez La Petite Bouteille",
+    "shareText": "Découvrez notre sélection premium de vins, champagnes et spiritueux. Utilisez mon lien de parrainage !",
+    "toast": {
+      "copied": "Lien copié !",
+      "copiedDesc": "Votre lien de parrainage a été copié dans le presse-papiers.",
+      "copyError": "Erreur de copie",
+      "copyErrorDesc": "Impossible de copier le lien. Veuillez le copier manuellement."
+    }
+  },
+  "referralTree": {
+    "you": "Vous",
+    "ambassador": "Ambassadeur",
+    "unknownUser": "Utilisateur inconnu",
+    "noReferrals": "Aucun filleul pour l'instant",
+    "inviteHint": "Partagez votre lien de parrainage pour développer votre réseau",
+    "referralCount_one": "{{count}} filleul",
+    "referralCount_other": "{{count}} filleuls",
+    "others": "autres...",
+    "noReferralAtLevel": "Aucun filleul à ce niveau",
+    "legendTitle": "Légende",
+    "level1Title": "Niveau 1 — Directs",
+    "level2Title": "Niveau 2 — Indirects",
+    "level3Title": "Niveau 3 — Étendus",
+    "rank": {
+      "bronze": "Bronze",
+      "silver": "Argent",
+      "gold": "Or",
+      "diamond": "Diamant",
+      "elite": "Élite"
+    }
+  },
+  "shareableAssets": {
+    "title": "Ressources Marketing",
+    "subtitle": "Téléchargez et partagez nos supports promotionnels",
+    "typePlaceholder": "Filtrer par type",
+    "platformPlaceholder": "Filtrer par plateforme",
+    "download": "Télécharger",
+    "downloadCount_one": "{{count}} téléchargement",
+    "downloadCount_other": "{{count}} téléchargements",
+    "empty": "Aucune ressource ne correspond à vos filtres",
+    "tip": "Partagez ces visuels sur vos réseaux sociaux pour attirer de nouveaux clients",
+    "filter": {
+      "type": {
+        "all": "Tous les types",
+        "banner": "Bannières",
+        "story": "Stories",
+        "post": "Posts",
+        "flyer": "Flyers"
+      },
+      "platform": {
+        "all": "Toutes les plateformes"
+      }
+    },
+    "type": {
+      "banner": "Bannière",
+      "story": "Story",
+      "post": "Post",
+      "flyer": "Flyer"
+    }
+  },
+  "shortLinkManager": {
+    "title": "Lien Court",
+    "yourShortLink": "Votre lien court",
+    "customized": "Personnalisé",
+    "btnCustomize": "Personnaliser",
+    "customizeLabel": "Code personnalisé",
+    "codeHint": "Lettres, chiffres, tirets et tirets bas uniquement (3–20 caractères)",
+    "btnSave": "Enregistrer",
+    "btnSaving": "Enregistrement...",
+    "btnCancel": "Annuler",
+    "tip": "💡 <strong>Astuce :</strong> Un code mémorable augmente votre taux de conversion.",
+    "toast": {
+      "copied": "Lien copié !",
+      "copyError": "Impossible de copier le lien.",
+      "formatError": "Format invalide. Utilisez uniquement des lettres, chiffres, - et _.",
+      "lengthError": "Le code doit contenir entre 3 et 20 caractères.",
+      "takenError": "Ce code est déjà pris. Veuillez en choisir un autre.",
+      "updated": "Lien court mis à jour !",
+      "saveError": "Impossible d'enregistrer le code. Veuillez réessayer."
+    }
+  },
+  "statsOverview": {
+    "currentRank": "Rang actuel",
+    "ambassadorRank": "Rang : {{rank}}",
+    "activeReferrals_one": "{{count}} filleul actif",
+    "activeReferrals_other": "{{count}} filleuls actifs",
+    "stat": {
+      "availableBalance": "Solde disponible",
+      "pendingBalance": "Solde en attente",
+      "monthlyEarnings": "Gains du mois",
+      "totalEarnings": "Gains totaux",
+      "activeReferrals": "Filleuls actifs",
+      "totalOrders": "Commandes totales"
+    },
+    "rank": {
+      "bronze": "Bronze",
+      "silver": "Argent",
+      "gold": "Or",
+      "diamond": "Diamant",
+      "elite": "Élite"
+    }
+  },
+  "walletManager": {
+    "availableBalance": "Solde disponible",
+    "dialogTitle": "Demande de retrait",
+    "dialogDesc": "Saisissez le montant et vos informations de paiement",
+    "amount": "Montant (FCFA)",
+    "available": "Disponible : {{amount}}",
+    "paymentMethod": "Méthode de paiement",
+    "phone": "Numéro Mobile Money",
+    "btnWithdraw": "Retirer",
+    "btnSubmit": "Confirmer",
+    "btnSubmitting": "Traitement...",
+    "btnStoreCredit": "Utiliser comme crédit boutique",
+    "transactionsTitle": "Historique des transactions",
+    "noTransactions": "Aucune transaction pour l'instant",
+    "type": {
+      "commission": "Commission",
+      "bonus": "Bonus",
+      "withdrawal": "Retrait",
+      "store_credit": "Crédit boutique",
+      "adjustment": "Ajustement"
+    },
+    "toast": {
+      "withdrawSuccess": "Retrait demandé !",
+      "withdrawSuccessDesc": "Votre demande de {{amount}} a été soumise.",
+      "error": "Erreur",
+      "errorDesc": "Impossible de traiter votre demande. Veuillez réessayer."
+    },
+    "error": {
+      "insufficientFunds": "Solde insuffisant.",
+      "walletNotFound": "Portefeuille introuvable."
+    }
+  },
+  "ambassadorNotifications": {
+    "title": "Notifications",
+    "unread_one": "{{count}} nouvelle",
+    "unread_other": "{{count}} nouvelles",
+    "markAllRead": "Tout lire",
+    "loading": "Chargement...",
+    "empty": "Aucune notification",
+    "emptyHint": "Vos commissions et bonus apparaîtront ici",
+    "new": "NOUVEAU",
+    "count_one": "{{count}} notification",
+    "count_other": "{{count}} notifications"
+  },
+  "challenges": {
+    "typeLabels": {
+      "referrals": "Parrainages",
+      "sales": "Ventes",
+      "signups": "Inscriptions",
+      "orders": "Commandes"
+    },
+    "ended": "Terminé",
+    "completed": "Terminé",
+    "progress": "Progression",
+    "join": "Participer",
+    "empty": "Aucun challenge actif pour le moment. Revenez bientôt !",
+    "title": "Challenges Actifs",
+    "subtitle": "Relevez des défis pour gagner des bonus",
+    "timeLeft": "{{days}}j {{hours}}h",
+    "timeLeftHours": "{{hours}}h"
+  },
+  "commissionHistory": {
+    "status": {
+      "pending": "En attente",
+      "completed": "Payée",
+      "failed": "Échouée",
+      "refunded": "Remboursée"
+    },
+    "level1": "Direct",
+    "level2": "Niveau 2",
+    "level3": "Niveau 3",
+    "levelN": "Niveau {{level}}",
+    "empty": "Aucune commission pour le moment",
+    "emptyHint": "Partagez votre lien de parrainage pour commencer à gagner",
+    "orderLabel": "Commande"
+  },
+  "incomeSimulator": {
+    "title": "Simulateur de Revenus",
+    "subtitle": "Estimez vos gains potentiels",
+    "directReferrals": "Filleuls directs",
+    "avgOrder": "Panier moyen",
+    "ordersPerMonth": "Commandes/mois par filleul",
+    "estimatedEarnings": "Revenus estimés",
+    "level1": "Niveau 1 (direct)",
+    "level2": "Niveau 2",
+    "level3": "Niveau 3",
+    "perMonth": "/mois",
+    "monthlyTotal": "Total mensuel",
+    "annualProjection": "Projection annuelle",
+    "networkSize": "Taille du réseau estimée",
+    "members": "~{{count}} membres",
+    "disclaimer": "* Ces estimations sont indicatives et basées sur les taux de commission actuels. Les résultats réels dépendent de l'activité de votre réseau."
+  },
+  "linkStats": {
+    "title": "Performance de vos liens",
+    "subtitle": "Statistiques de clics et conversions",
+    "globalConversion": "{{rate}}% conversion globale",
+    "clicksLabel": "Clics sur vos liens",
+    "clicksDesc": "Nombre de fois où vos liens ont été ouverts",
+    "signupsLabel": "Inscriptions",
+    "signupsDesc": "Taux de conversion : {{rate}}%",
+    "ordersLabel": "Commandes générées",
+    "ordersDesc": "Taux de commande : {{rate}}%",
+    "revenueLabel": "Revenus générés",
+    "revenueDesc": "Chiffre d'affaires total via vos liens",
+    "funnel": "Entonnoir de conversion",
+    "funnelClicks": "Clics",
+    "funnelSignups": "Inscriptions",
+    "funnelOrders": "Commandes"
+  },
+  "leaderboard": {
+    "title": "Leaderboard Mensuel",
+    "live": "En direct",
+    "empty": "Pas encore de classement ce mois-ci. Soyez le premier !",
+    "you": "(vous)",
+    "referralsLabel": "Parrainages",
+    "ordersLabel": "Commandes",
+    "thisMonth": "ce mois",
+    "showLess": "Voir moins",
+    "showMore": "Voir les {{count}} autres",
+    "defaultName": "Ambassadeur"
   }
 }
