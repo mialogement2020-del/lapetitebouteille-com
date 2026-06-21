@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { Bell, CheckCheck, Gift, TrendingUp, Trash2, Users, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useAmbassadorNotifications, AmbassadorNotification } from "@/hooks/useAmbassadorNotifications";
+import { useTranslation } from "react-i18next";
 
 interface AmbassadorNotificationsProps {
   enabled?: boolean;
@@ -44,6 +45,7 @@ const getNotificationColor = (type: string) => {
 };
 
 export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificationsProps) {
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const [showNewIndicator, setShowNewIndicator] = useState(false);
   const [newNotificationIds, setNewNotificationIds] = useState<Set<string>>(new Set());
@@ -56,6 +58,8 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
     markAllAsRead,
     clearAll,
   } = useAmbassadorNotifications(enabled);
+
+  const dateFnsLocale = i18n.language === "en" ? enUS : fr;
 
   // Animation duration in milliseconds (configurable)
   const ANIMATION_DURATION_MS = 5000;
@@ -160,10 +164,10 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
         <div className="flex items-center justify-between p-4 border-b border-gold/20">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
-            <h3 className="font-semibold text-cream">Notifications</h3>
+            <h3 className="font-semibold text-cream">{t("ambassadorNotifications.title")}</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="text-xs">
-                {unreadCount} nouvelle{unreadCount > 1 ? "s" : ""}
+                {t("ambassadorNotifications.unread", { count: unreadCount })}
               </Badge>
             )}
           </div>
@@ -176,7 +180,7 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
                 className="h-8 px-2 text-xs text-cream/60 hover:text-primary"
               >
                 <CheckCheck className="h-3 w-3 mr-1" />
-                Tout lire
+                {t("ambassadorNotifications.markAllRead")}
               </Button>
             )}
             {notifications.length > 0 && (
@@ -197,14 +201,14 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
           {isLoading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary mx-auto mb-3" />
-              <p className="text-cream/60 text-sm">Chargement...</p>
+              <p className="text-cream/60 text-sm">{t("ambassadorNotifications.loading")}</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="h-10 w-10 text-cream/20 mx-auto mb-3" />
-              <p className="text-cream/60 text-sm">Aucune notification</p>
+              <p className="text-cream/60 text-sm">{t("ambassadorNotifications.empty")}</p>
               <p className="text-cream/40 text-xs mt-1">
-                Vos commissions et bonus apparaîtront ici
+                {t("ambassadorNotifications.emptyHint")}
               </p>
             </div>
           ) : (
@@ -263,7 +267,7 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
                               animate={{ opacity: 1, scale: 1 }}
                               className="text-[10px] font-bold text-green-400 bg-green-500/20 px-1.5 py-0.5 rounded"
                             >
-                              NOUVEAU
+                              {t("ambassadorNotifications.new")}
                             </motion.span>
                           )}
                         </div>
@@ -273,7 +277,7 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
                         <span className="text-xs text-cream/40 mt-2 block">
                           {formatDistanceToNow(new Date(notification.createdAt), {
                             addSuffix: true,
-                            locale: fr,
+                            locale: dateFnsLocale,
                           })}
                         </span>
                       </div>
@@ -289,7 +293,7 @@ export function AmbassadorNotifications({ enabled = true }: AmbassadorNotificati
         {notifications.length > 0 && (
           <div className="p-2 border-t border-gold/20">
             <p className="text-xs text-center text-cream/40">
-              {notifications.length} notification{notifications.length > 1 ? "s" : ""}
+              {t("ambassadorNotifications.count", { count: notifications.length })}
             </p>
           </div>
         )}
