@@ -1,31 +1,12 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Truck, Shield, Clock, Award, Sparkles } from "lucide-react";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 
-const trustFeatures = [
-  {
-    icon: Truck,
-    title: "Livraison Premium",
-    description: "Express 24h sur Yaoundé & Douala",
-  },
-  {
-    icon: Shield,
-    title: "Paiement Sécurisé",
-    description: "Mobile Money & Paiement à la livraison",
-  },
-  {
-    icon: Clock,
-    title: "Conciergerie 7j/7",
-    description: "Service client dédié et personnalisé",
-  },
-  {
-    icon: Award,
-    title: "Authenticité Certifiée",
-    description: "Produits 100% garantis d'origine",
-  },
-];
+const trustIcons = [Truck, Shield, Clock, Award];
 
 const TrustSection = () => {
+  const { t } = useTranslation();
   const sectionRef = useRef<HTMLElement>(null);
   
   const { scrollYProgress } = useScroll({
@@ -53,7 +34,7 @@ const TrustSection = () => {
           className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12"
           style={{ opacity, y }}
         >
-          {trustFeatures.map((feature, index) => (
+          {trustIcons.map((Icon, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -67,13 +48,13 @@ const TrustSection = () => {
                 transition={{ type: "spring", stiffness: 300 }}
                 className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-5 group-hover:bg-primary/20 transition-colors"
               >
-                <feature.icon className="h-7 w-7 text-primary" />
+                <Icon className="h-7 w-7 text-primary" />
               </motion.div>
               <h3 className="font-display text-xl font-semibold text-cream mb-2">
-                {feature.title}
+                {t(`trustSection.feature${index + 1}Title`)}
               </h3>
               <p className="text-sm text-cream/60">
-                {feature.description}
+                {t(`trustSection.feature${index + 1}Desc`)}
               </p>
             </motion.div>
           ))}
