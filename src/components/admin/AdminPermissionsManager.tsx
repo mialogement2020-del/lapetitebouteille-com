@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Shield, User, Crown, Check, X, Loader2, UserPlus, Search, Trash2 } from "lucide-react";
@@ -41,6 +42,7 @@ interface SearchResult {
 }
 
 export const AdminPermissionsManager = () => {
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const { 
     adminUsers, 
@@ -73,7 +75,7 @@ export const AdminPermissionsManager = () => {
         <CardContent className="py-12 text-center">
           <Shield className="h-12 w-12 text-cream/40 mx-auto mb-4" />
           <p className="text-cream/60">
-            Seuls les Super Admins peuvent gérer les permissions.
+            {t("adminPermissions.superAdminOnly")}
           </p>
         </CardContent>
       </Card>
@@ -83,8 +85,8 @@ export const AdminPermissionsManager = () => {
   const handleSearchUsers = async () => {
     if (!searchQuery.trim() || searchQuery.length < 3) {
       toast({
-        title: "Recherche trop courte",
-        description: "Entrez au moins 3 caractères",
+        title: t("adminPermissions.searchTooShort"),
+        description: t("adminPermissions.searchTooShortDesc"),
         variant: "destructive",
       });
       return;
@@ -110,8 +112,8 @@ export const AdminPermissionsManager = () => {
       })));
     } catch (error) {
       toast({
-        title: "Erreur de recherche",
-        description: "Impossible de rechercher les utilisateurs",
+        title: t("adminPermissions.searchError"),
+        description: t("adminPermissions.searchErrorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -133,8 +135,8 @@ export const AdminPermissionsManager = () => {
       if (roleError) throw roleError;
 
       toast({
-        title: "Administrateur ajouté",
-        description: `${userEmail} est maintenant administrateur`,
+        title: t("adminPermissions.adminAdded"),
+        description: t("adminPermissions.adminAddedDesc", { email: userEmail }),
       });
       
       setIsAddDialogOpen(false);
@@ -145,14 +147,14 @@ export const AdminPermissionsManager = () => {
       // Check if it's a duplicate key error
       if (error.code === '23505') {
         toast({
-          title: "Déjà administrateur",
-          description: "Cet utilisateur est déjà administrateur",
+          title: t("adminPermissions.alreadyAdmin"),
+          description: t("adminPermissions.alreadyAdminDesc"),
           variant: "destructive",
         });
       } else {
         toast({
           title: "Erreur",
-          description: "Impossible de promouvoir l'utilisateur",
+          description: t("adminPermissions.promoteError"),
           variant: "destructive",
         });
       }
@@ -184,8 +186,8 @@ export const AdminPermissionsManager = () => {
       if (permError) throw permError;
 
       toast({
-        title: "Administrateur supprimé",
-        description: `${userToRemove.email} n'est plus administrateur`,
+        title: t("adminPermissions.adminRemoved"),
+        description: t("adminPermissions.adminRemovedDesc", { email: userToRemove.email }),
       });
       
       setIsRemoveDialogOpen(false);
@@ -194,7 +196,7 @@ export const AdminPermissionsManager = () => {
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Impossible de retirer le rôle administrateur",
+        description: t("adminPermissions.removeError"),
         variant: "destructive",
       });
     } finally {
@@ -239,15 +241,15 @@ export const AdminPermissionsManager = () => {
         permissions: editingPermissions,
       });
       toast({
-        title: "Permissions mises à jour",
-        description: `Les permissions de ${selectedUser.first_name || selectedUser.email} ont été modifiées.`,
+        title: t("adminPermissions.permissionsUpdated"),
+        description: t("adminPermissions.permissionsUpdatedDesc", { name: selectedUser.first_name || selectedUser.email }),
       });
       setIsDialogOpen(false);
       refetchAdminUsers();
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour les permissions",
+        description: t("adminPermissions.updateError"),
         variant: "destructive",
       });
     } finally {
@@ -267,7 +269,7 @@ export const AdminPermissionsManager = () => {
       <Card className="bg-noir/50 border-gold/20">
         <CardContent className="py-12 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="text-cream/60 mt-4">Chargement des administrateurs...</p>
+          <p className="text-cream/60 mt-4">t("adminPermissions.loadingAdmins")</p>
         </CardContent>
       </Card>
     );
@@ -281,10 +283,10 @@ export const AdminPermissionsManager = () => {
             <div>
               <CardTitle className="text-cream flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
-                Gestion des Permissions Admin
+                t("adminPermissions.managerTitle")
               </CardTitle>
               <CardDescription className="text-cream/60">
-                Attribuez des rôles spécifiques à chaque administrateur
+                t("adminPermissions.managerDesc")
               </CardDescription>
             </div>
             <Button
@@ -292,7 +294,7 @@ export const AdminPermissionsManager = () => {
               className="bg-gradient-gold text-noir"
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Ajouter un admin
+              t("adminPermissions.addAdmin")
             </Button>
           </div>
         </CardHeader>
@@ -300,7 +302,7 @@ export const AdminPermissionsManager = () => {
           {adminUsers.length === 0 ? (
             <div className="text-center py-8">
               <User className="h-12 w-12 text-cream/40 mx-auto mb-4" />
-              <p className="text-cream/60">Aucun administrateur trouvé</p>
+              <p className="text-cream/60">t("adminPermissions.noAdminFound")</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -323,7 +325,7 @@ export const AdminPermissionsManager = () => {
                       <p className="font-medium text-cream">
                         {getDisplayName(adminUser)}
                         {adminUser.id === user?.id && (
-                          <span className="ml-2 text-xs text-primary">(vous)</span>
+                          <span className="ml-2 text-xs text-primary">t("adminPermissions.you")</span>
                         )}
                       </p>
                       <p className="text-sm text-cream/50">{adminUser.email}</p>
@@ -339,7 +341,7 @@ export const AdminPermissionsManager = () => {
                         </Badge>
                       ) : adminUser.permissions.length === 0 ? (
                         <Badge variant="outline" className="border-cream/20 text-cream/40 text-xs">
-                          Aucune permission
+                          t("adminPermissions.noPermission")
                         </Badge>
                       ) : (
                         adminUser.permissions.slice(0, 3).map(permission => (
@@ -366,7 +368,7 @@ export const AdminPermissionsManager = () => {
                       className="border-gold/30 text-cream hover:bg-gold/10"
                       disabled={adminUser.id === user?.id}
                     >
-                      Modifier
+                      t("adminPermissions.modifier")
                     </Button>
                     {adminUser.id !== user?.id && (
                       <Button
@@ -395,7 +397,7 @@ export const AdminPermissionsManager = () => {
           <DialogHeader>
             <DialogTitle className="text-cream flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              Modifier les permissions
+              t("adminPermissions.modifier") les permissions
             </DialogTitle>
             <DialogDescription className="text-cream/60">
               {selectedUser && getDisplayName(selectedUser)}
@@ -442,7 +444,7 @@ export const AdminPermissionsManager = () => {
               onClick={() => setIsDialogOpen(false)}
               className="border-gold/30 text-cream"
             >
-              Annuler
+              t("common.cancel")
             </Button>
             <Button
               onClick={handleSave}
@@ -452,12 +454,12 @@ export const AdminPermissionsManager = () => {
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Enregistrement...
+                  t("adminPermissions.saving")
                 </>
               ) : (
                 <>
                   <Check className="h-4 w-4 mr-2" />
-                  Enregistrer
+                  t("adminPermissions.save")
                 </>
               )}
             </Button>
@@ -477,10 +479,10 @@ export const AdminPermissionsManager = () => {
           <DialogHeader>
             <DialogTitle className="text-cream flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-primary" />
-              Ajouter un administrateur
+              t("adminPermissions.addAdmin")istrateur
             </DialogTitle>
             <DialogDescription className="text-cream/60">
-              Recherchez un utilisateur existant pour lui donner les droits d'administration
+              t("adminPermissions.addAdminDesc")
             </DialogDescription>
           </DialogHeader>
 
@@ -501,7 +503,7 @@ export const AdminPermissionsManager = () => {
                 disabled={isSearching}
                 className="bg-primary text-noir"
               >
-                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Rechercher"}
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "t("adminPermissions.search")"}
               </Button>
             </div>
 
@@ -535,7 +537,7 @@ export const AdminPermissionsManager = () => {
                           ) : (
                             <>
                               <UserPlus className="h-4 w-4 mr-1" />
-                              Promouvoir
+                              t("adminPermissions.promote")
                             </>
                           )}
                         </Button>
@@ -559,7 +561,7 @@ export const AdminPermissionsManager = () => {
       <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
         <DialogContent className="bg-noir border-gold/20 max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-cream">Retirer les droits admin ?</DialogTitle>
+            <DialogTitle className="text-cream">t("adminPermissions.remove") les droits admin ?</DialogTitle>
             <DialogDescription className="text-cream/60">
               {userToRemove && (
                 <>
@@ -574,7 +576,7 @@ export const AdminPermissionsManager = () => {
               onClick={() => setIsRemoveDialogOpen(false)}
               className="border-gold/30 text-cream"
             >
-              Annuler
+              t("common.cancel")
             </Button>
             <Button
               onClick={handleRemoveAdmin}
@@ -586,7 +588,7 @@ export const AdminPermissionsManager = () => {
               ) : (
                 <Trash2 className="h-4 w-4 mr-2" />
               )}
-              Retirer
+              t("adminPermissions.remove")
             </Button>
           </DialogFooter>
         </DialogContent>

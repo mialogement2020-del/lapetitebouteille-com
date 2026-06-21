@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { 
   Search, 
@@ -35,7 +36,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
+  AlertDialog{t("adminCategories.table.headerDescription")},
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -101,7 +102,7 @@ export function CategoriesTable({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
           <Input
-            placeholder="Rechercher une catégorie..."
+            placeholder={t("adminCategories.table.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
@@ -109,12 +110,12 @@ export function CategoriesTable({
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-40 bg-cream/5 border-gold/20 text-cream">
-            <SelectValue placeholder="Statut" />
+            <SelectValue placeholder={t("adminCategories.table.filterStatus")} />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/20">
-            <SelectItem value="all" className="text-cream">Tous</SelectItem>
-            <SelectItem value="active" className="text-cream">Actives</SelectItem>
-            <SelectItem value="inactive" className="text-cream">Inactives</SelectItem>
+            <SelectItem value="all" className="text-cream">{t("adminCategories.table.statusAll")}</SelectItem>
+            <SelectItem value="active" className="text-cream">{t("adminCategories.table.statusActive")}</SelectItem>
+            <SelectItem value="inactive" className="text-cream">{t("adminCategories.table.statusInactive")}</SelectItem>
           </SelectContent>
         </Select>
         <Button
@@ -138,20 +139,20 @@ export function CategoriesTable({
       {filteredCategories.length === 0 ? (
         <div className="text-center py-12">
           <Folder className="h-12 w-12 text-cream/30 mx-auto mb-4" />
-          <p className="text-cream/60">Aucune catégorie trouvée</p>
+          <p className="text-cream/60">{t("adminCategories.table.noCategories")}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-gold/20 hover:bg-transparent">
-                <TableHead className="text-cream/60">Catégorie</TableHead>
-                <TableHead className="text-cream/60">Slug</TableHead>
-                <TableHead className="text-cream/60">Description</TableHead>
-                <TableHead className="text-cream/60 text-center">Ordre</TableHead>
-                <TableHead className="text-cream/60 text-center">Seuil stock</TableHead>
-                <TableHead className="text-cream/60 text-center">Statut</TableHead>
-                <TableHead className="text-cream/60 text-right">Actions</TableHead>
+                <TableHead className="text-cream/60">{t("adminCategories.table.headerCategory")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminCategories.table.headerSlug")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminCategories.table.headerDescription")}</TableHead>
+                <TableHead className="text-cream/60 text-center">{t("adminCategories.table.headerOrder")}</TableHead>
+                <TableHead className="text-cream/60 text-center">{t("adminCategories.table.headerStockThreshold")}</TableHead>
+                <TableHead className="text-cream/60 text-center">{t("adminCategories.table.headerStatus")}</TableHead>
+                <TableHead className="text-cream/60 text-right">{t("adminCategories.table.headerActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -212,10 +213,10 @@ export function CategoriesTable({
                     {category.low_stock_threshold ? (
                       <Badge className="bg-primary/20 text-primary border-primary/30 border">
                         <AlertTriangle className="h-3 w-3 mr-1" />
-                        {category.low_stock_threshold} unités
+                        t("adminCategories.table.stockThresholdUnits", { count: category.low_stock_threshold })
                       </Badge>
                     ) : (
-                      <span className="text-cream/40 text-sm">Par défaut</span>
+                      <span className="text-cream/40 text-sm">{t("adminCategories.table.stockThresholdDefault")}</span>
                     )}
                   </TableCell>
                   <TableCell className="text-center">
@@ -225,9 +226,9 @@ export function CategoriesTable({
                         : "bg-red-500/20 text-red-500 border-red-500/30"
                     } border`}>
                       {category.is_active ? (
-                        <><Eye className="h-3 w-3 mr-1" /> Visible</>
+                        <><Eye className="h-3 w-3 mr-1" /> {t("adminCategories.table.visible")}</>
                       ) : (
-                        <><EyeOff className="h-3 w-3 mr-1" /> Masquée</>
+                        <><EyeOff className="h-3 w-3 mr-1" /> {t("adminCategories.table.hidden")}</>
                       )}
                     </Badge>
                   </TableCell>
@@ -266,28 +267,28 @@ export function CategoriesTable({
       )}
 
       <p className="text-cream/40 text-sm text-right">
-        {filteredCategories.length} catégorie{filteredCategories.length > 1 ? "s" : ""}
+        {t(`adminCategories.table.count_${filteredCategories.length === 1 ? "one" : "other"}`, { count: filteredCategories.length })}
       </p>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteConfirmCategory} onOpenChange={() => setDeleteConfirmCategory(null)}>
         <AlertDialogContent className="bg-noir border-gold/30">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-cream">Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription className="text-cream/60">
+            <AlertDialogTitle className="text-cream">{t("adminCategories.table.deleteTitle")}</AlertDialogTitle>
+            <AlertDialog{t("adminCategories.table.headerDescription")} className="text-cream/60">
               Êtes-vous sûr de vouloir supprimer la catégorie "{deleteConfirmCategory?.name}" ? 
               Les produits associés seront conservés mais n'auront plus de catégorie.
-            </AlertDialogDescription>
+            </AlertDialog{t("adminCategories.table.headerDescription")}>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-gold/30 text-cream hover:bg-cream/10">
-              Annuler
+              {t("adminCategories.table.deleteCancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               className="bg-red-500 text-white hover:bg-red-600"
             >
-              Supprimer
+              {t("adminCategories.table.deleteConfirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays, subWeeks, subMonths } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { AlertTriangle, XCircle, Mail, MailX, Package, RefreshCw, Filter, Download } from "lucide-react";
 import { convertToCSV, downloadCSV, formatDateForCSV } from "@/lib/csvExport";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 interface StockAlert {
   id: string;
@@ -31,9 +32,13 @@ type AlertTypeFilter = "all" | "out_of_stock" | "low_stock";
 type PeriodFilter = "all" | "today" | "week" | "month" | "3months";
 
 export function StockAlertsHistory() {
+  const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [limit, setLimit] = useState(20);
   const [alertTypeFilter, setAlertTypeFilter] = useState<AlertTypeFilter>("all");
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("all");
+
+  const currentLocale = i18n.language === "fr" ? fr : enUS;
 
   const getDateFromPeriod = (period: PeriodFilter): Date | null => {
     const now = new Date();
@@ -114,7 +119,7 @@ export function StockAlertsHistory() {
   const handleExportCSV = () => {
     if (!alerts || alerts.length === 0) {
       toast({
-        title: "Export impossible",
+        title: t("adminStock.exportCSV"),
         description: "Aucune alerte à exporter",
         variant: "destructive",
       });
@@ -136,7 +141,7 @@ export function StockAlertsHistory() {
     const exportData = alerts.map((alert) => ({
       ...alert,
       sent_at: formatDateForCSV(alert.sent_at),
-      alert_type: alert.alert_type === "out_of_stock" ? "Rupture de stock" : "Stock faible",
+      alert_type: alert.alert_type === "out_of_stock" ? t("adminStock.outOfStock") : t("adminStock.lowStock"),
       email_status: alert.email_status === "sent" ? "Envoyé" : "Échec",
     }));
 
@@ -169,14 +174,14 @@ export function StockAlertsHistory() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
-            <CardDescription className="text-cream/60">Total alertes</CardDescription>
+            <CardDescription className="text-cream/60">{t("adminStock.totalAlerts")}</CardDescription>
             <CardTitle className="text-2xl text-cream">{stats?.totalAlerts || 0}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="bg-noir/50 border-destructive/30">
           <CardHeader className="pb-2">
             <CardDescription className="text-cream/60 flex items-center gap-1">
-              <XCircle className="h-3 w-3" /> Ruptures
+              <XCircle className="h-3 w-3" /> {t("adminStock.outOfStock")}
             </CardDescription>
             <CardTitle className="text-2xl text-destructive">{stats?.outOfStock || 0}</CardTitle>
           </CardHeader>
@@ -184,7 +189,7 @@ export function StockAlertsHistory() {
         <Card className="bg-noir/50 border-warning/30">
           <CardHeader className="pb-2">
             <CardDescription className="text-cream/60 flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" /> Stocks faibles
+              <AlertTriangle className="h-3 w-3" /> {t("adminStock.lowStock")}
             </CardDescription>
             <CardTitle className="text-2xl text-warning">{stats?.lowStock || 0}</CardTitle>
           </CardHeader>
@@ -192,7 +197,7 @@ export function StockAlertsHistory() {
         <Card className="bg-noir/50 border-destructive/30">
           <CardHeader className="pb-2">
             <CardDescription className="text-cream/60 flex items-center gap-1">
-              <MailX className="h-3 w-3" /> Échecs envoi
+              <MailX className="h-3 w-3" /> {t("adminStock.failedSends")}
             </CardDescription>
             <CardTitle className="text-2xl text-destructive">{stats?.failed || 0}</CardTitle>
           </CardHeader>
@@ -203,7 +208,7 @@ export function StockAlertsHistory() {
       <Card className="bg-noir/50 border-gold/20">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="text-cream">Historique des alertes</CardTitle>
+            <CardTitle className="text-cream">{t("adminStock.history")}</CardTitle>
             <CardDescription className="text-cream/60">
               Toutes les alertes de stock envoyées par email
             </CardDescription>
@@ -215,9 +220,9 @@ export function StockAlertsHistory() {
                 <SelectValue placeholder="Type d'alerte" />
               </SelectTrigger>
               <SelectContent className="bg-noir border-gold/30">
-                <SelectItem value="all" className="text-cream hover:bg-gold/10">Tous les types</SelectItem>
-                <SelectItem value="out_of_stock" className="text-cream hover:bg-gold/10">Rupture de stock</SelectItem>
-                <SelectItem value="low_stock" className="text-cream hover:bg-gold/10">Stock faible</SelectItem>
+                <SelectItem value="all" className="text-cream hover:bg-gold/10">{t("adminStock.allTypes")}</SelectItem>
+                <SelectItem value="out_of_stock" className="text-cream hover:bg-gold/10">{t("adminStock.outOfStock")}</SelectItem>
+                <SelectItem value="low_stock" className="text-cream hover:bg-gold/10">{t("adminStock.lowStock")}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -227,11 +232,11 @@ export function StockAlertsHistory() {
                 <SelectValue placeholder="Période" />
               </SelectTrigger>
               <SelectContent className="bg-noir border-gold/30">
-                <SelectItem value="all" className="text-cream hover:bg-gold/10">Toute période</SelectItem>
-                <SelectItem value="today" className="text-cream hover:bg-gold/10">Aujourd'hui</SelectItem>
-                <SelectItem value="week" className="text-cream hover:bg-gold/10">7 derniers jours</SelectItem>
-                <SelectItem value="month" className="text-cream hover:bg-gold/10">30 derniers jours</SelectItem>
-                <SelectItem value="3months" className="text-cream hover:bg-gold/10">3 derniers mois</SelectItem>
+                <SelectItem value="all" className="text-cream hover:bg-gold/10">{t("adminStock.allPeriods")}</SelectItem>
+                <SelectItem value="today" className="text-cream hover:bg-gold/10">{t("adminStock.today")}</SelectItem>
+                <SelectItem value="week" className="text-cream hover:bg-gold/10">{t("adminStock.sevenDays")}</SelectItem>
+                <SelectItem value="month" className="text-cream hover:bg-gold/10">{t("adminStock.thirtyDays")}</SelectItem>
+                <SelectItem value="3months" className="text-cream hover:bg-gold/10">{t("adminStock.threeMonths")}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -255,7 +260,7 @@ export function StockAlertsHistory() {
               className="border-gold/30 text-cream hover:bg-gold/10"
             >
               <Download className="h-4 w-4 mr-2" />
-              Exporter CSV
+              {t("adminStock.exportCSV")}
             </Button>
 
             <Button
@@ -266,7 +271,7 @@ export function StockAlertsHistory() {
               className="border-gold/30 text-cream hover:bg-gold/10"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? "animate-spin" : ""}`} />
-              Actualiser
+              {t("adminStock.refresh")}
             </Button>
           </div>
         </CardHeader>
@@ -290,7 +295,7 @@ export function StockAlertsHistory() {
                     {alerts.map((alert) => (
                       <TableRow key={alert.id} className="border-gold/10 hover:bg-gold/5">
                         <TableCell className="text-cream/80 text-sm">
-                          {format(new Date(alert.sent_at), "dd MMM yyyy HH:mm", { locale: fr })}
+                          {format(new Date(alert.sent_at), "dd MMM yyyy HH:mm", { locale: currentLocale })}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
@@ -304,12 +309,12 @@ export function StockAlertsHistory() {
                           {alert.alert_type === "out_of_stock" ? (
                             <Badge variant="destructive" className="text-xs">
                               <XCircle className="h-3 w-3 mr-1" />
-                              Rupture
+                              {t("adminStock.outOfStock")}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="border-warning/50 text-warning text-xs">
                               <AlertTriangle className="h-3 w-3 mr-1" />
-                              Stock faible
+                              {t("adminStock.lowStock")}
                             </Badge>
                           )}
                         </TableCell>
@@ -351,7 +356,7 @@ export function StockAlertsHistory() {
                     onClick={() => setLimit(prev => prev + 20)}
                     className="border-gold/30 text-cream hover:bg-gold/10"
                   >
-                    Charger plus
+                    {t("adminStock.loadMore")}
                   </Button>
                 </div>
               )}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -22,6 +22,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { StockPrediction } from "@/hooks/useStockPredictions";
 import type { AdminProduct } from "@/hooks/useAdmin";
+import { useTranslation } from "react-i18next";
 
 interface StockPredictionsProps {
   predictions: StockPrediction[];
@@ -30,7 +31,10 @@ interface StockPredictionsProps {
 }
 
 export function StockPredictions({ predictions, isLoading, onEditProduct }: StockPredictionsProps) {
+  const { t, i18n } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const currentLocale = i18n.language === "fr" ? fr : enUS;
 
   // Filter to show only products with predictions (sales activity or low stock)
   const relevantPredictions = predictions.filter(p => 
@@ -58,23 +62,23 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
   const getUrgencyBadge = (urgency: StockPrediction["urgency"]) => {
     switch (urgency) {
       case "critical":
-        return <Badge variant="destructive">Critique</Badge>;
+        return <Badge variant="destructive">{t("adminStock.criticalStock")}</Badge>;
       case "warning":
-        return <Badge variant="outline" className="border-warning/50 text-warning">Attention</Badge>;
+        return <Badge variant="outline" className="border-warning/50 text-warning">{t("adminStock.attention")}</Badge>;
       case "moderate":
-        return <Badge variant="outline" className="border-info/50 text-info">Modéré</Badge>;
+        return <Badge variant="outline" className="border-info/50 text-info">{t("adminStock.moderate")}</Badge>;
       default:
-        return <Badge variant="outline" className="border-success/50 text-success">Stable</Badge>;
+        return <Badge variant="outline" className="border-success/50 text-success">{t("adminStock.stable")}</Badge>;
     }
   };
 
   const formatDaysUntilStockout = (days: number | null): string => {
     if (days === null) return "N/A";
-    if (days === 0) return "Rupture";
-    if (days === 1) return "Demain";
-    if (days <= 7) return `${days} jours`;
-    if (days <= 30) return `~${Math.ceil(days / 7)} sem.`;
-    return `~${Math.ceil(days / 30)} mois`;
+    if (days === 0) return t("adminStock.outOfStock");
+    if (days === 1) return t("adminStock.tomorrow");
+    if (days <= 7) return `${days} ${t("adminStock.days")}`;
+    if (days <= 30) return `~${Math.ceil(days / 7)} ${t("adminStock.weeks")}`;
+    return `~${Math.ceil(days / 30)} ${t("adminStock.months")}`;
   };
 
   if (isLoading) {
@@ -104,21 +108,21 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-5 w-5 text-gold" />
                 <div>
-                  <CardTitle className="text-lg text-cream">Prévisions de rupture</CardTitle>
+                  <CardTitle className="text-lg text-cream">{t("adminStock.predictions")}</CardTitle>
                   <CardDescription className="text-cream/60">
-                    Basées sur les ventes des 30 derniers jours
+                    {t("adminStock.basedOnSales")}
                   </CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 {criticalCount > 0 && (
                   <Badge variant="destructive" className="text-xs">
-                    {criticalCount} critique{criticalCount > 1 ? "s" : ""}
+                    {criticalCount} {t("adminStock.criticalStock")}
                   </Badge>
                 )}
                 {warningCount > 0 && (
                   <Badge variant="outline" className="border-warning/50 text-warning text-xs">
-                    {warningCount} attention
+                    {warningCount} {t("adminStock.attention")}
                   </Badge>
                 )}
                 {isExpanded ? (
@@ -249,7 +253,7 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
                                     <p>Rupture prévue dans {prediction.daysUntilStockout} jours</p>
                                     {prediction.predictedStockoutDate && (
                                       <p className="text-xs text-cream/60">
-                                        {format(prediction.predictedStockoutDate, "EEEE d MMMM yyyy", { locale: fr })}
+                                        {format(prediction.predictedStockoutDate, "EEEE d MMMM yyyy", { locale: currentLocale })}
                                       </p>
                                     )}
                                   </TooltipContent>

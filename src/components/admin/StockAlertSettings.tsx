@@ -17,14 +17,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 interface StockAlertSettingsProps {
   onSettingsApplied?: () => void;
 }
 
 export function StockAlertSettings({ onSettingsApplied }: StockAlertSettingsProps) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
   const [globalThreshold, setGlobalThreshold] = useState(5);
   const [isApplying, setIsApplying] = useState(false);
   const [productsUpdated, setProductsUpdated] = useState<number | null>(null);
@@ -46,8 +49,8 @@ export function StockAlertSettings({ onSettingsApplied }: StockAlertSettingsProp
       setProductsUpdated(count);
 
       toast({
-        title: "Seuils mis à jour",
-        description: `Le seuil d'alerte de ${count} produit${count > 1 ? "s" : ""} a été défini à ${globalThreshold} unités.`,
+        title: t("adminStock.thresholdUpdated"),
+        description: t("adminStock.thresholdUpdateDesc", { count, threshold: globalThreshold }),
       });
 
       onSettingsApplied?.();
@@ -81,8 +84,8 @@ export function StockAlertSettings({ onSettingsApplied }: StockAlertSettingsProp
       setProductsUpdated(count);
 
       toast({
-        title: "Seuils mis à jour",
-        description: `Le seuil de ${count} produit${count > 1 ? "s" : ""} (sans seuil personnalisé) a été défini à ${globalThreshold} unités.`,
+        title: t("adminStock.thresholdUpdated"),
+        description: t("adminStock.thresholdUpdateDesc", { count, threshold: globalThreshold }),
       });
 
       onSettingsApplied?.();
@@ -103,10 +106,10 @@ export function StockAlertSettings({ onSettingsApplied }: StockAlertSettingsProp
       <CardHeader>
         <CardTitle className="text-cream flex items-center gap-2">
           <Settings className="h-5 w-5 text-primary" />
-          Paramètres des alertes de stock
+          {t("adminStock.settings")}
         </CardTitle>
         <CardDescription className="text-cream/60">
-          Configurez les seuils d'alerte globaux pour tous les produits
+          {t("adminStock.thresholdInfo")}
         </CardDescription>
       </CardHeader>
 
@@ -115,7 +118,7 @@ export function StockAlertSettings({ onSettingsApplied }: StockAlertSettingsProp
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="threshold" className="text-cream font-medium">
-              Seuil d'alerte global
+              {t("adminStock.globalThreshold")}
             </Label>
             <div className="flex items-center gap-2">
               <Input
@@ -153,14 +156,14 @@ export function StockAlertSettings({ onSettingsApplied }: StockAlertSettingsProp
             <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div className="text-sm text-cream/70">
               <p className="mb-2">
-                Le seuil d'alerte détermine quand une notification est envoyée :
+                {t("adminStock.thresholdInfo")} :
               </p>
               <ul className="list-disc list-inside space-y-1 text-cream/60">
                 <li>
-                  <strong className="text-orange-400">Stock faible</strong> : quand le stock atteint le seuil
+                  <strong className="text-orange-400">{t("adminStock.lowStock")}</strong> : quand le stock atteint le seuil
                 </li>
                 <li>
-                  <strong className="text-destructive">Rupture de stock</strong> : quand le stock atteint 0
+                  <strong className="text-destructive">{t("adminStock.outOfStock")}</strong> : quand le stock atteint 0
                 </li>
               </ul>
             </div>
@@ -181,7 +184,7 @@ export function StockAlertSettings({ onSettingsApplied }: StockAlertSettingsProp
             ) : (
               <Save className="h-4 w-4 mr-2" />
             )}
-            Appliquer aux produits sans seuil
+            {t("adminStock.applyToNoThreshold")}
           </Button>
 
           {/* Apply to ALL products - with confirmation */}
@@ -193,19 +196,19 @@ export function StockAlertSettings({ onSettingsApplied }: StockAlertSettingsProp
                 className="bg-gradient-gold text-noir font-semibold hover:opacity-90"
               >
                 <AlertTriangle className="h-4 w-4 mr-2" />
-                Appliquer à TOUS les produits
+                {t("adminStock.applyToAll")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="bg-noir border-gold/30">
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-cream">
-                  Confirmer la modification globale
+                  {t("adminStock.confirmGlobalChange")}
                 </AlertDialogTitle>
                 <AlertDialogDescription className="text-cream/70">
                   Cette action va définir le seuil d'alerte de <strong className="text-primary">tous les produits</strong> à{" "}
                   <strong className="text-orange-400">{globalThreshold} unités</strong>.
                   <br /><br />
-                  Les seuils personnalisés existants seront écrasés. Cette action est irréversible.
+                  Les seuils personnalisés existants seront écrasés. {t("adminStock.irrevocableAction")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

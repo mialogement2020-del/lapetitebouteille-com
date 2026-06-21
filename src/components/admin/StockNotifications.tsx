@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { AlertTriangle, XCircle, CheckCheck, Package, Trash2, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useStockNotifications, StockNotification } from "@/hooks/useStockNotifications";
+import { useTranslation } from "react-i18next";
 
 interface StockNotificationsProps {
   enabled?: boolean;
@@ -19,6 +20,7 @@ interface StockNotificationsProps {
 }
 
 export function StockNotifications({ enabled = true, onProductClick }: StockNotificationsProps) {
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const {
     notifications,
@@ -31,6 +33,8 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
     deleteNotification,
     clearAll,
   } = useStockNotifications(enabled);
+
+  const currentLocale = i18n.language === "fr" ? fr : enUS;
 
   const handleNotificationClick = (notification: StockNotification) => {
     markAsRead(notification.id);
@@ -79,10 +83,10 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
         <div className="flex items-center justify-between p-4 border-b border-gold/20">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-warning" />
-            <h3 className="font-semibold text-cream">Alertes Stock</h3>
+            <h3 className="font-semibold text-cream">{t("adminStock.stockNotifications")}</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="text-xs bg-warning/20 text-warning">
-                {unreadCount} nouvelle{unreadCount > 1 ? "s" : ""}
+                {t("adminStock.newNotifications", { count: unreadCount })}
               </Badge>
             )}
           </div>
@@ -113,7 +117,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                 className="h-8 px-2 text-xs text-cream/60 hover:text-warning"
               >
                 <CheckCheck className="h-3 w-3 mr-1" />
-                Tout lire
+                {t("adminStock.markAllRead")}
               </Button>
             )}
             {notifications.length > 0 && (
@@ -134,7 +138,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
           {isLoading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-warning mx-auto mb-3" />
-              <p className="text-cream/60 text-sm">Chargement...</p>
+              <p className="text-cream/60 text-sm">{t("adminStock.loading")}</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
@@ -175,7 +179,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                         <p className={`font-medium text-sm truncate ${
                           isOutOfStock(notification.title) ? "text-destructive" : "text-warning"
                         }`}>
-                          {isOutOfStock(notification.title) ? "Rupture de stock" : "Stock faible"}
+                          {isOutOfStock(notification.title) ? t("adminStock.outOfStock") : t("adminStock.lowStock")}
                         </p>
                         {!notification.isRead && (
                           <div className="w-2 h-2 rounded-full bg-warning shrink-0" />
@@ -198,7 +202,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                         <span className="text-xs text-cream/40">
                           {formatDistanceToNow(new Date(notification.createdAt), {
                             addSuffix: true,
-                            locale: fr,
+                            locale: currentLocale,
                           })}
                         </span>
                       </div>

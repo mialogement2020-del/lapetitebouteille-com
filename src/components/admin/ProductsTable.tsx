@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { 
   Search, 
@@ -113,12 +114,12 @@ export function ProductsTable({
     const columns = [
       { key: "name" as const, header: "Nom" },
       { key: "slug" as const, header: "Slug" },
-      { key: "categoryName" as const, header: "Catégorie" },
-      { key: "price" as const, header: "Prix" },
-      { key: "original_price" as const, header: "Prix original" },
-      { key: "stock_quantity" as const, header: "Stock" },
+      { key: "categoryName" as const, header: "{t("adminProducts.table.headerCategory")}" },
+      { key: "price" as const, header: "{t("adminProducts.table.headerPrice")}" },
+      { key: "original_price" as const, header: "{t("adminProducts.table.headerPrice")} original" },
+      { key: "stock_quantity" as const, header: "{t("adminProducts.table.headerStock")}" },
       { key: "is_active" as const, header: "Actif" },
-      { key: "is_featured" as const, header: "En vedette" },
+      { key: "is_featured" as const, header: "{t("adminProducts.table.statusFeatured")}" },
       { key: "origin_country" as const, header: "Pays d'origine" },
       { key: "region" as const, header: "Région" },
       { key: "grape_variety" as const, header: "Cépage" },
@@ -166,7 +167,7 @@ export function ProductsTable({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
           <Input
-            placeholder="Rechercher un produit..."
+            placeholder={t("adminProducts.table.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
@@ -174,10 +175,10 @@ export function ProductsTable({
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-full sm:w-48 bg-cream/5 border-gold/20 text-cream">
-            <SelectValue placeholder="Catégorie" />
+            <SelectValue placeholder={t("adminProducts.table.filterCategory")} />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/20">
-            <SelectItem value="all" className="text-cream">Toutes les catégories</SelectItem>
+            <SelectItem value="all" className="text-cream">{t("adminProducts.table.allCategories")}</SelectItem>
             {categories.map((cat) => (
               <SelectItem key={cat.id} value={cat.id} className="text-cream">
                 {cat.name}
@@ -187,14 +188,14 @@ export function ProductsTable({
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-40 bg-cream/5 border-gold/20 text-cream">
-            <SelectValue placeholder="Statut" />
+            <SelectValue placeholder={t("adminProducts.table.filterStatus")} />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/20">
-            <SelectItem value="all" className="text-cream">Tous</SelectItem>
-            <SelectItem value="active" className="text-cream">Actifs</SelectItem>
-            <SelectItem value="inactive" className="text-cream">Inactifs</SelectItem>
-            <SelectItem value="featured" className="text-cream">En vedette</SelectItem>
-            <SelectItem value="low_stock" className="text-cream">Stock faible</SelectItem>
+            <SelectItem value="all" className="text-cream">{t("adminProducts.table.statusAll")}</SelectItem>
+            <SelectItem value="active" className="text-cream">{t("adminProducts.table.statusActive")}</SelectItem>
+            <SelectItem value="inactive" className="text-cream">{t("adminProducts.table.statusInactive")}</SelectItem>
+            <SelectItem value="featured" className="text-cream">{t("adminProducts.table.statusFeatured")}</SelectItem>
+            <SelectItem value="low_stock" className="text-cream">{t("adminProducts.table.statusLow{t("adminProducts.table.headerStock")}")}</SelectItem>
           </SelectContent>
         </Select>
         <Button
@@ -210,7 +211,7 @@ export function ProductsTable({
           size="icon"
           onClick={exportToCSV}
           className="border-gold/20 text-cream hover:bg-cream/10"
-          title="Exporter en CSV"
+          title={t("adminProducts.table.exportCSV")}
         >
           <Download className="h-4 w-4" />
         </Button>
@@ -227,7 +228,7 @@ export function ProductsTable({
           className="bg-gradient-gold text-noir font-semibold hover:opacity-90"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Ajouter
+          {t("adminProducts.table.addProduct")}
         </Button>
       </div>
 
@@ -240,7 +241,7 @@ export function ProductsTable({
           className="flex flex-wrap gap-4 p-4 bg-cream/5 rounded-lg border border-gold/20"
         >
           <div className="flex items-center gap-2">
-            <span className="text-cream/60 text-sm whitespace-nowrap">Prix min:</span>
+            <span className="text-cream/60 text-sm whitespace-nowrap">{t("adminProducts.table.priceMin")}</span>
             <Input
               type="number"
               placeholder="0"
@@ -251,7 +252,7 @@ export function ProductsTable({
             <span className="text-cream/40 text-xs">FCFA</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-cream/60 text-sm whitespace-nowrap">Prix max:</span>
+            <span className="text-cream/60 text-sm whitespace-nowrap">{t("adminProducts.table.priceMax")}</span>
             <Input
               type="number"
               placeholder="∞"
@@ -269,7 +270,7 @@ export function ProductsTable({
               className="text-cream/60 hover:text-cream hover:bg-cream/10 ml-auto"
             >
               <X className="h-4 w-4 mr-1" />
-              Réinitialiser les filtres
+              {t("adminProducts.table.resetFilters")}
             </Button>
           )}
         </motion.div>
@@ -285,22 +286,22 @@ export function ProductsTable({
           )}
           {categoryFilter !== "all" && (
             <Badge variant="outline" className="border-gold/30 text-cream/70">
-              Catégorie: {categories.find(c => c.id === categoryFilter)?.name}
+              {t("adminProducts.table.headerCategory")}: {categories.find(c => c.id === categoryFilter)?.name}
             </Badge>
           )}
           {statusFilter !== "all" && (
             <Badge variant="outline" className="border-gold/30 text-cream/70">
-              Statut: {statusFilter === "active" ? "Actifs" : statusFilter === "inactive" ? "Inactifs" : statusFilter === "featured" ? "En vedette" : "Stock faible"}
+              {t("adminProducts.table.headerStatus")}: {statusFilter === "active" ? "{t("adminProducts.table.statusActive")}" : statusFilter === "inactive" ? "{t("adminProducts.table.statusInactive")}" : statusFilter === "featured" ? "{t("adminProducts.table.statusFeatured")}" : "{t("adminProducts.table.statusLow{t("adminProducts.table.headerStock")}")}"}
             </Badge>
           )}
           {priceMin && (
             <Badge variant="outline" className="border-gold/30 text-cream/70">
-              Prix min: {new Intl.NumberFormat("fr-FR").format(parseFloat(priceMin))} FCFA
+              {t("adminProducts.table.priceMin")} {new Intl.NumberFormat("fr-FR").format(parseFloat(priceMin))} FCFA
             </Badge>
           )}
           {priceMax && (
             <Badge variant="outline" className="border-gold/30 text-cream/70">
-              Prix max: {new Intl.NumberFormat("fr-FR").format(parseFloat(priceMax))} FCFA
+              {t("adminProducts.table.priceMax")} {new Intl.NumberFormat("fr-FR").format(parseFloat(priceMax))} FCFA
             </Badge>
           )}
         </div>
@@ -310,19 +311,19 @@ export function ProductsTable({
       {filteredProducts.length === 0 ? (
         <div className="text-center py-12">
           <Wine className="h-12 w-12 text-cream/30 mx-auto mb-4" />
-          <p className="text-cream/60">Aucun produit trouvé</p>
+          <p className="text-cream/60">{t("adminProducts.table.noProducts")}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-gold/20 hover:bg-transparent">
-                <TableHead className="text-cream/60">Produit</TableHead>
-                <TableHead className="text-cream/60">Catégorie</TableHead>
-                <TableHead className="text-cream/60 text-right">Prix</TableHead>
-                <TableHead className="text-cream/60 text-center">Stock</TableHead>
-                <TableHead className="text-cream/60 text-center">Statut</TableHead>
-                <TableHead className="text-cream/60 text-right">Actions</TableHead>
+                <TableHead className="text-cream/60">{t("adminProducts.table.headerProduct")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminProducts.table.headerCategory")}</TableHead>
+                <TableHead className="text-cream/60 text-right">{t("adminProducts.table.headerPrice")}</TableHead>
+                <TableHead className="text-cream/60 text-center">{t("adminProducts.table.headerStock")}</TableHead>
+                <TableHead className="text-cream/60 text-center">{t("adminProducts.table.headerStatus")}</TableHead>
+                <TableHead className="text-cream/60 text-right">{t("adminProducts.table.headerActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -426,14 +427,14 @@ export function ProductsTable({
       )}
 
       <p className="text-cream/40 text-sm text-right">
-        {filteredProducts.length} produit{filteredProducts.length > 1 ? "s" : ""}
+        {t(`adminProducts.table.count_${filteredProducts.length === 1 ? "one" : "other"}`, { count: filteredProducts.length })}
       </p>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteConfirmProduct} onOpenChange={() => setDeleteConfirmProduct(null)}>
         <AlertDialogContent className="bg-noir border-gold/30">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-cream">Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle className="text-cream">{t("adminProducts.table.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription className="text-cream/60">
               Êtes-vous sûr de vouloir supprimer le produit "{deleteConfirmProduct?.name}" ? 
               Cette action est irréversible.
@@ -441,13 +442,13 @@ export function ProductsTable({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-gold/30 text-cream hover:bg-cream/10">
-              Annuler
+              {t("adminProducts.table.deleteCancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               className="bg-red-500 text-white hover:bg-red-600"
             >
-              Supprimer
+              {t("adminProducts.table.deleteConfirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

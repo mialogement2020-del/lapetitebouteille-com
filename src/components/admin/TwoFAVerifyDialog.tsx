@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import {
   Dialog,
@@ -25,8 +26,8 @@ export function TwoFAVerifyDialog({
   onOpenChange,
   onVerify,
   loading,
-  title = "Vérification 2FA requise",
-  description = "Cette action nécessite une vérification de sécurité supplémentaire"
+  title = t("adminTwoFA.verifyTitle"),
+  description = t("adminTwoFA.verifyDesc")
 }: TwoFAVerifyDialogProps) {
   const [code, setCode] = useState("");
   const [useBackup, setUseBackup] = useState(false);
@@ -68,7 +69,7 @@ export function TwoFAVerifyDialog({
             <div className="space-y-2">
               <Label htmlFor="backup-code" className="flex items-center gap-2">
                 <Key className="h-4 w-4" />
-                Code de secours
+                {t("adminTwoFA.backupCode")}
               </Label>
               <Input
                 id="backup-code"
@@ -80,12 +81,12 @@ export function TwoFAVerifyDialog({
                 maxLength={9}
               />
               <p className="text-xs text-muted-foreground">
-                Format : XXXX-XXXX (8 caractères hexadécimaux)
+                {t("adminTwoFA.backupCodeFormat")}
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="totp-code">Code d'authentification</Label>
+              <Label htmlFor="totp-code">{t("adminTwoFA.authCode")}</Label>
               <Input
                 id="totp-code"
                 type="text"
@@ -99,7 +100,7 @@ export function TwoFAVerifyDialog({
                 autoFocus
               />
               <p className="text-xs text-muted-foreground">
-                Entrez le code à 6 chiffres de votre application d'authentification
+                {t("adminTwoFA.enter6Digits")}
               </p>
             </div>
           )}
@@ -110,7 +111,7 @@ export function TwoFAVerifyDialog({
               disabled={loading || (useBackup ? !/^[A-F0-9]{4}-[A-F0-9]{4}$/i.test(code) : code.length !== 6)}
               className="w-full"
             >
-              {loading ? "Vérification..." : "Vérifier"}
+              {loading ? "t("adminTwoFA.verifying")" : "t("adminTwoFA.verifyBtn")"}
             </Button>
             
             <Button
@@ -123,8 +124,8 @@ export function TwoFAVerifyDialog({
               className="text-xs"
             >
               {useBackup 
-                ? "Utiliser le code d'authentification" 
-                : "Utiliser un code de secours"
+                ? "t("adminTwoFA.useAuthCode")" 
+                : "t("adminTwoFA.useBackupCode")"
               }
             </Button>
           </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -43,29 +44,29 @@ import {
   Copy,
   Check,
 } from "lucide-react";
-import type { AdminPromoCode } from "@/hooks/useAdmin";
+import type { AdminPromo{t("adminPromo.table.headerCode")} } from "@/hooks/useAdmin";
 
-interface PromoCodesTableProps {
-  promoCodes: AdminPromoCode[];
+interface Promo{t("adminPromo.table.headerCode")}sTableProps {
+  promo{t("adminPromo.table.headerCode")}s: AdminPromo{t("adminPromo.table.headerCode")}[];
   isLoading: boolean;
-  onAddPromoCode: () => void;
-  onEditPromoCode: (promoCode: AdminPromoCode) => void;
-  onDeletePromoCode: (promoCode: AdminPromoCode) => void;
+  onAddPromo{t("adminPromo.table.headerCode")}: () => void;
+  onEditPromo{t("adminPromo.table.headerCode")}: (promo{t("adminPromo.table.headerCode")}: AdminPromo{t("adminPromo.table.headerCode")}) => void;
+  onDeletePromo{t("adminPromo.table.headerCode")}: (promo{t("adminPromo.table.headerCode")}: AdminPromo{t("adminPromo.table.headerCode")}) => void;
   onRefresh: () => void;
 }
 
-export function PromoCodesTable({
-  promoCodes,
+export function Promo{t("adminPromo.table.headerCode")}sTable({
+  promo{t("adminPromo.table.headerCode")}s,
   isLoading,
-  onAddPromoCode,
-  onEditPromoCode,
-  onDeletePromoCode,
+  onAddPromo{t("adminPromo.table.headerCode")},
+  onEditPromo{t("adminPromo.table.headerCode")},
+  onDeletePromo{t("adminPromo.table.headerCode")},
   onRefresh,
-}: PromoCodesTableProps) {
+}: Promo{t("adminPromo.table.headerCode")}sTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [copied{t("adminPromo.table.headerCode")}, setCopied{t("adminPromo.table.headerCode")}] = useState<string | null>(null);
 
-  const filteredPromoCodes = promoCodes.filter((promo) => {
+  const filteredPromo{t("adminPromo.table.headerCode")}s = promo{t("adminPromo.table.headerCode")}s.filter((promo) => {
     const matchesSearch =
       promo.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       promo.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -74,8 +75,8 @@ export function PromoCodesTable({
 
   const copyToClipboard = async (code: string) => {
     await navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
+    setCopied{t("adminPromo.table.headerCode")}(code);
+    setTimeout(() => setCopied{t("adminPromo.table.headerCode")}(null), 2000);
   };
 
   const formatCurrency = (amount: number) => {
@@ -86,38 +87,38 @@ export function PromoCodesTable({
     }).format(amount) + " FCFA";
   };
 
-  const getDiscountDisplay = (promo: AdminPromoCode) => {
+  const getDiscountDisplay = (promo: AdminPromo{t("adminPromo.table.headerCode")}) => {
     if (promo.discount_type === "percentage") {
       return `${promo.discount_value}%`;
     }
     return formatCurrency(promo.discount_value);
   };
 
-  const getStatusBadge = (promo: AdminPromoCode) => {
+  const getStatusBadge = (promo: AdminPromo{t("adminPromo.table.headerCode")}) => {
     const now = new Date();
     const validFrom = promo.valid_from ? new Date(promo.valid_from) : null;
     const validUntil = promo.valid_until ? new Date(promo.valid_until) : null;
 
     if (!promo.is_active) {
-      return <Badge variant="secondary">Inactif</Badge>;
+      return <Badge variant="secondary">{t("adminPromo.table.status.inactive")}</Badge>;
     }
 
     if (validUntil && now > validUntil) {
-      return <Badge variant="destructive">Expiré</Badge>;
+      return <Badge variant="destructive">{t("adminPromo.table.status.expired")}</Badge>;
     }
 
     if (validFrom && now < validFrom) {
-      return <Badge variant="outline" className="border-gold/50 text-gold">Programmé</Badge>;
+      return <Badge variant="outline" className="border-gold/50 text-gold">{t("adminPromo.table.status.scheduled")}</Badge>;
     }
 
     if (promo.usage_limit && promo.used_count >= promo.usage_limit) {
-      return <Badge variant="destructive">Limite atteinte</Badge>;
+      return <Badge variant="destructive">{t("adminPromo.table.status.limitReached")}</Badge>;
     }
 
-    return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Actif</Badge>;
+    return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">{t("adminPromo.table.status.active")}</Badge>;
   };
 
-  const getUsageDisplay = (promo: AdminPromoCode) => {
+  const getUsageDisplay = (promo: AdminPromo{t("adminPromo.table.headerCode")}) => {
     if (promo.usage_limit) {
       const percentage = (promo.used_count / promo.usage_limit) * 100;
       return (
@@ -134,7 +135,7 @@ export function PromoCodesTable({
         </div>
       );
     }
-    return <span className="text-cream/60">{promo.used_count} utilisations</span>;
+    return <span className="text-cream/60">t("adminPromo.table.usages", { count: promo.used_count })</span>;
   };
 
   return (
@@ -144,7 +145,7 @@ export function PromoCodesTable({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
           <Input
-            placeholder="Rechercher un code..."
+            placeholder={t("adminPromo.table.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-noir/50 border-gold/20"
@@ -160,11 +161,11 @@ export function PromoCodesTable({
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button
-            onClick={onAddPromoCode}
+            onClick={onAddPromo{t("adminPromo.table.headerCode")}}
             className="bg-gradient-gold text-noir font-semibold"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Nouveau code
+            {t("adminPromo.table.new{t("adminPromo.table.headerCode")}")}
           </Button>
         </div>
       </div>
@@ -177,30 +178,30 @@ export function PromoCodesTable({
               <TableHead className="text-cream/80">
                 <div className="flex items-center gap-2">
                   <Tag className="h-4 w-4" />
-                  Code
+                  {t("adminPromo.table.headerCode")}
                 </div>
               </TableHead>
               <TableHead className="text-cream/80">
                 <div className="flex items-center gap-2">
                   <Percent className="h-4 w-4" />
-                  Réduction
+                  {t("adminPromo.table.headerDiscount")}
                 </div>
               </TableHead>
-              <TableHead className="text-cream/80">Conditions</TableHead>
+              <TableHead className="text-cream/80">{t("adminPromo.table.headerConditions")}</TableHead>
               <TableHead className="text-cream/80">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Validité
+                  {t("adminPromo.table.headerValidity")}
                 </div>
               </TableHead>
               <TableHead className="text-cream/80">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
-                  Utilisation
+                  {t("adminPromo.table.headerUsage")}
                 </div>
               </TableHead>
-              <TableHead className="text-cream/80">Statut</TableHead>
-              <TableHead className="text-right text-cream/80">Actions</TableHead>
+              <TableHead className="text-cream/80">{t("adminPromo.table.headerStatus")}</TableHead>
+              <TableHead className="text-right text-cream/80">{t("adminPromo.table.headerActions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -210,14 +211,14 @@ export function PromoCodesTable({
                   <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
                 </TableCell>
               </TableRow>
-            ) : filteredPromoCodes.length === 0 ? (
+            ) : filteredPromo{t("adminPromo.table.headerCode")}s.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-cream/60">
-                  {searchQuery ? "Aucun code promo trouvé" : "Aucun code promo créé"}
+                  {searchQuery ? "{t("adminPromo.table.noFound")}" : "{t("adminPromo.table.noCodes")}"}
                 </TableCell>
               </TableRow>
             ) : (
-              filteredPromoCodes.map((promo) => (
+              filteredPromo{t("adminPromo.table.headerCode")}s.map((promo) => (
                 <TableRow key={promo.id} className="border-gold/10 hover:bg-gold/5">
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -233,7 +234,7 @@ export function PromoCodesTable({
                               className="h-6 w-6"
                               onClick={() => copyToClipboard(promo.code)}
                             >
-                              {copiedCode === promo.code ? (
+                              {copied{t("adminPromo.table.headerCode")} === promo.code ? (
                                 <Check className="h-3 w-3 text-emerald-400" />
                               ) : (
                                 <Copy className="h-3 w-3 text-cream/40" />
@@ -241,7 +242,7 @@ export function PromoCodesTable({
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {copiedCode === promo.code ? "Copié !" : "Copier le code"}
+                            {copied{t("adminPromo.table.headerCode")} === promo.code ? "{t("adminPromo.table.copied")}" : "{t("adminPromo.table.copyCode")}"}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -265,33 +266,33 @@ export function PromoCodesTable({
                     </div>
                     {promo.max_discount_amount && promo.discount_type === "percentage" && (
                       <p className="text-xs text-cream/50">
-                        Max: {formatCurrency(promo.max_discount_amount)}
+                        t("adminPromo.table.maxDiscount", { amount: formatCurrency(promo.max_discount_amount) })
                       </p>
                     )}
                   </TableCell>
                   <TableCell>
                     {promo.min_order_amount && promo.min_order_amount > 0 ? (
                       <span className="text-sm text-cream/70">
-                        Min. {formatCurrency(promo.min_order_amount)}
+                        t("adminPromo.table.minOrder", { amount: formatCurrency(promo.min_order_amount) })
                       </span>
                     ) : (
-                      <span className="text-sm text-cream/50">Aucune</span>
+                      <span className="text-sm text-cream/50">{t("adminPromo.table.noConditions")}</span>
                     )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
                       {promo.valid_from && (
                         <p className="text-cream/70">
-                          Du {format(new Date(promo.valid_from), "dd/MM/yy", { locale: fr })}
+                          t("adminPromo.table.validFrom", { date: format(new Date(promo.valid_from), "dd/MM/yy", { locale: fr }) })
                         </p>
                       )}
                       {promo.valid_until && (
                         <p className="text-cream/70">
-                          Au {format(new Date(promo.valid_until), "dd/MM/yy", { locale: fr })}
+                          t("adminPromo.table.validUntil", { date: format(new Date(promo.valid_until), "dd/MM/yy", { locale: fr }) })
                         </p>
                       )}
                       {!promo.valid_from && !promo.valid_until && (
-                        <span className="text-cream/50">Illimité</span>
+                        <span className="text-cream/50">{t("adminPromo.table.unlimited")}</span>
                       )}
                     </div>
                   </TableCell>
@@ -302,7 +303,7 @@ export function PromoCodesTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => onEditPromoCode(promo)}
+                        onClick={() => onEditPromo{t("adminPromo.table.headerCode")}(promo)}
                         className="h-8 w-8"
                       >
                         <Edit className="h-4 w-4" />
@@ -319,7 +320,7 @@ export function PromoCodesTable({
                         </AlertDialogTrigger>
                         <AlertDialogContent className="bg-noir border-gold/20">
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Supprimer le code promo ?</AlertDialogTitle>
+                            <AlertDialogTitle>{t("adminPromo.table.deleteTitle")}</AlertDialogTitle>
                             <AlertDialogDescription>
                               Le code <strong>{promo.code}</strong> sera définitivement supprimé.
                               Cette action est irréversible.
@@ -330,7 +331,7 @@ export function PromoCodesTable({
                               Annuler
                             </AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => onDeletePromoCode(promo)}
+                              onClick={() => onDeletePromo{t("adminPromo.table.headerCode")}(promo)}
                               className="bg-destructive hover:bg-destructive/90"
                             >
                               Supprimer
@@ -348,13 +349,13 @@ export function PromoCodesTable({
       </div>
 
       {/* Summary */}
-      {filteredPromoCodes.length > 0 && (
+      {filteredPromo{t("adminPromo.table.headerCode")}s.length > 0 && (
         <div className="flex items-center justify-between text-sm text-cream/60">
           <span>
-            {filteredPromoCodes.length} code{filteredPromoCodes.length > 1 ? "s" : ""} promo
+            {filteredPromo{t("adminPromo.table.headerCode")}s.length} code{filteredPromo{t("adminPromo.table.headerCode")}s.length > 1 ? "s" : ""} promo
           </span>
           <span>
-            {filteredPromoCodes.filter((p) => p.is_active).length} actif{filteredPromoCodes.filter((p) => p.is_active).length > 1 ? "s" : ""}
+            {filteredPromo{t("adminPromo.table.headerCode")}s.filter((p) => p.is_active).length} actif{filteredPromo{t("adminPromo.table.headerCode")}s.filter((p) => p.is_active).length > 1 ? "s" : ""}
           </span>
         </div>
       )}

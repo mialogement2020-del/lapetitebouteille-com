@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Package, Truck, CheckCircle, XCircle, Clock, Loader2, History, MessageSquare } from "lucide-react";
 import {
@@ -32,40 +33,40 @@ interface OrderStatusDialogProps {
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; icon: any; description: string }> = {
   pending: { 
-    label: "En attente", 
+    label: t("adminOrders.status.pending"), 
     color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30", 
     icon: Clock,
-    description: "Commande reçue, en attente de confirmation"
+    description: t("adminOrders.statusDescription.pending")
   },
   confirmed: { 
-    label: "Confirmée", 
+    label: t("adminOrders.status.confirmed"), 
     color: "bg-blue-500/20 text-blue-500 border-blue-500/30", 
     icon: CheckCircle,
-    description: "Commande confirmée, prête pour préparation"
+    description: t("adminOrders.statusDescription.confirmed")
   },
   processing: { 
-    label: "En préparation", 
+    label: t("adminOrders.status.processing"), 
     color: "bg-purple-500/20 text-purple-500 border-purple-500/30", 
     icon: Package,
-    description: "Les articles sont en cours de préparation"
+    description: t("adminOrders.statusDescription.processing")
   },
   shipped: { 
-    label: "Expédiée", 
+    label: t("adminOrders.status.shipped"), 
     color: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30", 
     icon: Truck,
-    description: "Commande en cours de livraison"
+    description: t("adminOrders.statusDescription.shipped")
   },
   delivered: { 
-    label: "Livrée", 
+    label: t("adminOrders.status.delivered"), 
     color: "bg-green-500/20 text-green-500 border-green-500/30", 
     icon: CheckCircle,
-    description: "Commande livrée avec succès"
+    description: t("adminOrders.statusDescription.delivered")
   },
   cancelled: { 
-    label: "Annulée", 
+    label: t("adminOrders.status.cancelled"), 
     color: "bg-red-500/20 text-red-500 border-red-500/30", 
     icon: XCircle,
-    description: "Commande annulée"
+    description: t("adminOrders.statusDescription.cancelled")
   },
 };
 
@@ -111,14 +112,14 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
             {order.order_number}
           </DialogTitle>
           <DialogDescription className="text-cream/60">
-            Modifier le statut de la commande
+            {t("adminOrders.dialog.title")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Current Status */}
           <div className="p-4 rounded-lg bg-cream/5 border border-gold/20">
-            <p className="text-cream/60 text-sm mb-2">Statut actuel</p>
+            <p className="text-cream/60 text-sm mb-2">{t("adminOrders.dialog.currentStatus")}</p>
             <Badge className={`${statusConfig[currentStatus].color} border text-sm`}>
               {(() => {
                 const StatusIcon = statusConfig[currentStatus].icon;
@@ -131,7 +132,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
           {/* Order Details */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="p-3 rounded-lg bg-cream/5">
-              <p className="text-cream/60 mb-1">Client</p>
+              <p className="text-cream/60 mb-1">{t("adminOrders.dialog.client")}</p>
               <p className="text-cream font-medium">{order.shipping_full_name || "—"}</p>
               <p className="text-cream/60">{order.shipping_phone}</p>
               {order.guest_email && (
@@ -139,7 +140,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               )}
             </div>
             <div className="p-3 rounded-lg bg-cream/5">
-              <p className="text-cream/60 mb-1">Livraison</p>
+              <p className="text-cream/60 mb-1">{t("adminOrders.dialog.delivery")}</p>
               <p className="text-cream">{order.shipping_city}</p>
               <p className="text-cream/60">{order.shipping_neighborhood}</p>
               <p className="text-cream/60">{order.shipping_street}</p>
@@ -148,7 +149,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
 
           {/* Items */}
           <div className="space-y-2">
-            <p className="text-cream/60 text-sm">Articles ({order.items.length})</p>
+            <p className="text-cream/60 text-sm">t("adminOrders.dialog.items", { count: order.items.length })</p>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {order.items.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-cream/5">
@@ -170,7 +171,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               ))}
             </div>
             <div className="flex justify-between pt-2 border-t border-gold/20">
-              <span className="text-cream/60">Total</span>
+              <span className="text-cream/60">{t("adminOrders.dialog.total")}</span>
               <span className="text-primary font-bold">{formatPrice(order.total)}</span>
             </div>
           </div>
@@ -184,7 +185,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               >
                 <span className="flex items-center gap-2">
                   <History className="h-4 w-4" />
-                  Historique des changements
+                  {t("adminOrders.dialog.history")}
                 </span>
                 <motion.span
                   animate={{ rotate: historyOpen ? 180 : 0 }}
@@ -201,7 +202,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
 
           {/* Status Selection */}
           <div className="space-y-3">
-            <p className="text-cream font-medium">Changer le statut</p>
+            <p className="text-cream font-medium">{t("adminOrders.dialog.changeStatus")}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {Object.entries(statusConfig).map(([status, config]) => {
                 const StatusIcon = config.icon;
@@ -250,13 +251,13 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="h-4 w-4 text-cream/60" />
                   <label className="text-sm text-cream/60">
-                    Note (optionnelle)
+                    {t("adminOrders.dialog.noteLabel")}
                   </label>
                 </div>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ajouter une note pour ce changement de statut..."
+                  placeholder={t("adminOrders.dialog.notePlaceholder")}
                   className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 resize-none"
                   rows={2}
                 />
@@ -271,7 +272,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               className="flex-1 border-gold/30 text-cream hover:bg-cream/10"
               onClick={() => onOpenChange(false)}
             >
-              Annuler
+              {t("adminOrders.dialog.cancel")}
             </Button>
             <Button
               className="flex-1 bg-gradient-gold text-noir font-semibold hover:opacity-90"
@@ -281,10 +282,10 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               {isUpdating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Mise à jour...
+                  {t("adminOrders.dialog.updating")}
                 </>
               ) : (
-                "Confirmer le changement"
+                "{t("adminOrders.dialog.confirmChange")}"
               )}
             </Button>
           </div>
