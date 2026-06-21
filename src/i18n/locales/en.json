@@ -829,5 +829,271 @@
     "successDesc": "Our sales team will contact you within 24h.",
     "errorTitle": "Error",
     "errorDesc": "Could not send the request. Please try again."
+  },
+  "pushNotificationSettings": {
+    "title": "Push Notifications",
+    "description": "Receive real-time alerts for your commissions and referrals",
+    "statusChecking": "Checking...",
+    "statusActive": "Notifications enabled",
+    "statusInactive": "Notifications disabled",
+    "statusSubChecking": "Please wait",
+    "statusSubActive": "You will receive real-time alerts",
+    "statusSubInactive": "Enable to receive alerts",
+    "btnEnable": "Enable",
+    "btnDisable": "Disable",
+    "deniedWarning": "Notifications are blocked by your browser. To enable them:",
+    "deniedStep1": "Click the padlock icon in the address bar",
+    "deniedStep2": "Find the \"Notifications\" permission",
+    "deniedStep3": "Set it to \"Allow\" then reload the page",
+    "alertsFooter": "Alerts for commissions, new orders and network activity",
+    "notSupported": {
+      "title": "Not supported",
+      "description": "Your browser does not support push notifications."
+    },
+    "toast": {
+      "autoEnabled": "Notifications enabled!",
+      "autoEnabledDesc": "You will now receive real-time alerts.",
+      "enabled": "Notifications enabled!",
+      "enabledDesc": "You will receive alerts for commissions and referrals.",
+      "disabled": "Notifications disabled.",
+      "disabledError": "Could not disable notifications. Please try again.",
+      "enableError": "Could not enable notifications.",
+      "enableErrorDesc": "An error occurred. Please try again.",
+      "blockedTitle": "Notifications blocked",
+      "blockedDesc": "Please allow notifications in your browser settings."
+    }
+  },
+  "referralLink": {
+    "title": "My Referral Link",
+    "subtitle": "Share your link and earn commissions",
+    "yourCode": "Your code",
+    "fullLink": "Full link",
+    "shareBtn": "Share my link",
+    "clicks": "Clicks",
+    "signups": "Sign-ups",
+    "orders": "Orders",
+    "shareTitle": "Join La Petite Bouteille",
+    "shareText": "Discover our premium wine, champagne and spirits selection. Use my referral link!",
+    "toast": {
+      "copied": "Link copied!",
+      "copiedDesc": "Your referral link has been copied to clipboard.",
+      "copyError": "Copy error",
+      "copyErrorDesc": "Could not copy the link. Please copy it manually."
+    }
+  },
+  "referralTree": {
+    "you": "You",
+    "ambassador": "Ambassador",
+    "unknownUser": "Unknown user",
+    "noReferrals": "No referrals yet",
+    "inviteHint": "Share your referral link to grow your network",
+    "referralCount_one": "{{count}} referral",
+    "referralCount_other": "{{count}} referrals",
+    "others": "others...",
+    "noReferralAtLevel": "No referrals at this level",
+    "legendTitle": "Legend",
+    "level1Title": "Level 1 — Direct",
+    "level2Title": "Level 2 — Indirect",
+    "level3Title": "Level 3 — Extended",
+    "rank": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "diamond": "Diamond",
+      "elite": "Elite"
+    }
+  },
+  "shareableAssets": {
+    "title": "Marketing Assets",
+    "subtitle": "Download and share our promotional materials",
+    "typePlaceholder": "Filter by type",
+    "platformPlaceholder": "Filter by platform",
+    "download": "Download",
+    "downloadCount_one": "{{count}} download",
+    "downloadCount_other": "{{count}} downloads",
+    "empty": "No assets match your filters",
+    "tip": "Share these visuals on your social media to attract new customers",
+    "filter": {
+      "type": {
+        "all": "All types",
+        "banner": "Banners",
+        "story": "Stories",
+        "post": "Posts",
+        "flyer": "Flyers"
+      },
+      "platform": {
+        "all": "All platforms"
+      }
+    },
+    "type": {
+      "banner": "Banner",
+      "story": "Story",
+      "post": "Post",
+      "flyer": "Flyer"
+    }
+  },
+  "shortLinkManager": {
+    "title": "Short Link",
+    "yourShortLink": "Your short link",
+    "customized": "Customized",
+    "btnCustomize": "Customize",
+    "customizeLabel": "Custom code",
+    "codeHint": "Letters, numbers, hyphens and underscores only (3–20 characters)",
+    "btnSave": "Save",
+    "btnSaving": "Saving...",
+    "btnCancel": "Cancel",
+    "tip": "💡 <strong>Tip:</strong> A memorable code increases your conversion rate.",
+    "toast": {
+      "copied": "Link copied!",
+      "copyError": "Could not copy the link.",
+      "formatError": "Invalid format. Use letters, numbers, - and _ only.",
+      "lengthError": "Code must be between 3 and 20 characters.",
+      "takenError": "This code is already taken. Please choose another one.",
+      "updated": "Short link updated!",
+      "saveError": "Could not save the code. Please try again."
+    }
+  },
+  "statsOverview": {
+    "currentRank": "Current rank",
+    "ambassadorRank": "Rank: {{rank}}",
+    "activeReferrals_one": "{{count}} active referral",
+    "activeReferrals_other": "{{count}} active referrals",
+    "stat": {
+      "availableBalance": "Available balance",
+      "pendingBalance": "Pending balance",
+      "monthlyEarnings": "Monthly earnings",
+      "totalEarnings": "Total earnings",
+      "activeReferrals": "Active referrals",
+      "totalOrders": "Total orders"
+    },
+    "rank": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "diamond": "Diamond",
+      "elite": "Elite"
+    }
+  },
+  "walletManager": {
+    "availableBalance": "Available balance",
+    "dialogTitle": "Request a withdrawal",
+    "dialogDesc": "Enter the amount and your payment details",
+    "amount": "Amount (FCFA)",
+    "available": "Available: {{amount}}",
+    "paymentMethod": "Payment method",
+    "phone": "Mobile Money number",
+    "btnWithdraw": "Withdraw",
+    "btnSubmit": "Confirm",
+    "btnSubmitting": "Processing...",
+    "btnStoreCredit": "Use as store credit",
+    "transactionsTitle": "Transaction history",
+    "noTransactions": "No transactions yet",
+    "type": {
+      "commission": "Commission",
+      "bonus": "Bonus",
+      "withdrawal": "Withdrawal",
+      "store_credit": "Store credit",
+      "adjustment": "Adjustment"
+    },
+    "toast": {
+      "withdrawSuccess": "Withdrawal requested!",
+      "withdrawSuccessDesc": "Your request for {{amount}} has been submitted.",
+      "error": "Error",
+      "errorDesc": "Could not process your request. Please try again."
+    },
+    "error": {
+      "insufficientFunds": "Insufficient balance.",
+      "walletNotFound": "Wallet not found."
+    }
+  },
+  "ambassadorNotifications": {
+    "title": "Notifications",
+    "unread_one": "{{count}} new",
+    "unread_other": "{{count}} new",
+    "markAllRead": "Mark all read",
+    "loading": "Loading...",
+    "empty": "No notifications",
+    "emptyHint": "Your commissions and bonuses will appear here",
+    "new": "NEW",
+    "count_one": "{{count}} notification",
+    "count_other": "{{count}} notifications"
+  },
+  "challenges": {
+    "typeLabels": {
+      "referrals": "Referrals",
+      "sales": "Sales",
+      "signups": "Sign-ups",
+      "orders": "Orders"
+    },
+    "ended": "Ended",
+    "completed": "Completed",
+    "progress": "Progress",
+    "join": "Join",
+    "empty": "No active challenges right now. Check back soon!",
+    "title": "Active Challenges",
+    "subtitle": "Take on challenges to earn bonuses",
+    "timeLeft": "{{days}}d {{hours}}h",
+    "timeLeftHours": "{{hours}}h"
+  },
+  "commissionHistory": {
+    "status": {
+      "pending": "Pending",
+      "completed": "Paid",
+      "failed": "Failed",
+      "refunded": "Refunded"
+    },
+    "level1": "Direct",
+    "level2": "Level 2",
+    "level3": "Level 3",
+    "levelN": "Level {{level}}",
+    "empty": "No commissions yet",
+    "emptyHint": "Share your referral link to start earning",
+    "orderLabel": "Order"
+  },
+  "incomeSimulator": {
+    "title": "Income Simulator",
+    "subtitle": "Estimate your potential earnings",
+    "directReferrals": "Direct referrals",
+    "avgOrder": "Average order value",
+    "ordersPerMonth": "Orders/month per referral",
+    "estimatedEarnings": "Estimated earnings",
+    "level1": "Level 1 (direct)",
+    "level2": "Level 2",
+    "level3": "Level 3",
+    "perMonth": "/mo",
+    "monthlyTotal": "Monthly total",
+    "annualProjection": "Annual projection",
+    "networkSize": "Estimated network size",
+    "members": "~{{count}} members",
+    "disclaimer": "* These estimates are indicative and based on current commission rates. Actual results depend on your network's activity."
+  },
+  "linkStats": {
+    "title": "Your link performance",
+    "subtitle": "Click and conversion statistics",
+    "globalConversion": "{{rate}}% overall conversion",
+    "clicksLabel": "Link clicks",
+    "clicksDesc": "Number of times your links were opened",
+    "signupsLabel": "Sign-ups",
+    "signupsDesc": "Conversion rate: {{rate}}%",
+    "ordersLabel": "Orders generated",
+    "ordersDesc": "Order rate: {{rate}}%",
+    "revenueLabel": "Revenue generated",
+    "revenueDesc": "Total revenue via your links",
+    "funnel": "Conversion funnel",
+    "funnelClicks": "Clicks",
+    "funnelSignups": "Sign-ups",
+    "funnelOrders": "Orders"
+  },
+  "leaderboard": {
+    "title": "Monthly Leaderboard",
+    "live": "Live",
+    "empty": "No rankings yet this month. Be the first!",
+    "you": "(you)",
+    "referralsLabel": "Referrals",
+    "ordersLabel": "Orders",
+    "thisMonth": "this month",
+    "showLess": "Show less",
+    "showMore": "Show {{count}} more",
+    "defaultName": "Ambassador"
   }
 }

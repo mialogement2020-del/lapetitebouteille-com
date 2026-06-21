@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 export function PushNotificationSettings() {
+  const { t } = useTranslation("pushNotificationSettings");
   const {
     isSupported,
     permission,
@@ -18,39 +20,38 @@ export function PushNotificationSettings() {
   
   const previousSubscribedRef = useRef<boolean | null>(null);
 
-  // Show toast when auto-subscription succeeds
   useEffect(() => {
     if (previousSubscribedRef.current === false && isSubscribed) {
-      toast.success("Notifications push activées automatiquement !", {
-        description: "Vous recevrez des alertes pour vos commissions et filleuls.",
+      toast.success(t("toast.autoEnabled"), {
+        description: t("toast.autoEnabledDesc"),
         duration: 5000,
       });
     }
     previousSubscribedRef.current = isSubscribed;
-  }, [isSubscribed]);
+  }, [isSubscribed, t]);
 
   const handleToggle = async () => {
     if (isSubscribed) {
       const success = await unsubscribe();
       if (success) {
-        toast.success("Notifications push désactivées");
+        toast.success(t("toast.disabled"));
       } else {
-        toast.error("Erreur lors de la désactivation");
+        toast.error(t("toast.disabledError"));
       }
     } else {
       const success = await subscribe();
       if (success) {
-        toast.success("Notifications push activées !", {
-          description: "Vous recevrez maintenant des alertes en temps réel.",
+        toast.success(t("toast.enabled"), {
+          description: t("toast.enabledDesc"),
         });
       } else if (permission === "denied") {
-        toast.error("Notifications bloquées par le navigateur", {
-          description: "Cliquez sur l'icône 🔒 dans la barre d'adresse pour les autoriser.",
+        toast.error(t("toast.blockedTitle"), {
+          description: t("toast.blockedDesc"),
           duration: 8000,
         });
       } else {
-        toast.error("Erreur lors de l'activation", {
-          description: "Veuillez réessayer ou rafraîchir la page.",
+        toast.error(t("toast.enableError"), {
+          description: t("toast.enableErrorDesc"),
         });
       }
     }
@@ -62,12 +63,12 @@ export function PushNotificationSettings() {
         <CardHeader className="pb-3">
           <CardTitle className="text-cream text-lg flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-amber-500" />
-            Notifications non disponibles
+            {t("notSupported.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-cream/60 text-sm">
-            Votre navigateur ne supporte pas les notifications push. Utilisez Chrome, Firefox ou Edge pour bénéficier de cette fonctionnalité.
+            {t("notSupported.description")}
           </p>
         </CardContent>
       </Card>
@@ -79,7 +80,7 @@ export function PushNotificationSettings() {
       <CardHeader className="pb-3">
         <CardTitle className="text-cream text-lg flex items-center gap-2">
           <Bell className="h-5 w-5 text-primary" />
-          Notifications Push
+          {t("title")}
           {isSubscribed && (
             <motion.span
               initial={{ scale: 0 }}
@@ -91,7 +92,7 @@ export function PushNotificationSettings() {
           )}
         </CardTitle>
         <CardDescription className="text-cream/60">
-          Recevez des alertes en temps réel pour vos commissions, filleuls et bonus
+          {t("description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -116,18 +117,18 @@ export function PushNotificationSettings() {
             </motion.div>
             <div>
               <p className="text-sm font-medium text-cream">
-                {isLoading 
-                  ? "Vérification en cours..." 
-                  : isSubscribed 
-                    ? "Notifications actives" 
-                    : "Notifications désactivées"}
+                {isLoading
+                  ? t("statusChecking")
+                  : isSubscribed
+                    ? t("statusActive")
+                    : t("statusInactive")}
               </p>
               <p className="text-xs text-cream/50">
                 {isLoading
-                  ? "Patientez un instant..."
+                  ? t("statusSubChecking")
                   : isSubscribed
-                    ? "Vous recevrez des alertes push"
-                    : "Cliquez pour activer"}
+                    ? t("statusSubActive")
+                    : t("statusSubInactive")}
               </p>
             </div>
           </div>
@@ -146,9 +147,9 @@ export function PushNotificationSettings() {
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : isSubscribed ? (
-              "Désactiver"
+              t("btnDisable")
             ) : (
-              "Activer"
+              t("btnEnable")
             )}
           </Button>
         </div>
@@ -160,19 +161,19 @@ export function PushNotificationSettings() {
             className="p-3 rounded-lg bg-red-500/10 border border-red-500/20"
           >
             <p className="text-xs text-red-400">
-              ⚠️ Les notifications sont bloquées par votre navigateur. Pour les activer :
+              {t("deniedWarning")}
             </p>
             <ul className="text-xs text-red-400/80 mt-1 ml-4 list-disc space-y-0.5">
-              <li>Cliquez sur l'icône 🔒 dans la barre d'adresse</li>
-              <li>Trouvez "Notifications" et sélectionnez "Autoriser"</li>
-              <li>Rafraîchissez la page</li>
+              <li>{t("deniedStep1")}</li>
+              <li>{t("deniedStep2")}</li>
+              <li>{t("deniedStep3")}</li>
             </ul>
           </motion.div>
         )}
 
         <div className="pt-2 border-t border-gold/10">
           <p className="text-xs text-cream/40">
-            📢 Alertes : nouvelles commissions, nouveaux filleuls, bonus de rang
+            {t("alertsFooter")}
           </p>
         </div>
       </CardContent>
