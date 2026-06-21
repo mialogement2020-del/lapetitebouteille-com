@@ -2,28 +2,31 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { User, Users, Crown, Award, ChevronDown, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { Referral } from "@/hooks/useAmbassador";
+import { useTranslation } from "react-i18next";
 
 interface ReferralTreeProps {
   referrals: Referral[];
   isLoading: boolean;
 }
 
-const RANK_CONFIG: Record<string, { label: string; color: string; icon: typeof Award }> = {
-  bronze: { label: "Bronze", color: "#CD7F32", icon: Award },
-  silver: { label: "Argent", color: "#C0C0C0", icon: Award },
-  gold: { label: "Or", color: "#FFD700", icon: Crown },
-  diamond: { label: "Diamant", color: "#B9F2FF", icon: Crown },
-  elite: { label: "Élite", color: "#E5E4E2", icon: Crown },
-};
-
 export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
+  const { t, i18n } = useTranslation("referralTree");
+  const dateFnsLocale = i18n.language === "en" ? enUS : fr;
+
+  const RANK_CONFIG: Record<string, { label: string; color: string; icon: typeof Award }> = {
+    bronze: { label: t("rank.bronze"), color: "#CD7F32", icon: Award },
+    silver: { label: t("rank.silver"), color: "#C0C0C0", icon: Award },
+    gold: { label: t("rank.gold"), color: "#FFD700", icon: Crown },
+    diamond: { label: t("rank.diamond"), color: "#B9F2FF", icon: Crown },
+    elite: { label: t("rank.elite"), color: "#E5E4E2", icon: Crown },
+  };
+
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(["level-1", "level-2", "level-3"]));
 
-  // Group referrals by level
   const level1 = referrals.filter((r) => r.level === 1);
   const level2 = referrals.filter((r) => r.level === 2);
   const level3 = referrals.filter((r) => r.level === 3);
@@ -47,7 +50,7 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
   };
 
   const getName = (profile?: { first_name?: string | null; last_name?: string | null }) => {
-    if (!profile?.first_name && !profile?.last_name) return "Utilisateur";
+    if (!profile?.first_name && !profile?.last_name) return t("unknownUser");
     return `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
   };
 
@@ -71,22 +74,19 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
     return (
       <div className="text-center py-12">
         <div className="relative inline-block">
-          {/* Root node - You */}
           <div className="w-20 h-20 rounded-full bg-gradient-gold flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Crown className="h-10 w-10 text-noir" />
           </div>
-          <p className="text-cream font-medium mb-2">Vous</p>
+          <p className="text-cream font-medium mb-2">{t("you")}</p>
         </div>
         
-        {/* Connecting line */}
         <div className="w-0.5 h-8 bg-gold/30 mx-auto" />
         
-        {/* Empty state */}
         <div className="mt-4 p-6 rounded-xl border-2 border-dashed border-gold/20 bg-noir-light/20">
           <Users className="h-12 w-12 text-cream/20 mx-auto mb-4" />
-          <p className="text-cream/60">Aucun filleul pour le moment</p>
+          <p className="text-cream/60">{t("noReferrals")}</p>
           <p className="text-cream/40 text-sm mt-1">
-            Invitez vos amis avec votre code de parrainage
+            {t("inviteHint")}
           </p>
         </div>
       </div>
@@ -103,7 +103,6 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
         animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center relative"
       >
-        {/* Avatar */}
         <div 
           className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-2"
           style={{ 
@@ -126,7 +125,6 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
             </span>
           )}
           
-          {/* Rank badge */}
           <div 
             className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
             style={{ backgroundColor: rankConfig?.color }}
@@ -135,7 +133,6 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
           </div>
         </div>
         
-        {/* Name */}
         <p className="text-cream text-xs font-medium mt-2 text-center max-w-[80px] truncate">
           {getName(referral.profile)}
         </p>
@@ -176,12 +173,10 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
         className="w-full"
       >
         <div className="relative">
-          {/* Vertical connector from above */}
           {level > 1 && (
             <div className="absolute left-1/2 -top-6 w-0.5 h-6 bg-gradient-to-b from-gold/50 to-gold/20" />
           )}
           
-          {/* Level header */}
           <CollapsibleTrigger className="w-full">
             <div 
               className={cn(
@@ -199,7 +194,9 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
                 </div>
                 <div className="text-left">
                   <h4 className="text-cream font-medium text-sm">{title}</h4>
-                  <p className="text-cream/50 text-xs">{referralsList.length} filleul(s)</p>
+                  <p className="text-cream/50 text-xs">
+                    {t("referralCount", { count: referralsList.length })}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -216,7 +213,6 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
           <CollapsibleContent>
             {referralsList.length > 0 ? (
               <div className="relative pt-6 pb-4">
-                {/* Horizontal connector line */}
                 {displayReferrals.length > 1 && (
                   <div 
                     className="absolute top-6 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-transparent via-gold/30 to-transparent"
@@ -224,11 +220,9 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
                   />
                 )}
                 
-                {/* Vertical connectors to each node */}
                 <div className="flex justify-center gap-4 md:gap-8 flex-wrap">
                   {displayReferrals.map((referral, index) => (
                     <div key={referral.id} className="relative">
-                      {/* Vertical line from horizontal connector */}
                       <div className="absolute left-1/2 -top-3 w-0.5 h-3 bg-gold/30" />
                       <ReferralNode 
                         referral={referral} 
@@ -243,7 +237,7 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
                       <div className="w-14 h-14 rounded-full bg-noir-light/50 border-2 border-dashed border-gold/20 flex items-center justify-center">
                         <span className="text-cream/60 text-xs font-medium">+{remainingCount}</span>
                       </div>
-                      <p className="text-cream/40 text-xs mt-2 text-center">autres</p>
+                      <p className="text-cream/40 text-xs mt-2 text-center">{t("others")}</p>
                     </div>
                   )}
                 </div>
@@ -253,7 +247,7 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
                 <div className="w-12 h-12 rounded-full border-2 border-dashed border-gold/20 flex items-center justify-center mx-auto">
                   <User className="h-5 w-5 text-cream/20" />
                 </div>
-                <p className="text-cream/40 text-xs mt-2">Aucun filleul à ce niveau</p>
+                <p className="text-cream/40 text-xs mt-2">{t("noReferralAtLevel")}</p>
               </div>
             )}
           </CollapsibleContent>
@@ -264,7 +258,6 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
 
   return (
     <div className="space-y-4">
-      {/* Root node - Ambassador (You) */}
       <div className="flex flex-col items-center mb-6">
         <motion.div
           initial={{ scale: 0 }}
@@ -279,24 +272,21 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
             <span className="text-noir text-xs font-bold">★</span>
           </div>
         </motion.div>
-        <p className="text-cream font-display text-lg mt-3">Vous</p>
-        <p className="text-primary text-sm">Ambassadeur</p>
+        <p className="text-cream font-display text-lg mt-3">{t("you")}</p>
+        <p className="text-primary text-sm">{t("ambassador")}</p>
         
-        {/* Connector to levels */}
         <div className="w-0.5 h-8 bg-gradient-to-b from-gold to-gold/20 mt-4" />
       </div>
 
-      {/* Tree levels */}
       <div className="space-y-6">
         <LevelRow 
           level={1} 
           referralsList={level1} 
-          title="Niveau 1 - Filleuls Directs" 
+          title={t("level1Title")}
           commission="8%"
           levelColor="#FFD700"
         />
         
-        {/* Connector between levels */}
         {level1.length > 0 && (
           <div className="flex justify-center">
             <div className="w-0.5 h-6 bg-gradient-to-b from-gold/30 to-gold/10" />
@@ -306,12 +296,11 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
         <LevelRow 
           level={2} 
           referralsList={level2} 
-          title="Niveau 2 - Sous-filleuls" 
+          title={t("level2Title")}
           commission="4%"
           levelColor="#C0C0C0"
         />
         
-        {/* Connector between levels */}
         {level2.length > 0 && (
           <div className="flex justify-center">
             <div className="w-0.5 h-6 bg-gradient-to-b from-gold/20 to-gold/5" />
@@ -321,15 +310,14 @@ export function ReferralTree({ referrals, isLoading }: ReferralTreeProps) {
         <LevelRow 
           level={3} 
           referralsList={level3} 
-          title="Niveau 3" 
+          title={t("level3Title")}
           commission="2%"
           levelColor="#CD7F32"
         />
       </div>
 
-      {/* Legend */}
       <div className="mt-8 pt-6 border-t border-gold/10">
-        <p className="text-cream/50 text-xs mb-3">Rangs des ambassadeurs :</p>
+        <p className="text-cream/50 text-xs mb-3">{t("legendTitle")}</p>
         <div className="flex flex-wrap gap-2">
           {Object.entries(RANK_CONFIG).map(([key, config]) => (
             <div 

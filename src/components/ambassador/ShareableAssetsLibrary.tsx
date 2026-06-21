@@ -20,19 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 const platformIcons: Record<string, React.ReactNode> = {
   whatsapp: <MessageCircle className="h-4 w-4" />,
   facebook: <Facebook className="h-4 w-4" />,
   instagram: <Instagram className="h-4 w-4" />,
   all: <Globe className="h-4 w-4" />,
-};
-
-const assetTypeLabels: Record<string, string> = {
-  banner: "Bannière",
-  story: "Story",
-  post: "Publication",
-  flyer: "Flyer",
 };
 
 function AssetCard({
@@ -44,6 +38,15 @@ function AssetCard({
   onDownload: () => void;
   isDownloading: boolean;
 }) {
+  const { t } = useTranslation("shareableAssets");
+
+  const assetTypeLabels: Record<string, string> = {
+    banner: t("type.banner"),
+    story: t("type.story"),
+    post: t("type.post"),
+    flyer: t("type.flyer"),
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -70,7 +73,7 @@ function AssetCard({
             ) : (
               <Download className="h-4 w-4 mr-2" />
             )}
-            Télécharger
+            {t("download")}
           </Button>
         </div>
 
@@ -97,7 +100,7 @@ function AssetCard({
         )}
         <div className="flex items-center justify-between mt-3">
           <span className="text-xs text-cream/40">
-            {asset.download_count} téléchargements
+            {t("downloadCount", { count: asset.download_count })}
           </span>
           <Button
             variant="ghost"
@@ -115,6 +118,7 @@ function AssetCard({
 }
 
 export function ShareableAssetsLibrary() {
+  const { t } = useTranslation("shareableAssets");
   const [filters, setFilters] = useState<{
     assetType: string;
     platform: string;
@@ -142,10 +146,8 @@ export function ShareableAssetsLibrary() {
             <ImageIcon className="h-5 w-5 text-noir" />
           </div>
           <div>
-            <h3 className="font-display text-xl text-cream">Visuels à Partager</h3>
-            <p className="text-sm text-cream/60">
-              Téléchargez des visuels prêts à l'emploi
-            </p>
+            <h3 className="font-display text-xl text-cream">{t("title")}</h3>
+            <p className="text-sm text-cream/60">{t("subtitle")}</p>
           </div>
         </div>
 
@@ -158,14 +160,14 @@ export function ShareableAssetsLibrary() {
             }
           >
             <SelectTrigger className="w-32 bg-noir-light/50 border-gold/20 text-cream">
-              <SelectValue placeholder="Type" />
+              <SelectValue placeholder={t("typePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
-              <SelectItem value="banner">Bannières</SelectItem>
-              <SelectItem value="story">Stories</SelectItem>
-              <SelectItem value="post">Publications</SelectItem>
-              <SelectItem value="flyer">Flyers</SelectItem>
+              <SelectItem value="all">{t("filter.type.all")}</SelectItem>
+              <SelectItem value="banner">{t("filter.type.banner")}</SelectItem>
+              <SelectItem value="story">{t("filter.type.story")}</SelectItem>
+              <SelectItem value="post">{t("filter.type.post")}</SelectItem>
+              <SelectItem value="flyer">{t("filter.type.flyer")}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -176,10 +178,10 @@ export function ShareableAssetsLibrary() {
             }
           >
             <SelectTrigger className="w-36 bg-noir-light/50 border-gold/20 text-cream">
-              <SelectValue placeholder="Plateforme" />
+              <SelectValue placeholder={t("platformPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes</SelectItem>
+              <SelectItem value="all">{t("filter.platform.all")}</SelectItem>
               <SelectItem value="whatsapp">WhatsApp</SelectItem>
               <SelectItem value="facebook">Facebook</SelectItem>
               <SelectItem value="instagram">Instagram</SelectItem>
@@ -198,9 +200,7 @@ export function ShareableAssetsLibrary() {
       ) : !assets?.length ? (
         <div className="text-center py-12">
           <ImageIcon className="h-12 w-12 text-cream/20 mx-auto mb-4" />
-          <p className="text-cream/60">
-            Aucun visuel disponible pour le moment.
-          </p>
+          <p className="text-cream/60">{t("empty")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
