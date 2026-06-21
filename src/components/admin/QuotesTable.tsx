@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FileText, Download, Check, X, Clock, Eye, Building2, Phone, Mail, MapPin, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,30 +14,35 @@ const formatPrice = (price: number) => {
   return new Intl.NumberFormat("fr-FR").format(price);
 };
 
-const PACKAGING_LABELS: Record<string, string> = {
-  carton_6: "Carton de 6",
-  carton_12: "Carton de 12",
-  palette: "Palette (60)",
-};
-
-const STATUS_BADGES: Record<string, { label: string; className: string }> = {
-  en_attente: { label: "En attente", className: "bg-warning/20 text-warning border-warning/30" },
-  traite: { label: "Traité", className: "bg-green-500/20 text-green-400 border-green-500/30" },
-  refuse: { label: "Refusé", className: "bg-destructive/20 text-destructive border-destructive/30" },
+const STATUS_CLASSES: Record<string, string> = {
+  en_attente: "bg-warning/20 text-warning border-warning/30",
+  traite: "bg-green-500/20 text-green-400 border-green-500/30",
+  refuse: "bg-destructive/20 text-destructive border-destructive/30",
 };
 
 export function QuotesTable() {
+  const { t } = useTranslation();
   const { data: quotes = [], isLoading } = useQuoteRequests();
   const updateStatus = useUpdateQuoteStatus();
   const [selectedQuote, setSelectedQuote] = useState<any | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
 
+  const packagingLabel = (key: string) =>
+    t(`adminQuotes.packaging.${key}`, { defaultValue: key });
+  const statusLabel = (key: string) =>
+    t(`adminQuotes.status.${key}`, { defaultValue: key });
+
   const handleStatusChange = async (id: string, status: string) => {
     try {
       await updateStatus.mutateAsync({ id, status, notes: adminNotes });
       toast({
-        title: "Statut mis à jour",
-        description: `Demande de devis ${status === "traite" ? "traitée" : "refusée"}`,
+        title: t("adminQuotes.dialog.updateSuccess"),
+        description: t("adminQuotes.dialog.updateDesc", {
+          status:
+            status === "traite"
+              ? t("adminQuotes.dialog.statusTreated")
+              : t("adminQuotes.dialog.statusRejected"),
+        }),
       });
       setSelectedQuote(null);
       setAdminNotes("");
@@ -56,7 +62,7 @@ export function QuotesTable() {
       q.niu || "",
       q.city,
       q.product_name,
-      PACKAGING_LABELS[q.packaging_type] || q.packaging_type,
+      packagingLabel(q.packaging_type),
       q.quantity,
       q.total_price,
       q.status,
@@ -92,11 +98,11 @@ export function QuotesTable() {
         <div className="flex items-center gap-3">
           <FileText className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-display font-semibold text-cream">
-            Demandes de devis
+            {t("adminQuotes.title")}
           </h2>
           {pendingCount > 0 && (
             <Badge className="bg-warning/20 text-warning border-warning/30">
-              {pendingCount} en attente
+              {t("adminQuotes.pending", { count: pendingCount })}
             </Badge>
           )}
         </div>
@@ -107,32 +113,32 @@ export function QuotesTable() {
           className="border-cream/20 text-cream hover:bg-cream/10 gap-2"
         >
           <Download className="h-4 w-4" />
-          Exporter CSV
+          {t("adminQuotes.exportCSV")}
         </Button>
       </div>
 
       {quotes.length === 0 ? (
         <div className="text-center py-12 text-cream/40">
           <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-          <p>Aucune demande de devis pour le moment</p>
+          <p>{t("adminQuotes.noQuotes")}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-cream/10 hover:bg-transparent">
-                <TableHead className="text-cream/60">Date</TableHead>
-                <TableHead className="text-cream/60">Client</TableHead>
-                <TableHead className="text-cream/60">Produit</TableHead>
-                <TableHead className="text-cream/60">Conditionnement</TableHead>
-                <TableHead className="text-cream/60">Total</TableHead>
-                <TableHead className="text-cream/60">Statut</TableHead>
-                <TableHead className="text-cream/60">Actions</TableHead>
+                <TableHead className="text-cream/60">{t("adminQuotes.headerDate")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminQuotes.headerClient")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminQuotes.headerProduct")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminQuotes.headerPackaging")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminQuotes.headerTotal")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminQuotes.headerStatus")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminQuotes.headerActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {quotes.map((quote: any) => {
-                const statusInfo = STATUS_BADGES[quote.status] || STATUS_BADGES.en_attente;
+                const statusClass = STATUS_CLASSES[quote.status] || STATUS_CLASSES.en_attente;
                 return (
                   <TableRow key={quote.id} className="border-cream/10 hover:bg-cream/5">
                     <TableCell className="text-cream/70 text-sm">
@@ -151,14 +157,14 @@ export function QuotesTable() {
                     </TableCell>
                     <TableCell className="text-cream text-sm">{quote.product_name}</TableCell>
                     <TableCell className="text-cream/70 text-sm">
-                      {PACKAGING_LABELS[quote.packaging_type] || quote.packaging_type}
+                      {packagingLabel(quote.packaging_type)}
                     </TableCell>
                     <TableCell className="text-primary font-semibold text-sm">
                       {formatPrice(quote.total_price)} FCFA
                     </TableCell>
                     <TableCell>
-                      <Badge className={`${statusInfo.className} text-xs`}>
-                        {statusInfo.label}
+                      <Badge className={`${statusClass} text-xs`}>
+                        {statusLabel(quote.status)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -188,7 +194,7 @@ export function QuotesTable() {
           <DialogHeader>
             <DialogTitle className="font-display flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Détail de la demande
+              {t("adminQuotes.dialog.title")}
             </DialogTitle>
           </DialogHeader>
 
@@ -197,32 +203,32 @@ export function QuotesTable() {
               {/* Client Info */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-lg bg-cream/5">
-                  <p className="text-xs text-cream/50">Client</p>
+                  <p className="text-xs text-cream/50">{t("adminQuotes.dialog.client")}</p>
                   <p className="font-medium text-sm">{selectedQuote.client_name}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-cream/5">
-                  <p className="text-xs text-cream/50 flex items-center gap-1"><Phone className="h-3 w-3" /> Téléphone</p>
+                  <p className="text-xs text-cream/50 flex items-center gap-1"><Phone className="h-3 w-3" /> {t("adminQuotes.dialog.phone")}</p>
                   <a href={`tel:${selectedQuote.client_phone}`} className="font-medium text-sm text-primary">
                     {selectedQuote.client_phone}
                   </a>
                 </div>
                 <div className="p-3 rounded-lg bg-cream/5">
-                  <p className="text-xs text-cream/50 flex items-center gap-1"><Mail className="h-3 w-3" /> Email</p>
+                  <p className="text-xs text-cream/50 flex items-center gap-1"><Mail className="h-3 w-3" /> {t("adminQuotes.dialog.email")}</p>
                   <a href={`mailto:${selectedQuote.client_email}`} className="font-medium text-sm text-primary">
                     {selectedQuote.client_email}
                   </a>
                 </div>
                 <div className="p-3 rounded-lg bg-cream/5">
-                  <p className="text-xs text-cream/50 flex items-center gap-1"><MapPin className="h-3 w-3" /> Ville</p>
+                  <p className="text-xs text-cream/50 flex items-center gap-1"><MapPin className="h-3 w-3" /> {t("adminQuotes.dialog.city")}</p>
                   <p className="font-medium text-sm">{selectedQuote.city}</p>
                 </div>
               </div>
 
               {selectedQuote.company_name && (
                 <div className="p-3 rounded-lg bg-cream/5">
-                  <p className="text-xs text-cream/50">Entreprise</p>
+                  <p className="text-xs text-cream/50">{t("adminQuotes.dialog.company")}</p>
                   <p className="font-medium text-sm">{selectedQuote.company_name}</p>
-                  {selectedQuote.niu && <p className="text-xs text-cream/50 mt-1">NIU: {selectedQuote.niu}</p>}
+                  {selectedQuote.niu && <p className="text-xs text-cream/50 mt-1">{t("adminQuotes.dialog.niu", { niu: selectedQuote.niu })}</p>}
                 </div>
               )}
 
@@ -230,7 +236,10 @@ export function QuotesTable() {
               <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
                 <p className="font-medium">{selectedQuote.product_name}</p>
                 <p className="text-sm text-cream/60">
-                  {PACKAGING_LABELS[selectedQuote.packaging_type]} — {selectedQuote.quantity} bouteilles
+                  {t("adminQuotes.dialog.productInfo", {
+                    packaging: packagingLabel(selectedQuote.packaging_type),
+                    count: selectedQuote.quantity,
+                  })}
                 </p>
                 <p className="font-bold text-primary mt-1">
                   {formatPrice(selectedQuote.total_price)} FCFA
@@ -240,7 +249,7 @@ export function QuotesTable() {
               {selectedQuote.message && (
                 <div className="p-3 rounded-lg bg-cream/5">
                   <p className="text-xs text-cream/50 flex items-center gap-1 mb-1">
-                    <MessageSquare className="h-3 w-3" /> Message
+                    <MessageSquare className="h-3 w-3" /> {t("adminQuotes.dialog.message")}
                   </p>
                   <p className="text-sm text-cream/80">{selectedQuote.message}</p>
                 </div>
@@ -248,11 +257,11 @@ export function QuotesTable() {
 
               {/* Admin Notes */}
               <div>
-                <p className="text-sm text-cream/60 mb-1">Notes admin</p>
+                <p className="text-sm text-cream/60 mb-1">{t("adminQuotes.dialog.adminNotes")}</p>
                 <Textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="Notes internes..."
+                  placeholder={t("adminQuotes.dialog.adminNotesPlaceholder")}
                   rows={2}
                   className="bg-cream/5 border-cream/20 text-cream placeholder:text-cream/30 resize-none"
                 />
@@ -266,7 +275,7 @@ export function QuotesTable() {
                     disabled={updateStatus.isPending}
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white gap-2"
                   >
-                    <Check className="h-4 w-4" /> Marquer traité
+                    <Check className="h-4 w-4" /> {t("adminQuotes.dialog.markTreated")}
                   </Button>
                   <Button
                     onClick={() => handleStatusChange(selectedQuote.id, "refuse")}
@@ -274,7 +283,7 @@ export function QuotesTable() {
                     variant="outline"
                     className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10 gap-2"
                   >
-                    <X className="h-4 w-4" /> Refuser
+                    <X className="h-4 w-4" /> {t("adminQuotes.dialog.reject")}
                   </Button>
                 </div>
               )}

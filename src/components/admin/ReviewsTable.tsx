@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { 
   Search, 
   RefreshCw, 
@@ -52,6 +53,7 @@ export function ReviewsTable({
   onRejectReview,
   onRefresh 
 }: ReviewsTableProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
@@ -109,15 +111,15 @@ export function ReviewsTable({
       rating: r.rating,
       title: r.title || "",
       comment: r.comment || "",
-      status: r.is_approved ? "Approuvé" : "En attente",
-      verified: r.is_verified_purchase ? "Oui" : "Non",
+      status: r.is_approved ? t("adminReviews.dialog.approved") : t("adminReviews.dialog.pendingModeration"),
+      verified: r.is_verified_purchase ? t("adminReviews.table.verifiedPurchase") : "—",
       created_at: formatDate(r.created_at),
     }));
 
     const csv = convertToCSV(exportData, columns);
     const date = new Date().toISOString().split("T")[0];
     downloadCSV(csv, `avis-${date}.csv`);
-    toast.success(`${filteredReviews.length} avis exporté(s)`);
+    toast.success(t("adminReviews.table.exportSuccess", { count: filteredReviews.length }));
   };
 
   const renderStars = (rating: number) => {
@@ -154,7 +156,7 @@ export function ReviewsTable({
         <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 flex items-center gap-3">
           <MessageSquare className="h-5 w-5 text-warning" />
           <p className="text-cream text-sm">
-            <span className="font-semibold text-warning">{pendingCount}</span> avis en attente de modération
+            {t("adminReviews.table.pendingReview", { count: pendingCount })}
           </p>
         </div>
       )}
@@ -164,7 +166,7 @@ export function ReviewsTable({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
           <Input
-            placeholder="Rechercher un avis..."
+            placeholder={t("adminReviews.table.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
@@ -172,25 +174,25 @@ export function ReviewsTable({
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-44 bg-cream/5 border-gold/20 text-cream">
-            <SelectValue placeholder="Statut" />
+            <SelectValue placeholder={t("adminReviews.table.filterStatus")} />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/20">
-            <SelectItem value="all" className="text-cream">Tous les statuts</SelectItem>
-            <SelectItem value="pending" className="text-cream">En attente</SelectItem>
-            <SelectItem value="approved" className="text-cream">Approuvés</SelectItem>
+            <SelectItem value="all" className="text-cream">{t("adminReviews.table.allStatus")}</SelectItem>
+            <SelectItem value="pending" className="text-cream">{t("adminReviews.table.pending")}</SelectItem>
+            <SelectItem value="approved" className="text-cream">{t("adminReviews.table.approved")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={ratingFilter} onValueChange={setRatingFilter}>
           <SelectTrigger className="w-full sm:w-36 bg-cream/5 border-gold/20 text-cream">
-            <SelectValue placeholder="Note" />
+            <SelectValue placeholder={t("adminReviews.table.filterRating")} />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/20">
-            <SelectItem value="all" className="text-cream">Toutes les notes</SelectItem>
-            <SelectItem value="5" className="text-cream">5 étoiles</SelectItem>
-            <SelectItem value="4" className="text-cream">4 étoiles</SelectItem>
-            <SelectItem value="3" className="text-cream">3 étoiles</SelectItem>
-            <SelectItem value="2" className="text-cream">2 étoiles</SelectItem>
-            <SelectItem value="1" className="text-cream">1 étoile</SelectItem>
+            <SelectItem value="all" className="text-cream">{t("adminReviews.table.allRatings")}</SelectItem>
+            <SelectItem value="5" className="text-cream">{t("adminReviews.table.starCount", { count: 5 })}</SelectItem>
+            <SelectItem value="4" className="text-cream">{t("adminReviews.table.starCount", { count: 4 })}</SelectItem>
+            <SelectItem value="3" className="text-cream">{t("adminReviews.table.starCount", { count: 3 })}</SelectItem>
+            <SelectItem value="2" className="text-cream">{t("adminReviews.table.starCount", { count: 2 })}</SelectItem>
+            <SelectItem value="1" className="text-cream">{t("adminReviews.table.starCount", { count: 1 })}</SelectItem>
           </SelectContent>
         </Select>
         {hasActiveFilters && (
@@ -208,7 +210,7 @@ export function ReviewsTable({
           size="icon"
           onClick={exportToCSV}
           className="border-gold/20 text-cream hover:bg-cream/10"
-          title="Exporter en CSV"
+          title={t("adminReviews.table.exportCSV")}
         >
           <Download className="h-4 w-4" />
         </Button>
@@ -226,19 +228,19 @@ export function ReviewsTable({
       {filteredReviews.length === 0 ? (
         <div className="text-center py-12">
           <MessageSquare className="h-12 w-12 text-cream/30 mx-auto mb-4" />
-          <p className="text-cream/60">Aucun avis trouvé</p>
+          <p className="text-cream/60">{t("adminReviews.table.noReviews")}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-gold/20 hover:bg-transparent">
-                <TableHead className="text-cream/60">Produit</TableHead>
-                <TableHead className="text-cream/60">Note</TableHead>
-                <TableHead className="text-cream/60">Avis</TableHead>
-                <TableHead className="text-cream/60 text-center">Statut</TableHead>
-                <TableHead className="text-cream/60">Date</TableHead>
-                <TableHead className="text-cream/60 text-right">Actions</TableHead>
+                <TableHead className="text-cream/60">{t("adminReviews.table.headerProduct")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminReviews.table.headerRating")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminReviews.table.headerReview")}</TableHead>
+                <TableHead className="text-cream/60 text-center">{t("adminReviews.table.headerStatus")}</TableHead>
+                <TableHead className="text-cream/60">{t("adminReviews.table.headerDate")}</TableHead>
+                <TableHead className="text-cream/60 text-right">{t("adminReviews.table.headerActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -267,7 +269,7 @@ export function ReviewsTable({
                         </div>
                       )}
                       <p className="text-cream font-medium truncate max-w-[150px]">
-                        {review.product?.name || "Produit supprimé"}
+                        {review.product?.name || t("adminReviews.table.deletedProduct")}
                       </p>
                     </div>
                   </TableCell>
@@ -282,11 +284,11 @@ export function ReviewsTable({
                         </p>
                       )}
                       <p className="text-cream/60 text-xs truncate">
-                        {review.comment || "Aucun commentaire"}
+                        {review.comment || t("adminReviews.table.noComment")}
                       </p>
                       {review.is_verified_purchase && (
                         <Badge variant="outline" className="mt-1 text-[10px] border-info/30 text-info">
-                          Achat vérifié
+                          {t("adminReviews.table.verifiedPurchase")}
                         </Badge>
                       )}
                     </div>
@@ -297,7 +299,7 @@ export function ReviewsTable({
                         ? "bg-success/20 text-success border-success/30" 
                         : "bg-warning/20 text-warning border-warning/30"
                     } border`}>
-                      {review.is_approved ? "Approuvé" : "En attente"}
+                      {review.is_approved ? t("adminReviews.dialog.approved") : t("adminReviews.table.pending")}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -315,7 +317,7 @@ export function ReviewsTable({
                           onViewReview(review);
                         }}
                         className="h-8 w-8 text-cream/60 hover:text-cream hover:bg-cream/10"
-                        title="Voir"
+                        title={t("adminReviews.table.view")}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -328,7 +330,7 @@ export function ReviewsTable({
                             onApproveReview(review);
                           }}
                           className="h-8 w-8 text-success hover:text-success hover:bg-success/10"
-                          title="Approuver"
+                          title={t("adminReviews.table.approve")}
                         >
                           <CheckCircle className="h-4 w-4" />
                         </Button>
@@ -341,7 +343,7 @@ export function ReviewsTable({
                           onRejectReview(review);
                         }}
                         className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        title={review.is_approved ? "Désapprouver" : "Supprimer"}
+                        title={review.is_approved ? t("adminReviews.table.unapprove") : t("adminReviews.table.reject")}
                       >
                         <XCircle className="h-4 w-4" />
                       </Button>
@@ -355,7 +357,7 @@ export function ReviewsTable({
       )}
 
       <p className="text-cream/40 text-sm text-right">
-        {filteredReviews.length} avis
+        {t("adminReviews.table.count", { count: filteredReviews.length })}
       </p>
     </div>
   );
