@@ -7,8 +7,10 @@ import { useProducts } from "@/hooks/useProducts";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { optimizeProductImage } from "@/lib/imageOptimization";
+import { useTranslation } from "react-i18next";
 
 const FeaturedProducts = () => {
+  const { t } = useTranslation();
   const sectionRef = useRef<HTMLElement>(null);
   const formatPrice = useFormatPrice();
   const { data: products, isLoading } = useProducts({ featured: true, sortBy: "newest", limit: 4 });
@@ -48,7 +50,7 @@ const FeaturedProducts = () => {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block"
             >
-              Sélection Premium
+              {t("featuredSection.eyebrow")}
             </motion.span>
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
@@ -57,7 +59,7 @@ const FeaturedProducts = () => {
               transition={{ delay: 0.3, duration: 0.7 }}
               className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-noir leading-tight"
             >
-              Nos <span className="text-secondary">Nouveautés</span>
+              {t("featuredSection.titlePart1")} <span className="text-secondary">{t("featuredSection.titleHighlight")}</span>
             </motion.h2>
           </div>
           <motion.div
@@ -71,7 +73,7 @@ const FeaturedProducts = () => {
               to="/catalogue"
               className="inline-flex items-center gap-2 text-secondary font-medium hover:text-secondary/80 transition-colors group"
             >
-              Voir la collection
+              {t("featuredSection.viewCollection")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>
@@ -132,7 +134,7 @@ const FeaturedProducts = () => {
                           )}
                           {!inStock && (
                             <span className="px-3 py-1.5 bg-noir/80 text-cream text-xs font-medium rounded-full backdrop-blur-sm">
-                              Rupture
+                              {t("featuredSection.outOfStockBadge")}
                             </span>
                           )}
                         </div>
@@ -161,7 +163,7 @@ const FeaturedProducts = () => {
                             disabled={!inStock}
                           >
                             <ShoppingCart className="h-4 w-4 mr-2" />
-                            {inStock ? "Ajouter au panier" : "Indisponible"}
+                            {inStock ? t("featuredSection.addToCart") : t("featuredSection.unavailable")}
                           </Button>
                         </motion.div>
                       </div>
@@ -173,7 +175,7 @@ const FeaturedProducts = () => {
                             <Star className="h-4 w-4 text-primary fill-primary" />
                             <span className="text-sm font-medium text-foreground">{product.average_rating}</span>
                             {product.review_count > 0 && (
-                              <span className="text-xs text-muted-foreground">({product.review_count} avis)</span>
+                              <span className="text-xs text-muted-foreground">{t("featuredSection.reviewsCount", { count: product.review_count })}</span>
                             )}
                           </div>
                         )}

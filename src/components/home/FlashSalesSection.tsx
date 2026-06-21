@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { optimizeProductImage } from "@/lib/imageOptimization";
+import { useTranslation } from "react-i18next";
 
 function CountdownTimer({ endsAt }: { endsAt: string }) {
   const [timeLeft, setTimeLeft] = useState({
@@ -53,6 +54,7 @@ function CountdownTimer({ endsAt }: { endsAt: string }) {
 }
 
 export function FlashSalesSection() {
+  const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const { data: flashSales, isLoading } = useActiveFlashSales();
   const activeFlashSale = flashSales?.[0];
@@ -90,7 +92,7 @@ export function FlashSalesSection() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-cream/80">
               <Clock className="h-5 w-5 text-destructive" />
-              <span className="text-sm">Se termine dans :</span>
+              <span className="text-sm">{t("flashSales.endsIn")}</span>
             </div>
             <CountdownTimer endsAt={activeFlashSale.ends_at} />
           </div>
@@ -153,7 +155,7 @@ export function FlashSalesSection() {
                       </span>
                     </div>
                     <p className="text-xs text-success">
-                      Économisez {formatPrice(savings)}
+                      {t("flashSales.savings", { amount: formatPrice(savings) })}
                     </p>
                   </div>
                 </Link>
@@ -169,7 +171,7 @@ export function FlashSalesSection() {
               variant="outline"
               className="border-destructive/30 text-destructive hover:bg-destructive/10"
             >
-              Voir toutes les offres flash
+              {t("flashSales.viewAll")}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>

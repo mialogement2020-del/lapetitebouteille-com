@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
-
-const phoneSchema = z.string().trim().min(9, "Numéro invalide").max(15);
+import { useTranslation } from "react-i18next";
 
 export type PaymentMethod = "mtn_money" | "orange_money" | "cash_on_delivery";
 
@@ -15,37 +14,18 @@ interface PaymentMethodSelectProps {
 }
 
 const PAYMENT_METHODS = [
-  {
-    id: "mtn_money" as const,
-    name: "MTN Mobile Money",
-    description: "Paiement sécurisé via MTN MoMo",
-    icon: Smartphone,
-    color: "bg-yellow-500",
-    requiresPhone: true,
-  },
-  {
-    id: "orange_money" as const,
-    name: "Orange Money",
-    description: "Paiement sécurisé via Orange Money",
-    icon: Smartphone,
-    color: "bg-orange-500",
-    requiresPhone: true,
-  },
-  {
-    id: "cash_on_delivery" as const,
-    name: "Paiement à la livraison",
-    description: "Payez en espèces à la réception",
-    icon: Wallet,
-    color: "bg-green-600",
-    requiresPhone: false,
-  },
+  { id: "mtn_money" as const, nameKey: "mtnName", descKey: "mtnDesc", icon: Smartphone, color: "bg-yellow-500", requiresPhone: true },
+  { id: "orange_money" as const, nameKey: "orangeName", descKey: "orangeDesc", icon: Smartphone, color: "bg-orange-500", requiresPhone: true },
+  { id: "cash_on_delivery" as const, nameKey: "codName", descKey: "codDesc", icon: Wallet, color: "bg-green-600", requiresPhone: false },
 ];
 
 export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelectProps) {
+  const { t } = useTranslation();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [mobilePhone, setMobilePhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const phoneInputRef = useRef<HTMLInputElement>(null);
+  const phoneSchema = z.string().trim().min(9, t("payment.phoneInvalid")).max(15);
 
   // Auto-scroll to phone input when it appears
   useEffect(() => {
@@ -84,8 +64,8 @@ export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelect
           <CreditCard className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h2 className="font-display text-xl text-cream">Mode de paiement</h2>
-          <p className="text-cream/60 text-sm">Choisissez comment vous souhaitez payer</p>
+          <h2 className="font-display text-xl text-cream">{t("payment.title")}</h2>
+          <p className="text-cream/60 text-sm">{t("payment.subtitle")}</p>
         </div>
       </div>
 
@@ -105,8 +85,8 @@ export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelect
               <method.icon className="h-6 w-6 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-medium text-cream">{method.name}</p>
-              <p className="text-sm text-cream/60">{method.description}</p>
+              <p className="font-medium text-cream">{t(`payment.${method.nameKey}`)}</p>
+              <p className="text-sm text-cream/60">{t(`payment.${method.descKey}`)}</p>
             </div>
             {selectedMethod === method.id && (
               <CheckCircle2 className="h-6 w-6 text-primary" />
@@ -119,7 +99,7 @@ export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelect
       {selectedPayment?.requiresPhone && (
         <div className="space-y-2 animate-in fade-in slide-in-from-top-2 pt-2">
           <Label htmlFor="mobilePhone" className="text-cream/80 font-medium">
-            Numéro {selectedPayment.name}
+            {t("payment.phoneLabel", { name: t(`payment.${selectedPayment.nameKey}`) })}
           </Label>
           <div className="relative">
             <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
@@ -135,7 +115,7 @@ export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelect
                 setMobilePhone(e.target.value);
                 setPhoneError("");
               }}
-              placeholder="6 XX XX XX XX"
+              placeholder={t("payment.phonePlaceholder")}
               className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 focus:border-primary focus:ring-primary"
               aria-describedby="phone-hint"
             />
@@ -144,7 +124,7 @@ export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelect
             <p className="text-destructive text-sm" role="alert">{phoneError}</p>
           )}
           <p id="phone-hint" className="text-xs text-cream/50">
-            Vous recevrez une demande de paiement sur ce numéro
+            {t("payment.phoneHint")}
           </p>
         </div>
       )}
@@ -154,11 +134,11 @@ export function PaymentMethodSelect({ onSubmit, isLoading }: PaymentMethodSelect
         disabled={!selectedMethod || isLoading}
         className="w-full bg-gradient-gold text-noir font-semibold h-12"
       >
-        {isLoading ? "Traitement..." : "Confirmer la commande"}
+        {isLoading ? t("payment.processing") : t("payment.confirm")}
       </Button>
 
       <p className="text-xs text-center text-cream/50">
-        En confirmant, vous acceptez nos conditions générales de vente
+        {t("payment.termsNotice")}
       </p>
     </div>
   );

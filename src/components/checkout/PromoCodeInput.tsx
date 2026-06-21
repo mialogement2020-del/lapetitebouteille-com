@@ -5,14 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-
-// Validation schema for promo code
-const promoCodeSchema = z
-  .string()
-  .trim()
-  .min(1, "Veuillez entrer un code promo")
-  .max(20, "Code promo trop long")
-  .regex(/^[A-Z0-9]+$/i, "Code invalide");
+import { useTranslation } from "react-i18next";
 
 export interface AppliedPromoCode {
   code: string;
@@ -35,9 +28,17 @@ export function PromoCodeInput({
   onApply,
   onRemove,
 }: PromoCodeInputProps) {
+  const { t } = useTranslation();
   const [code, setCode] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const promoCodeSchema = z
+    .string()
+    .trim()
+    .min(1, t("codeInput.errEmpty"))
+    .max(20, t("codeInput.errTooLong"))
+    .regex(/^[A-Z0-9]+$/i, t("codeInput.errInvalidChars"));
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("fr-FR").format(price);
@@ -89,19 +90,19 @@ export function PromoCodeInput({
       if (dbError) throw dbError;
 
       if (!promoCode) {
-        setError("Code promo invalide ou expiré");
+        setError(t("codeInput.errPromoInvalid"));
         return;
       }
 
       // Check validity dates
       const now = new Date();
       if (promoCode.valid_from && new Date(promoCode.valid_from) > now) {
-        setError("Ce code promo n'est pas encore valide");
+        setError(t("codeInput.errPromoNotYet"));
         return;
       }
 
       if (promoCode.valid_until && new Date(promoCode.valid_until) < now) {
-        setError("Ce code promo a expiré");
+        setError(t("codeInput.errPromoExpired"));
         return;
       }
 
@@ -110,15 +111,13 @@ export function PromoCodeInput({
         promoCode.usage_limit &&
         (promoCode.used_count || 0) >= promoCode.usage_limit
       ) {
-        setError("Ce code promo a atteint sa limite d'utilisation");
+        setError(t("codeInput.errPromoLimit"));
         return;
       }
 
       // Check minimum order amount
       if (promoCode.min_order_amount && subtotal < promoCode.min_order_amount) {
-        setError(
-          `Commande minimum de ${formatPrice(promoCode.min_order_amount)} FCFA requise`
-        );
+        setError(t("codeInput.errMinOrder", { amount: formatPrice(promoCode.min_order_amount) }));
         return;
       }
 
@@ -140,14 +139,14 @@ export function PromoCodeInput({
       });
 
       toast({
-        title: "Code promo appliqué !",
-        description: `Vous économisez ${formatPrice(discountAmount)} FCFA`,
+        title: t("codeInput.appliedPromoTitle"),
+        description: t("codeInput.appliedPromoDesc", { amount: formatPrice(discountAmount) }),
       });
 
       setCode("");
     } catch (err: any) {
       console.error("Error validating promo code:", err);
-      setError("Une erreur est survenue lors de la validation");
+      setError(t("codeInput.errValidation"));
     } finally {
       setIsValidating(false);
     }
@@ -156,8 +155,8 @@ export function PromoCodeInput({
   const handleRemove = () => {
     onRemove();
     toast({
-      title: "Code promo retiré",
-      description: "La réduction a été supprimée",
+      title: t("codeInput.removedPromoTitle"),
+      description: t("codeInput.removedPromoDesc"),
     });
   };
 
@@ -190,11 +189,11 @@ export function PromoCodeInput({
         </div>
         <p className="text-xs text-green-400/80 mt-1">
           {appliedCode.discountType === "percentage"
-            ? `${appliedCode.discountValue}% de réduction`
-            : `${formatPrice(appliedCode.discountValue)} FCFA de réduction`}
+            ? t("codeInput.percentReduction", { value: appliedCode.discountValue })
+            : t("codeInput.fixedReduction", { value: formatPrice(appliedCode.discountValue) })}
           {appliedCode.maxDiscountAmount &&
             appliedCode.discountType === "percentage" &&
-            ` (max ${formatPrice(appliedCode.maxDiscountAmount)} FCFA)`}
+            t("codeInput.maxReduction", { value: formatPrice(appliedCode.maxDiscountAmount) })}
         </p>
       </div>
     );
@@ -212,7 +211,7 @@ export function PromoCodeInput({
               setError(null);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Code promo"
+            placeholder={t("codeInput.placeholderPromo")}
             className="pl-9 bg-noir/50 border-gold/20 font-mono uppercase"
             maxLength={20}
             disabled={isValidating}
@@ -227,7 +226,7 @@ export function PromoCodeInput({
           {isValidating ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            "Appliquer"
+            t("codeInput.apply")
           )}
         </Button>
       </div>

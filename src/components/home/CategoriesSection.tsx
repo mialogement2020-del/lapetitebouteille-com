@@ -2,46 +2,18 @@
  import { Link } from "react-router-dom";
  import { ArrowRight } from "lucide-react";
  import { useRef } from "react";
+ import { useTranslation } from "react-i18next";
  
-const categories = [
-  {
-    id: "vins",
-    title: "Vins",
-    description: "Grands crus et appellations prestigieuses",
-    image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?auto=format&fit=crop&q=72&w=520",
-    href: "/catalogue?category=vins",
-  },
-  {
-    id: "champagnes",
-    title: "Champagnes",
-    description: "Les plus grandes maisons françaises",
-    image: "https://images.unsplash.com/photo-1578911373434-0cb395d2cbfb?auto=format&fit=crop&q=72&w=520",
-    href: "/catalogue?category=champagnes",
-  },
-  {
-    id: "spiritueux",
-    title: "Spiritueux",
-    description: "Whisky, Cognac, Rhum d'exception",
-    image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?auto=format&fit=crop&q=72&w=520",
-    href: "/catalogue?category=spiritueux",
-  },
-  {
-    id: "vins-mousseux",
-    title: "Vins Mousseux",
-    description: "Prosecco, Cava, Crémant et bulles du monde",
-    image: "https://images.unsplash.com/photo-1549834125-82d3c48159a3?auto=format&fit=crop&q=72&w=520",
-    href: "/catalogue?category=vins-mousseux",
-  },
-  {
-    id: "coffrets",
-    title: "Coffrets Cadeaux",
-    description: "L'art du cadeau raffiné",
-    image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?auto=format&fit=crop&q=72&w=520",
-    href: "/catalogue?category=coffrets",
-  },
+const categoriesData = [
+  { id: "vins", key: "vins", image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=vins" },
+  { id: "champagnes", key: "champagnes", image: "https://images.unsplash.com/photo-1578911373434-0cb395d2cbfb?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=champagnes" },
+  { id: "spiritueux", key: "spiritueux", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=spiritueux" },
+  { id: "vins-mousseux", key: "vinsMousseux", image: "https://images.unsplash.com/photo-1549834125-82d3c48159a3?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=vins-mousseux" },
+  { id: "coffrets", key: "coffrets", image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=coffrets" },
 ];
  
  const CategoriesSection = () => {
+   const { t } = useTranslation();
    const sectionRef = useRef<HTMLElement>(null);
    
    const { scrollYProgress } = useScroll({
@@ -73,7 +45,7 @@ const categories = [
              transition={{ delay: 0.2, duration: 0.6 }}
              className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block"
            >
-             Collections
+              {t("categoriesSection.eyebrow")}
            </motion.span>
            <motion.h2 
              initial={{ opacity: 0, y: 30 }}
@@ -82,10 +54,10 @@ const categories = [
              transition={{ delay: 0.3, duration: 0.7 }}
              className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-noir mb-6"
            >
-             Explorez nos <span className="text-secondary">Univers</span>
+              {t("categoriesSection.titlePart1")} <span className="text-secondary">{t("categoriesSection.titleHighlight")}</span>
            </motion.h2>
            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-             Une sélection rigoureuse pour les palais les plus exigeants
+              {t("categoriesSection.subtitle")}
            </p>
          </motion.div>
  
@@ -94,7 +66,10 @@ const categories = [
             className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-6"
            style={{ scale, opacity }}
          >
-           {categories.map((category, index) => (
+            {categoriesData.map((category, index) => {
+              const title = t(`categoriesSection.${category.key}`);
+              const description = t(`categoriesSection.${category.key}Desc`);
+              return (
              <motion.div
                key={category.id}
                initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -114,7 +89,7 @@ const categories = [
                  {/* Image */}
                  <img
                    src={category.image}
-                   alt={category.title}
+                    alt={title}
                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"
                     decoding="async"
@@ -131,13 +106,13 @@ const categories = [
                      transition={{ delay: 0.2 + index * 0.1 }}
                    >
                      <h3 className="font-display text-3xl font-semibold text-cream mb-3 group-hover:text-primary transition-colors">
-                       {category.title}
+                        {title}
                      </h3>
                      <p className="text-cream/70 text-sm mb-5">
-                       {category.description}
+                        {description}
                      </p>
                      <div className="flex items-center text-primary font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                       Découvrir
+                        {t("categoriesSection.discover")}
                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-2" />
                      </div>
                    </motion.div>
@@ -147,7 +122,8 @@ const categories = [
                  <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-primary/30 transition-all duration-500" />
                </Link>
              </motion.div>
-           ))}
+              );
+            })}
          </motion.div>
        </div>
      </section>

@@ -7,8 +7,10 @@ import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
 import { optimizeProductImage } from "@/lib/imageOptimization";
+import { useTranslation } from "react-i18next";
 
 const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; categoryName: string }) => {
+  const { t } = useTranslation();
   const rowRef = useRef<HTMLDivElement>(null);
   const formatPrice = useFormatPrice();
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -51,7 +53,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
           to={`/catalogue?category=${categorySlug}`}
           className="inline-flex items-center gap-1.5 text-sm text-secondary font-medium hover:text-secondary/80 transition-colors group"
         >
-          Tout voir
+          {t("categoryRow.seeAll")}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Link>
       </motion.div>
@@ -99,7 +101,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
                         )}
                         {!inStock && (
                           <span className="absolute top-2 right-2 px-2 py-1 bg-noir/80 text-cream text-[10px] font-medium rounded-full backdrop-blur-sm">
-                            Rupture
+                            {t("categoryRow.outOfStockBadge")}
                           </span>
                         )}
                       </div>
@@ -140,6 +142,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
 };
 
 const CategoryProductsSection = () => {
+  const { t } = useTranslation();
   const { data: categories, isLoading } = useCategories();
 
   if (isLoading || !categories || categories.length === 0) return null;
@@ -155,10 +158,10 @@ const CategoryProductsSection = () => {
           className="text-center mb-14"
         >
           <span className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block">
-            Notre Catalogue
+            {t("categoryRow.sectionEyebrow")}
           </span>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-foreground">
-            Découvrez nos <span className="text-secondary">Produits</span>
+            {t("categoryRow.sectionTitlePart1")} <span className="text-secondary">{t("categoryRow.sectionTitleHighlight")}</span>
           </h2>
         </motion.div>
 
