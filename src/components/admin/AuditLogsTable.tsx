@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import {
   History,
   User,
@@ -103,30 +104,6 @@ const entityIcons: Record<string, React.ElementType> = {
   settings: Settings,
 };
 
-const actionLabels: Record<string, string> = {
-  create: "Création",
-  update: "Modification",
-  delete: "Suppression",
-  approve: "Approbation",
-  reject: "Rejet",
-  restock: "Réapprovisionnement",
-  status_change: "Changement de statut",
-  export: "Export",
-  login: "Connexion",
-};
-
-const entityLabels: Record<string, string> = {
-  product: "Produit",
-  category: "Catégorie",
-  order: "Commande",
-  review: "Avis",
-  promo_code: "Code promo",
-  user: "Utilisateur",
-  stock: "Stock",
-  report: "Rapport",
-  settings: "Paramètres",
-};
-
 const actionColors: Record<string, string> = {
   create: "text-success bg-success/10 border-success/30",
   update: "text-info bg-info/10 border-info/30",
@@ -140,6 +117,30 @@ const actionColors: Record<string, string> = {
 };
 
 export function AuditLogsTable() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language?.startsWith("en") ? enUS : fr;
+  const actionLabels: Record<string, string> = {
+    create: t("adminAuditExtra.actionLabels.create"),
+    update: t("adminAuditExtra.actionLabels.update"),
+    delete: t("adminAuditExtra.actionLabels.delete"),
+    approve: t("adminAuditExtra.actionLabels.approve"),
+    reject: t("adminAuditExtra.actionLabels.reject"),
+    restock: t("adminAuditExtra.actionLabels.restock"),
+    status_change: t("adminAuditExtra.actionLabels.status_change"),
+    export: t("adminAuditExtra.actionLabels.export"),
+    login: t("adminAuditExtra.actionLabels.login"),
+  };
+  const entityLabels: Record<string, string> = {
+    product: t("adminAuditExtra.entityLabels.product"),
+    category: t("adminAuditExtra.entityLabels.category"),
+    order: t("adminAuditExtra.entityLabels.order"),
+    review: t("adminAuditExtra.entityLabels.review"),
+    promo_code: t("adminAuditExtra.entityLabels.promo_code"),
+    user: t("adminAuditExtra.entityLabels.user"),
+    stock: t("adminAuditExtra.entityLabels.stock"),
+    report: t("adminAuditExtra.entityLabels.report"),
+    settings: t("adminAuditExtra.entityLabels.settings"),
+  };
   const [entityFilter, setEntityFilter] = useState<AuditEntityType | "all">("all");
   const [actionFilter, setActionFilter] = useState<AuditAction | "all">("all");
   const [userFilter, setUserFilter] = useState<string>("all");
@@ -176,18 +177,18 @@ export function AuditLogsTable() {
 
   const handleExportCSV = async () => {
     if (logs.length === 0) {
-      toast.error("Aucune donnée à exporter");
+      toast.error(t("adminAuditExtra.toastNoData"));
       return;
     }
 
     setIsExporting(true);
     try {
       exportAuditLogsToCSV(logs);
-      await logAuditAction("export", "report", undefined, "Export CSV - Journal d'audit");
-      toast.success("Export CSV généré avec succès");
+      await logAuditAction("export", "report", undefined, t("adminAuditExtra.auditExportCSVLabel"));
+      toast.success(t("adminAuditExtra.toastCSVSuccess"));
     } catch (error) {
       console.error("Error exporting CSV:", error);
-      toast.error("Erreur lors de l'export CSV");
+      toast.error(t("adminAuditExtra.toastCSVError"));
     } finally {
       setIsExporting(false);
     }
@@ -195,18 +196,18 @@ export function AuditLogsTable() {
 
   const handleExportPDF = async () => {
     if (logs.length === 0) {
-      toast.error("Aucune donnée à exporter");
+      toast.error(t("adminAuditExtra.toastNoData"));
       return;
     }
 
     setIsExporting(true);
     try {
       exportAuditLogsToPDF(logs);
-      await logAuditAction("export", "report", undefined, "Export PDF - Journal d'audit");
-      toast.success("Rapport PDF généré avec succès");
+      await logAuditAction("export", "report", undefined, t("adminAuditExtra.auditExportPDFLabel"));
+      toast.success(t("adminAuditExtra.toastPDFSuccess"));
     } catch (error) {
       console.error("Error exporting PDF:", error);
-      toast.error("Erreur lors de l'export PDF");
+      toast.error(t("adminAuditExtra.toastPDFError"));
     } finally {
       setIsExporting(false);
     }
@@ -250,15 +251,15 @@ export function AuditLogsTable() {
                 <div className="flex items-center gap-3">
                   <History className="h-5 w-5 text-gold" />
                   <div>
-                    <CardTitle className="text-lg text-cream">Journal d'audit</CardTitle>
+                    <CardTitle className="text-lg text-cream">{t("adminAuditExtra.title")}</CardTitle>
                     <CardDescription className="text-cream/60">
-                      Historique des actions administratives
+                      {t("adminAuditExtra.description")}
                     </CardDescription>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge variant="outline" className="text-xs border-gold/30 text-cream/70">
-                    {totalCount} entrée{totalCount > 1 ? "s" : ""}
+                    {t("adminAuditExtra.entriesCount", { count: totalCount })}
                   </Badge>
                   {isExpanded ? (
                     <ChevronUp className="h-5 w-5 text-cream/50" />
@@ -276,25 +277,25 @@ export function AuditLogsTable() {
               <div className="flex flex-wrap items-center gap-3 mb-3">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-cream/50" />
-                  <span className="text-sm text-cream/60">Filtres:</span>
+                  <span className="text-sm text-cream/60">{t("adminAuditExtra.filters")}</span>
                 </div>
                 <Select
                   value={entityFilter}
                   onValueChange={(v) => handleFilterChange(setEntityFilter, v as AuditEntityType | "all")}
                 >
                   <SelectTrigger className="w-[140px] h-8 text-xs border-gold/30 bg-noir">
-                    <SelectValue placeholder="Type" />
+                    <SelectValue placeholder={t("adminAuditExtra.th.type")} />
                   </SelectTrigger>
                   <SelectContent className="bg-noir border-gold/30">
-                    <SelectItem value="all">Tous les types</SelectItem>
-                    <SelectItem value="product">Produits</SelectItem>
-                    <SelectItem value="order">Commandes</SelectItem>
-                    <SelectItem value="review">Avis</SelectItem>
-                    <SelectItem value="category">Catégories</SelectItem>
-                    <SelectItem value="promo_code">Codes promo</SelectItem>
-                    <SelectItem value="stock">Stock</SelectItem>
-                    <SelectItem value="report">Rapports</SelectItem>
-                    <SelectItem value="settings">Paramètres</SelectItem>
+                    <SelectItem value="all">{t("adminAuditExtra.allTypes")}</SelectItem>
+                    <SelectItem value="product">{t("adminAuditExtra.entityLabels.products")}</SelectItem>
+                    <SelectItem value="order">{t("adminAuditExtra.entityLabels.orders")}</SelectItem>
+                    <SelectItem value="review">{t("adminAuditExtra.entityLabels.reviews")}</SelectItem>
+                    <SelectItem value="category">{t("adminAuditExtra.entityLabels.categories")}</SelectItem>
+                    <SelectItem value="promo_code">{t("adminAuditExtra.entityLabels.promo_codes")}</SelectItem>
+                    <SelectItem value="stock">{t("adminAuditExtra.entityLabels.stock")}</SelectItem>
+                    <SelectItem value="report">{t("adminAuditExtra.entityLabels.reports")}</SelectItem>
+                    <SelectItem value="settings">{t("adminAuditExtra.entityLabels.settings")}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -303,18 +304,18 @@ export function AuditLogsTable() {
                   onValueChange={(v) => handleFilterChange(setActionFilter, v as AuditAction | "all")}
                 >
                   <SelectTrigger className="w-[140px] h-8 text-xs border-gold/30 bg-noir">
-                    <SelectValue placeholder="Action" />
+                    <SelectValue placeholder={t("adminAuditExtra.th.action")} />
                   </SelectTrigger>
                   <SelectContent className="bg-noir border-gold/30">
-                    <SelectItem value="all">Toutes les actions</SelectItem>
-                    <SelectItem value="create">Création</SelectItem>
-                    <SelectItem value="update">Modification</SelectItem>
-                    <SelectItem value="delete">Suppression</SelectItem>
-                    <SelectItem value="approve">Approbation</SelectItem>
-                    <SelectItem value="reject">Rejet</SelectItem>
-                    <SelectItem value="restock">Réapprovisionnement</SelectItem>
-                    <SelectItem value="status_change">Changement statut</SelectItem>
-                    <SelectItem value="export">Export</SelectItem>
+                    <SelectItem value="all">{t("adminAuditExtra.allActions")}</SelectItem>
+                    <SelectItem value="create">{actionLabels.create}</SelectItem>
+                    <SelectItem value="update">{actionLabels.update}</SelectItem>
+                    <SelectItem value="delete">{actionLabels.delete}</SelectItem>
+                    <SelectItem value="approve">{actionLabels.approve}</SelectItem>
+                    <SelectItem value="reject">{actionLabels.reject}</SelectItem>
+                    <SelectItem value="restock">{actionLabels.restock}</SelectItem>
+                    <SelectItem value="status_change">{actionLabels.status_change}</SelectItem>
+                    <SelectItem value="export">{actionLabels.export}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -325,10 +326,10 @@ export function AuditLogsTable() {
                 >
                   <SelectTrigger className="w-[180px] h-8 text-xs border-gold/30 bg-noir">
                     <User className="h-3 w-3 mr-1" />
-                    <SelectValue placeholder="Utilisateur" />
+                    <SelectValue placeholder={t("adminAuditExtra.th.user")} />
                   </SelectTrigger>
                   <SelectContent className="bg-noir border-gold/30">
-                    <SelectItem value="all">Tous les utilisateurs</SelectItem>
+                    <SelectItem value="all">{t("adminAuditExtra.allUsers")}</SelectItem>
                     {uniqueUsers.map((email) => (
                       <SelectItem key={email} value={email}>
                         <span className="truncate max-w-[150px]">{email}</span>
@@ -342,7 +343,7 @@ export function AuditLogsTable() {
               <div className="flex flex-wrap items-center gap-3 mb-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-cream/50" />
-                  <span className="text-sm text-cream/60">Période:</span>
+                  <span className="text-sm text-cream/60">{t("adminAuditExtra.period")}</span>
                 </div>
 
                 {/* Date From */}
@@ -354,7 +355,7 @@ export function AuditLogsTable() {
                       className="h-8 text-xs border-gold/30 bg-noir text-cream hover:bg-gold/10 w-[130px] justify-start"
                     >
                       <Calendar className="h-3 w-3 mr-1" />
-                      {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Du..."}
+                      {dateFrom ? format(dateFrom, "dd/MM/yyyy") : t("adminAuditExtra.from")}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 bg-noir border-gold/30" align="start">
@@ -363,7 +364,7 @@ export function AuditLogsTable() {
                       selected={dateFrom}
                       onSelect={(date) => handleFilterChange(setDateFrom, date)}
                       initialFocus
-                      locale={fr}
+                      locale={dateLocale}
                     />
                   </PopoverContent>
                 </Popover>
@@ -377,7 +378,7 @@ export function AuditLogsTable() {
                       className="h-8 text-xs border-gold/30 bg-noir text-cream hover:bg-gold/10 w-[130px] justify-start"
                     >
                       <Calendar className="h-3 w-3 mr-1" />
-                      {dateTo ? format(dateTo, "dd/MM/yyyy") : "Au..."}
+                      {dateTo ? format(dateTo, "dd/MM/yyyy") : t("adminAuditExtra.to")}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 bg-noir border-gold/30" align="start">
@@ -386,7 +387,7 @@ export function AuditLogsTable() {
                       selected={dateTo}
                       onSelect={(date) => handleFilterChange(setDateTo, date)}
                       initialFocus
-                      locale={fr}
+                      locale={dateLocale}
                     />
                   </PopoverContent>
                 </Popover>
@@ -399,7 +400,7 @@ export function AuditLogsTable() {
                     className="h-8 text-xs text-cream/60 hover:text-cream"
                   >
                     <X className="h-3 w-3 mr-1" />
-                    Effacer dates
+                    {t("adminAuditExtra.clearDates")}
                   </Button>
                 )}
 
@@ -411,7 +412,7 @@ export function AuditLogsTable() {
                     className="h-8 text-xs text-cream/60 hover:text-cream"
                   >
                     <RefreshCcw className="h-3 w-3 mr-1" />
-                    Actualiser
+                    {t("adminAuditExtra.refresh")}
                   </Button>
 
                   {/* Export dropdown */}
@@ -428,7 +429,7 @@ export function AuditLogsTable() {
                         ) : (
                           <Download className="h-3 w-3 mr-1" />
                         )}
-                        Exporter
+                        {t("adminAuditExtra.export")}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-noir border-gold/30">
@@ -437,14 +438,14 @@ export function AuditLogsTable() {
                         className="text-cream hover:bg-gold/10 cursor-pointer"
                       >
                         <FileSpreadsheet className="h-4 w-4 mr-2 text-success" />
-                        Exporter en CSV
+                        {t("adminAuditExtra.exportCSV")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleExportPDF}
                         className="text-cream hover:bg-gold/10 cursor-pointer"
                       >
                         <FileText className="h-4 w-4 mr-2 text-destructive" />
-                        Exporter en PDF
+                        {t("adminAuditExtra.exportPDF")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -456,18 +457,18 @@ export function AuditLogsTable() {
                 {logs.length === 0 ? (
                   <div className="text-center py-12 text-cream/50">
                     <History className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm">Aucune entrée dans le journal</p>
-                    <p className="text-xs mt-1">Les actions administratives apparaîtront ici</p>
+                    <p className="text-sm">{t("adminAuditExtra.noEntry")}</p>
+                    <p className="text-xs mt-1">{t("adminAuditExtra.noEntryDesc")}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow className="border-gold/20 hover:bg-transparent">
-                        <TableHead className="text-cream/70 w-[180px]">Date</TableHead>
-                        <TableHead className="text-cream/70">Action</TableHead>
-                        <TableHead className="text-cream/70">Type</TableHead>
-                        <TableHead className="text-cream/70">Élément</TableHead>
-                        <TableHead className="text-cream/70">Utilisateur</TableHead>
+                        <TableHead className="text-cream/70 w-[180px]">{t("adminAuditExtra.th.date")}</TableHead>
+                        <TableHead className="text-cream/70">{t("adminAuditExtra.th.action")}</TableHead>
+                        <TableHead className="text-cream/70">{t("adminAuditExtra.th.type")}</TableHead>
+                        <TableHead className="text-cream/70">{t("adminAuditExtra.th.item")}</TableHead>
+                        <TableHead className="text-cream/70">{t("adminAuditExtra.th.user")}</TableHead>
                         <TableHead className="text-cream/70 w-[60px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -485,7 +486,7 @@ export function AuditLogsTable() {
                             <TableCell className="text-cream/80 text-sm">
                               <div className="flex flex-col">
                                 <span>
-                                  {format(new Date(log.created_at), "dd MMM yyyy", { locale: fr })}
+                                  {format(new Date(log.created_at), "dd MMM yyyy", { locale: dateLocale })}
                                 </span>
                                 <span className="text-xs text-cream/50">
                                   {format(new Date(log.created_at), "HH:mm:ss")}
@@ -516,7 +517,7 @@ export function AuditLogsTable() {
                               <div className="flex items-center gap-2">
                                 <User className="h-3 w-3" />
                                 <span className="truncate max-w-[150px]">
-                                  {log.user_email || "Inconnu"}
+                                  {log.user_email || t("adminAuditExtra.unknown")}
                                 </span>
                               </div>
                             </TableCell>
@@ -541,7 +542,7 @@ export function AuditLogsTable() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gold/10">
                   <div className="text-xs text-cream/50">
-                    Page {currentPage} sur {totalPages} ({totalCount} entrées)
+                    {t("adminAuditExtra.pageInfo", { current: currentPage, total: totalPages, count: totalCount })}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -552,7 +553,7 @@ export function AuditLogsTable() {
                       className="h-8 text-xs border-gold/30 text-cream hover:bg-gold/10 disabled:opacity-50"
                     >
                       <ChevronLeft className="h-3 w-3 mr-1" />
-                      Précédent
+                      {t("adminAuditExtra.prev")}
                     </Button>
                     
                     {/* Page numbers */}
@@ -593,7 +594,7 @@ export function AuditLogsTable() {
                       disabled={currentPage === totalPages}
                       className="h-8 text-xs border-gold/30 text-cream hover:bg-gold/10 disabled:opacity-50"
                     >
-                      Suivant
+                      {t("adminAuditExtra.next")}
                       <ChevronRight className="h-3 w-3 ml-1" />
                     </Button>
                   </div>
@@ -610,10 +611,10 @@ export function AuditLogsTable() {
           <DialogHeader>
             <DialogTitle className="text-cream flex items-center gap-2">
               <History className="h-5 w-5 text-gold" />
-              Détails de l'action
+              {t("adminAuditExtra.detailTitle")}
             </DialogTitle>
             <DialogDescription className="text-cream/60">
-              Informations complètes sur cette entrée du journal d'audit
+              {t("adminAuditExtra.detailDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -622,19 +623,19 @@ export function AuditLogsTable() {
               {/* Summary */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs text-cream/50">Date et heure</p>
+                  <p className="text-xs text-cream/50">{t("adminAuditExtra.dateTime")}</p>
                   <p className="text-sm text-cream">
                     {format(new Date(selectedLog.created_at), "EEEE d MMMM yyyy à HH:mm:ss", {
-                      locale: fr,
+                      locale: dateLocale,
                     })}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-cream/50">Utilisateur</p>
-                  <p className="text-sm text-cream">{selectedLog.user_email || "Inconnu"}</p>
+                  <p className="text-xs text-cream/50">{t("adminAuditExtra.user")}</p>
+                  <p className="text-sm text-cream">{selectedLog.user_email || t("adminAuditExtra.unknown")}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-cream/50">Action</p>
+                  <p className="text-xs text-cream/50">{t("adminAuditExtra.action")}</p>
                   <Badge
                     variant="outline"
                     className={`text-xs ${actionColors[selectedLog.action] || "text-cream/70"}`}
@@ -643,14 +644,14 @@ export function AuditLogsTable() {
                   </Badge>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-cream/50">Type d'élément</p>
+                  <p className="text-xs text-cream/50">{t("adminAuditExtra.entityType")}</p>
                   <p className="text-sm text-cream">
                     {entityLabels[selectedLog.entity_type] || selectedLog.entity_type}
                   </p>
                 </div>
                 {selectedLog.entity_name && (
                   <div className="col-span-2 space-y-1">
-                    <p className="text-xs text-cream/50">Élément concerné</p>
+                    <p className="text-xs text-cream/50">{t("adminAuditExtra.entityName")}</p>
                     <p className="text-sm text-cream">{selectedLog.entity_name}</p>
                   </div>
                 )}
@@ -659,7 +660,7 @@ export function AuditLogsTable() {
               {/* Changes with Diff View */}
               {(selectedLog.old_values || selectedLog.new_values) && (
                 <div className="space-y-2">
-                  <p className="text-xs text-cream/50 font-medium">Détail des modifications</p>
+                  <p className="text-xs text-cream/50 font-medium">{t("adminAuditExtra.changes")}</p>
                   <AuditLogDiffView 
                     oldValues={selectedLog.old_values} 
                     newValues={selectedLog.new_values} 

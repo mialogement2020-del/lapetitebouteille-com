@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -25,9 +26,10 @@ export function TwoFAVerifyDialog({
   onOpenChange,
   onVerify,
   loading,
-  title = "Vérification 2FA requise",
-  description = "Cette action nécessite une vérification de sécurité supplémentaire"
+  title,
+  description
 }: TwoFAVerifyDialogProps) {
+  const { t } = useTranslation();
   const [code, setCode] = useState("");
   const [useBackup, setUseBackup] = useState(false);
 
@@ -58,9 +60,9 @@ export function TwoFAVerifyDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
-            {title}
+            {title ?? t("admin2FA.verifyTitle")}
           </DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription>{description ?? t("admin2FA.verifyDesc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
@@ -68,7 +70,7 @@ export function TwoFAVerifyDialog({
             <div className="space-y-2">
               <Label htmlFor="backup-code" className="flex items-center gap-2">
                 <Key className="h-4 w-4" />
-                Code de secours
+                {t("admin2FA.backupCode")}
               </Label>
               <Input
                 id="backup-code"
@@ -80,12 +82,12 @@ export function TwoFAVerifyDialog({
                 maxLength={9}
               />
               <p className="text-xs text-muted-foreground">
-                Format : XXXX-XXXX (8 caractères hexadécimaux)
+                {t("admin2FA.backupCodeFormat")}
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="totp-code">Code d'authentification</Label>
+              <Label htmlFor="totp-code">{t("admin2FA.authCode")}</Label>
               <Input
                 id="totp-code"
                 type="text"
@@ -99,7 +101,7 @@ export function TwoFAVerifyDialog({
                 autoFocus
               />
               <p className="text-xs text-muted-foreground">
-                Entrez le code à 6 chiffres de votre application d'authentification
+                {t("admin2FA.enter6Digits")}
               </p>
             </div>
           )}
@@ -110,7 +112,7 @@ export function TwoFAVerifyDialog({
               disabled={loading || (useBackup ? !/^[A-F0-9]{4}-[A-F0-9]{4}$/i.test(code) : code.length !== 6)}
               className="w-full"
             >
-              {loading ? "Vérification..." : "Vérifier"}
+              {loading ? t("admin2FA.verifying") : t("admin2FA.verifyBtn")}
             </Button>
             
             <Button
@@ -122,10 +124,7 @@ export function TwoFAVerifyDialog({
               }}
               className="text-xs"
             >
-              {useBackup 
-                ? "Utiliser le code d'authentification" 
-                : "Utiliser un code de secours"
-              }
+              {useBackup ? t("admin2FA.useAuthCode") : t("admin2FA.useBackupCode")}
             </Button>
           </div>
         </div>
