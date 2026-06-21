@@ -1819,7 +1819,7 @@
       "statusTreated": "traitée",
       "statusRejected": "refusée"
     }
-  }
+  },
   "adminStock": {
     "dashboard": "Tableau de bord des stocks",
     "outOfStock": "Rupture de stock",

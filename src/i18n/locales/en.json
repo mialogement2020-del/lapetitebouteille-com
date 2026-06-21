@@ -1819,7 +1819,7 @@
       "statusTreated": "processed",
       "statusRejected": "rejected"
     }
-  }
+  },
   "adminStock": {
     "dashboard": "Stock Dashboard",
     "outOfStock": "Out of stock",
