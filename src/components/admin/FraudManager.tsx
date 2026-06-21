@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFraudDetection, type ReviewStatus } from "@/hooks/useFraudDetection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ const levelColor: Record<string, string> = {
 };
 
 export function FraudManager() {
+  const { t } = useTranslation();
   const {
     scores,
     scoresLoading,
@@ -63,7 +65,7 @@ export function FraudManager() {
         {(["low", "medium", "high", "critical"] as const).map((l) => (
           <Card key={l} className="bg-noir-light/40 border-gold/20">
             <CardContent className="p-4">
-              <div className="text-xs text-cream/60 uppercase">{l}</div>
+              <div className="text-xs text-cream/60 uppercase">{t(`adminFraudExtra.risk.${l}`)}</div>
               <div className="text-2xl font-bold text-cream">{counts[l] ?? 0}</div>
             </CardContent>
           </Card>
@@ -72,35 +74,35 @@ export function FraudManager() {
 
       <Tabs defaultValue="scores">
         <TabsList>
-          <TabsTrigger value="scores">Scores</TabsTrigger>
-          <TabsTrigger value="rules">Règles</TabsTrigger>
-          <TabsTrigger value="blocked">Blocages</TabsTrigger>
+          <TabsTrigger value="scores">{t("adminFraudExtra.tabs.scores")}</TabsTrigger>
+          <TabsTrigger value="rules">{t("adminFraudExtra.tabs.rules")}</TabsTrigger>
+          <TabsTrigger value="blocked">{t("adminFraudExtra.tabs.blocked")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="scores">
           <Card className="bg-noir-light/40 border-gold/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-cream">
-                <ShieldAlert className="h-5 w-5" /> Commandes à risque
+                <ShieldAlert className="h-5 w-5" /> {t("adminFraud.riskOrders")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {scoresLoading ? (
-                <div className="text-cream/60">Chargement…</div>
+                <div className="text-cream/60">{t("adminFraudExtra.loading")}</div>
               ) : scores.length === 0 ? (
-                <div className="text-cream/60">Aucun score disponible.</div>
+                <div className="text-cream/60">{t("adminFraudExtra.noScores")}</div>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Commande</TableHead>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead>Score</TableHead>
-                        <TableHead>Facteurs</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead>{t("adminFraudExtra.table.order")}</TableHead>
+                        <TableHead>{t("adminFraudExtra.table.client")}</TableHead>
+                        <TableHead>{t("adminFraudExtra.table.total")}</TableHead>
+                        <TableHead>{t("adminFraudExtra.table.score")}</TableHead>
+                        <TableHead>{t("adminFraudExtra.table.factors")}</TableHead>
+                        <TableHead>{t("adminFraudExtra.table.status")}</TableHead>
+                        <TableHead>{t("adminFraudExtra.table.actions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -151,7 +153,7 @@ export function FraudManager() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  title="Bloquer email"
+                                  title={t("adminFraudExtra.blockEmail")}
                                   onClick={() =>
                                     block({
                                       entity_type: "email",
@@ -178,7 +180,7 @@ export function FraudManager() {
         <TabsContent value="rules">
           <Card className="bg-noir-light/40 border-gold/20">
             <CardHeader>
-              <CardTitle className="text-cream">Règles anti-fraude</CardTitle>
+              <CardTitle className="text-cream">{t("adminFraud.antiFraudRules")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {rules.map((r) => (
@@ -191,7 +193,7 @@ export function FraudManager() {
                     <div className="text-xs text-cream/60">{r.description}</div>
                   </div>
                   <div>
-                    <Label className="text-xs">Seuil</Label>
+                    <Label className="text-xs">{t("adminFraud.threshold")}</Label>
                     <Input
                       type="number"
                       defaultValue={r.threshold}
@@ -202,7 +204,7 @@ export function FraudManager() {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">Poids</Label>
+                    <Label className="text-xs">{t("adminFraud.weight")}</Label>
                     <Input
                       type="number"
                       defaultValue={r.weight}
@@ -217,7 +219,7 @@ export function FraudManager() {
                       checked={r.is_active}
                       onCheckedChange={(v) => updateRule({ id: r.id, is_active: v })}
                     />
-                    <span className="text-xs text-cream/60">Actif</span>
+                    <span className="text-xs text-cream/60">{t("adminFraud.active")}</span>
                   </div>
                 </div>
               ))}
@@ -228,12 +230,12 @@ export function FraudManager() {
         <TabsContent value="blocked">
           <Card className="bg-noir-light/40 border-gold/20">
             <CardHeader>
-              <CardTitle className="text-cream">Entités bloquées</CardTitle>
+              <CardTitle className="text-cream">{t("adminFraud.blockedEntities")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
                 <div>
-                  <Label className="text-xs">Type</Label>
+                  <Label className="text-xs">{t("adminFraudExtra.blockType")}</Label>
                   <Select
                     value={newBlock.entity_type}
                     onValueChange={(v: any) =>
@@ -244,14 +246,14 @@ export function FraudManager() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="phone">Téléphone</SelectItem>
-                      <SelectItem value="ip">IP</SelectItem>
+                      <SelectItem value="email">{t("adminFraudExtra.entityType.email")}</SelectItem>
+                      <SelectItem value="phone">{t("adminFraudExtra.entityType.phone")}</SelectItem>
+                      <SelectItem value="ip">{t("adminFraudExtra.entityType.ip")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs">Valeur</Label>
+                  <Label className="text-xs">{t("adminFraudExtra.blockValue")}</Label>
                   <Input
                     value={newBlock.entity_value}
                     onChange={(e) =>
@@ -260,7 +262,7 @@ export function FraudManager() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">Raison</Label>
+                  <Label className="text-xs">{t("adminFraudExtra.blockReason")}</Label>
                   <Input
                     value={newBlock.reason}
                     onChange={(e) =>
@@ -275,17 +277,17 @@ export function FraudManager() {
                     setNewBlock({ entity_type: "email", entity_value: "", reason: "" });
                   }}
                 >
-                  Bloquer
+                  {t("adminFraudExtra.block")}
                 </Button>
               </div>
 
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Valeur</TableHead>
-                    <TableHead>Raison</TableHead>
-                    <TableHead>Depuis</TableHead>
+                    <TableHead>{t("adminFraudExtra.blockType")}</TableHead>
+                    <TableHead>{t("adminFraudExtra.blockValue")}</TableHead>
+                    <TableHead>{t("adminFraudExtra.blockReason")}</TableHead>
+                    <TableHead>{t("adminFraudExtra.since")}</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
