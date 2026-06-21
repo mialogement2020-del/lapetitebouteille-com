@@ -5,14 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-
-// Validation schema for code
-const codeSchema = z
-  .string()
-  .trim()
-  .min(1, "Veuillez entrer un code")
-  .max(20, "Code trop long")
-  .regex(/^[A-Z0-9]+$/i, "Code invalide");
+import { useTranslation } from "react-i18next";
 
 export interface AppliedPromoCode {
   code: string;
@@ -45,9 +38,17 @@ export function UnifiedCodeInput({
   onApply,
   onRemove,
 }: UnifiedCodeInputProps) {
+  const { t } = useTranslation();
   const [code, setCode] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const codeSchema = z
+    .string()
+    .trim()
+    .min(1, t("codeInput.errEmpty"))
+    .max(20, t("codeInput.errTooLong"))
+    .regex(/^[A-Z0-9]+$/i, t("codeInput.errInvalidChars"));
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("fr-FR").format(price);
@@ -101,12 +102,12 @@ export function UnifiedCodeInput({
         // Validate promo code
         const now = new Date();
         if (promoCode.valid_from && new Date(promoCode.valid_from) > now) {
-          setError("Ce code promo n'est pas encore valide");
+          setError(t("codeInput.errPromoNotYet"));
           return;
         }
 
         if (promoCode.valid_until && new Date(promoCode.valid_until) < now) {
-          setError("Ce code promo a expiré");
+          setError(t("codeInput.errPromoExpired"));
           return;
         }
 
@@ -114,14 +115,12 @@ export function UnifiedCodeInput({
           promoCode.usage_limit &&
           (promoCode.used_count || 0) >= promoCode.usage_limit
         ) {
-          setError("Ce code promo a atteint sa limite d'utilisation");
+          setError(t("codeInput.errPromoLimit"));
           return;
         }
 
         if (promoCode.min_order_amount && subtotal < promoCode.min_order_amount) {
-          setError(
-            `Commande minimum de ${formatPrice(promoCode.min_order_amount)} FCFA requise`
-          );
+          setError(t("codeInput.errMinOrder", { amount: formatPrice(promoCode.min_order_amount) }));
           return;
         }
 
@@ -144,8 +143,8 @@ export function UnifiedCodeInput({
         });
 
         toast({
-          title: "Code promo appliqué !",
-          description: `Vous économisez ${formatPrice(discountAmount)} FCFA`,
+          title: t("codeInput.appliedPromoTitle"),
+          description: t("codeInput.appliedPromoDesc", { amount: formatPrice(discountAmount) }),
         });
 
         setCode("");
@@ -169,13 +168,13 @@ export function UnifiedCodeInput({
           data: {
             code: normalizedCode,
             referrerId: "", // Will be resolved server-side during checkout
-            referrerName: "Parrain",
+            referrerName: t("codeInput.defaultReferrer"),
           },
         });
 
         toast({
-          title: "Code parrain appliqué !",
-          description: "Le parrainage sera validé lors de la commande",
+          title: t("codeInput.appliedReferralTitle"),
+          description: t("codeInput.appliedReferralDesc"),
         });
 
         setCode("");
@@ -183,10 +182,10 @@ export function UnifiedCodeInput({
       }
 
       // Neither promo nor referral code found
-      setError("Code invalide ou expiré");
+      setError(t("codeInput.errInvalid"));
     } catch (err: any) {
       console.error("Error validating code:", err);
-      setError("Une erreur est survenue lors de la validation");
+      setError(t("codeInput.errValidation"));
     } finally {
       setIsValidating(false);
     }
@@ -195,10 +194,8 @@ export function UnifiedCodeInput({
   const handleRemove = () => {
     onRemove();
     toast({
-      title: appliedCode?.type === "promo" ? "Code promo retiré" : "Code parrain retiré",
-      description: appliedCode?.type === "promo" 
-        ? "La réduction a été supprimée" 
-        : "Le parrainage a été retiré",
+      title: appliedCode?.type === "promo" ? t("codeInput.removedPromoTitle") : t("codeInput.removedReferralTitle"),
+      description: appliedCode?.type === "promo" ? t("codeInput.removedPromoDesc") : t("codeInput.removedReferralDesc"),
     });
   };
 
@@ -225,7 +222,7 @@ export function UnifiedCodeInput({
               {isPromo ? appliedCode.data.code : appliedCode.data.code}
             </span>
             <span className={`text-xs px-1.5 py-0.5 rounded ${isPromo ? "bg-green-500/20 text-green-400" : "bg-primary/20 text-primary"}`}>
-              {isPromo ? "Promo" : "Parrain"}
+              {isPromo ? t("codeInput.promoBadge") : t("codeInput.referralBadge")}
             </span>
           </div>
           <Button
@@ -241,14 +238,14 @@ export function UnifiedCodeInput({
           {isPromo ? (
             <>
               {appliedCode.data.discountType === "percentage"
-                ? `${appliedCode.data.discountValue}% de réduction`
-                : `${formatPrice(appliedCode.data.discountValue)} FCFA de réduction`}
+                ? t("codeInput.percentReduction", { value: appliedCode.data.discountValue })
+                : t("codeInput.fixedReduction", { value: formatPrice(appliedCode.data.discountValue) })}
               {appliedCode.data.maxDiscountAmount &&
                 appliedCode.data.discountType === "percentage" &&
-                ` (max ${formatPrice(appliedCode.data.maxDiscountAmount)} FCFA)`}
+                t("codeInput.maxReduction", { value: formatPrice(appliedCode.data.maxDiscountAmount) })}
             </>
           ) : (
-            `Parrainé par ${appliedCode.data.referrerName}`
+            t("codeInput.referredBy", { name: appliedCode.data.referrerName })
           )}
         </p>
       </div>
@@ -267,7 +264,7 @@ export function UnifiedCodeInput({
               setError(null);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Code promo ou parrain"
+            placeholder={t("codeInput.placeholderUnified")}
             className="pl-9 bg-noir/50 border-gold/20 font-mono uppercase"
             maxLength={20}
             disabled={isValidating}
@@ -282,13 +279,13 @@ export function UnifiedCodeInput({
           {isValidating ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            "Appliquer"
+            t("codeInput.apply")
           )}
         </Button>
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}
       <p className="text-xs text-cream/40">
-        Entrez un code promo ou un code parrain
+        {t("codeInput.helpUnified")}
       </p>
     </div>
   );
