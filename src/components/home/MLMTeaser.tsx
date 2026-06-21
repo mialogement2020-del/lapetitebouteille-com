@@ -3,54 +3,13 @@ import { motion, useScroll, useTransform } from "framer-motion";
  import { Users, TrendingUp, Wallet, Gift, ArrowRight, Sparkles, Truck, Shield, Clock, Award } from "lucide-react";
  import { Button } from "@/components/ui/button";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
  
-const benefits = [
-  {
-    icon: Users,
-    title: "Parrainez vos proches",
-    description: "Partagez votre lien unique et gagnez sur chaque commande",
-  },
-  {
-    icon: TrendingUp,
-    title: "Revenus Multi-Niveaux",
-    description: "Commissions sur 3 niveaux de votre réseau",
-  },
-  {
-    icon: Wallet,
-    title: "Retrait Instantané",
-    description: "MTN Money et Orange Money disponibles",
-  },
-  {
-    icon: Gift,
-    title: "Bonus Exclusifs",
-    description: "Récompenses et avantages VIP",
-  },
-];
-
-const trustFeatures = [
-  {
-    icon: Truck,
-    title: "Livraison Premium",
-    description: "Express 24h sur Yaoundé & Douala",
-  },
-  {
-    icon: Shield,
-    title: "Paiement Sécurisé",
-    description: "Mobile Money & Paiement à la livraison",
-  },
-  {
-    icon: Clock,
-    title: "Conciergerie 7j/7",
-    description: "Service client dédié et personnalisé",
-  },
-  {
-    icon: Award,
-    title: "Authenticité Certifiée",
-    description: "Produits 100% garantis d'origine",
-  },
-];
+const benefitIcons = [Users, TrendingUp, Wallet, Gift];
+const trustIcons = [Truck, Shield, Clock, Award];
  
  const MLMTeaser = () => {
+   const { t } = useTranslation();
    const sectionRef = useRef<HTMLElement>(null);
    
    const { scrollYProgress } = useScroll({
@@ -105,7 +64,7 @@ const trustFeatures = [
                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm"
              >
                <Sparkles className="h-4 w-4 text-primary" />
-               <span className="text-sm font-medium text-primary tracking-wide">Programme Ambassadeur</span>
+                <span className="text-sm font-medium text-primary tracking-wide">{t("mlmTeaser.badge")}</span>
              </motion.div>
  
              <motion.h2 
@@ -115,9 +74,9 @@ const trustFeatures = [
                viewport={{ once: true }}
                className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mb-8 leading-[1.1]"
              >
-               Transformez votre passion en
-               <br />
-               <span className="text-gradient-gold">source de revenus</span>
+                {t("mlmTeaser.titleLine1")}
+                <br />
+                <span className="text-gradient-gold">{t("mlmTeaser.titleHighlight")}</span>
              </motion.h2>
  
              <motion.p 
@@ -127,8 +86,7 @@ const trustFeatures = [
                viewport={{ once: true }}
                className="text-cream/70 text-lg mb-10 leading-relaxed max-w-lg"
              >
-               Rejoignez notre réseau d'ambassadeurs et bénéficiez de commissions 
-               attractives sur chaque vente générée par votre réseau.
+                {t("mlmTeaser.description")}
              </motion.p>
  
              <motion.div 
@@ -144,7 +102,7 @@ const trustFeatures = [
                  className="bg-gradient-gold text-noir font-semibold hover:opacity-90 shadow-gold h-14 px-8 rounded-full shine-effect"
                >
                  <Link to="/ambassadeur">
-                   Devenir Ambassadeur
+                    {t("mlmTeaser.ctaPrimary")}
                    <ArrowRight className="ml-2 h-5 w-5" />
                  </Link>
                </Button>
@@ -155,7 +113,7 @@ const trustFeatures = [
                  className="border-cream/20 text-cream hover:bg-cream/5 h-14 px-8 rounded-full"
                >
                  <Link to="/ambassadeur#comment-ca-marche">
-                   En savoir plus
+                    {t("mlmTeaser.ctaSecondary")}
                  </Link>
                </Button>
              </motion.div>
@@ -163,9 +121,9 @@ const trustFeatures = [
              {/* Stats */}
              <div className="mt-12 grid grid-cols-3 gap-8">
                {[
-                 { value: "8%", label: "Niveau 1" },
-                 { value: "4%", label: "Niveau 2" },
-                 { value: "2%", label: "Niveau 3" },
+                  { value: "8%", label: t("mlmTeaser.level1") },
+                  { value: "4%", label: t("mlmTeaser.level2") },
+                  { value: "2%", label: t("mlmTeaser.level3") },
                ].map((stat, index) => (
                  <motion.div 
                    key={index} 
@@ -193,7 +151,7 @@ const trustFeatures = [
              style={{ x: rightX, opacity }}
              className="grid grid-cols-1 sm:grid-cols-2 gap-5"
            >
-             {benefits.map((benefit, index) => (
+              {benefitIcons.map((Icon, index) => (
                <motion.div
                  key={index}
                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
@@ -212,13 +170,13 @@ const trustFeatures = [
                    transition={{ type: "spring", stiffness: 300 }}
                    className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors"
                  >
-                   <benefit.icon className="h-6 w-6 text-primary" />
+                    <Icon className="h-6 w-6 text-primary" />
                  </motion.div>
                  <h3 className="font-display text-xl font-semibold mb-2">
-                   {benefit.title}
+                    {t(`mlmTeaser.benefit${index + 1}Title`)}
                  </h3>
                  <p className="text-cream/60 text-sm leading-relaxed">
-                   {benefit.description}
+                    {t(`mlmTeaser.benefit${index + 1}Desc`)}
                  </p>
                </motion.div>
              ))}
@@ -233,7 +191,7 @@ const trustFeatures = [
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
         >
-          {trustFeatures.map((feature, index) => (
+          {trustIcons.map((Icon, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -247,13 +205,13 @@ const trustFeatures = [
                 transition={{ type: "spring", stiffness: 300 }}
                 className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors"
               >
-                <feature.icon className="h-6 w-6 text-primary" />
+                <Icon className="h-6 w-6 text-primary" />
               </motion.div>
               <h3 className="font-display text-lg font-semibold text-cream mb-1">
-                {feature.title}
+                {t(`trustSection.feature${index + 1}Title`)}
               </h3>
               <p className="text-sm text-cream/60">
-                {feature.description}
+                {t(`trustSection.feature${index + 1}Desc`)}
               </p>
             </motion.div>
           ))}
@@ -271,10 +229,10 @@ const trustFeatures = [
            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
              <div className="text-left">
                <h3 className="font-display text-3xl font-semibold mb-2">
-                 Prêt à commencer ?
+                  {t("mlmTeaser.readyTitle")}
                </h3>
                <p className="text-noir/80">
-                 Inscrivez-vous maintenant et recevez votre lien ambassadeur unique
+                  {t("mlmTeaser.readyDesc")}
                </p>
              </div>
              <Button
@@ -283,7 +241,7 @@ const trustFeatures = [
                className="bg-noir text-cream hover:bg-noir/90 font-semibold shrink-0 h-14 px-10 rounded-full"
              >
                <Link to="/inscription">
-                 Créer mon compte
+                  {t("mlmTeaser.readyCta")}
                </Link>
              </Button>
            </div>
