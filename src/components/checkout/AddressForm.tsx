@@ -18,20 +18,30 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
+import { useTranslation } from "react-i18next";
 
 type Address = Tables<"addresses">;
 
-const addressSchema = z.object({
-  fullName: z.string().trim().min(2, "Nom complet requis").max(100),
-  email: z.string().email("Email invalide").optional().or(z.literal("")),
-  phone: z.string().trim().min(9, "Numéro de téléphone invalide").max(20),
-  city: z.string().min(1, "Ville requise"),
-  neighborhood: z.string().trim().max(100).optional(),
-  streetAddress: z.string().trim().min(5, "Adresse complète requise").max(200),
-  additionalInfo: z.string().max(500).optional(),
-});
+const buildAddressSchema = (t: (k: string) => string) =>
+  z.object({
+    fullName: z.string().trim().min(2, t("addressForm.errFullName")).max(100),
+    email: z.string().email(t("addressForm.errEmail")).optional().or(z.literal("")),
+    phone: z.string().trim().min(9, t("addressForm.errPhone")).max(20),
+    city: z.string().min(1, t("addressForm.errCity")),
+    neighborhood: z.string().trim().max(100).optional(),
+    streetAddress: z.string().trim().min(5, t("addressForm.errStreet")).max(200),
+    additionalInfo: z.string().max(500).optional(),
+  });
 
-export type AddressFormData = z.infer<typeof addressSchema>;
+export type AddressFormData = {
+  fullName: string;
+  email?: string;
+  phone: string;
+  city: string;
+  neighborhood?: string;
+  streetAddress: string;
+  additionalInfo?: string;
+};
 
 interface AddressFormProps {
   onSubmit: (data: AddressFormData) => void;
@@ -54,6 +64,7 @@ const CITIES = [
 ];
 
 export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
@@ -69,7 +80,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
     reset,
     formState: { errors },
   } = useForm<AddressFormData>({
-    resolver: zodResolver(addressSchema),
+    resolver: zodResolver(buildAddressSchema(t)),
     defaultValues: {
       fullName: "",
       email: "",
@@ -186,15 +197,15 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
           <MapPin className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h2 className="font-display text-xl text-cream">Adresse de livraison</h2>
-          <p className="text-cream/60 text-sm">Où devons-nous livrer votre commande ?</p>
+          <h2 className="font-display text-xl text-cream">{t("addressForm.title")}</h2>
+          <p className="text-cream/60 text-sm">{t("addressForm.subtitle")}</p>
         </div>
       </div>
 
       {/* Saved Addresses */}
       {savedAddresses.length > 0 && (
         <div className="space-y-3 mb-6">
-          <Label className="text-cream/80">Mes adresses enregistrées</Label>
+          <Label className="text-cream/80">{t("addressForm.savedAddresses")}</Label>
           <div className="grid gap-3">
             {savedAddresses.map((addr) => (
               <button
@@ -230,7 +241,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
                   <div className="flex flex-col items-end gap-1">
                     {addr.is_default && (
                       <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-                        Par défaut
+                        {t("addressForm.default")}
                       </span>
                     )}
                     {addr.label && (
@@ -264,7 +275,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
                   )}
                 </div>
                 <span className={showNewAddressForm ? "text-cream font-medium" : "text-cream/60"}>
-                  Utiliser une nouvelle adresse
+                  {t("addressForm.useNewAddress")}
                 </span>
               </div>
             </button>
@@ -277,22 +288,22 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           {savedAddresses.length > 0 && (
             <div className="pb-4 border-b border-gold/20">
-              <h3 className="text-cream font-medium mb-1">Nouvelle adresse</h3>
-              <p className="text-cream/60 text-sm">Entrez les détails de livraison</p>
+              <h3 className="text-cream font-medium mb-1">{t("addressForm.newAddressTitle")}</h3>
+              <p className="text-cream/60 text-sm">{t("addressForm.newAddressSubtitle")}</p>
             </div>
           )}
 
           {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="fullName" className="text-cream/80">
-              Nom complet *
+              {t("addressForm.fullName")}
             </Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
               <Input
                 id="fullName"
                 {...register("fullName")}
-                placeholder="Jean Dupont"
+                placeholder={t("addressForm.fullNamePlaceholder")}
                 className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
               />
             </div>
@@ -304,7 +315,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
           {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-cream/80">
-              Email (pour recevoir la confirmation)
+              {t("addressForm.emailLabel")}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
@@ -312,7 +323,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
                 id="email"
                 type="email"
                 {...register("email")}
-                placeholder="votre@email.com"
+                placeholder={t("addressForm.emailPlaceholder")}
                 className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
               />
             </div>
@@ -324,7 +335,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
           {/* Phone */}
           <div className="space-y-2">
             <Label htmlFor="phone" className="text-cream/80">
-              Téléphone *
+              {t("addressForm.phone")}
             </Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
@@ -332,7 +343,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
                 id="phone"
                 type="tel"
                 {...register("phone")}
-                placeholder="+237 6XX XXX XXX"
+                placeholder={t("addressForm.phonePlaceholder")}
                 className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
               />
             </div>
@@ -343,10 +354,10 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
 
           {/* City */}
           <div className="space-y-2">
-            <Label className="text-cream/80">Ville *</Label>
+            <Label className="text-cream/80">{t("addressForm.city")}</Label>
             <Select value={city} onValueChange={(value) => setValue("city", value)}>
               <SelectTrigger className="bg-cream/5 border-gold/20 text-cream">
-                <SelectValue placeholder="Sélectionnez une ville" />
+                <SelectValue placeholder={t("addressForm.cityPlaceholder")} />
               </SelectTrigger>
               <SelectContent className="bg-noir border-gold/30">
                 {CITIES.map((c) => (
@@ -364,12 +375,12 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
           {/* Neighborhood */}
           <div className="space-y-2">
             <Label htmlFor="neighborhood" className="text-cream/80">
-              Quartier
+              {t("addressForm.neighborhood")}
             </Label>
             <Input
               id="neighborhood"
               {...register("neighborhood")}
-              placeholder="Akwa, Bonanjo, Bastos..."
+              placeholder={t("addressForm.neighborhoodPlaceholder")}
               className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
             />
             {errors.neighborhood && (
@@ -380,12 +391,12 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
           {/* Street Address */}
           <div className="space-y-2">
             <Label htmlFor="streetAddress" className="text-cream/80">
-              Adresse complète *
+              {t("addressForm.streetAddress")}
             </Label>
             <Textarea
               id="streetAddress"
               {...register("streetAddress")}
-              placeholder="Rue, numéro, immeuble, étage..."
+              placeholder={t("addressForm.streetAddressPlaceholder")}
               className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 min-h-[80px]"
             />
             {errors.streetAddress && (
@@ -396,12 +407,12 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
           {/* Additional Info */}
           <div className="space-y-2">
             <Label htmlFor="additionalInfo" className="text-cream/80">
-              Instructions de livraison (optionnel)
+              {t("addressForm.additionalInfo")}
             </Label>
             <Textarea
               id="additionalInfo"
               {...register("additionalInfo")}
-              placeholder="Code d'accès, repères, heures de disponibilité..."
+              placeholder={t("addressForm.additionalInfoPlaceholder")}
               className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 min-h-[60px]"
             />
           </div>
@@ -416,7 +427,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
                 className="border-gold/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
               />
               <Label htmlFor="saveAddress" className="text-cream/80 font-normal cursor-pointer">
-                Enregistrer cette adresse pour mes prochaines commandes
+                {t("addressForm.saveAddress")}
               </Label>
             </div>
           )}
@@ -426,7 +437,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
             disabled={isLoading}
             className="w-full bg-gradient-gold text-noir font-semibold h-12"
           >
-            Continuer vers le paiement
+            {t("addressForm.continueToPayment")}
           </Button>
         </form>
       )}
@@ -437,7 +448,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
           {/* Email field for confirmation */}
           <div className="space-y-2">
             <Label htmlFor="email-saved" className="text-cream/80">
-              Email (pour recevoir la confirmation de commande)
+              {t("addressForm.emailLabelSaved")}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
@@ -445,7 +456,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
                 id="email-saved"
                 type="email"
                 {...register("email")}
-                placeholder="votre@email.com"
+                placeholder={t("addressForm.emailPlaceholder")}
                 className="pl-10 bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40"
               />
             </div>
@@ -459,7 +470,7 @@ export function AddressForm({ onSubmit, isLoading }: AddressFormProps) {
             disabled={isLoading}
             className="w-full bg-gradient-gold text-noir font-semibold h-12"
           >
-            Continuer vers le paiement
+            {t("addressForm.continueToPayment")}
           </Button>
         </form>
       )}
