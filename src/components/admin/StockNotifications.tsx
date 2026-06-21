@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 import { useStockNotifications, StockNotification } from "@/hooks/useStockNotifications";
 
 interface StockNotificationsProps {
@@ -19,6 +20,7 @@ interface StockNotificationsProps {
 }
 
 export function StockNotifications({ enabled = true, onProductClick }: StockNotificationsProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const {
     notifications,
@@ -79,10 +81,10 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
         <div className="flex items-center justify-between p-4 border-b border-gold/20">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-warning" />
-            <h3 className="font-semibold text-cream">Alertes Stock</h3>
+            <h3 className="font-semibold text-cream">{t("adminStock.stockNotifications")}</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="text-xs bg-warning/20 text-warning">
-                {unreadCount} nouvelle{unreadCount > 1 ? "s" : ""}
+                {t("adminStock.newNotifications", { count: unreadCount })}
               </Badge>
             )}
           </div>
@@ -97,7 +99,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                   ? "text-warning hover:text-warning/80" 
                   : "text-cream/40 hover:text-cream/60"
               }`}
-              title={soundEnabled ? "Désactiver le son" : "Activer le son"}
+              title={soundEnabled ? t("adminStock.disableSound") : t("adminStock.enableSound")}
             >
               {soundEnabled ? (
                 <Volume2 className="h-4 w-4" />
@@ -113,7 +115,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                 className="h-8 px-2 text-xs text-cream/60 hover:text-warning"
               >
                 <CheckCheck className="h-3 w-3 mr-1" />
-                Tout lire
+                {t("adminStock.markAllRead")}
               </Button>
             )}
             {notifications.length > 0 && (
@@ -134,14 +136,14 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
           {isLoading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-warning mx-auto mb-3" />
-              <p className="text-cream/60 text-sm">Chargement...</p>
+              <p className="text-cream/60 text-sm">{t("adminStock.loading")}</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Package className="h-10 w-10 text-cream/20 mx-auto mb-3" />
-              <p className="text-cream/60 text-sm">Aucune alerte de stock</p>
+              <p className="text-cream/60 text-sm">{t("adminStock.noStockAlerts")}</p>
               <p className="text-cream/40 text-xs mt-1">
-                Les alertes de stock critique apparaîtront ici en temps réel
+                {t("adminStock.stockAlertsInfo")}
               </p>
             </div>
           ) : (
@@ -175,7 +177,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                         <p className={`font-medium text-sm truncate ${
                           isOutOfStock(notification.title) ? "text-destructive" : "text-warning"
                         }`}>
-                          {isOutOfStock(notification.title) ? "Rupture de stock" : "Stock faible"}
+                          {isOutOfStock(notification.title) ? t("adminStock.outOfStockTitle") : t("adminStock.lowStockTitle")}
                         </p>
                         {!notification.isRead && (
                           <div className="w-2 h-2 rounded-full bg-warning shrink-0" />
@@ -193,7 +195,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
                               : "border-warning/50 text-warning"
                           }`}
                         >
-                          {isOutOfStock(notification.title) ? "Urgent" : "Attention"}
+                          {isOutOfStock(notification.title) ? t("adminStock.urgent") : t("adminStock.attention")}
                         </Badge>
                         <span className="text-xs text-cream/40">
                           {formatDistanceToNow(new Date(notification.createdAt), {
@@ -225,7 +227,7 @@ export function StockNotifications({ enabled = true, onProductClick }: StockNoti
         {notifications.length > 0 && (
           <div className="p-2 border-t border-gold/20">
             <p className="text-xs text-center text-cream/40">
-              {notifications.length} alerte{notifications.length > 1 ? "s" : ""} de stock
+              {t("adminStock.stockAlertsCount", { count: notifications.length })}
             </p>
           </div>
         )}
