@@ -20,6 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useTranslation } from "react-i18next";
 import type { StockPrediction } from "@/hooks/useStockPredictions";
 import type { AdminProduct } from "@/hooks/useAdmin";
 
@@ -30,6 +31,7 @@ interface StockPredictionsProps {
 }
 
 export function StockPredictions({ predictions, isLoading, onEditProduct }: StockPredictionsProps) {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Filter to show only products with predictions (sales activity or low stock)
@@ -58,23 +60,23 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
   const getUrgencyBadge = (urgency: StockPrediction["urgency"]) => {
     switch (urgency) {
       case "critical":
-        return <Badge variant="destructive">Critique</Badge>;
+        return <Badge variant="destructive">{t("adminStock.critical")}</Badge>;
       case "warning":
-        return <Badge variant="outline" className="border-warning/50 text-warning">Attention</Badge>;
+        return <Badge variant="outline" className="border-warning/50 text-warning">{t("adminStock.attention")}</Badge>;
       case "moderate":
-        return <Badge variant="outline" className="border-info/50 text-info">Modéré</Badge>;
+        return <Badge variant="outline" className="border-info/50 text-info">{t("adminStock.moderate")}</Badge>;
       default:
-        return <Badge variant="outline" className="border-success/50 text-success">Stable</Badge>;
+        return <Badge variant="outline" className="border-success/50 text-success">{t("adminStock.stable")}</Badge>;
     }
   };
 
   const formatDaysUntilStockout = (days: number | null): string => {
-    if (days === null) return "N/A";
-    if (days === 0) return "Rupture";
-    if (days === 1) return "Demain";
-    if (days <= 7) return `${days} jours`;
-    if (days <= 30) return `~${Math.ceil(days / 7)} sem.`;
-    return `~${Math.ceil(days / 30)} mois`;
+    if (days === null) return t("adminStock.na");
+    if (days === 0) return t("adminStock.outOfStockShort");
+    if (days === 1) return t("adminStock.tomorrow");
+    if (days <= 7) return `${days} ${t("adminStock.days")}`;
+    if (days <= 30) return `~${Math.ceil(days / 7)} ${t("adminStock.weeks")}`;
+    return `~${Math.ceil(days / 30)} ${t("adminStock.months")}`;
   };
 
   if (isLoading) {
@@ -104,21 +106,21 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
               <div className="flex items-center gap-3">
                 <BarChart3 className="h-5 w-5 text-gold" />
                 <div>
-                  <CardTitle className="text-lg text-cream">Prévisions de rupture</CardTitle>
+                  <CardTitle className="text-lg text-cream">{t("adminStock.predictions")}</CardTitle>
                   <CardDescription className="text-cream/60">
-                    Basées sur les ventes des 30 derniers jours
+                    {t("adminStock.basedOnSales")}
                   </CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 {criticalCount > 0 && (
                   <Badge variant="destructive" className="text-xs">
-                    {criticalCount} critique{criticalCount > 1 ? "s" : ""}
+                    {t("adminStock.criticalCount", { count: criticalCount })}
                   </Badge>
                 )}
                 {warningCount > 0 && (
                   <Badge variant="outline" className="border-warning/50 text-warning text-xs">
-                    {warningCount} attention
+                    {t("adminStock.warningCount", { count: warningCount })}
                   </Badge>
                 )}
                 {isExpanded ? (
@@ -136,8 +138,8 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
             {relevantPredictions.length === 0 ? (
               <div className="text-center py-8 text-cream/50">
                 <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">Aucune prévision disponible</p>
-                <p className="text-xs mt-1">Les prévisions apparaîtront lorsque des ventes seront enregistrées</p>
+                <p className="text-sm">{t("adminStock.noPredictions")}</p>
+                <p className="text-xs mt-1">{t("adminStock.predictionsHelp")}</p>
               </div>
             ) : (
               <ScrollArea className="h-[400px] pr-2">
@@ -184,7 +186,7 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Stock actuel</p>
+                                <p>{t("adminStock.currentStockTip")}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -194,11 +196,11 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
                               <TooltipTrigger asChild>
                                 <div className="flex items-center gap-1">
                                   <BarChart3 className="h-3.5 w-3.5" />
-                                  <span>{prediction.dailySalesRate}/jour</span>
+                                  <span>{t("adminStock.dailyRate", { rate: prediction.dailySalesRate })}</span>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Taux de vente quotidien moyen</p>
+                                <p>{t("adminStock.dailyRateTip")}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -209,18 +211,18 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
                                 <div className="flex items-center gap-1">
                                   {getTrendIcon(prediction.trend)}
                                   <span>
-                                    {prediction.trend === "increasing" ? "Hausse" : 
-                                     prediction.trend === "decreasing" ? "Baisse" : "Stable"}
+                                    {prediction.trend === "increasing" ? t("adminStock.trendIncrease") : 
+                                     prediction.trend === "decreasing" ? t("adminStock.trendDecrease") : t("adminStock.trendStable")}
                                   </span>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Tendance des ventes (7j vs 30j)</p>
+                                <p>{t("adminStock.salesTrendTip")}</p>
                                 <p className="text-xs text-cream/60">
-                                  7 derniers jours: {prediction.salesLast7Days} vendus
+                                  {t("adminStock.last7Sold", { count: prediction.salesLast7Days })}
                                 </p>
                                 <p className="text-xs text-cream/60">
-                                  30 derniers jours: {prediction.salesLast30Days} vendus
+                                  {t("adminStock.last30Sold", { count: prediction.salesLast30Days })}
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -246,7 +248,7 @@ export function StockPredictions({ predictions, isLoading, onEditProduct }: Stoc
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>Rupture prévue dans {prediction.daysUntilStockout} jours</p>
+                                    <p>{t("adminStock.stockoutIn", { days: prediction.daysUntilStockout })}</p>
                                     {prediction.predictedStockoutDate && (
                                       <p className="text-xs text-cream/60">
                                         {format(prediction.predictedStockoutDate, "EEEE d MMMM yyyy", { locale: fr })}

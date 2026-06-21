@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Calendar, AlertTriangle, XCircle, Loader2 } f
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Bar, BarChart } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AlertData {
@@ -24,6 +25,7 @@ interface ChartData {
 type PeriodOption = "7" | "14" | "30" | "90";
 
 export function StockAlertsChart() {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<PeriodOption>("30");
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -139,7 +141,7 @@ export function StockAlertsChart() {
                 style={{ backgroundColor: entry.color }}
               />
               <span className="text-cream/70">
-                {entry.name === "low_stock" ? "Stock faible" : "Rupture"}:
+                {entry.name === "low_stock" ? t("adminStock.lowStockLegend") : t("adminStock.outOfStockShortLabel")}:
               </span>
               <span className="text-cream font-medium">{entry.value}</span>
             </div>
@@ -156,10 +158,10 @@ export function StockAlertsChart() {
         <div>
           <CardTitle className="text-cream flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-warning" />
-            Évolution des alertes de stock
+            {t("adminStock.evolution")}
           </CardTitle>
           <CardDescription className="text-cream/60">
-            Historique des alertes sur les {period} derniers jours
+            {t("adminStock.evolutionDesc", { days: period })}
           </CardDescription>
         </div>
         <Select value={period} onValueChange={(v) => setPeriod(v as PeriodOption)}>
@@ -168,10 +170,10 @@ export function StockAlertsChart() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/30">
-            <SelectItem value="7">7 jours</SelectItem>
-            <SelectItem value="14">14 jours</SelectItem>
-            <SelectItem value="30">30 jours</SelectItem>
-            <SelectItem value="90">90 jours</SelectItem>
+            <SelectItem value="7">{t("adminStock.sevenDays")}</SelectItem>
+            <SelectItem value="14">{t("adminStock.fourteenDays")}</SelectItem>
+            <SelectItem value="30">{t("adminStock.thirtyDays")}</SelectItem>
+            <SelectItem value="90">{t("adminStock.ninetyDays")}</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -188,7 +190,7 @@ export function StockAlertsChart() {
               <div className="bg-warning/5 rounded-lg p-4 border border-warning/20">
                 <div className="flex items-center gap-2 text-cream/60 text-sm mb-1">
                   <AlertTriangle className="h-4 w-4 text-warning" />
-                  Stock faible
+                  {t("adminStock.lowStockLegend")}
                 </div>
                 <p className="text-2xl font-bold text-warning">
                   {stats.lowStockCount}
@@ -197,7 +199,7 @@ export function StockAlertsChart() {
               <div className="bg-destructive/5 rounded-lg p-4 border border-destructive/20">
                 <div className="flex items-center gap-2 text-cream/60 text-sm mb-1">
                   <XCircle className="h-4 w-4 text-destructive" />
-                  Ruptures
+                  {t("adminStock.rupturesCount")}
                 </div>
                 <p className="text-2xl font-bold text-destructive">
                   {stats.outOfStockCount}
@@ -210,14 +212,14 @@ export function StockAlertsChart() {
                   ) : (
                     <TrendingDown className="h-4 w-4 text-success" />
                   )}
-                  Tendance
+                  {t("adminStock.trend")}
                 </div>
                 <p className={`text-2xl font-bold ${
                   stats.trend >= 0 ? "text-warning" : "text-success"
                 }`}>
                   {stats.trend >= 0 ? "+" : ""}{stats.trend}%
                 </p>
-                <p className="text-xs text-cream/40">vs période précédente</p>
+                <p className="text-xs text-cream/40">{t("adminStock.vsPreviousPeriod")}</p>
               </div>
             </div>
 
@@ -226,7 +228,7 @@ export function StockAlertsChart() {
               {stats.totalAlerts === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-cream/40">
                   <AlertTriangle className="h-12 w-12 mb-3 opacity-30" />
-                  <p>Aucune alerte de stock sur cette période</p>
+                  <p>{t("adminStock.noAlertsInPeriod")}</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -247,7 +249,7 @@ export function StockAlertsChart() {
                     <Legend 
                       formatter={(value) => (
                         <span className="text-cream/70 text-sm">
-                          {value === "low_stock" ? "Stock faible" : "Rupture de stock"}
+                          {value === "low_stock" ? t("adminStock.lowStockLegend") : t("adminStock.outOfStockLegend")}
                         </span>
                       )}
                     />

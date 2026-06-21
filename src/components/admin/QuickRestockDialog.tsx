@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 import type { AdminProduct } from "@/hooks/useAdmin";
 
 interface QuickRestockDialogProps {
@@ -29,6 +30,7 @@ export function QuickRestockDialog({
   onRestock,
   isLoading,
 }: QuickRestockDialogProps) {
+  const { t } = useTranslation();
   const [quantity, setQuantity] = useState<number>(0);
   const [addMode, setAddMode] = useState(true);
 
@@ -58,10 +60,10 @@ export function QuickRestockDialog({
         <DialogHeader>
           <DialogTitle className="text-cream flex items-center gap-2">
             <Package className="h-5 w-5 text-gold" />
-            Réapprovisionnement rapide
+            {t("adminStock.quickRestock")}
           </DialogTitle>
           <DialogDescription className="text-cream/60">
-            Mettez à jour le stock rapidement
+            {t("adminStock.dialogDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -84,14 +86,14 @@ export function QuickRestockDialog({
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-cream truncate">{product.name}</h4>
-                <p className="text-sm text-cream/60">{product.category?.name || "Sans catégorie"}</p>
+                <p className="text-sm text-cream/60">{product.category?.name || t("adminStock.noCategory")}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-cream/50">Stock actuel:</span>
+                  <span className="text-xs text-cream/50">{t("adminStock.currentStock")}:</span>
                   <Badge
                     variant={currentStock === 0 ? "destructive" : "outline"}
                     className={currentStock === 0 ? "" : "border-orange-500/50 text-orange-400"}
                   >
-                    {currentStock} unités
+                    {currentStock} {t("adminStock.units")}
                   </Badge>
                 </div>
               </div>
@@ -106,7 +108,7 @@ export function QuickRestockDialog({
                 onClick={() => setAddMode(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Ajouter au stock
+                {t("adminStock.addStock")}
               </Button>
               <Button
                 type="button"
@@ -115,14 +117,14 @@ export function QuickRestockDialog({
                 onClick={() => setAddMode(false)}
               >
                 <Package className="h-4 w-4 mr-2" />
-                Définir le stock
+                {t("adminStock.setStock")}
               </Button>
             </div>
 
             {/* Quantity Input */}
             <div className="space-y-3">
               <Label htmlFor="quantity" className="text-cream">
-                {addMode ? "Quantité à ajouter" : "Nouveau stock"}
+                {addMode ? t("adminStock.quantityToAdd") : t("adminStock.newStock")}
               </Label>
               <Input
                 id="quantity"
@@ -138,7 +140,7 @@ export function QuickRestockDialog({
             {/* Quick Add Buttons */}
             {addMode && (
               <div className="space-y-2">
-                <Label className="text-cream/60 text-xs">Ajout rapide</Label>
+                <Label className="text-cream/60 text-xs">{t("adminStock.quickAdd")}</Label>
                 <div className="flex gap-2">
                   {quickAddAmounts.map((amount) => (
                     <Button
@@ -159,8 +161,8 @@ export function QuickRestockDialog({
             {/* Preview */}
             <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-cream/70">Nouveau stock:</span>
-                <span className="text-2xl font-bold text-green-400">{newStock} unités</span>
+                <span className="text-sm text-cream/70">{t("adminStock.newStockLabel")}:</span>
+                <span className="text-2xl font-bold text-green-400">{newStock} {t("adminStock.units")}</span>
               </div>
               {addMode && quantity > 0 && (
                 <p className="text-xs text-cream/50 mt-1">
@@ -178,7 +180,7 @@ export function QuickRestockDialog({
             onClick={() => onOpenChange(false)}
             className="border-gold/30 text-cream hover:bg-gold/10"
           >
-            Annuler
+            {t("adminStock.cancel")}
           </Button>
           <Button
             type="button"
@@ -186,7 +188,7 @@ export function QuickRestockDialog({
             disabled={isLoading || (addMode && quantity === 0)}
             className="bg-gold text-noir hover:bg-gold/90"
           >
-            {isLoading ? "Mise à jour..." : "Mettre à jour le stock"}
+            {isLoading ? t("adminStock.updating") : t("adminStock.updateStock")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6,7 +6,8 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 interface StockAlertsPDFExportProps {
   chartRef?: React.RefObject<HTMLDivElement>;
@@ -29,6 +30,8 @@ interface ProductStock {
 }
 
 export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDFExportProps) {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language?.startsWith("en") ? enUS : fr;
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generatePDF = async () => {
@@ -129,17 +132,17 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
       pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       pdf.setFontSize(24);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Rapport d'Alertes de Stock", margin, 22);
+      pdf.text(t("adminStock.pdfTitle"), margin, 22);
 
       pdf.setFontSize(12);
       pdf.setTextColor(200, 200, 200);
       pdf.setFont("helvetica", "normal");
-      pdf.text(`Période: ${days} derniers jours`, margin, 32);
+      pdf.text(t("adminStock.pdfPeriod", { days }), margin, 32);
 
       const now = new Date();
-      const dateStr = format(now, "dd MMMM yyyy 'à' HH:mm", { locale: fr });
+      const dateStr = format(now, "dd MMMM yyyy 'à' HH:mm", { locale: dateLocale });
       pdf.setFontSize(10);
-      pdf.text(`Généré le ${dateStr}`, margin, 40);
+      pdf.text(t("adminStock.pdfGeneratedOn", { date: dateStr }), margin, 40);
 
       yPosition = 55;
 
@@ -147,7 +150,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
       pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       pdf.setFontSize(14);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Résumé des Alertes", margin, yPosition);
+      pdf.text(t("adminStock.pdfSummary"), margin, yPosition);
       yPosition += 10;
 
       // Stats boxes
@@ -166,7 +169,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
       pdf.text(stats.outOfStockCount.toString(), margin + 5, yPosition + 15);
       pdf.setFontSize(9);
       pdf.setFont("helvetica", "normal");
-      pdf.text("Ruptures de stock", margin + 5, yPosition + 24);
+      pdf.text(t("adminStock.pdfOutOfStock"), margin + 5, yPosition + 24);
 
       // Box 2: Low Stock
       const box2X = margin + boxWidth + 5;
@@ -181,7 +184,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
       pdf.text(stats.lowStockCount.toString(), box2X + 5, yPosition + 15);
       pdf.setFontSize(9);
       pdf.setFont("helvetica", "normal");
-      pdf.text("Alertes stock faible", box2X + 5, yPosition + 24);
+      pdf.text(t("adminStock.pdfLowAlerts"), box2X + 5, yPosition + 24);
 
       // Box 3: Trend
       const box3X = margin + 2 * boxWidth + 10;
@@ -200,7 +203,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
       pdf.text(`${trendPositive ? "+" : ""}${stats.trend}%`, box3X + 5, yPosition + 15);
       pdf.setFontSize(9);
       pdf.setFont("helvetica", "normal");
-      pdf.text("Tendance vs période préc.", box3X + 5, yPosition + 24);
+      pdf.text(t("adminStock.pdfTrendVsPrev"), box3X + 5, yPosition + 24);
 
       yPosition += boxHeight + 15;
 
@@ -208,7 +211,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
       pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       pdf.setFontSize(14);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Produits en Alerte", margin, yPosition);
+      pdf.text(t("adminStock.pdfProductsAlert"), margin, yPosition);
       yPosition += 8;
 
       if (productsList.length > 0) {
@@ -219,11 +222,11 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(9);
         pdf.setFont("helvetica", "bold");
-        pdf.text("Produit", margin + 3, yPosition + 5.5);
-        pdf.text("SKU", margin + 80, yPosition + 5.5);
-        pdf.text("Stock", margin + 110, yPosition + 5.5);
-        pdf.text("Seuil", margin + 130, yPosition + 5.5);
-        pdf.text("Statut", margin + 150, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColProduct"), margin + 3, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColSku"), margin + 80, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColStock"), margin + 110, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColThreshold"), margin + 130, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColStatus"), margin + 150, yPosition + 5.5);
 
         yPosition += 8;
 
@@ -255,13 +258,13 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
           let statusText = "";
           let statusColor: [number, number, number];
           if (product.status === "out_of_stock") {
-            statusText = "Rupture";
+            statusText = t("adminStock.pdfStatusOut");
             statusColor = dangerColor;
           } else if (product.status === "low_stock") {
-            statusText = "Stock faible";
+            statusText = t("adminStock.pdfStatusLow");
             statusColor = warningColor;
           } else {
-            statusText = "Critique";
+            statusText = t("adminStock.pdfStatusCritical");
             statusColor = cautionColor;
           }
 
@@ -277,13 +280,13 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
           pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
           pdf.setFontSize(9);
           pdf.setFont("helvetica", "italic");
-          pdf.text(`... et ${productsList.length - 20} autres produits`, margin, yPosition + 5);
+          pdf.text(t("adminStock.pdfAndMore", { count: productsList.length - 20 }), margin, yPosition + 5);
           yPosition += 10;
         }
       } else {
         pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
         pdf.setFontSize(10);
-        pdf.text("Aucun produit en alerte actuellement", margin, yPosition + 5);
+        pdf.text(t("adminStock.pdfNoneCurrently"), margin, yPosition + 5);
         yPosition += 15;
       }
 
@@ -300,7 +303,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
         pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.setFontSize(14);
         pdf.setFont("helvetica", "bold");
-        pdf.text("Historique des Alertes Récentes", margin, yPosition);
+        pdf.text(t("adminStock.pdfRecentHistory"), margin, yPosition);
         yPosition += 8;
 
         // Table header
@@ -310,10 +313,10 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(9);
         pdf.setFont("helvetica", "bold");
-        pdf.text("Date", margin + 3, yPosition + 5.5);
-        pdf.text("Produit", margin + 40, yPosition + 5.5);
-        pdf.text("Type", margin + 120, yPosition + 5.5);
-        pdf.text("Stock", margin + 155, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColDate"), margin + 3, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColProduct"), margin + 40, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColType"), margin + 120, yPosition + 5.5);
+        pdf.text(t("adminStock.pdfColStock"), margin + 155, yPosition + 5.5);
 
         yPosition += 8;
 
@@ -331,7 +334,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
           pdf.setFontSize(9);
           pdf.setFont("helvetica", "normal");
 
-          const alertDate = format(new Date(alert.sent_at), "dd/MM/yy HH:mm", { locale: fr });
+          const alertDate = format(new Date(alert.sent_at), "dd/MM/yy HH:mm", { locale: dateLocale });
           const productName = alert.product_name.length > 30 
             ? alert.product_name.substring(0, 30) + "..." 
             : alert.product_name;
@@ -344,7 +347,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
             : warningColor;
           pdf.setTextColor(alertTypeColor[0], alertTypeColor[1], alertTypeColor[2]);
           pdf.setFont("helvetica", "bold");
-          pdf.text(alert.alert_type === "out_of_stock" ? "Rupture" : "Stock faible", margin + 120, yPosition + 5.5);
+          pdf.text(alert.alert_type === "out_of_stock" ? t("adminStock.pdfStatusOut") : t("adminStock.pdfStatusLow"), margin + 120, yPosition + 5.5);
 
           pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
           pdf.setFont("helvetica", "normal");
@@ -363,7 +366,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
           pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
           pdf.setFontSize(14);
           pdf.setFont("helvetica", "bold");
-          pdf.text("Graphique d'Évolution des Alertes", margin, yPosition);
+          pdf.text(t("adminStock.pdfChartTitle"), margin, yPosition);
           yPosition += 10;
 
           const canvas = await html2canvas(chartRef.current, {
@@ -394,7 +397,7 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
         pdf.setFontSize(8);
         pdf.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
         pdf.text(
-          `Page ${i} / ${totalPages}`,
+          t("adminStock.pdfPageOf", { i, total: totalPages }),
           pageWidth / 2,
           pageHeight - 8,
           { align: "center" }
@@ -406,14 +409,14 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
       pdf.save(fileName);
 
       toast({
-        title: "Rapport généré",
-        description: `Le fichier ${fileName} a été téléchargé`,
+        title: t("adminStock.reportGenerated"),
+        description: t("adminStock.reportDownloaded", { fileName }),
       });
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de générer le rapport PDF",
+        title: t("adminStock.errorTitle"),
+        description: t("adminStock.pdfError"),
         variant: "destructive",
       });
     } finally {
@@ -430,12 +433,12 @@ export function StockAlertsPDFExport({ chartRef, period = "30" }: StockAlertsPDF
       {isGenerating ? (
         <>
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Génération...
+          {t("adminStock.generating")}
         </>
       ) : (
         <>
           <FileDown className="h-4 w-4 mr-2" />
-          Exporter PDF
+          {t("adminStock.exportPDF")}
         </>
       )}
     </Button>
