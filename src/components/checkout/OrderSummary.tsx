@@ -5,6 +5,7 @@ import { useCartContext } from "@/contexts/CartContext";
 import { UnifiedCodeInput, AppliedCode } from "./UnifiedCodeInput";
 import { GiftPackagingSelect } from "./GiftPackagingSelect";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
+import { useTranslation } from "react-i18next";
 
 interface GiftPackagingOption {
   id: string;
@@ -34,6 +35,7 @@ export function OrderSummary({
   onGiftPackagingChange,
   onGiftMessageChange,
 }: OrderSummaryProps) {
+  const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const { items, subtotal, itemCount } = useCartContext();
 
@@ -49,8 +51,8 @@ export function OrderSummary({
     <div className="bg-cream/5 rounded-xl border border-gold/20 p-6 sticky top-24">
       <div className="flex items-center gap-3 mb-6">
         <ShoppingBag className="h-5 w-5 text-primary" />
-        <h2 className="font-display text-xl text-cream">Récapitulatif</h2>
-        <span className="text-sm text-cream/60">({itemCount} articles)</span>
+        <h2 className="font-display text-xl text-cream">{t("orderSummary.title")}</h2>
+        <span className="text-sm text-cream/60">{t("orderSummary.itemsCount", { count: itemCount })}</span>
       </div>
 
       {/* Products List */}
@@ -69,7 +71,7 @@ export function OrderSummary({
               >
                 {item.product?.name}
               </Link>
-              <p className="text-cream/60 text-xs mt-1">Qté: {item.quantity}</p>
+              <p className="text-cream/60 text-xs mt-1">{t("orderSummary.qty", { n: item.quantity })}</p>
               <p className="text-primary font-semibold text-sm mt-1">
                 {formatPrice((item.product?.price || 0) * item.quantity)}
               </p>
@@ -107,7 +109,7 @@ export function OrderSummary({
       {/* Totals */}
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
-          <span className="text-cream/70">Sous-total</span>
+          <span className="text-cream/70">{t("orderSummary.subtotal")}</span>
           <span className="text-cream">{formatPrice(subtotal)}</span>
         </div>
 
@@ -124,7 +126,7 @@ export function OrderSummary({
         {discountAmount > 0 && appliedCode?.type === "promo" && (
           <div className="flex justify-between text-sm">
             <span className="text-cream/70 flex items-center gap-1">
-              Réduction ({appliedCode.data.code})
+              {t("orderSummary.reduction", { code: appliedCode.data.code })}
             </span>
             <span className="text-green-500">-{formatPrice(discountAmount)}</span>
           </div>
@@ -133,23 +135,23 @@ export function OrderSummary({
         <div className="flex justify-between text-sm">
           <span className="text-cream/70 flex items-center gap-1">
             <Truck className="h-3 w-3" />
-            Livraison
+            {t("orderSummary.delivery")}
           </span>
           <span className={deliveryFee === 0 ? "text-primary" : "text-cream"}>
-            {deliveryFee === 0 ? "Gratuite" : formatPrice(deliveryFee)}
+            {deliveryFee === 0 ? t("orderSummary.free") : formatPrice(deliveryFee)}
           </span>
         </div>
 
         {subtotal < 50000 && (
           <p className="text-xs text-primary bg-primary/10 rounded-lg p-2">
-            Plus que {formatPrice(50000 - subtotal)} pour la livraison gratuite !
+            {t("orderSummary.freeHint", { amount: formatPrice(50000 - subtotal) })}
           </p>
         )}
 
         <Separator className="bg-gold/20" />
 
         <div className="flex justify-between items-baseline">
-          <span className="text-lg font-semibold text-cream">Total</span>
+          <span className="text-lg font-semibold text-cream">{t("orderSummary.total")}</span>
           <span className="text-2xl font-bold text-primary">
             {formatPrice(total)}
           </span>
@@ -160,15 +162,15 @@ export function OrderSummary({
       <div className="mt-6 space-y-2">
         <div className="flex items-center gap-2 text-xs text-cream/60">
           <ChevronRight className="h-3 w-3 text-primary" />
-          <span>Emballage premium anti-casse</span>
+          <span>{t("orderSummary.guarantee1")}</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-cream/60">
           <ChevronRight className="h-3 w-3 text-primary" />
-          <span>Livraison express 24h</span>
+          <span>{t("orderSummary.guarantee2")}</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-cream/60">
           <ChevronRight className="h-3 w-3 text-primary" />
-          <span>Paiement 100% sécurisé</span>
+          <span>{t("orderSummary.guarantee3")}</span>
         </div>
       </div>
     </div>
