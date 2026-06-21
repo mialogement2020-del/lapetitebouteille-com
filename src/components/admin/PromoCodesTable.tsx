@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import {
   Table,
   TableBody,
@@ -62,6 +63,7 @@ export function PromoCodesTable({
   onDeletePromoCode,
   onRefresh,
 }: PromoCodesTableProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -99,22 +101,22 @@ export function PromoCodesTable({
     const validUntil = promo.valid_until ? new Date(promo.valid_until) : null;
 
     if (!promo.is_active) {
-      return <Badge variant="secondary">Inactif</Badge>;
+      return <Badge variant="secondary">{t("adminPromo.table.status.inactive")}</Badge>;
     }
 
     if (validUntil && now > validUntil) {
-      return <Badge variant="destructive">Expiré</Badge>;
+      return <Badge variant="destructive">{t("adminPromo.table.status.expired")}</Badge>;
     }
 
     if (validFrom && now < validFrom) {
-      return <Badge variant="outline" className="border-gold/50 text-gold">Programmé</Badge>;
+      return <Badge variant="outline" className="border-gold/50 text-gold">{t("adminPromo.table.status.scheduled")}</Badge>;
     }
 
     if (promo.usage_limit && promo.used_count >= promo.usage_limit) {
-      return <Badge variant="destructive">Limite atteinte</Badge>;
+      return <Badge variant="destructive">{t("adminPromo.table.status.limitReached")}</Badge>;
     }
 
-    return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Actif</Badge>;
+    return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">{t("adminPromo.table.status.active")}</Badge>;
   };
 
   const getUsageDisplay = (promo: AdminPromoCode) => {
@@ -134,7 +136,7 @@ export function PromoCodesTable({
         </div>
       );
     }
-    return <span className="text-cream/60">{promo.used_count} utilisations</span>;
+    return <span className="text-cream/60">{t("adminPromo.table.usages", { count: promo.used_count })}</span>;
   };
 
   return (
@@ -144,7 +146,7 @@ export function PromoCodesTable({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
           <Input
-            placeholder="Rechercher un code..."
+            placeholder={t("adminPromo.table.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-noir/50 border-gold/20"
@@ -164,7 +166,7 @@ export function PromoCodesTable({
             className="bg-gradient-gold text-noir font-semibold"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Nouveau code
+            {t("adminPromo.table.newCode")}
           </Button>
         </div>
       </div>
@@ -177,30 +179,30 @@ export function PromoCodesTable({
               <TableHead className="text-cream/80">
                 <div className="flex items-center gap-2">
                   <Tag className="h-4 w-4" />
-                  Code
+                  {t("adminPromo.table.headerCode")}
                 </div>
               </TableHead>
               <TableHead className="text-cream/80">
                 <div className="flex items-center gap-2">
                   <Percent className="h-4 w-4" />
-                  Réduction
+                  {t("adminPromo.table.headerDiscount")}
                 </div>
               </TableHead>
-              <TableHead className="text-cream/80">Conditions</TableHead>
+              <TableHead className="text-cream/80">{t("adminPromo.table.headerConditions")}</TableHead>
               <TableHead className="text-cream/80">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Validité
+                  {t("adminPromo.table.headerValidity")}
                 </div>
               </TableHead>
               <TableHead className="text-cream/80">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
-                  Utilisation
+                  {t("adminPromo.table.headerUsage")}
                 </div>
               </TableHead>
-              <TableHead className="text-cream/80">Statut</TableHead>
-              <TableHead className="text-right text-cream/80">Actions</TableHead>
+              <TableHead className="text-cream/80">{t("adminPromo.table.headerStatus")}</TableHead>
+              <TableHead className="text-right text-cream/80">{t("adminPromo.table.headerActions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -213,7 +215,7 @@ export function PromoCodesTable({
             ) : filteredPromoCodes.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-cream/60">
-                  {searchQuery ? "Aucun code promo trouvé" : "Aucun code promo créé"}
+                  {searchQuery ? t("adminPromo.table.noFound") : t("adminPromo.table.noCodes")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -241,7 +243,7 @@ export function PromoCodesTable({
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {copiedCode === promo.code ? "Copié !" : "Copier le code"}
+                            {copiedCode === promo.code ? t("adminPromo.table.copied") : t("adminPromo.table.copyCode")}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -265,33 +267,33 @@ export function PromoCodesTable({
                     </div>
                     {promo.max_discount_amount && promo.discount_type === "percentage" && (
                       <p className="text-xs text-cream/50">
-                        Max: {formatCurrency(promo.max_discount_amount)}
+                        {t("adminPromo.table.maxDiscount", { amount: formatCurrency(promo.max_discount_amount) })}
                       </p>
                     )}
                   </TableCell>
                   <TableCell>
                     {promo.min_order_amount && promo.min_order_amount > 0 ? (
                       <span className="text-sm text-cream/70">
-                        Min. {formatCurrency(promo.min_order_amount)}
+                        {t("adminPromo.table.minOrder", { amount: formatCurrency(promo.min_order_amount) })}
                       </span>
                     ) : (
-                      <span className="text-sm text-cream/50">Aucune</span>
+                      <span className="text-sm text-cream/50">{t("adminPromo.table.noConditions")}</span>
                     )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
                       {promo.valid_from && (
                         <p className="text-cream/70">
-                          Du {format(new Date(promo.valid_from), "dd/MM/yy", { locale: fr })}
+                          {t("adminPromo.table.validFrom", { date: format(new Date(promo.valid_from), "dd/MM/yy", { locale: fr }) })}
                         </p>
                       )}
                       {promo.valid_until && (
                         <p className="text-cream/70">
-                          Au {format(new Date(promo.valid_until), "dd/MM/yy", { locale: fr })}
+                          {t("adminPromo.table.validUntil", { date: format(new Date(promo.valid_until), "dd/MM/yy", { locale: fr }) })}
                         </p>
                       )}
                       {!promo.valid_from && !promo.valid_until && (
-                        <span className="text-cream/50">Illimité</span>
+                        <span className="text-cream/50">{t("adminPromo.table.unlimited")}</span>
                       )}
                     </div>
                   </TableCell>
@@ -319,21 +321,22 @@ export function PromoCodesTable({
                         </AlertDialogTrigger>
                         <AlertDialogContent className="bg-noir border-gold/20">
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Supprimer le code promo ?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Le code <strong>{promo.code}</strong> sera définitivement supprimé.
-                              Cette action est irréversible.
-                            </AlertDialogDescription>
+                            <AlertDialogTitle>{t("adminPromo.table.deleteTitle")}</AlertDialogTitle>
+                            <AlertDialogDescription
+                              dangerouslySetInnerHTML={{
+                                __html: t("adminPromo.table.deleteDesc", { code: promo.code }),
+                              }}
+                            />
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel className="border-gold/20">
-                              Annuler
+                              {t("adminCategories.table.deleteCancel")}
                             </AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => onDeletePromoCode(promo)}
                               className="bg-destructive hover:bg-destructive/90"
                             >
-                              Supprimer
+                              {t("adminCategories.table.deleteConfirm")}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -351,10 +354,10 @@ export function PromoCodesTable({
       {filteredPromoCodes.length > 0 && (
         <div className="flex items-center justify-between text-sm text-cream/60">
           <span>
-            {filteredPromoCodes.length} code{filteredPromoCodes.length > 1 ? "s" : ""} promo
+            {t("adminPromo.table.summary", { count: filteredPromoCodes.length })}
           </span>
           <span>
-            {filteredPromoCodes.filter((p) => p.is_active).length} actif{filteredPromoCodes.filter((p) => p.is_active).length > 1 ? "s" : ""}
+            {t("adminPromo.table.active", { count: filteredPromoCodes.filter((p) => p.is_active).length })}
           </span>
         </div>
       )}
