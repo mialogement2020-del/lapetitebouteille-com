@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 interface ProductStock {
   id: string;
@@ -37,6 +38,7 @@ interface ReportStats {
 }
 
 export function ReportPreview() {
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState<ReportStats | null>(null);
@@ -184,18 +186,18 @@ export function ReportPreview() {
   const getStatusBadge = (status: ProductStock["status"]) => {
     switch (status) {
       case "out_of_stock":
-        return <Badge variant="destructive" className="text-xs">RUPTURE</Badge>;
+        return <Badge variant="destructive" className="text-xs">{t("adminReports.badgeOutOfStock")}</Badge>;
       case "low_stock":
-        return <Badge className="bg-orange-500 text-xs">STOCK FAIBLE</Badge>;
+        return <Badge className="bg-orange-500 text-xs">{t("adminReports.badgeLowStock")}</Badge>;
       case "critical":
-        return <Badge className="bg-yellow-500 text-noir text-xs">CRITIQUE</Badge>;
+        return <Badge className="bg-yellow-500 text-noir text-xs">{t("adminReports.badgeCritical")}</Badge>;
       default:
-        return <Badge variant="secondary" className="text-xs">OK</Badge>;
+        return <Badge variant="secondary" className="text-xs">{t("adminReports.badgeOk")}</Badge>;
     }
   };
 
   const formatPrice = (price: number) => 
-    new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
+    new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR").format(price) + " FCFA";
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -205,24 +207,24 @@ export function ReportPreview() {
           className="border-gold/30 hover:bg-cream/5 text-cream"
         >
           <Eye className="h-4 w-4 mr-2" />
-          Aperçu du rapport
+          {t("adminReports.preview")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[85vh] bg-noir border-gold/30">
         <DialogHeader>
           <DialogTitle className="text-cream flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
-            Aperçu du rapport de stock
+            {t("adminReports.previewTitle")}
           </DialogTitle>
           <DialogDescription className="text-cream/60">
-            Prévisualisation des données qui seront incluses dans le prochain rapport
+            {t("adminReports.nextReportPreview")}
           </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <RefreshCw className="h-6 w-6 animate-spin text-primary" />
-            <span className="ml-2 text-cream/60">Chargement des données...</span>
+            <span className="ml-2 text-cream/60">{t("adminReports.loadingData")}</span>
           </div>
         ) : stats ? (
           <ScrollArea className="max-h-[60vh] pr-4">
@@ -235,7 +237,7 @@ export function ReportPreview() {
                   className="bg-cream/5 border border-destructive/30 rounded-lg p-4 text-center"
                 >
                   <p className="text-3xl font-bold text-destructive">{stats.outOfStock}</p>
-                  <p className="text-xs text-cream/60 uppercase mt-1">Ruptures</p>
+                  <p className="text-xs text-cream/60 uppercase mt-1">{t("adminReports.outOfStock")}</p>
                 </motion.div>
                 
                 <motion.div
@@ -245,7 +247,7 @@ export function ReportPreview() {
                   className="bg-cream/5 border border-orange-500/30 rounded-lg p-4 text-center"
                 >
                   <p className="text-3xl font-bold text-orange-500">{stats.lowStock}</p>
-                  <p className="text-xs text-cream/60 uppercase mt-1">Stock faible</p>
+                  <p className="text-xs text-cream/60 uppercase mt-1">{t("adminReports.lowStockLabel")}</p>
                 </motion.div>
                 
                 <motion.div
@@ -255,7 +257,7 @@ export function ReportPreview() {
                   className="bg-cream/5 border border-yellow-500/30 rounded-lg p-4 text-center"
                 >
                   <p className="text-3xl font-bold text-yellow-500">{stats.criticalStock}</p>
-                  <p className="text-xs text-cream/60 uppercase mt-1">Critique</p>
+                  <p className="text-xs text-cream/60 uppercase mt-1">{t("adminReports.critical")}</p>
                 </motion.div>
                 
                 <motion.div
@@ -278,15 +280,14 @@ export function ReportPreview() {
                       {stats.trendPercentage > 0 ? "+" : ""}{stats.trendPercentage}%
                     </p>
                   </div>
-                  <p className="text-xs text-cream/60 uppercase mt-1">Tendance</p>
+                  <p className="text-xs text-cream/60 uppercase mt-1">{t("adminReports.trend")}</p>
                 </motion.div>
               </div>
 
               {/* Alert summary */}
               <div className="bg-cream/5 border border-gold/10 rounded-lg p-4">
                 <p className="text-sm text-cream/70">
-                  <span className="font-medium text-cream">{stats.totalAlertsThisWeek}</span> alertes cette semaine 
-                  vs <span className="font-medium text-cream">{stats.previousWeekAlerts}</span> la semaine précédente
+                  {t("adminReports.alertsThisWeek", { count: stats.totalAlertsThisWeek })} {t("adminReports.vsPrevWeek", { count: stats.previousWeekAlerts })}
                 </p>
               </div>
 
@@ -295,18 +296,18 @@ export function ReportPreview() {
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-cream flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4 text-primary" />
-                    Produits nécessitant attention ({products.length})
+                    {t("adminReports.needAttention", { count: products.length })}
                   </h3>
                   
                   <div className="border border-gold/20 rounded-lg overflow-hidden">
                     <table className="w-full">
                       <thead className="bg-cream/5">
                         <tr>
-                          <th className="text-left text-xs font-medium text-cream/60 uppercase px-4 py-3">Produit</th>
-                          <th className="text-center text-xs font-medium text-cream/60 uppercase px-2 py-3">Stock</th>
-                          <th className="text-center text-xs font-medium text-cream/60 uppercase px-2 py-3 hidden md:table-cell">Ventes/jour</th>
-                          <th className="text-center text-xs font-medium text-cream/60 uppercase px-2 py-3 hidden md:table-cell">Jours restants</th>
-                          <th className="text-right text-xs font-medium text-cream/60 uppercase px-4 py-3">Statut</th>
+                          <th className="text-left text-xs font-medium text-cream/60 uppercase px-4 py-3">{t("adminReports.colProduct")}</th>
+                          <th className="text-center text-xs font-medium text-cream/60 uppercase px-2 py-3">{t("adminReports.colStock")}</th>
+                          <th className="text-center text-xs font-medium text-cream/60 uppercase px-2 py-3 hidden md:table-cell">{t("adminReports.colSalesDay")}</th>
+                          <th className="text-center text-xs font-medium text-cream/60 uppercase px-2 py-3 hidden md:table-cell">{t("adminReports.colDaysLeft")}</th>
+                          <th className="text-right text-xs font-medium text-cream/60 uppercase px-4 py-3">{t("adminReports.colStatus")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -344,7 +345,7 @@ export function ReportPreview() {
                                   : "text-cream/70"
                               }`}>
                                 {product.daysUntilStockout !== null 
-                                  ? (product.daysUntilStockout === 0 ? "Épuisé" : `≈ ${product.daysUntilStockout}j`)
+                                  ? (product.daysUntilStockout === 0 ? t("adminReports.exhausted") : t("adminReports.daysShort", { n: product.daysUntilStockout }))
                                   : "-"
                                 }
                               </span>
@@ -361,32 +362,29 @@ export function ReportPreview() {
               ) : (
                 <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 text-center">
                   <p className="text-4xl mb-2">✓</p>
-                  <p className="text-cream font-medium">Tous les stocks sont suffisants !</p>
-                  <p className="text-sm text-cream/60 mt-1">Aucun produit ne nécessite d'attention particulière.</p>
+                  <p className="text-cream font-medium">{t("adminReports.stocksOk")}</p>
+                  <p className="text-sm text-cream/60 mt-1">{t("adminReports.noAttentionNeeded")}</p>
                 </div>
               )}
 
               {/* Recommendations */}
               <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-blue-400 mb-2">💡 Recommandations</h4>
+                <h4 className="text-sm font-medium text-blue-400 mb-2">💡 {t("adminReports.recommendations")}</h4>
                 <ul className="text-sm text-cream/70 space-y-1 list-disc list-inside">
                   {stats.outOfStock > 0 && (
-                    <li><strong>{stats.outOfStock} produit(s) en rupture</strong> nécessitent un réapprovisionnement urgent</li>
+                    <li>{t("adminReports.recoUrgent", { count: stats.outOfStock })}</li>
                   )}
                   {stats.lowStock > 0 && (
-                    <li>Planifiez le réapprovisionnement des <strong>{stats.lowStock} produit(s) à stock faible</strong></li>
+                    <li>{t("adminReports.recoLow", { count: stats.lowStock })}</li>
                   )}
                   {stats.trendPercentage > 30 && (
-                    <li>⚠️ Tendance à la hausse de {stats.trendPercentage}% - Revoir la gestion des stocks</li>
+                    <li>{t("adminReports.recoTrend", { pct: stats.trendPercentage })}</li>
                   )}
                   {products.filter(p => p.daysUntilStockout !== null && p.daysUntilStockout <= 7 && p.daysUntilStockout > 0).length > 0 && (
-                    <li>
-                      {products.filter(p => p.daysUntilStockout !== null && p.daysUntilStockout <= 7 && p.daysUntilStockout > 0).length} produit(s) 
-                      épuisé(s) d'ici 7 jours selon les prévisions
-                    </li>
+                    <li>{t("adminReports.recoStockout", { count: products.filter(p => p.daysUntilStockout !== null && p.daysUntilStockout <= 7 && p.daysUntilStockout > 0).length })}</li>
                   )}
                   {stats.outOfStock === 0 && stats.lowStock === 0 && (
-                    <li>✓ Excellente gestion des stocks !</li>
+                    <li>{t("adminReports.recoExcellent")}</li>
                   )}
                 </ul>
               </div>
@@ -394,19 +392,19 @@ export function ReportPreview() {
               {/* Timestamp */}
               <div className="flex items-center justify-center gap-2 text-xs text-cream/50">
                 <Clock className="h-3 w-3" />
-                Données au {new Date().toLocaleDateString("fr-FR", { 
+                {t("adminReports.dataAt", { date: new Date().toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR", { 
                   day: "numeric", 
                   month: "long", 
                   year: "numeric",
                   hour: "2-digit",
                   minute: "2-digit"
-                })}
+                }) })}
               </div>
             </div>
           </ScrollArea>
         ) : (
           <div className="text-center py-8 text-cream/60">
-            Impossible de charger les données
+            {t("adminReports.loadDataError")}
           </div>
         )}
 
@@ -420,7 +418,7 @@ export function ReportPreview() {
             className="border-gold/30 hover:bg-cream/5 text-cream"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
-            Actualiser
+            {t("adminReports.refresh")}
           </Button>
         </div>
       </DialogContent>

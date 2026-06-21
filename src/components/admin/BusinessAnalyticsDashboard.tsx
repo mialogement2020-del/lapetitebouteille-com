@@ -32,11 +32,13 @@ import {
 } from "recharts";
 import { Download, TrendingUp, Users, Crown, Layers } from "lucide-react";
 import { convertToCSV, downloadCSV } from "@/lib/csvExport";
+import { useTranslation } from "react-i18next";
 
 const fmt = (n: number) => new Intl.NumberFormat("fr-FR").format(Math.round(n || 0));
 const fmtFCFA = (n: number) => `${fmt(n)} FCFA`;
 
 export function BusinessAnalyticsDashboard() {
+  const { t } = useTranslation();
   const [days, setDays] = useState(90);
   const {
     cohorts,
@@ -109,19 +111,19 @@ export function BusinessAnalyticsDashboard() {
       {/* Period selector */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-display text-cream">Analytics business</h2>
-          <p className="text-cream/60 text-sm">Cohortes, LTV et attribution MLM</p>
+          <h2 className="text-2xl font-display text-cream">{t("adminAnalytics.dashboard")}</h2>
+          <p className="text-cream/60 text-sm">{t("adminAnalytics.description")}</p>
         </div>
         <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
           <SelectTrigger className="w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">7 derniers jours</SelectItem>
-            <SelectItem value="30">30 derniers jours</SelectItem>
-            <SelectItem value="90">90 derniers jours</SelectItem>
-            <SelectItem value="180">6 derniers mois</SelectItem>
-            <SelectItem value="365">12 derniers mois</SelectItem>
+            <SelectItem value="7">{t("adminAnalytics.days7")}</SelectItem>
+            <SelectItem value="30">{t("adminAnalytics.days30")}</SelectItem>
+            <SelectItem value="90">{t("adminAnalytics.days90")}</SelectItem>
+            <SelectItem value="180">{t("adminAnalytics.days180")}</SelectItem>
+            <SelectItem value="365">{t("adminAnalytics.days365")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -131,46 +133,43 @@ export function BusinessAnalyticsDashboard() {
         <Card className="bg-noir-light/40 border-gold/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-cream/60 text-xs uppercase">
-              <TrendingUp className="h-3 w-3" /> CA période
+              <TrendingUp className="h-3 w-3" /> {t("adminAnalytics.revenuePeriod")}
             </div>
             <div className="text-2xl font-bold text-cream mt-1">{fmtFCFA(totalRevenue)}</div>
-            <div className="text-xs text-cream/50">{fmt(totalOrders)} commandes</div>
+            <div className="text-xs text-cream/50">{t("adminAnalytics.ordersCount", { count: totalOrders })}</div>
           </CardContent>
         </Card>
         <Card className="bg-noir-light/40 border-gold/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-cream/60 text-xs uppercase">
-              <Users className="h-3 w-3" /> LTV moyenne
+              <Users className="h-3 w-3" /> {t("adminAnalytics.avgLTV")}
             </div>
             <div className="text-2xl font-bold text-cream mt-1">{fmtFCFA(avgLTV)}</div>
-            <div className="text-xs text-cream/50">Top {ltv.length} clients</div>
+            <div className="text-xs text-cream/50">{t("adminAnalytics.topClients", { count: ltv.length })}</div>
           </CardContent>
         </Card>
         <Card className="bg-noir-light/40 border-gold/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-cream/60 text-xs uppercase">
-              <Crown className="h-3 w-3" /> CA parrainage
+              <Crown className="h-3 w-3" /> {t("adminAnalytics.referralRevenue")}
             </div>
             <div className="text-2xl font-bold text-cream mt-1">
               {fmtFCFA(totalReferralRev)}
             </div>
             <div className="text-xs text-cream/50">
-              {totalRevenue > 0
-                ? Math.round((totalReferralRev / totalRevenue) * 100)
-                : 0}
-              % du CA
+              {t("adminAnalytics.percentOfRevenue", { pct: totalRevenue > 0 ? Math.round((totalReferralRev / totalRevenue) * 100) : 0 })}
             </div>
           </CardContent>
         </Card>
         <Card className="bg-noir-light/40 border-gold/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-cream/60 text-xs uppercase">
-              <Layers className="h-3 w-3" /> CA marketplace
+              <Layers className="h-3 w-3" /> {t("adminAnalytics.marketplaceRevenue")}
             </div>
             <div className="text-2xl font-bold text-cream mt-1">
               {fmtFCFA(totalMarketplaceRev)}
             </div>
-            <div className="text-xs text-cream/50">Vendeurs tiers</div>
+            <div className="text-xs text-cream/50">{t("adminAnalytics.thirdPartyVendors")}</div>
           </CardContent>
         </Card>
       </div>
@@ -178,7 +177,7 @@ export function BusinessAnalyticsDashboard() {
       {/* Revenue breakdown chart */}
       <Card className="bg-noir-light/40 border-gold/20">
         <CardHeader>
-          <CardTitle className="text-cream">Évolution du CA par source</CardTitle>
+          <CardTitle className="text-cream">{t("adminAnalytics.revenueBySource")}</CardTitle>
         </CardHeader>
         <CardContent className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -205,9 +204,9 @@ export function BusinessAnalyticsDashboard() {
                 formatter={(v: number) => fmtFCFA(v)}
               />
               <Legend />
-              <Area type="monotone" dataKey="direct_revenue" name="Direct" stackId="1" stroke="hsl(var(--primary))" fill="url(#cDirect)" />
-              <Area type="monotone" dataKey="referral_revenue" name="Parrainage" stackId="1" stroke="#10b981" fill="url(#cRef)" />
-              <Area type="monotone" dataKey="marketplace_revenue" name="Marketplace" stackId="1" stroke="#8b5cf6" fill="url(#cMkt)" />
+              <Area type="monotone" dataKey="direct_revenue" name={t("adminAnalytics.seriesDirect")} stackId="1" stroke="hsl(var(--primary))" fill="url(#cDirect)" />
+              <Area type="monotone" dataKey="referral_revenue" name={t("adminAnalytics.seriesReferral")} stackId="1" stroke="#10b981" fill="url(#cRef)" />
+              <Area type="monotone" dataKey="marketplace_revenue" name={t("adminAnalytics.seriesMarketplace")} stackId="1" stroke="#8b5cf6" fill="url(#cMkt)" />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
@@ -216,7 +215,7 @@ export function BusinessAnalyticsDashboard() {
       {/* MLM attribution */}
       <Card className="bg-noir-light/40 border-gold/20">
         <CardHeader>
-          <CardTitle className="text-cream">Attribution MLM par niveau</CardTitle>
+          <CardTitle className="text-cream">{t("adminAnalytics.mlmAttribution")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
@@ -231,25 +230,25 @@ export function BusinessAnalyticsDashboard() {
                     formatter={(v: number) => fmtFCFA(v)}
                   />
                   <Legend />
-                  <Bar dataKey="total_commissions" name="Commissions versées" fill="hsl(var(--primary))" />
-                  <Bar dataKey="total_attributed_revenue" name="CA attribué" fill="#10b981" />
+                  <Bar dataKey="total_commissions" name={t("adminAnalytics.commissionsPaid")} fill="hsl(var(--primary))" />
+                  <Bar dataKey="total_attributed_revenue" name={t("adminAnalytics.attributedRevenue")} fill="#10b981" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Niveau</TableHead>
-                  <TableHead>Ambassadeurs</TableHead>
-                  <TableHead>Comm.</TableHead>
-                  <TableHead>CA attribué</TableHead>
+                  <TableHead>{t("adminAnalytics.level")}</TableHead>
+                  <TableHead>{t("adminAnalytics.ambassadors")}</TableHead>
+                  <TableHead>{t("adminAnalytics.commissionsShort")}</TableHead>
+                  <TableHead>{t("adminAnalytics.attributedRevenue")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {attribution.map((a) => (
                   <TableRow key={a.level}>
                     <TableCell>
-                      <Badge variant="outline">Niveau {a.level}</Badge>
+                      <Badge variant="outline">{t("adminAnalytics.levelN", { n: a.level })}</Badge>
                     </TableCell>
                     <TableCell>{fmt(a.ambassador_count)}</TableCell>
                     <TableCell>{fmtFCFA(a.total_commissions)}</TableCell>
@@ -259,7 +258,7 @@ export function BusinessAnalyticsDashboard() {
                 {attribution.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-cream/50">
-                      Aucune commission sur la période
+                      {t("adminAnalytics.noCommissions")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -272,18 +271,18 @@ export function BusinessAnalyticsDashboard() {
       {/* Top ambassadors */}
       <Card className="bg-noir-light/40 border-gold/20">
         <CardHeader>
-          <CardTitle className="text-cream">Top ambassadeurs</CardTitle>
+          <CardTitle className="text-cream">{t("adminAnalytics.topAmbassadors")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Ambassadeur</TableHead>
-                  <TableHead>Filleuls/Ventes</TableHead>
-                  <TableHead>CA généré</TableHead>
-                  <TableHead>Commissions</TableHead>
-                  <TableHead>Conv. %</TableHead>
+                  <TableHead>{t("adminAnalytics.ambassador")}</TableHead>
+                  <TableHead>{t("adminAnalytics.referralsSales")}</TableHead>
+                  <TableHead>{t("adminAnalytics.revenueGenerated")}</TableHead>
+                  <TableHead>{t("adminAnalytics.commissions")}</TableHead>
+                  <TableHead>{t("adminAnalytics.conversionPct")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -302,7 +301,7 @@ export function BusinessAnalyticsDashboard() {
                 {topAmbassadors.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-cream/50">
-                      Aucun ambassadeur actif
+                      {t("adminAnalytics.noActiveAmbassadors")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -315,25 +314,25 @@ export function BusinessAnalyticsDashboard() {
       {/* Cohorts */}
       <Card className="bg-noir-light/40 border-gold/20">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-cream">Cohortes & rétention</CardTitle>
+          <CardTitle className="text-cream">{t("adminAnalytics.cohortsRetention")}</CardTitle>
           <Button size="sm" variant="outline" onClick={exportCohorts} disabled={cohorts.length === 0}>
-            <Download className="h-4 w-4 mr-2" /> CSV
+            <Download className="h-4 w-4 mr-2" /> {t("adminAnalytics.csv")}
           </Button>
         </CardHeader>
         <CardContent>
           {cohortsLoading ? (
-            <div className="text-cream/60">Chargement…</div>
+            <div className="text-cream/60">{t("adminAnalytics.loading")}</div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Cohorte</TableHead>
-                    <TableHead>Taille</TableHead>
-                    <TableHead>Rétention M+1</TableHead>
-                    <TableHead>Rétention M+3</TableHead>
-                    <TableHead>Rétention M+6</TableHead>
-                    <TableHead>Revenu</TableHead>
+                    <TableHead>{t("adminAnalytics.cohort")}</TableHead>
+                    <TableHead>{t("adminAnalytics.size")}</TableHead>
+                    <TableHead>{t("adminAnalytics.retentionM1")}</TableHead>
+                    <TableHead>{t("adminAnalytics.retentionM3")}</TableHead>
+                    <TableHead>{t("adminAnalytics.retentionM6")}</TableHead>
+                    <TableHead>{t("adminAnalytics.revenueCol")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -362,7 +361,7 @@ export function BusinessAnalyticsDashboard() {
                   {cohorts.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-cream/50">
-                        Pas encore assez de données
+                        {t("adminAnalytics.notEnoughData")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -376,24 +375,24 @@ export function BusinessAnalyticsDashboard() {
       {/* LTV table */}
       <Card className="bg-noir-light/40 border-gold/20">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-cream">LTV clients (top 100)</CardTitle>
+          <CardTitle className="text-cream">{t("adminAnalytics.ltvTop100")}</CardTitle>
           <Button size="sm" variant="outline" onClick={exportLTV} disabled={ltv.length === 0}>
-            <Download className="h-4 w-4 mr-2" /> CSV
+            <Download className="h-4 w-4 mr-2" /> {t("adminAnalytics.csv")}
           </Button>
         </CardHeader>
         <CardContent>
           {ltvLoading ? (
-            <div className="text-cream/60">Chargement…</div>
+            <div className="text-cream/60">{t("adminAnalytics.loading")}</div>
           ) : (
             <div className="overflow-x-auto max-h-96">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Commandes</TableHead>
-                    <TableHead>Total dépensé</TableHead>
-                    <TableHead>Panier moyen</TableHead>
-                    <TableHead>Jours actifs</TableHead>
+                    <TableHead>{t("adminAnalytics.client")}</TableHead>
+                    <TableHead>{t("adminAnalytics.ordersCol")}</TableHead>
+                    <TableHead>{t("adminAnalytics.totalSpent")}</TableHead>
+                    <TableHead>{t("adminAnalytics.avgBasket")}</TableHead>
+                    <TableHead>{t("adminAnalytics.activeDays")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -405,7 +404,7 @@ export function BusinessAnalyticsDashboard() {
                       <TableCell>{fmt(c.order_count)}</TableCell>
                       <TableCell>{fmtFCFA(Number(c.total_spent))}</TableCell>
                       <TableCell>{fmtFCFA(Number(c.avg_order_value))}</TableCell>
-                      <TableCell>{c.days_active}j</TableCell>
+                      <TableCell>{t("adminAnalytics.daysSuffix", { n: c.days_active })}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
