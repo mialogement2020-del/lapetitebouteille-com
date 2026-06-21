@@ -1005,5 +1005,95 @@
       "insufficientFunds": "Insufficient balance.",
       "walletNotFound": "Wallet not found."
     }
+  },
+  "ambassadorNotifications": {
+    "title": "Notifications",
+    "unread_one": "{{count}} new",
+    "unread_other": "{{count}} new",
+    "markAllRead": "Mark all read",
+    "loading": "Loading...",
+    "empty": "No notifications",
+    "emptyHint": "Your commissions and bonuses will appear here",
+    "new": "NEW",
+    "count_one": "{{count}} notification",
+    "count_other": "{{count}} notifications"
+  },
+  "challenges": {
+    "typeLabels": {
+      "referrals": "Referrals",
+      "sales": "Sales",
+      "signups": "Sign-ups",
+      "orders": "Orders"
+    },
+    "ended": "Ended",
+    "completed": "Completed",
+    "progress": "Progress",
+    "join": "Join",
+    "empty": "No active challenges right now. Check back soon!",
+    "title": "Active Challenges",
+    "subtitle": "Take on challenges to earn bonuses",
+    "timeLeft": "{{days}}d {{hours}}h",
+    "timeLeftHours": "{{hours}}h"
+  },
+  "commissionHistory": {
+    "status": {
+      "pending": "Pending",
+      "completed": "Paid",
+      "failed": "Failed",
+      "refunded": "Refunded"
+    },
+    "level1": "Direct",
+    "level2": "Level 2",
+    "level3": "Level 3",
+    "levelN": "Level {{level}}",
+    "empty": "No commissions yet",
+    "emptyHint": "Share your referral link to start earning",
+    "orderLabel": "Order"
+  },
+  "incomeSimulator": {
+    "title": "Income Simulator",
+    "subtitle": "Estimate your potential earnings",
+    "directReferrals": "Direct referrals",
+    "avgOrder": "Average order value",
+    "ordersPerMonth": "Orders/month per referral",
+    "estimatedEarnings": "Estimated earnings",
+    "level1": "Level 1 (direct)",
+    "level2": "Level 2",
+    "level3": "Level 3",
+    "perMonth": "/mo",
+    "monthlyTotal": "Monthly total",
+    "annualProjection": "Annual projection",
+    "networkSize": "Estimated network size",
+    "members": "~{{count}} members",
+    "disclaimer": "* These estimates are indicative and based on current commission rates. Actual results depend on your network's activity."
+  },
+  "linkStats": {
+    "title": "Your link performance",
+    "subtitle": "Click and conversion statistics",
+    "globalConversion": "{{rate}}% overall conversion",
+    "clicksLabel": "Link clicks",
+    "clicksDesc": "Number of times your links were opened",
+    "signupsLabel": "Sign-ups",
+    "signupsDesc": "Conversion rate: {{rate}}%",
+    "ordersLabel": "Orders generated",
+    "ordersDesc": "Order rate: {{rate}}%",
+    "revenueLabel": "Revenue generated",
+    "revenueDesc": "Total revenue via your links",
+    "funnel": "Conversion funnel",
+    "funnelClicks": "Clicks",
+    "funnelSignups": "Sign-ups",
+    "funnelOrders": "Orders"
+  },
+  "leaderboard": {
+    "title": "Monthly Leaderboard",
+    "live": "Live",
+    "empty": "No rankings yet this month. Be the first!",
+    "you": "(you)",
+    "referralsLabel": "Referrals",
+    "ordersLabel": "Orders",
+    "thisMonth": "this month",
+    "showLess": "Show less",
+    "showMore": "Show {{count}} more",
+    "defaultName": "Ambassador"
   }
 }
