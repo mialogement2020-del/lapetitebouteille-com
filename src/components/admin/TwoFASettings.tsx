@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,6 @@ import { TwoFASetupDialog } from "./TwoFASetupDialog";
 import { TwoFAVerifyDialog } from "./TwoFAVerifyDialog";
 
 export function TwoFASettings() {
-  const { t } = useTranslation();
   const { 
     status, 
     loading, 
@@ -56,10 +54,10 @@ export function TwoFASettings() {
             <div className="space-y-1">
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                t("adminTwoFA.title")
+                Authentification à deux facteurs (2FA)
               </CardTitle>
               <CardDescription>
-                t("adminTwoFA.desc")
+                Sécurisez les opérations sensibles avec une vérification supplémentaire
               </CardDescription>
             </div>
             <Badge 
@@ -69,12 +67,12 @@ export function TwoFASettings() {
               {status?.is_enabled ? (
                 <>
                   <ShieldCheck className="h-3 w-3" />
-                  t("adminTwoFA.statusEnabled")
+                  Activé
                 </>
               ) : (
                 <>
                   <ShieldOff className="h-3 w-3" />
-                  t("adminTwoFA.statusDisabled")
+                  Désactivé
                 </>
               )}
             </Badge>
@@ -85,14 +83,14 @@ export function TwoFASettings() {
             <div className="space-y-0.5">
               <p className="font-medium">
                 {status?.is_enabled 
-                  ? "t("adminTwoFA.activeProtection")" 
-                  : "t("adminTwoFA.enableProtection")"
+                  ? "La protection 2FA est active" 
+                  : "Activer la protection 2FA"
                 }
               </p>
               <p className="text-sm text-muted-foreground">
                 {status?.is_enabled 
-                  ? "t("adminTwoFA.sensitiveOpsVerification")"
-                  : "t("adminTwoFA.recommendedSecurity")"
+                  ? "Les opérations sensibles nécessiteront une vérification"
+                  : "Recommandé pour une sécurité maximale"
                 }
               </p>
             </div>
@@ -112,15 +110,15 @@ export function TwoFASettings() {
           {status?.is_enabled && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">t("adminTwoFA.backupCodes")</span>
+                <span className="text-muted-foreground">Codes de secours</span>
                 <span className={status.has_backup_codes ? "text-success" : "text-warning"}>
-                  {status.has_backup_codes ? "t("adminTwoFA.configured")" : "t("adminTwoFA.notConfigured")"}
+                  {status.has_backup_codes ? "Configurés" : "Non configurés"}
                 </span>
               </div>
               
               {status.last_verified_at && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">t("adminTwoFA.lastVerification")</span>
+                  <span className="text-muted-foreground">Dernière vérification</span>
                   <span>
                     {new Date(status.last_verified_at).toLocaleString("fr-FR")}
                   </span>
@@ -128,9 +126,9 @@ export function TwoFASettings() {
               )}
 
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">t("adminTwoFA.session2FA")</span>
+                <span className="text-muted-foreground">Session 2FA</span>
                 <Badge variant={status.session_valid ? "outline" : "destructive"} className="text-xs">
-                  {status.session_valid ? "t("adminTwoFA.valid")" : "t("adminTwoFA.expired")"}
+                  {status.session_valid ? "Valide" : "Expirée"}
                 </Badge>
               </div>
 
@@ -141,19 +139,19 @@ export function TwoFASettings() {
                 onClick={handleEnableClick}
               >
                 <Settings2 className="h-4 w-4 mr-2" />
-                t("adminTwoFA.reconfigure")
+                Reconfigurer le 2FA
               </Button>
             </div>
           )}
 
           {!status?.is_enabled && (
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-              <h4 className="font-medium text-sm mb-2">t("adminTwoFA.protectedOps")</h4>
+              <h4 className="font-medium text-sm mb-2">Opérations protégées par 2FA :</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>t("adminTwoFA.op1")</li>
-                <li>t("adminTwoFA.op2")</li>
-                <li>t("adminTwoFA.op3")</li>
-                <li>t("adminTwoFA.op4")</li>
+                <li>• Approbation des demandes de retrait</li>
+                <li>• Modification des permissions admin</li>
+                <li>• Suppression de produits/catégories</li>
+                <li>• Modification des taux de commission</li>
               </ul>
             </div>
           )}
@@ -173,8 +171,8 @@ export function TwoFASettings() {
         onOpenChange={setShowDisable}
         onVerify={handleDisable}
         loading={loading}
-        title={t("adminTwoFA.disableTitle")}
-        description={t("adminTwoFA.disableDesc")}
+        title="Désactiver le 2FA"
+        description="Entrez votre code d'authentification pour confirmer la désactivation"
       />
     </>
   );

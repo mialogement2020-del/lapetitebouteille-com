@@ -1,4 +1,4 @@
-import { useTranslation, Star, CheckCircle, XCircle, ShoppingBag, Calendar, Loader2 } from "lucide-react";
+import { Star, CheckCircle, XCircle, ShoppingBag, Calendar, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -73,10 +73,10 @@ export function ReviewModerationDialog({
         <DialogHeader>
           <DialogTitle className="text-cream flex items-center gap-3">
             <Star className="h-5 w-5 text-primary" />
-            {t("adminReviews.dialog.title")}
+            Modération d'avis
           </DialogTitle>
           <DialogDescription className="text-cream/60">
-            {t("adminReviews.dialog.description")}
+            Examiner et modérer cet avis client
           </DialogDescription>
         </DialogHeader>
 
@@ -96,7 +96,7 @@ export function ReviewModerationDialog({
             )}
             <div>
               <p className="text-cream font-medium">
-                {review.product?.name || "t("adminReviews.dialog.deletedProduct")"}
+                {review.product?.name || "Produit supprimé"}
               </p>
               <div className="flex items-center gap-2 mt-1">
                 {renderStars(review.rating)}
@@ -112,12 +112,12 @@ export function ReviewModerationDialog({
                 ? "bg-success/20 text-success border-success/30" 
                 : "bg-warning/20 text-warning border-warning/30"
             } border`}>
-              {review.is_approved ? "t("adminReviews.dialog.approved")" : "t("adminReviews.dialog.pendingModeration")"}
+              {review.is_approved ? "Approuvé" : "En attente de modération"}
             </Badge>
             {review.is_verified_purchase && (
               <Badge className="bg-info/20 text-info border-info/30 border">
                 <ShoppingBag className="h-3 w-3 mr-1" />
-                {t("adminReviews.dialog.verifiedPurchase")}
+                Achat vérifié
               </Badge>
             )}
           </div>
@@ -126,15 +126,15 @@ export function ReviewModerationDialog({
           <div className="space-y-3">
             {review.title && (
               <div>
-                <p className="text-cream/60 text-xs mb-1">{t("adminReviews.dialog.titleLabel")}</p>
+                <p className="text-cream/60 text-xs mb-1">Titre</p>
                 <p className="text-cream font-medium">{review.title}</p>
               </div>
             )}
             <div>
-              <p className="text-cream/60 text-xs mb-1">{t("adminReviews.dialog.commentLabel")}</p>
+              <p className="text-cream/60 text-xs mb-1">Commentaire</p>
               <div className="p-3 rounded-lg bg-cream/5 border border-gold/10">
                 <p className="text-cream text-sm whitespace-pre-wrap">
-                  {review.comment || "t("adminReviews.dialog.noComment")"}
+                  {review.comment || "Aucun commentaire"}
                 </p>
               </div>
             </div>
@@ -155,7 +155,7 @@ export function ReviewModerationDialog({
               className="flex-1 border-gold/30 text-cream hover:bg-cream/10"
               onClick={() => onOpenChange(false)}
             >
-              {t("adminReviews.dialog.close")}
+              Fermer
             </Button>
             {!review.is_approved ? (
               <>
@@ -170,7 +170,7 @@ export function ReviewModerationDialog({
                   ) : (
                     <>
                       <XCircle className="h-4 w-4 mr-2" />
-                      {t("adminReviews.dialog.reject")}
+                      Supprimer
                     </>
                   )}
                 </Button>
@@ -184,7 +184,7 @@ export function ReviewModerationDialog({
                   ) : (
                     <>
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      {t("adminReviews.dialog.approve")}
+                      Approuver
                     </>
                   )}
                 </Button>
@@ -201,7 +201,7 @@ export function ReviewModerationDialog({
                 ) : (
                   <>
                     <XCircle className="h-4 w-4 mr-2" />
-                    {t("adminReviews.dialog.unapprove")}
+                    Désapprouver
                   </>
                 )}
               </Button>

@@ -11,7 +11,6 @@ import { useStockPredictions } from "@/hooks/useStockPredictions";
 import { toast } from "sonner";
 import type { AdminProduct } from "@/hooks/useAdmin";
 import type { UseMutationResult } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 
 interface LowStockDashboardProps {
   products: AdminProduct[];
@@ -21,7 +20,6 @@ interface LowStockDashboardProps {
 }
 
 export function LowStockDashboard({ products, isLoading, onEditProduct, restockProduct: restockProductMutation }: LowStockDashboardProps) {
-  const { t } = useTranslation();
   const [selectedRestockProduct, setSelectedRestockProduct] = useState<AdminProduct | null>(null);
   const [restockDialogOpen, setRestockDialogOpen] = useState(false);
 
@@ -52,12 +50,12 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
   const handleRestock = async (productId: string, newQuantity: number) => {
     if (!restockProductMutation) {
       console.error("restockProductMutation is not available");
-      toast.error(t("adminStock.mutationUnavailable"));
+      toast.error("Erreur: mutation non disponible");
       return;
     }
     if (!selectedRestockProduct) {
       console.error("No product selected for restock");
-      toast.error(t("adminStock.noProductSelected"));
+      toast.error("Erreur: aucun produit sélectionné");
       return;
     }
     
@@ -77,12 +75,12 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
       });
       
       console.log("Restock successful, audit log should be created");
-      toast.success(t("adminStock.updateSuccess"));
+      toast.success("Stock mis à jour avec succès");
       setRestockDialogOpen(false);
       setSelectedRestockProduct(null);
     } catch (error) {
       console.error("Error during restock:", error);
-      toast.error(t("adminStock.updateError"));
+      toast.error("Erreur lors de la mise à jour du stock");
     }
   };
 
@@ -139,13 +137,13 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
             variant="outline"
             className="h-8 w-8 p-0 border-gold/30 text-gold hover:bg-gold/10"
             onClick={(e) => handleQuickRestock(product, e)}
-            title={t("adminStock.restock")}
+            title="Réapprovisionner"
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
           {variant === "danger" ? (
             <Badge variant="destructive" className="text-xs">
-              {t("adminStock.outOfStock")}
+              Rupture
             </Badge>
           ) : (
             <Badge 
@@ -187,16 +185,16 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <XCircle className="h-5 w-5 text-destructive" />
-              <CardTitle className="text-lg text-cream">{t("adminStock.outOfStock")}</CardTitle>
+              <CardTitle className="text-lg text-cream">Rupture de stock</CardTitle>
             </div>
             <CardDescription className="text-cream/60">
-              {t("adminStock.activeProductsNoStock")}
+              Produits actifs sans stock disponible
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-destructive">{outOfStock.length}</div>
             <p className="text-xs text-cream/50 mt-1">
-              {outOfStock.length === 0 ? t("adminStock.noOutOfStock") : t("adminStock.urgentRestock")}
+              {outOfStock.length === 0 ? "Aucun produit en rupture" : "produits à réapprovisionner urgemment"}
             </p>
           </CardContent>
         </Card>
@@ -205,16 +203,16 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-warning" />
-              <CardTitle className="text-lg text-cream">{t("adminStock.lowStock")}</CardTitle>
+              <CardTitle className="text-lg text-cream">Stock faible</CardTitle>
             </div>
             <CardDescription className="text-cream/60">
-              {t("adminStock.fiveUnitsOrLess")}
+              Produits avec 5 unités ou moins
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-warning">{lowStock.length}</div>
             <p className="text-xs text-cream/50 mt-1">
-              {lowStock.length === 0 ? t("adminStock.sufficientStock") : t("adminStock.productsToWatch")}
+              {lowStock.length === 0 ? "Tous les stocks sont suffisants" : "produits à surveiller"}
             </p>
           </CardContent>
         </Card>
@@ -223,16 +221,16 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <TrendingDown className="h-5 w-5 text-warning" />
-              <CardTitle className="text-lg text-cream">{t("adminStock.criticalStock")}</CardTitle>
+              <CardTitle className="text-lg text-cream">Stock critique</CardTitle>
             </div>
             <CardDescription className="text-cream/60">
-              {t("adminStock.sixToTenUnits")}
+              Produits avec 6 à 10 unités
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-warning">{criticalStock.length}</div>
             <p className="text-xs text-cream/50 mt-1">
-              {criticalStock.length === 0 ? t("adminStock.noCriticalStock") : t("adminStock.productsToPlan")}
+              {criticalStock.length === 0 ? "Aucun stock critique" : "produits à planifier"}
             </p>
           </CardContent>
         </Card>
@@ -246,7 +244,7 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
             <div className="flex items-center justify-between">
               <CardTitle className="text-base text-cream flex items-center gap-2">
                 <XCircle className="h-4 w-4 text-destructive" />
-                {t("adminStock.outOfStock")}
+                Rupture de stock
               </CardTitle>
               {outOfStock.length > 0 && (
                 <Badge variant="destructive">{outOfStock.length}</Badge>
@@ -257,7 +255,7 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
             {outOfStock.length === 0 ? (
               <div className="text-center py-6 text-cream/50">
                 <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{t("adminStock.noOutOfStock")}</p>
+                <p className="text-sm">Aucun produit en rupture</p>
               </div>
             ) : (
               <ScrollArea className="h-[280px] pr-2">
@@ -277,7 +275,7 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
             <div className="flex items-center justify-between">
               <CardTitle className="text-base text-cream flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-warning" />
-                {t("adminStock.lowStockRange")}
+                Stock faible (1-5)
               </CardTitle>
               {lowStock.length > 0 && (
                 <Badge variant="outline" className="border-warning/50 text-warning">
@@ -290,7 +288,7 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
             {lowStock.length === 0 ? (
               <div className="text-center py-6 text-cream/50">
                 <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{t("adminStock.noLowStock")}</p>
+                <p className="text-sm">Aucun produit en stock faible</p>
               </div>
             ) : (
               <ScrollArea className="h-[280px] pr-2">
@@ -310,7 +308,7 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
             <div className="flex items-center justify-between">
               <CardTitle className="text-base text-cream flex items-center gap-2">
                 <TrendingDown className="h-4 w-4 text-warning" />
-                {t("adminStock.criticalStockRange")}
+                Stock critique (6-10)
               </CardTitle>
               {criticalStock.length > 0 && (
                 <Badge variant="outline" className="border-warning/50 text-warning">
@@ -323,7 +321,7 @@ export function LowStockDashboard({ products, isLoading, onEditProduct, restockP
             {criticalStock.length === 0 ? (
               <div className="text-center py-6 text-cream/50">
                 <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{t("adminStock.noCriticalStock")}</p>
+                <p className="text-sm">Aucun produit en stock critique</p>
               </div>
             ) : (
               <ScrollArea className="h-[280px] pr-2">

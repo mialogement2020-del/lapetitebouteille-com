@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,6 @@ interface ImageState {
 }
 
 export const ProductImageManager = () => {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchFilter, setSearchFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -279,11 +277,11 @@ export const ProductImageManager = () => {
     updateState(productId, { file, preview, url: undefined });
   };
 
-  const open{t("adminProducts.imageManager.vivino")}Search = (name: string) => {
+  const openVivinoSearch = (name: string) => {
     window.open(`https://www.vivino.com/search/wines?q=${encodeURIComponent(name.toLowerCase())}`, "_blank");
   };
 
-  const open{t("adminProducts.imageManager.google")}ImageSearch = (name: string) => {
+  const openGoogleImageSearch = (name: string) => {
     window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(`${name} wine bottle`)}`, "_blank");
   };
 
@@ -293,7 +291,7 @@ export const ProductImageManager = () => {
       <div>
         <h2 className="text-xl font-semibold text-cream flex items-center gap-2">
           <Image className="h-5 w-5 text-primary" />
-          {t("adminProducts.imageManager.title")}
+          Gestion des Images Produits
         </h2>
         <p className="text-cream/60 text-sm mt-1">
           {totalCount !== undefined && <span className="text-primary font-medium">{totalCount}</span>} produits sans image
@@ -305,7 +303,7 @@ export const ProductImageManager = () => {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
           <Input
-            placeholder={t("adminProducts.imageManager.searchPlaceholder")}
+            placeholder="Rechercher un produit..."
             value={searchFilter}
             onChange={(e) => { setSearchFilter(e.target.value); setPage(0); }}
             className="pl-10 bg-noir/50 border-cream/20 text-cream"
@@ -314,10 +312,10 @@ export const ProductImageManager = () => {
         <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(0); }}>
           <SelectTrigger className="w-[180px] bg-noir/50 border-cream/20 text-cream">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder={t("adminProducts.imageManager.filterCategory")} />
+            <SelectValue placeholder="Catégorie" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("adminProducts.imageManager.all")}</SelectItem>
+            <SelectItem value="all">Toutes</SelectItem>
             {categories?.map(c => (
               <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
             ))}
@@ -329,15 +327,15 @@ export const ProductImageManager = () => {
           onClick={() => { setFeaturedOnly(!featuredOnly); setPage(0); }}
           className={featuredOnly ? "bg-primary text-primary-foreground" : "border-cream/20 text-cream"}
         >
-          {t("adminProducts.imageManager.featured")}
+          ⭐ Mis en avant
         </Button>
       </div>
 
       {/* Instructions */}
       <Card className="bg-primary/5 border-primary/20 p-4">
         <p className="text-cream/80 text-sm">
-          <strong>{t("adminProducts.imageManager.instructionsTitle")}</strong><br />
-          🔗 <strong>URL</strong> : Collez l'adresse d'une image trouvée sur {t("adminProducts.imageManager.vivino")}/{t("adminProducts.imageManager.google")}<br />
+          <strong>3 méthodes pour ajouter une image :</strong><br />
+          🔗 <strong>URL</strong> : Collez l'adresse d'une image trouvée sur Vivino/Google<br />
           📁 <strong>Fichier local</strong> : Importez une image depuis votre appareil<br />
           ✨ <strong>AI</strong> : Cliquez sur ✨ pour améliorer automatiquement l'image (fond, netteté, dimensions)
         </p>
@@ -383,19 +381,19 @@ export const ProductImageManager = () => {
                         )}
                       </div>
                       <p className="text-cream/40 text-xs">
-                        {(product.category as any)?.name || "{t("adminProducts.imageManager.noCategory")}"}
+                        {(product.category as any)?.name || "Sans catégorie"}
                       </p>
                     </div>
 
                     {/* Search buttons */}
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Button size="sm" variant="outline" className="text-xs border-cream/20 text-cream hover:bg-cream/10"
-                        onClick={() => open{t("adminProducts.imageManager.vivino")}Search(product.name)}>
-                        <ExternalLink className="h-3 w-3 mr-1" /> {t("adminProducts.imageManager.vivino")}
+                        onClick={() => openVivinoSearch(product.name)}>
+                        <ExternalLink className="h-3 w-3 mr-1" /> Vivino
                       </Button>
                       <Button size="sm" variant="outline" className="text-xs border-cream/20 text-cream hover:bg-cream/10"
-                        onClick={() => open{t("adminProducts.imageManager.google")}ImageSearch(product.name)}>
-                        <ExternalLink className="h-3 w-3 mr-1" /> {t("adminProducts.imageManager.google")}
+                        onClick={() => openGoogleImageSearch(product.name)}>
+                        <ExternalLink className="h-3 w-3 mr-1" /> Google
                       </Button>
                     </div>
                   </div>
@@ -404,7 +402,7 @@ export const ProductImageManager = () => {
                   <div className="flex items-center gap-2">
                     {/* URL input */}
                     <Input
-                      placeholder={t("adminProducts.imageManager.urlPlaceholder")}
+                      placeholder="Coller l'URL de l'image..."
                       value={state.url || ""}
                       onChange={(e) => updateState(product.id, { url: e.target.value, file: undefined, preview: undefined })}
                       className="flex-1 bg-noir/30 border-cream/20 text-cream text-xs"
@@ -424,7 +422,7 @@ export const ProductImageManager = () => {
                     <Button size="icon" variant="outline"
                       className="border-cream/20 text-cream hover:bg-cream/10 flex-shrink-0"
                       onClick={() => fileInputRefs.current[product.id]?.click()}
-                      title={t("adminProducts.imageManager.uploadHint")}
+                      title="Importer un fichier local"
                     >
                       <Upload className="h-4 w-4" />
                     </Button>
@@ -432,7 +430,7 @@ export const ProductImageManager = () => {
                     {/* Clear */}
                     {hasData && (
                       <Button size="icon" variant="ghost" className="text-cream/40 hover:text-cream flex-shrink-0"
-                        onClick={() => clearState(product.id)} title={t("adminProducts.imageManager.clear")}>
+                        onClick={() => clearState(product.id)} title="Effacer">
                         <X className="h-4 w-4" />
                       </Button>
                     )}

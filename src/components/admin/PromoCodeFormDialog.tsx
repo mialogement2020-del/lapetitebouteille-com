@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  Dialog{t("adminPromo.form.descriptionLabel")},
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -116,20 +115,20 @@ export function PromoCodeFormDialog({
       <DialogContent className="bg-noir border-gold/20 max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-cream">
-            promoCode ? t("adminPromo.form.editTitle") : t("adminPromo.form.addTitle")
+            {promoCode ? "Modifier le code promo" : "Nouveau code promo"}
           </DialogTitle>
-          <Dialog{t("adminPromo.form.descriptionLabel")}>
+          <DialogDescription>
             {promoCode
               ? "Modifiez les paramètres du code promo"
               : "Créez un nouveau code de réduction"}
-          </Dialog{t("adminPromo.form.descriptionLabel")}>
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Code et {t("adminPromo.form.descriptionLabel")} */}
+          {/* Code et Description */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="code">{t("adminPromo.form.codeLabel")}</Label>
+              <Label htmlFor="code">Code *</Label>
               <div className="flex gap-2">
                 <Input
                   id="code"
@@ -140,7 +139,7 @@ export function PromoCodeFormDialog({
                       code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""),
                     }))
                   }
-                  placeholder={t("adminPromo.form.codePlaceholder")}
+                  placeholder="PROMO2024"
                   className="bg-noir/50 border-gold/20 font-mono uppercase"
                   maxLength={20}
                   required
@@ -151,20 +150,20 @@ export function PromoCodeFormDialog({
                   onClick={generateCode}
                   className="border-gold/20 shrink-0"
                 >
-                  {t("adminPromo.form.generate")}
+                  Générer
                 </Button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{t("adminPromo.form.descriptionLabel")}</Label>
+              <Label htmlFor="description">Description</Label>
               <Input
                 id="description"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, description: e.target.value }))
                 }
-                placeholder="{t("adminPromo.form.descriptionLabel")} interne"
+                placeholder="Description interne"
                 className="bg-noir/50 border-gold/20"
               />
             </div>
@@ -173,7 +172,7 @@ export function PromoCodeFormDialog({
           {/* Type et Valeur de réduction */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="discount_type">{t("adminPromo.form.typeLabel")}</Label>
+              <Label htmlFor="discount_type">Type de réduction *</Label>
               <Select
                 value={formData.discount_type}
                 onValueChange={(value: "percentage" | "fixed") =>
@@ -184,15 +183,15 @@ export function PromoCodeFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-noir border-gold/20">
-                  <SelectItem value="percentage">{t("adminPromo.form.typePercentage")}</SelectItem>
-                  <SelectItem value="fixed">{t("adminPromo.form.typeFixed")}</SelectItem>
+                  <SelectItem value="percentage">Pourcentage (%)</SelectItem>
+                  <SelectItem value="fixed">Montant fixe (FCFA)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="discount_value">
-                {t("adminPromo.form.valueLabel")} {formData.discount_type === "percentage" ? "(%)" : "(FCFA)"}
+                Valeur * {formData.discount_type === "percentage" ? "(%)" : "(FCFA)"}
               </Label>
               <Input
                 id="discount_value"
@@ -213,7 +212,7 @@ export function PromoCodeFormDialog({
 
             {formData.discount_type === "percentage" && (
               <div className="space-y-2">
-                <Label htmlFor="max_discount">{t("adminPromo.form.maxDiscountLabel")}</Label>
+                <Label htmlFor="max_discount">Réduction max (FCFA)</Label>
                 <Input
                   id="max_discount"
                   type="number"
@@ -235,7 +234,7 @@ export function PromoCodeFormDialog({
           {/* Conditions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="min_order">{t("adminPromo.form.minOrderLabel")}</Label>
+              <Label htmlFor="min_order">Commande minimum (FCFA)</Label>
               <Input
                 id="min_order"
                 type="number"
@@ -253,7 +252,7 @@ export function PromoCodeFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="usage_limit">{t("adminPromo.form.usageLimitLabel")}</Label>
+              <Label htmlFor="usage_limit">Limite d'utilisation</Label>
               <Input
                 id="usage_limit"
                 type="number"
@@ -265,7 +264,7 @@ export function PromoCodeFormDialog({
                     usage_limit: e.target.value ? parseInt(e.target.value) : undefined,
                   }))
                 }
-                placeholder={t("adminPromo.form.usageLimitPlaceholder")}
+                placeholder="Illimité"
                 className="bg-noir/50 border-gold/20"
               />
             </div>
@@ -274,7 +273,7 @@ export function PromoCodeFormDialog({
           {/* Dates de validité */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t("adminPromo.form.startDate")}</Label>
+              <Label>Date de début</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -287,7 +286,7 @@ export function PromoCodeFormDialog({
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.valid_from
                       ? format(new Date(formData.valid_from), "PPP", { locale: fr })
-                      : "{t("adminPromo.form.immediately")}"}
+                      : "Immédiatement"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-noir border-gold/20" align="start">
@@ -313,7 +312,7 @@ export function PromoCodeFormDialog({
                           setFormData((prev) => ({ ...prev, valid_from: undefined }))
                         }
                       >
-                        {t("adminPromo.form.clear")}
+                        Effacer
                       </Button>
                     </div>
                   )}
@@ -322,7 +321,7 @@ export function PromoCodeFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label>{t("adminPromo.form.endDate")}</Label>
+              <Label>Date de fin</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -335,7 +334,7 @@ export function PromoCodeFormDialog({
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formData.valid_until
                       ? format(new Date(formData.valid_until), "PPP", { locale: fr })
-                      : "{t("adminPromo.form.noLimit")}"}
+                      : "Pas de limite"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-noir border-gold/20" align="start">
@@ -364,7 +363,7 @@ export function PromoCodeFormDialog({
                           setFormData((prev) => ({ ...prev, valid_until: undefined }))
                         }
                       >
-                        {t("adminPromo.form.clear")}
+                        Effacer
                       </Button>
                     </div>
                   )}
@@ -377,10 +376,10 @@ export function PromoCodeFormDialog({
           <div className="flex items-center justify-between p-4 rounded-lg border border-gold/20 bg-noir/30">
             <div>
               <Label htmlFor="is_active" className="text-base">
-                {t("adminPromo.form.activeLabel")}
+                Code actif
               </Label>
               <p className="text-sm text-cream/60">
-                {t("adminPromo.form.activeDesc")}
+                Les clients peuvent utiliser ce code immédiatement
               </p>
             </div>
             <Switch
@@ -399,7 +398,7 @@ export function PromoCodeFormDialog({
               onClick={() => onOpenChange(false)}
               className="border-gold/20"
             >
-              {t("adminPromo.form.cancel")}
+              Annuler
             </Button>
             <Button
               type="submit"
@@ -407,7 +406,7 @@ export function PromoCodeFormDialog({
               className="bg-gradient-gold text-noir font-semibold"
             >
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              promoCode ? t("adminPromo.form.modify") : t("adminPromo.form.create")
+              {promoCode ? "Modifier" : "Créer"}
             </Button>
           </DialogFooter>
         </form>

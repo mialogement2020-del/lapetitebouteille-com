@@ -73,13 +73,13 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
-import { useAuditLogs, AuditLog, Auditt("adminAudit.action"), AuditEntityt("adminAudit.type") } from "@/hooks/useAuditLogs";
+import { useAuditLogs, AuditLog, AuditAction, AuditEntityType } from "@/hooks/useAuditLogs";
 import { exportAuditLogsToCSV, exportAuditLogsToPDF } from "@/lib/auditExport";
 import { toast } from "sonner";
-import { logAuditt("adminAudit.action") } from "@/hooks/useAuditLogs";
+import { logAuditAction } from "@/hooks/useAuditLogs";
 import { AuditLogDiffView } from "./AuditLogDiffView";
 
-const actionIcons: Record<string, React.Elementt("adminAudit.type")> = {
+const actionIcons: Record<string, React.ElementType> = {
   create: Plus,
   update: Pencil,
   delete: Trash2,
@@ -91,7 +91,7 @@ const actionIcons: Record<string, React.Elementt("adminAudit.type")> = {
   login: User,
 };
 
-const entityIcons: Record<string, React.Elementt("adminAudit.type")> = {
+const entityIcons: Record<string, React.ElementType> = {
   product: Package,
   category: Tag,
   order: ShoppingCart,
@@ -121,7 +121,7 @@ const entityLabels: Record<string, string> = {
   order: "Commande",
   review: "Avis",
   promo_code: "Code promo",
-  user: "t("adminAudit.user")",
+  user: "Utilisateur",
   stock: "Stock",
   report: "Rapport",
   settings: "Paramètres",
@@ -140,8 +140,8 @@ const actionColors: Record<string, string> = {
 };
 
 export function AuditLogsTable() {
-  const [entityFilter, setEntityFilter] = useState<AuditEntityt("adminAudit.type") | "all">("all");
-  const [actionFilter, sett("adminAudit.action")Filter] = useState<Auditt("adminAudit.action") | "all">("all");
+  const [entityFilter, setEntityFilter] = useState<AuditEntityType | "all">("all");
+  const [actionFilter, setActionFilter] = useState<AuditAction | "all">("all");
   const [userFilter, setUserFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
@@ -153,7 +153,7 @@ export function AuditLogsTable() {
   const pageSize = 15;
 
   const { logs, isLoading, totalCount, totalPages, uniqueUsers, refetch } = useAuditLogs({
-    entityt("adminAudit.type"): entityFilter === "all" ? undefined : entityFilter,
+    entityType: entityFilter === "all" ? undefined : entityFilter,
     action: actionFilter === "all" ? undefined : actionFilter,
     userEmail: userFilter === "all" ? undefined : userFilter,
     dateFrom,
@@ -183,7 +183,7 @@ export function AuditLogsTable() {
     setIsExporting(true);
     try {
       exportAuditLogsToCSV(logs);
-      await logAuditt("adminAudit.action")("export", "report", undefined, "Export CSV - t("adminAudit.logs")");
+      await logAuditAction("export", "report", undefined, "Export CSV - Journal d'audit");
       toast.success("Export CSV généré avec succès");
     } catch (error) {
       console.error("Error exporting CSV:", error);
@@ -202,7 +202,7 @@ export function AuditLogsTable() {
     setIsExporting(true);
     try {
       exportAuditLogsToPDF(logs);
-      await logAuditt("adminAudit.action")("export", "report", undefined, "Export PDF - t("adminAudit.logs")");
+      await logAuditAction("export", "report", undefined, "Export PDF - Journal d'audit");
       toast.success("Rapport PDF généré avec succès");
     } catch (error) {
       console.error("Error exporting PDF:", error);
@@ -212,7 +212,7 @@ export function AuditLogsTable() {
     }
   };
 
-  const t("adminAudit.action")Icon = (action: string) => {
+  const ActionIcon = (action: string) => {
     const Icon = actionIcons[action] || History;
     return Icon;
   };
@@ -250,9 +250,9 @@ export function AuditLogsTable() {
                 <div className="flex items-center gap-3">
                   <History className="h-5 w-5 text-gold" />
                   <div>
-                    <CardTitle className="text-lg text-cream">t("adminAudit.logs")</CardTitle>
+                    <CardTitle className="text-lg text-cream">Journal d'audit</CardTitle>
                     <CardDescription className="text-cream/60">
-                      t("adminAudit.description")
+                      Historique des actions administratives
                     </CardDescription>
                   </div>
                 </div>
@@ -280,10 +280,10 @@ export function AuditLogsTable() {
                 </div>
                 <Select
                   value={entityFilter}
-                  onValueChange={(v) => handleFilterChange(setEntityFilter, v as AuditEntityt("adminAudit.type") | "all")}
+                  onValueChange={(v) => handleFilterChange(setEntityFilter, v as AuditEntityType | "all")}
                 >
                   <SelectTrigger className="w-[140px] h-8 text-xs border-gold/30 bg-noir">
-                    <SelectValue placeholder="t("adminAudit.type")" />
+                    <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent className="bg-noir border-gold/30">
                     <SelectItem value="all">Tous les types</SelectItem>
@@ -300,10 +300,10 @@ export function AuditLogsTable() {
 
                 <Select
                   value={actionFilter}
-                  onValueChange={(v) => handleFilterChange(sett("adminAudit.action")Filter, v as Auditt("adminAudit.action") | "all")}
+                  onValueChange={(v) => handleFilterChange(setActionFilter, v as AuditAction | "all")}
                 >
                   <SelectTrigger className="w-[140px] h-8 text-xs border-gold/30 bg-noir">
-                    <SelectValue placeholder="t("adminAudit.action")" />
+                    <SelectValue placeholder="Action" />
                   </SelectTrigger>
                   <SelectContent className="bg-noir border-gold/30">
                     <SelectItem value="all">Toutes les actions</SelectItem>
@@ -325,7 +325,7 @@ export function AuditLogsTable() {
                 >
                   <SelectTrigger className="w-[180px] h-8 text-xs border-gold/30 bg-noir">
                     <User className="h-3 w-3 mr-1" />
-                    <SelectValue placeholder="t("adminAudit.user")" />
+                    <SelectValue placeholder="Utilisateur" />
                   </SelectTrigger>
                   <SelectContent className="bg-noir border-gold/30">
                     <SelectItem value="all">Tous les utilisateurs</SelectItem>
@@ -464,16 +464,16 @@ export function AuditLogsTable() {
                     <TableHeader>
                       <TableRow className="border-gold/20 hover:bg-transparent">
                         <TableHead className="text-cream/70 w-[180px]">Date</TableHead>
-                        <TableHead className="text-cream/70">t("adminAudit.action")</TableHead>
-                        <TableHead className="text-cream/70">t("adminAudit.type")</TableHead>
-                        <TableHead className="text-cream/70">t("adminAudit.item")</TableHead>
-                        <TableHead className="text-cream/70">t("adminAudit.user")</TableHead>
+                        <TableHead className="text-cream/70">Action</TableHead>
+                        <TableHead className="text-cream/70">Type</TableHead>
+                        <TableHead className="text-cream/70">Élément</TableHead>
+                        <TableHead className="text-cream/70">Utilisateur</TableHead>
                         <TableHead className="text-cream/70 w-[60px]"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {logs.map((log) => {
-                        const t("adminAudit.action")IconComponent = t("adminAudit.action")Icon(log.action);
+                        const ActionIconComponent = ActionIcon(log.action);
                         const EntityIconComponent = EntityIcon(log.entity_type);
 
                         return (
@@ -497,7 +497,7 @@ export function AuditLogsTable() {
                                 variant="outline"
                                 className={`text-xs ${actionColors[log.action] || "text-cream/70"}`}
                               >
-                                <t("adminAudit.action")IconComponent className="h-3 w-3 mr-1" />
+                                <ActionIconComponent className="h-3 w-3 mr-1" />
                                 {actionLabels[log.action] || log.action}
                               </Badge>
                             </TableCell>
@@ -630,11 +630,11 @@ export function AuditLogsTable() {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-cream/50">t("adminAudit.user")</p>
+                  <p className="text-xs text-cream/50">Utilisateur</p>
                   <p className="text-sm text-cream">{selectedLog.user_email || "Inconnu"}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-cream/50">t("adminAudit.action")</p>
+                  <p className="text-xs text-cream/50">Action</p>
                   <Badge
                     variant="outline"
                     className={`text-xs ${actionColors[selectedLog.action] || "text-cream/70"}`}
@@ -643,14 +643,14 @@ export function AuditLogsTable() {
                   </Badge>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-cream/50">t("adminAudit.type") d'élément</p>
+                  <p className="text-xs text-cream/50">Type d'élément</p>
                   <p className="text-sm text-cream">
                     {entityLabels[selectedLog.entity_type] || selectedLog.entity_type}
                   </p>
                 </div>
                 {selectedLog.entity_name && (
                   <div className="col-span-2 space-y-1">
-                    <p className="text-xs text-cream/50">t("adminAudit.item") concerné</p>
+                    <p className="text-xs text-cream/50">Élément concerné</p>
                     <p className="text-sm text-cream">{selectedLog.entity_name}</p>
                   </div>
                 )}

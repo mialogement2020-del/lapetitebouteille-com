@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -45,7 +44,7 @@ export function TwoFASetupDialog({
       await navigator.clipboard.writeText(setupData.secret);
       setCopiedSecret(true);
       setTimeout(() => setCopiedSecret(false), 2000);
-      toast({ title: t("adminTwoFA.toastSecretCopied") });
+      toast({ title: "Clé secrète copiée" });
     }
   };
 
@@ -54,7 +53,7 @@ export function TwoFASetupDialog({
       await navigator.clipboard.writeText(setupData.backup_codes.join("\n"));
       setCopiedBackup(true);
       setTimeout(() => setCopiedBackup(false), 2000);
-      toast({ title: t("adminTwoFA.toastBackupCopied") });
+      toast({ title: "Codes de secours copiés" });
     }
   };
 
@@ -82,18 +81,18 @@ export function TwoFASetupDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
-            {t("adminTwoFA.setupTitle")}
+            Configuration de l'authentification 2FA
           </DialogTitle>
           <DialogDescription>
-            {t("adminTwoFA.setupDesc")}
+            Sécurisez votre compte administrateur avec l'authentification à deux facteurs
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={step} onValueChange={(v) => setStep(v as typeof step)}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="setup">t("adminTwoFA.stepScanner")</TabsTrigger>
-            <TabsTrigger value="backup">t("adminTwoFA.stepBackup")</TabsTrigger>
-            <TabsTrigger value="verify">t("adminTwoFA.stepVerify")</TabsTrigger>
+            <TabsTrigger value="setup">1. Scanner</TabsTrigger>
+            <TabsTrigger value="backup">2. Sauvegarder</TabsTrigger>
+            <TabsTrigger value="verify">3. Vérifier</TabsTrigger>
           </TabsList>
 
           <TabsContent value="setup" className="space-y-4 mt-4">
@@ -102,12 +101,13 @@ export function TwoFASetupDialog({
                 <QRCodeSVG value={setupData.totp_url} size={200} />
               </div>
               <p className="text-sm text-muted-foreground text-center">
-                {t("adminTwoFA.scanQR")}
+                Scannez ce QR code avec votre application d'authentification 
+                (Google Authenticator, Authy, 1Password, etc.)
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>{t("adminTwoFA.manualKey")}</Label>
+              <Label>Ou entrez la clé manuellement :</Label>
               <div className="flex gap-2">
                 <code className="flex-1 bg-muted p-2 rounded text-sm font-mono break-all">
                   {setupData.secret}
@@ -130,7 +130,7 @@ export function TwoFASetupDialog({
               className="w-full" 
               onClick={() => setStep("backup")}
             >
-              t("adminTwoFA.continue")
+              Continuer
             </Button>
           </TabsContent>
 
@@ -139,9 +139,10 @@ export function TwoFASetupDialog({
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="font-medium text-warning">t("adminTwoFA.important")</p>
+                  <p className="font-medium text-warning">Important !</p>
                   <p className="text-sm text-muted-foreground">
-                    {t("adminTwoFA.backupDesc")}
+                    Sauvegardez ces codes de secours dans un endroit sûr. 
+                    Ils vous permettront de récupérer l'accès à votre compte si vous perdez votre appareil.
                   </p>
                 </div>
               </div>
@@ -151,7 +152,7 @@ export function TwoFASetupDialog({
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2">
                   <Key className="h-4 w-4" />
-                  {t("adminTwoFA.backupCodes")}
+                  Codes de secours
                 </Label>
                 <Button 
                   variant="outline" 
@@ -161,12 +162,12 @@ export function TwoFASetupDialog({
                   {copiedBackup ? (
                     <>
                       <Check className="h-4 w-4 mr-2 text-success" />
-                      t("adminTwoFA.copied")
+                      Copiés
                     </>
                   ) : (
                     <>
                       <Copy className="h-4 w-4 mr-2" />
-                      t("adminTwoFA.copyAll")
+                      Copier tout
                     </>
                   )}
                 </Button>
@@ -179,7 +180,7 @@ export function TwoFASetupDialog({
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                {t("adminTwoFA.oneTimeUse")}
+                Chaque code ne peut être utilisé qu'une seule fois.
               </p>
             </div>
 
@@ -187,7 +188,7 @@ export function TwoFASetupDialog({
               className="w-full" 
               onClick={() => setStep("verify")}
             >
-              t("adminTwoFA.codesSaved")
+              J'ai sauvegardé mes codes
             </Button>
           </TabsContent>
 
@@ -197,12 +198,12 @@ export function TwoFASetupDialog({
                 <Smartphone className="h-8 w-8 text-primary" />
               </div>
               <p className="text-center text-sm text-muted-foreground">
-                {t("adminTwoFA.enterCode")}
+                Entrez le code à 6 chiffres affiché dans votre application d'authentification
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="verify-code">{t("adminTwoFA.verificationCode")}</Label>
+              <Label htmlFor="verify-code">Code de vérification</Label>
               <Input
                 id="verify-code"
                 type="text"
@@ -221,7 +222,7 @@ export function TwoFASetupDialog({
               onClick={handleVerify}
               disabled={code.length !== 6 || loading}
             >
-              {loading ? "t("adminTwoFA.verifying")" : "t("adminTwoFA.enableBtn")"}
+              {loading ? "Vérification..." : "Activer le 2FA"}
             </Button>
           </TabsContent>
         </Tabs>

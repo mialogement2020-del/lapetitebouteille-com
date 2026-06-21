@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Bell, Check, CheckCheck, Package, Trash2, X } from "lucide-react";
@@ -13,14 +12,14 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useOrder{t("adminOrders.notifications.title")}, OrderNotification } from "@/hooks/useOrder{t("adminOrders.notifications.title")}";
+import { useOrderNotifications, OrderNotification } from "@/hooks/useOrderNotifications";
 
-interface Order{t("adminOrders.notifications.title")}Props {
+interface OrderNotificationsProps {
   enabled?: boolean;
   onOrderClick?: (orderId: string) => void;
 }
 
-export function Order{t("adminOrders.notifications.title")}({ enabled = true, onOrderClick }: Order{t("adminOrders.notifications.title")}Props) {
+export function OrderNotifications({ enabled = true, onOrderClick }: OrderNotificationsProps) {
   const [open, setOpen] = useState(false);
   const {
     notifications,
@@ -30,7 +29,7 @@ export function Order{t("adminOrders.notifications.title")}({ enabled = true, on
     markAllAsRead,
     clearAll,
     formatPrice,
-  } = useOrder{t("adminOrders.notifications.title")}(enabled);
+  } = useOrderNotifications(enabled);
 
   const handleNotificationClick = (notification: OrderNotification) => {
     markAsRead(notification.id);
@@ -78,10 +77,10 @@ export function Order{t("adminOrders.notifications.title")}({ enabled = true, on
         <div className="flex items-center justify-between p-4 border-b border-gold/20">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
-            <h3 className="font-semibold text-cream">{t("adminOrders.notifications.title")}</h3>
+            <h3 className="font-semibold text-cream">Notifications</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="text-xs">
-                {t(`adminOrders.notifications.unread_${unreadCount === 1 ? "one" : "other"}`, { count: unreadCount })}
+                {unreadCount} nouvelle{unreadCount > 1 ? "s" : ""}
               </Badge>
             )}
           </div>
@@ -94,7 +93,7 @@ export function Order{t("adminOrders.notifications.title")}({ enabled = true, on
                 className="h-8 px-2 text-xs text-cream/60 hover:text-primary"
               >
                 <CheckCheck className="h-3 w-3 mr-1" />
-                {t("adminOrders.notifications.markAllRead")}
+                Tout lire
               </Button>
             )}
             {notifications.length > 0 && (
@@ -110,7 +109,7 @@ export function Order{t("adminOrders.notifications.title")}({ enabled = true, on
           </div>
         </div>
 
-        {/* {t("adminOrders.notifications.title")} List */}
+        {/* Notifications List */}
         <ScrollArea className="max-h-[400px]">
           {isLoading ? (
             <div className="p-8 text-center">
@@ -120,9 +119,9 @@ export function Order{t("adminOrders.notifications.title")}({ enabled = true, on
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="h-10 w-10 text-cream/20 mx-auto mb-3" />
-              <p className="text-cream/60 text-sm">{t("adminOrders.notifications.noRecent")}</p>
+              <p className="text-cream/60 text-sm">Aucune commande récente</p>
               <p className="text-cream/40 text-xs mt-1">
-                {t("adminOrders.notifications.recentHint")}
+                Les nouvelles commandes des dernières 24h apparaîtront ici
               </p>
             </div>
           ) : (
@@ -150,7 +149,7 @@ export function Order{t("adminOrders.notifications.title")}({ enabled = true, on
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm text-cream truncate">
-                          {t("adminOrders.notifications.newOrder")}
+                          Nouvelle commande
                         </p>
                         {!notification.isRead && (
                           <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
@@ -185,7 +184,7 @@ export function Order{t("adminOrders.notifications.title")}({ enabled = true, on
         {notifications.length > 0 && (
           <div className="p-2 border-t border-gold/20">
             <p className="text-xs text-center text-cream/40">
-              {t("adminOrders.notifications.footer", { count: notifications.length, suffix: notifications.length > 1 ? "s" : "" })}
+              Commandes des dernières 24h • {notifications.length} notification{notifications.length > 1 ? "s" : ""}
             </p>
           </div>
         )}

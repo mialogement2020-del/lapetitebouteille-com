@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -77,7 +76,6 @@ type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 const Admin = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("performance");
   const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { 
@@ -145,34 +143,34 @@ const Admin = () => {
     operationName,
     operationDescription
   } = useSensitiveOperation({
-    operationName: t("adminPage.securityVerification"),
-    description: t("adminPage.sensitiveOpDesc")
+    operationName: "Vérification de sécurité",
+    description: "Cette opération sensible nécessite une vérification 2FA"
   });
 
   // Define available tabs based on permissions
   const availableTabs = useMemo(() => {
     const allTabs = [
-      { id: 'performance', label: t("adminPage.tabs.performance"), icon: BarChart3 },
-      { id: 'orders', label: t("adminPage.tabs.orders"), icon: Package },
-      { id: 'products', label: t("adminPage.tabs.products"), icon: Wine },
-      { id: 'categories', label: t("adminPage.tabs.categories"), icon: FolderOpen },
-      { id: 'images', label: t("adminPage.tabs.images"), icon: ImageIcon },
-      { id: 'promo-codes', label: t("adminPage.tabs.promoCodes"), icon: Ticket },
-      { id: 'quotes', label: t("adminPage.tabs.quotes"), icon: FileText },
-      { id: 'wholesaler-apps', label: t("adminPage.tabs.wholesalerApps"), icon: Building2 },
-      { id: 'wholesale-invoices', label: t("adminPage.tabs.wholesaleInvoices"), icon: FileText },
-      { id: 'fraud', label: t("adminPage.tabs.fraud"), icon: ShieldAlert },
-      { id: 'moderation', label: t("adminPage.tabs.moderation"), icon: Sparkles },
-      { id: 'analytics', label: t("adminPage.tabs.analytics"), icon: LineChart },
-      { id: 'reviews', label: t("adminPage.tabs.reviews"), icon: MessageSquare },
-      { id: 'loyalty', label: t("adminPage.tabs.loyalty"), icon: Award },
-      { id: 'restock', label: t("adminPage.tabs.restock"), icon: RefreshCw },
-      { id: 'stock-alerts', label: t("adminPage.tabs.stockAlerts"), icon: Bell },
-      { id: 'audit', label: t("adminPage.tabs.audit"), icon: History },
-      { id: 'mlm', label: t("adminPage.tabs.mlm"), icon: Users },
-      { id: 'permissions', label: t("adminPage.tabs.permissions"), icon: Shield },
-      { id: 'marketplace-roles', label: t("adminPage.tabs.marketplaceRoles"), icon: Users },
-      { id: 'security', label: t("adminPage.tabs.security"), icon: Lock },
+      { id: 'performance', label: 'Performance', icon: BarChart3 },
+      { id: 'orders', label: 'Commandes', icon: Package },
+      { id: 'products', label: 'Produits', icon: Wine },
+      { id: 'categories', label: 'Catégories', icon: FolderOpen },
+      { id: 'images', label: 'Images', icon: ImageIcon },
+      { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
+      { id: 'quotes', label: 'Devis Gros', icon: FileText },
+      { id: 'wholesaler-apps', label: 'Candidatures B2B', icon: Building2 },
+      { id: 'wholesale-invoices', label: 'Factures B2B', icon: FileText },
+      { id: 'fraud', label: 'Anti-fraude', icon: ShieldAlert },
+      { id: 'moderation', label: 'Modération IA', icon: Sparkles },
+      { id: 'analytics', label: 'Analytics', icon: LineChart },
+      { id: 'reviews', label: 'Avis', icon: MessageSquare },
+      { id: 'loyalty', label: 'Fidélité', icon: Award },
+      { id: 'restock', label: 'Réappro.', icon: RefreshCw },
+      { id: 'stock-alerts', label: 'Alertes Stock', icon: Bell },
+      { id: 'audit', label: 'Audit', icon: History },
+      { id: 'mlm', label: 'MLM', icon: Users },
+      { id: 'permissions', label: 'Permissions', icon: Shield },
+      { id: 'marketplace-roles', label: 'Rôles Marketplace', icon: Users },
+      { id: 'security', label: 'Sécurité', icon: Lock },
     ];
     
     return allTabs.filter(tab => {
@@ -217,21 +215,23 @@ const Admin = () => {
       // Build notification message based on status
       const smsStatuses = ['shipped', 'delivered'];
       const smsMessage = smsStatuses.includes(newStatus) && shippingPhone
-        ? t("adminPage.toastSmsSent")
+        ? " Un SMS de notification a été envoyé au client."
         : "";
       
       const pushMessage = userId || order?.user_id
-        ? t("adminPage.toastPushSent")
+        ? " Une notification push a été envoyée."
         : "";
       
       toast({
-        title: t("adminPage.toastStatusUpdated"),
-        description: notes ? t("adminPage.toastStatusUpdatedNotes", { status: newStatus, sms: smsMessage, push: pushMessage }) : t("adminPage.toastStatusUpdatedNoNotes", { status: newStatus, sms: smsMessage, push: pushMessage }),
+        title: "Statut mis à jour",
+        description: notes 
+          ? `La commande a été passée au statut "${newStatus}" avec une note.${smsMessage}${pushMessage}`
+          : `La commande a été passée au statut "${newStatus}".${smsMessage}${pushMessage}`,
       });
     } catch (error) {
       toast({
         title: "Erreur",
-        description: t("adminPage.toastErrorStatus"),
+        description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
       throw error;
@@ -253,14 +253,14 @@ const Admin = () => {
           } : undefined
         });
         toast({
-          title: t("adminPage.toastProductModified"),
-          description: t("adminPage.toastProductModifiedDesc", { name: data.name }),
+          title: "Produit modifié",
+          description: `Le produit "${data.name}" a été mis à jour.`,
         });
       } else {
         await createProduct.mutateAsync(data);
         toast({
-          title: t("adminPage.toastProductCreated"),
-          description: t("adminPage.toastProductCreatedDesc", { name: data.name }),
+          title: "Produit créé",
+          description: `Le produit "${data.name}" a été ajouté au catalogue.`,
         });
       }
       setIsProductDialogOpen(false);
@@ -268,7 +268,7 @@ const Admin = () => {
     } catch (error) {
       toast({
         title: "Erreur",
-        description: id ? t("adminPage.toastProductError") : t("adminPage.toastProductCreateError"),
+        description: id ? "Impossible de modifier le produit" : "Impossible de créer le produit",
         variant: "destructive",
       });
       throw error;
@@ -280,13 +280,13 @@ const Admin = () => {
     try {
       await deleteProduct.mutateAsync({ id: product.id, productName: product.name });
       toast({
-        title: t("adminPage.toastProductDeleted"),
-        description: t("adminPage.toastProductDeletedDesc", { name: product.name }),
+        title: "Produit supprimé",
+        description: `Le produit "${product.name}" a été supprimé.`,
       });
     } catch (error) {
       toast({
         title: "Erreur",
-        description: t("adminPage.toastProductDeleteError"),
+        description: "Impossible de supprimer le produit",
         variant: "destructive",
       });
     }
@@ -299,14 +299,14 @@ const Admin = () => {
         const oldCategory = allCategories.find(c => c.id === id);
         await updateCategory.mutateAsync({ id, data, oldName: oldCategory?.name });
         toast({
-          title: t("adminPage.toastCategoryModified"),
-          description: t("adminPage.toastCategoryModifiedDesc", { name: data.name }),
+          title: "Catégorie modifiée",
+          description: `La catégorie "${data.name}" a été mise à jour.`,
         });
       } else {
         await createCategory.mutateAsync(data);
         toast({
-          title: t("adminPage.toastCategoryCreated"),
-          description: t("adminPage.toastCategoryCreatedDesc", { name: data.name }),
+          title: "Catégorie créée",
+          description: `La catégorie "${data.name}" a été ajoutée.`,
         });
       }
       setIsCategoryDialogOpen(false);
@@ -314,7 +314,7 @@ const Admin = () => {
     } catch (error) {
       toast({
         title: "Erreur",
-        description: id ? t("adminPage.toastCategoryError") : t("adminPage.toastCategoryCreateError"),
+        description: id ? "Impossible de modifier la catégorie" : "Impossible de créer la catégorie",
         variant: "destructive",
       });
       throw error;
@@ -326,13 +326,13 @@ const Admin = () => {
     try {
       await deleteCategory.mutateAsync({ id: category.id, categoryName: category.name });
       toast({
-        title: t("adminPage.toastCategoryDeleted"),
-        description: t("adminPage.toastCategoryDeletedDesc", { name: category.name }),
+        title: "Catégorie supprimée",
+        description: `La catégorie "${category.name}" a été supprimée.`,
       });
     } catch (error) {
       toast({
         title: "Erreur",
-        description: t("adminPage.toastCategoryDeleteError"),
+        description: "Impossible de supprimer la catégorie",
         variant: "destructive",
       });
     }
@@ -345,14 +345,14 @@ const Admin = () => {
         const oldPromo = promoCodes.find(p => p.id === id);
         await updatePromoCode.mutateAsync({ id, data, oldCode: oldPromo?.code });
         toast({
-          title: t("adminPage.toastPromoModified"),
-          description: t("adminPage.toastPromoModifiedDesc", { code: data.code }),
+          title: "Code promo modifié",
+          description: `Le code "${data.code}" a été mis à jour.`,
         });
       } else {
         await createPromoCode.mutateAsync(data);
         toast({
-          title: t("adminPage.toastPromoCreated"),
-          description: t("adminPage.toastPromoCreatedDesc", { code: data.code }),
+          title: "Code promo créé",
+          description: `Le code "${data.code}" a été ajouté.`,
         });
       }
       setIsPromoCodeDialogOpen(false);
@@ -360,7 +360,7 @@ const Admin = () => {
     } catch (error) {
       toast({
         title: "Erreur",
-        description: id ? t("adminPage.toastPromoError") : t("adminPage.toastPromoCreateError"),
+        description: id ? "Impossible de modifier le code promo" : "Impossible de créer le code promo",
         variant: "destructive",
       });
       throw error;
@@ -372,13 +372,13 @@ const Admin = () => {
     try {
       await deletePromoCode.mutateAsync({ id: promoCode.id, promoCode: promoCode.code });
       toast({
-        title: t("adminPage.toastPromoDeleted"),
-        description: t("adminPage.toastPromoDeletedDesc", { code: promoCode.code }),
+        title: "Code promo supprimé",
+        description: `Le code "${promoCode.code}" a été supprimé.`,
       });
     } catch (error) {
       toast({
         title: "Erreur",
-        description: t("adminPage.toastPromoDeleteError"),
+        description: "Impossible de supprimer le code promo",
         variant: "destructive",
       });
     }
@@ -392,13 +392,13 @@ const Admin = () => {
         productName: review.product?.name 
       });
       toast({
-        title: t("adminPage.toastReviewApproved"),
-        description: t("adminPage.toastReviewApprovedDesc"),
+        title: "Avis approuvé",
+        description: "L'avis a été publié avec succès.",
       });
     } catch (error) {
       toast({
         title: "Erreur",
-        description: t("adminPage.toastReviewError"),
+        description: "Impossible d'approuver l'avis",
         variant: "destructive",
       });
       throw error;
@@ -413,13 +413,15 @@ const Admin = () => {
         productName: review.product?.name 
       });
       toast({
-        title: review.is_approved ? t("adminPage.toastReviewRejected") : t("adminPage.toastReviewDeleted"),
-        description: review.is_approved ? t("adminPage.toastReviewRejectedDesc") : t("adminPage.toastReviewDeletedDesc"),
+        title: review.is_approved ? "Avis désapprouvé" : "Avis supprimé",
+        description: review.is_approved 
+          ? "L'avis n'est plus visible."
+          : "L'avis a été supprimé.",
       });
     } catch (error) {
       toast({
         title: "Erreur",
-        description: t("adminPage.toastReviewDeleteError"),
+        description: "Impossible de supprimer l'avis",
         variant: "destructive",
       });
       throw error;
@@ -432,7 +434,7 @@ const Admin = () => {
       <div className="min-h-screen bg-noir flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-cream/60">t("adminPage.checkingAccess")</p>
+          <p className="text-cream/60">Vérification des droits d'accès...</p>
         </div>
       </div>
     );
@@ -454,17 +456,17 @@ const Admin = () => {
                 <ShieldCheck className="h-10 w-10 text-destructive" />
               </div>
               <h1 className="text-2xl font-display font-bold text-cream mb-4">
-                t("adminPage.accessDenied")
+                Accès refusé
               </h1>
               <p className="text-cream/60 mb-8">
-                t("adminPage.accessDeniedDesc")
+                Vous n'avez pas les droits d'administration nécessaires pour accéder à cette page.
               </p>
               <Button
                 onClick={() => navigate("/")}
                 className="bg-gradient-gold text-noir font-semibold"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                t("adminPage.backHome")
+                Retour à l'accueil
               </Button>
             </motion.div>
           </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Wine, Loader2, Image as ImageIcon, Upload, X, Plus, GripVertical } from "lucide-react";
 import {
@@ -35,7 +34,7 @@ interface ProductFormDialogProps {
   isSaving: boolean;
 }
 
-const generate{t("adminProducts.form.slugLabel")} = (name: string) => {
+const generateSlug = (name: string) => {
   return name
     .toLowerCase()
     .normalize("NFD")
@@ -152,7 +151,7 @@ export function ProductFormDialog({
     setFormData((prev) => ({
       ...prev,
       name,
-      slug: !isEditing || prev.slug === generate{t("adminProducts.form.slugLabel")}(prev.name) ? generate{t("adminProducts.form.slugLabel")}(name) : prev.slug,
+      slug: !isEditing || prev.slug === generateSlug(prev.name) ? generateSlug(name) : prev.slug,
     }));
   };
 
@@ -161,7 +160,7 @@ export function ProductFormDialog({
     try {
       const url = await uploadImageToStorage(file);
       setFormData((prev) => ({ ...prev, image_url: url }));
-      toast({ title: "{t("adminProducts.form.mainImage")} uploadée" });
+      toast({ title: "Image principale uploadée" });
     } catch (err) {
       toast({ title: "Erreur d'upload", description: err instanceof Error ? err.message : "Échec", variant: "destructive" });
     } finally {
@@ -211,12 +210,12 @@ export function ProductFormDialog({
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-cream flex items-center gap-3">
             <Wine className="h-5 w-5 text-primary" />
-            {isEditing ? t("adminProducts.form.editTitle") : t("adminProducts.form.addTitle")}
+            {isEditing ? "Modifier le produit" : "Ajouter un produit"}
           </DialogTitle>
           <DialogDescription className="text-cream/60">
             {isEditing
-              ? t("adminProducts.form.editDesc")
-              : t("adminProducts.form.addDesc")}
+              ? "Modifiez les informations du produit"
+              : "Remplissez les informations pour créer un nouveau produit"}
           </DialogDescription>
         </DialogHeader>
 
@@ -225,62 +224,62 @@ export function ProductFormDialog({
             {/* Basic Info */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">
-                {t("adminProducts.form.basicInfo")}
+                Informations de base
               </h3>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1 space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.nameLabel")}</Label>
+                  <Label className="text-cream/80">Nom du produit *</Label>
                   <Input
                     value={formData.name}
                     onChange={(e) => handleNameChange(e.target.value)}
-                    placeholder={t("adminProducts.form.namePlaceholder")}
+                    placeholder="Château Margaux 2015"
                     className="bg-cream/5 border-gold/20 text-cream"
                   />
                 </div>
                 <div className="col-span-2 sm:col-span-1 space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.slugLabel")}</Label>
+                  <Label className="text-cream/80">Slug</Label>
                   <Input
                     value={formData.slug}
                     onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                    placeholder={t("adminProducts.form.slugPlaceholder")}
+                    placeholder="chateau-margaux-2015"
                     className="bg-cream/5 border-gold/20 text-cream"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-cream/80">{t("adminProducts.form.shortDescLabel")}</Label>
+                <Label className="text-cream/80">Description courte</Label>
                 <Input
                   value={formData.short_description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, short_description: e.target.value }))}
-                  placeholder={t("adminProducts.form.shortDescPlaceholder")}
+                  placeholder="Un grand cru classé d'exception"
                   className="bg-cream/5 border-gold/20 text-cream"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-cream/80">{t("adminProducts.form.fullDescLabel")}</Label>
+                <Label className="text-cream/80">Description complète</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder={t("adminProducts.form.fullDescPlaceholder")}
+                  placeholder="Description détaillée du produit..."
                   rows={3}
                   className="bg-cream/5 border-gold/20 text-cream resize-none"
                 />
               </div>
             </div>
 
-            {/* {t("adminProducts.form.imagesTitle")} Section */}
+            {/* Images Section */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">
                 <ImageIcon className="inline h-4 w-4 mr-1" />
-                {t("adminProducts.form.imagesTitle")}
+                Images
               </h3>
 
               {/* Main Image */}
               <div className="space-y-2">
-                <Label className="text-cream/80">{t("adminProducts.form.mainImage")}</Label>
+                <Label className="text-cream/80">Image principale</Label>
                 <div className="flex gap-3 items-start">
                   {/* Preview */}
                   <div className="w-20 h-24 rounded-lg bg-cream/5 border border-gold/20 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -295,7 +294,7 @@ export function ProductFormDialog({
                     <Input
                       value={formData.image_url}
                       onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
-                      placeholder={t("adminProducts.form.imageUrlPlaceholder")}
+                      placeholder="https://... ou uploadez un fichier"
                       className="bg-cream/5 border-gold/20 text-cream text-xs"
                     />
                     <div className="flex gap-2">
@@ -304,12 +303,12 @@ export function ProductFormDialog({
                       <Button type="button" size="sm" variant="outline" className="border-gold/20 text-cream hover:bg-cream/10"
                         onClick={() => mainImageRef.current?.click()} disabled={isUploadingMain}>
                         {isUploadingMain ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Upload className="h-3 w-3 mr-1" />}
-                        {t("adminProducts.form.upload")}
+                        Uploader
                       </Button>
                       {formData.image_url && (
                         <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive"
                           onClick={() => setFormData((prev) => ({ ...prev, image_url: "" }))}>
-                          <X className="h-3 w-3 mr-1" /> {t("adminProducts.form.remove")}
+                          <X className="h-3 w-3 mr-1" /> Supprimer
                         </Button>
                       )}
                     </div>
@@ -319,7 +318,7 @@ export function ProductFormDialog({
 
               {/* Gallery */}
               <div className="space-y-2">
-                <Label className="text-cream/80">t("adminProducts.form.gallery", { count: (formData.gallery_urls || []).length })</Label>
+                <Label className="text-cream/80">Galerie ({(formData.gallery_urls || []).length} images)</Label>
                 
                 {/* Gallery grid */}
                 {(formData.gallery_urls || []).length > 0 && (
@@ -330,11 +329,11 @@ export function ProductFormDialog({
                         <div className="absolute inset-0 bg-noir/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
                           <Button type="button" size="sm" variant="ghost" className="text-cream text-[10px] h-6 px-2"
                             onClick={() => setAsMainImage(url, idx)}>
-                            {t("adminProducts.form.setMain")}
+                            ⭐ Principale
                           </Button>
                           <Button type="button" size="sm" variant="ghost" className="text-destructive text-[10px] h-6 px-2"
                             onClick={() => removeGalleryImage(idx)}>
-                            <X className="h-3 w-3" /> {t("adminProducts.form.removeFromGallery")}
+                            <X className="h-3 w-3" /> Retirer
                           </Button>
                         </div>
                       </div>
@@ -349,21 +348,21 @@ export function ProductFormDialog({
                   <Button type="button" size="sm" variant="outline" className="border-gold/20 text-cream hover:bg-cream/10"
                     onClick={() => galleryImageRef.current?.click()} disabled={isUploadingGallery}>
                     {isUploadingGallery ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
-                    {t("adminProducts.form.addImages")}
+                    Ajouter des images
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* Pricing & {t("adminProducts.form.stockLabel")} */}
+            {/* Pricing & Stock */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">
-                {t("adminProducts.form.pricing{t("adminProducts.form.stockLabel")}")}
+                Prix & Stock
               </h3>
               
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.priceLabel")}</Label>
+                  <Label className="text-cream/80">Prix (FCFA) *</Label>
                   <Input
                     type="number"
                     value={formData.price || ""}
@@ -373,7 +372,7 @@ export function ProductFormDialog({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.originalPriceLabel")}</Label>
+                  <Label className="text-cream/80">Prix original</Label>
                   <Input
                     type="number"
                     value={formData.original_price || ""}
@@ -383,7 +382,7 @@ export function ProductFormDialog({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.stockLabel")}</Label>
+                  <Label className="text-cream/80">Stock</Label>
                   <Input
                     type="number"
                     value={formData.stock_quantity || ""}
@@ -395,13 +394,13 @@ export function ProductFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-cream/80">{t("adminProducts.form.categoryLabel")}</Label>
+                <Label className="text-cream/80">Catégorie</Label>
                 <Select
                   value={formData.category_id || ""}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, category_id: value || undefined }))}
                 >
                   <SelectTrigger className="bg-cream/5 border-gold/20 text-cream">
-                    <SelectValue placeholder={t("adminProducts.form.categoryPlaceholder")} />
+                    <SelectValue placeholder="Sélectionner une catégorie" />
                   </SelectTrigger>
                   <SelectContent className="bg-noir border-gold/20">
                     {categories.map((cat) => (
@@ -417,12 +416,12 @@ export function ProductFormDialog({
             {/* Wine Details */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">
-                {t("adminProducts.form.wineDetails")}
+                Détails du vin
               </h3>
               
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.alcoholLabel")}</Label>
+                  <Label className="text-cream/80">Alcool (%)</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -433,7 +432,7 @@ export function ProductFormDialog({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.volumeLabel")}</Label>
+                  <Label className="text-cream/80">Volume (ml)</Label>
                   <Input
                     type="number"
                     value={formData.volume_ml || ""}
@@ -443,7 +442,7 @@ export function ProductFormDialog({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.vintageLabel")}</Label>
+                  <Label className="text-cream/80">Millésime</Label>
                   <Input
                     type="number"
                     value={formData.vintage_year || ""}
@@ -456,7 +455,7 @@ export function ProductFormDialog({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.originLabel")}</Label>
+                  <Label className="text-cream/80">Pays d'origine</Label>
                   <Input
                     value={formData.origin_country}
                     onChange={(e) => setFormData((prev) => ({ ...prev, origin_country: e.target.value }))}
@@ -465,7 +464,7 @@ export function ProductFormDialog({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.regionLabel")}</Label>
+                  <Label className="text-cream/80">Région</Label>
                   <Input
                     value={formData.region}
                     onChange={(e) => setFormData((prev) => ({ ...prev, region: e.target.value }))}
@@ -477,7 +476,7 @@ export function ProductFormDialog({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.grapeLabel")}</Label>
+                  <Label className="text-cream/80">Cépage</Label>
                   <Input
                     value={formData.grape_variety}
                     onChange={(e) => setFormData((prev) => ({ ...prev, grape_variety: e.target.value }))}
@@ -486,7 +485,7 @@ export function ProductFormDialog({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream/80">{t("adminProducts.form.servingTempLabel")}</Label>
+                  <Label className="text-cream/80">Température de service</Label>
                   <Input
                     value={formData.serving_temperature}
                     onChange={(e) => setFormData((prev) => ({ ...prev, serving_temperature: e.target.value }))}
@@ -497,7 +496,7 @@ export function ProductFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-cream/80">{t("adminProducts.form.tastingNotesLabel")}</Label>
+                <Label className="text-cream/80">Notes de dégustation</Label>
                 <Textarea
                   value={formData.tasting_notes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, tasting_notes: e.target.value }))}
@@ -508,7 +507,7 @@ export function ProductFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-cream/80">{t("adminProducts.form.foodPairingLabel")}</Label>
+                <Label className="text-cream/80">Accords mets</Label>
                 <Input
                   value={formData.food_pairing}
                   onChange={(e) => setFormData((prev) => ({ ...prev, food_pairing: e.target.value }))}
@@ -527,8 +526,8 @@ export function ProductFormDialog({
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-cream/5 border border-gold/10">
                   <div>
-                    <p className="text-cream font-medium">{t("adminProducts.form.activeLabel")}</p>
-                    <p className="text-cream/50 text-sm">{t("adminProducts.form.activeDesc")}</p>
+                    <p className="text-cream font-medium">Produit actif</p>
+                    <p className="text-cream/50 text-sm">Visible dans le catalogue</p>
                   </div>
                   <Switch
                     checked={formData.is_active}
@@ -537,7 +536,7 @@ export function ProductFormDialog({
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-cream/5 border border-gold/10">
                   <div>
-                    <p className="text-cream font-medium">{t("adminProducts.form.featuredLabel")}</p>
+                    <p className="text-cream font-medium">Produit en vedette</p>
                     <p className="text-cream/50 text-sm">Affiché sur la page d'accueil</p>
                   </div>
                   <Switch
@@ -557,7 +556,7 @@ export function ProductFormDialog({
             className="flex-1 border-gold/30 text-cream hover:bg-cream/10"
             onClick={() => onOpenChange(false)}
           >
-            {t("adminProducts.form.cancel")}
+            Annuler
           </Button>
           <Button
             className="flex-1 bg-gradient-gold text-noir font-semibold hover:opacity-90"
@@ -571,7 +570,7 @@ export function ProductFormDialog({
               </>
             ) : (
               <>
-                {isEditing ? "{t("adminProducts.form.save")}" : "Créer le produit"}
+                {isEditing ? "Enregistrer" : "Créer le produit"}
               </>
             )}
           </Button>

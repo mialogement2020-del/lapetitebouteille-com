@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Store, Package, Megaphone, Loader2, X, Plus, Users } from "lucide-react";
@@ -14,9 +13,9 @@ import type { AppRole } from "@/hooks/useUserRoles";
 type MarketplaceRole = Extract<AppRole, "ambassador" | "vendor" | "wholesaler">;
 
 const ROLE_META: Record<MarketplaceRole, { label: string; icon: typeof Store; color: string }> = {
-  vendor: { label: t("adminMarketplace.roles.vendor"), icon: Store, color: "bg-primary/20 text-primary border-primary/40" },
-  wholesaler: { label: t("adminMarketplace.roles.wholesaler"), icon: Package, color: "bg-secondary/20 text-secondary border-secondary/40" },
-  ambassador: { label: t("adminMarketplace.roles.ambassador"), icon: Megaphone, color: "bg-green-500/20 text-green-400 border-green-500/40" },
+  vendor: { label: "Vendeur", icon: Store, color: "bg-primary/20 text-primary border-primary/40" },
+  wholesaler: { label: "Grossiste", icon: Package, color: "bg-secondary/20 text-secondary border-secondary/40" },
+  ambassador: { label: "Ambassadeur", icon: Megaphone, color: "bg-green-500/20 text-green-400 border-green-500/40" },
 };
 
 interface ProfileWithRoles {
@@ -31,7 +30,6 @@ const displayName = (p: { first_name: string | null; last_name: string | null; e
   [p.first_name, p.last_name].filter(Boolean).join(" ").trim() || p.email;
 
 export const MarketplaceRolesManager = () => {
-  const { t } = useTranslation();
   const qc = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
@@ -110,10 +108,10 @@ export const MarketplaceRolesManager = () => {
     try {
       const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
       if (error && error.code !== "23505") throw error;
-      toast({ title: t("adminMarketplace.toastRoleAssigned"), description: t("adminMarketplace.toastRoleAssignedDesc", { role: ROLE_META[role].label }) });
+      toast({ title: "Rôle attribué", description: `${ROLE_META[role].label} ajouté` });
       refreshAll();
     } catch (e: any) {
-      toast({ title: t("adminMarketplace.toastError"), description: e.message ?? t("adminMarketplace.toastAssignError"), variant: "destructive" });
+      toast({ title: "Erreur", description: e.message ?? "Impossible d'attribuer le rôle", variant: "destructive" });
     } finally {
       setBusyKey(null);
     }
@@ -129,10 +127,10 @@ export const MarketplaceRolesManager = () => {
         .eq("user_id", userId)
         .eq("role", role);
       if (error) throw error;
-      toast({ title: t("adminMarketplace.toastRoleRevoked"), description: t("adminMarketplace.toastRoleRevokedDesc", { role: ROLE_META[role].label }) });
+      toast({ title: "Rôle retiré", description: `${ROLE_META[role].label} retiré` });
       refreshAll();
     } catch (e: any) {
-      toast({ title: t("adminMarketplace.toastError"), description: e.message ?? t("adminMarketplace.toastRevokeError"), variant: "destructive" });
+      toast({ title: "Erreur", description: e.message ?? "Impossible de retirer le rôle", variant: "destructive" });
     } finally {
       setBusyKey(null);
     }
@@ -193,17 +191,18 @@ export const MarketplaceRolesManager = () => {
       <CardHeader>
         <CardTitle className="text-cream flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
-          {t("adminMarketplace.title")}
+          Rôles Marketplace
         </CardTitle>
         <CardDescription className="text-cream/60">
-          t("adminMarketplace.desc")
+          Attribuez les rôles <strong>Vendeur</strong>, <strong>Grossiste</strong> et{" "}
+          <strong>Ambassadeur</strong> aux utilisateurs.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-8">
         {/* Search */}
         <div>
-          <h3 className="text-sm font-semibold text-cream mb-3">t("adminMarketplace.searchUser")</h3>
+          <h3 className="text-sm font-semibold text-cream mb-3">Rechercher un utilisateur</h3>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
@@ -211,7 +210,7 @@ export const MarketplaceRolesManager = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && setSubmittedQuery(searchQuery.trim())}
-                placeholder={t("adminMarketplace.searchPlaceholder")}
+                placeholder="Email, prénom ou nom (3 caractères min.)"
                 className="pl-10 bg-noir/50 border-gold/20 text-cream"
               />
             </div>
@@ -220,16 +219,16 @@ export const MarketplaceRolesManager = () => {
               disabled={searchQuery.trim().length < 3}
               className="bg-gradient-gold text-noir"
             >
-              {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "t("adminMarketplace.search")"}
+              {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Rechercher"}
             </Button>
           </div>
 
           {submittedQuery && (
             <div className="mt-4 space-y-2">
               {searching ? (
-                <p className="text-sm text-cream/50">t("adminMarketplace.searching")</p>
+                <p className="text-sm text-cream/50">Recherche…</p>
               ) : searchResults.length === 0 ? (
-                <p className="text-sm text-cream/50">t("adminMarketplace.noUserFound")</p>
+                <p className="text-sm text-cream/50">Aucun utilisateur trouvé.</p>
               ) : (
                 searchResults.map(renderUserRow)
               )}
@@ -240,7 +239,7 @@ export const MarketplaceRolesManager = () => {
         {/* Current holders */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-cream">t("adminMarketplace.holdersTitle")</h3>
+            <h3 className="text-sm font-semibold text-cream">Utilisateurs avec un rôle marketplace</h3>
             <Badge variant="outline" className="border-primary/30 text-cream/70">
               {holders.length}
             </Badge>
@@ -251,7 +250,7 @@ export const MarketplaceRolesManager = () => {
             </div>
           ) : holders.length === 0 ? (
             <p className="text-sm text-cream/50 py-6 text-center">
-              t("adminMarketplace.noHolders")
+              Aucun utilisateur n'a encore de rôle marketplace.
             </p>
           ) : (
             <div className="space-y-2">{holders.map(renderUserRow)}</div>

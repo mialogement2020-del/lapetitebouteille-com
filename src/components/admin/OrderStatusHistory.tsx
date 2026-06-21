@@ -1,4 +1,4 @@
-import { useTranslation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Clock, ArrowRight, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,12 +19,12 @@ interface OrderStatusHistoryProps {
 }
 
 const statusLabels: Record<string, string> = {
-  pending: t("adminOrders.status.pending"),
-  confirmed: t("adminOrders.status.confirmed"),
-  processing: t("adminOrders.status.processing"),
-  shipped: t("adminOrders.status.shipped"),
-  delivered: t("adminOrders.status.delivered"),
-  cancelled: t("adminOrders.status.cancelled"),
+  pending: "En attente",
+  confirmed: "Confirmée",
+  processing: "En préparation",
+  shipped: "Expédiée",
+  delivered: "Livrée",
+  cancelled: "Annulée",
 };
 
 const statusColors: Record<string, string> = {
@@ -63,7 +63,7 @@ export function OrderStatusHistory({ orderId }: OrderStatusHistoryProps) {
   };
 
   const getStatusLabel = (status: string | null) => {
-    if (!status) return t("adminOrders.history.creation");
+    if (!status) return "Création";
     return statusLabels[status] || status;
   };
 
@@ -85,7 +85,7 @@ export function OrderStatusHistory({ orderId }: OrderStatusHistoryProps) {
   if (history.length === 0) {
     return (
       <p className="text-cream/50 text-sm text-center py-4">
-        {t("adminOrders.history.noHistory")}
+        Aucun historique disponible
       </p>
     );
   }
@@ -120,7 +120,7 @@ export function OrderStatusHistory({ orderId }: OrderStatusHistoryProps) {
               {entry.changed_by && (
                 <span className="flex items-center gap-1 text-xs text-cream/40">
                   <User className="h-3 w-3" />
-                  {t("adminOrders.history.admin")}
+                  Admin
                 </span>
               )}
             </div>

@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Receipt, FileText, Loader2, Plus, Wallet } from "lucide-react";
@@ -15,14 +14,14 @@ import { useAdminInvoices, type WholesaleInvoice, type InvoiceStatus } from "@/h
 import { toast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/utils";
 
-const getStatus = (t: any): Record<InvoiceStatus, { label: string; color: string }> => ({
-  draft: { label: t("adminWholesale.status.draft"), color: "border-cream/20 text-cream/60" },
-  sent: { label: t("adminWholesale.status.sent"), color: "border-yellow-500/40 text-yellow-400" },
-  partial: { label: t("adminWholesale.status.partial"), color: "border-orange-500/40 text-orange-400" },
-  paid: { label: t("adminWholesale.status.paid"), color: "border-green-500/40 text-green-400" },
-  overdue: { label: t("adminWholesale.status.overdue"), color: "border-red-500/40 text-red-400" },
-  cancelled: { label: t("adminWholesale.status.cancelled"), color: "border-cream/20 text-cream/40" },
-});
+const STATUS: Record<InvoiceStatus, { label: string; color: string }> = {
+  draft: { label: "Brouillon", color: "border-cream/20 text-cream/60" },
+  sent: { label: "À régler", color: "border-yellow-500/40 text-yellow-400" },
+  partial: { label: "Partiel", color: "border-orange-500/40 text-orange-400" },
+  paid: { label: "Payée", color: "border-green-500/40 text-green-400" },
+  overdue: { label: "En retard", color: "border-red-500/40 text-red-400" },
+  cancelled: { label: "Annulée", color: "border-cream/20 text-cream/40" },
+};
 
 export const WholesaleInvoicesManager = () => {
   const { data: invoices = [], isLoading, createFromQuote, registerPayment } = useAdminInvoices();
@@ -34,12 +33,12 @@ export const WholesaleInvoicesManager = () => {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="text-2xl font-display text-cream flex items-center gap-2">
-            <Receipt className="h-6 w-6 text-primary" /> {t("adminWholesale.title")}
+            <Receipt className="h-6 w-6 text-primary" /> Facturation B2B
           </h2>
-          <p className="text-cream/60 text-sm">t("adminWholesale.invoicesCount", { count: invoices.length })</p>
+          <p className="text-cream/60 text-sm">{invoices.length} facture(s) émise(s)</p>
         </div>
         <Button className="bg-gradient-gold text-noir" onClick={() => setConvertOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" /> t("adminWholesale.convertQuote")
+          <Plus className="h-4 w-4 mr-2" /> Convertir un devis
         </Button>
       </div>
 
@@ -48,7 +47,7 @@ export const WholesaleInvoicesManager = () => {
           {isLoading ? (
             <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
           ) : invoices.length === 0 ? (
-            <p className="text-cream/60 text-sm py-8 text-center">t("adminWholesale.noInvoices")</p>
+            <p className="text-cream/60 text-sm py-8 text-center">Aucune facture pour l'instant.</p>
           ) : (
             invoices.map((inv) => {
               const remaining = Number(inv.amount_ttc) - Number(inv.amount_paid);
@@ -64,19 +63,19 @@ export const WholesaleInvoicesManager = () => {
                     <p className="text-xs text-cream/50 truncate">{inv.description}</p>
                     <p className="text-xs text-cream/40">
                       {new Date(inv.issued_at).toLocaleDateString("fr-FR")} · {inv.payment_terms}
-                      {inv.due_date && <> · {t("adminWholesale.due", { date: new Date(inv.due_date).toLocaleDateString("fr-FR") })}</>}
+                      {inv.due_date && <> · échéance {new Date(inv.due_date).toLocaleDateString("fr-FR")}</>}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-cream font-display">{formatPrice(inv.amount_ttc)} FCFA</p>
                     {remaining > 0 && inv.status !== "cancelled" && (
-                      <p className="text-xs text-yellow-400">t("adminWholesale.remaining", { amount: formatPrice(remaining) })</p>
+                      <p className="text-xs text-yellow-400">Reste {formatPrice(remaining)} FCFA</p>
                     )}
                   </div>
-                  <Badge variant="outline" className={getStatus(t)[inv.status].color}>{getStatus(t)[inv.status].label}</Badge>
+                  <Badge variant="outline" className={STATUS[inv.status].color}>{STATUS[inv.status].label}</Badge>
                   {remaining > 0 && inv.status !== "cancelled" && (
                     <Button size="sm" variant="outline" className="border-gold/30 text-cream" onClick={() => setPayOpen(inv)}>
-                      <Wallet className="h-4 w-4 mr-1" /> {t("adminWholesale.collect")}
+                      <Wallet className="h-4 w-4 mr-1" /> Encaisser
                     </Button>
                   )}
                 </motion.div>
@@ -101,7 +100,7 @@ export const WholesaleInvoicesManager = () => {
       />
     </div>
   );
-});
+};
 
 const ConvertQuoteDialog = ({
   open,
@@ -133,32 +132,32 @@ const ConvertQuoteDialog = ({
   const [dueDays, setDueDays] = useState("0");
 
   const submit = async () => {
-    if (!quoteId) return toast({ title: t("adminWholesale.toastSelectQuote"), variant: "destructive" });
+    if (!quoteId) return toast({ title: "Sélectionnez un devis", variant: "destructive" });
     try {
       await onConvert(quoteId, Number(dueDays) || 0);
-      toast({ title: t("adminWholesale.toastInvoiceCreated") });
+      toast({ title: "Facture créée ✅" });
       onOpenChange(false);
       setQuoteId("");
       setDueDays("0");
     } catch (e: any) {
-      toast({ title: t("adminWholesale.toastError"), description: e.message, variant: "destructive" });
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
     }
-  });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-noir border-gold/20 text-cream">
         <DialogHeader>
-          <DialogTitle>t("adminWholesale.convertQuote") en facture</DialogTitle>
+          <DialogTitle>Convertir un devis en facture</DialogTitle>
           <DialogDescription className="text-cream/60">
-            {t("adminWholesale.convertDialogDesc")}
+            La TVA 19,25 % est ajoutée automatiquement si le devis comporte un NIU.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-cream/80 text-sm">{t("adminWholesale.quote")}</Label>
+            <Label className="text-cream/80 text-sm">Devis</Label>
             <Select value={quoteId} onValueChange={setQuoteId}>
-              <SelectTrigger className="bg-noir/50 border-gold/20"><SelectValue placeholder={t("adminWholesale.selectQuote")} /></SelectTrigger>
+              <SelectTrigger className="bg-noir/50 border-gold/20"><SelectValue placeholder="Sélectionnez…" /></SelectTrigger>
               <SelectContent>
                 {quotes.map((q: any) => (
                   <SelectItem key={q.id} value={q.id}>
@@ -169,30 +168,30 @@ const ConvertQuoteDialog = ({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-cream/80 text-sm">{t("adminWholesale.paymentTerms")}</Label>
+            <Label className="text-cream/80 text-sm">Conditions de paiement</Label>
             <Select value={dueDays} onValueChange={setDueDays}>
               <SelectTrigger className="bg-noir/50 border-gold/20"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">t("adminWholesale.cashPayment")</SelectItem>
-                <SelectItem value="15">t("adminWholesale.net15")</SelectItem>
-                <SelectItem value="30">t("adminWholesale.net30")</SelectItem>
-                <SelectItem value="45">t("adminWholesale.net45")</SelectItem>
-                <SelectItem value="60">t("adminWholesale.net60")</SelectItem>
+                <SelectItem value="0">Paiement comptant</SelectItem>
+                <SelectItem value="15">Net 15 jours</SelectItem>
+                <SelectItem value="30">Net 30 jours</SelectItem>
+                <SelectItem value="45">Net 45 jours</SelectItem>
+                <SelectItem value="60">Net 60 jours</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>t("common.cancel")</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Annuler</Button>
           <Button className="bg-gradient-gold text-noir" onClick={submit} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
-            t("adminWholesale.createInvoice")
+            Créer la facture
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-});
+};
 
 const RegisterPaymentDialog = ({
   invoice,
@@ -214,36 +213,36 @@ const RegisterPaymentDialog = ({
     setAmount("");
     setReference("");
     setMethod("mobile_money");
-  });
+  };
 
   const submit = async () => {
     if (!invoice) return;
     const amt = Number(amount);
-    if (!amt || amt <= 0) return toast({ title: t("adminWholesale.toastInvalidAmount"), variant: "destructive" });
+    if (!amt || amt <= 0) return toast({ title: "Montant invalide", variant: "destructive" });
     try {
       await onPay({ invoiceId: invoice.id, amount: amt, method, reference: reference || undefined });
-      toast({ title: t("adminWholesale.toastPaymentRegistered") });
+      toast({ title: "Encaissement enregistré ✅" });
       reset();
       onOpenChange(false);
     } catch (e: any) {
-      toast({ title: t("adminWholesale.toastError"), description: e.message, variant: "destructive" });
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
     }
-  });
+  };
 
   return (
     <Dialog open={!!invoice} onOpenChange={onOpenChange}>
       <DialogContent className="bg-noir border-gold/20 text-cream">
         <DialogHeader>
-          <DialogTitle>{t("adminWholesale.registerPaymentTitle")}</DialogTitle>
+          <DialogTitle>Enregistrer un paiement</DialogTitle>
           {invoice && (
             <DialogDescription className="text-cream/60">
-              {invoice.invoice_number} · t("adminWholesale.remainingToPay", { amount: formatPrice(remaining) })
+              {invoice.invoice_number} · Reste à payer {formatPrice(remaining)} FCFA
             </DialogDescription>
           )}
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-cream/80 text-sm">{t("adminWholesale.collectedAmount")}</Label>
+            <Label className="text-cream/80 text-sm">Montant encaissé (FCFA)</Label>
             <Input
               type="number"
               value={amount}
@@ -253,30 +252,30 @@ const RegisterPaymentDialog = ({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-cream/80 text-sm">{t("adminWholesale.paymentMethod")}</Label>
+            <Label className="text-cream/80 text-sm">Mode de paiement</Label>
             <Select value={method} onValueChange={setMethod}>
               <SelectTrigger className="bg-noir/50 border-gold/20"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="mobile_money">t("adminWholesale.mobileMoney")</SelectItem>
-                <SelectItem value="cash">t("adminWholesale.cash")</SelectItem>
-                <SelectItem value="bank_transfer">t("adminWholesale.bankTransfer")</SelectItem>
-                <SelectItem value="check">t("adminWholesale.check")</SelectItem>
+                <SelectItem value="mobile_money">Mobile Money</SelectItem>
+                <SelectItem value="cash">Espèces</SelectItem>
+                <SelectItem value="bank_transfer">Virement bancaire</SelectItem>
+                <SelectItem value="check">Chèque</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-cream/80 text-sm">t("adminWholesale.referenceOptional")</Label>
+            <Label className="text-cream/80 text-sm">Référence (optionnel)</Label>
             <Input value={reference} onChange={(e) => setReference(e.target.value)} className="bg-noir/50 border-gold/20" />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>t("common.cancel")</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Annuler</Button>
           <Button className="bg-gradient-gold text-noir" onClick={submit} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4 mr-2" />}
-            t("adminWholesale.register")
+            Enregistrer
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-});
+};

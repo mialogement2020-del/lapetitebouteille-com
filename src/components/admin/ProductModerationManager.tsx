@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -130,16 +129,16 @@ export function ProductModerationManager() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-cream">
             <Sparkles className="h-5 w-5 text-primary" />
-            {t("adminProducts.moderation.title")}
+            Modération IA des fiches vendeurs
           </CardTitle>
           <Button onClick={moderateAllPending} disabled={batching || (pendingQuery.data?.length ?? 0) === 0}>
             {batching ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-            t("adminProducts.moderation.analyzeAll", { count: pendingQuery.data?.length ?? 0 })
+            Analyser tout ({pendingQuery.data?.length ?? 0})
           </Button>
         </CardHeader>
         <CardContent>
           {(pendingQuery.data ?? []).length === 0 ? (
-            <p className="text-cream/60 text-sm">{t("adminProducts.moderation.noPending")}</p>
+            <p className="text-cream/60 text-sm">Aucune fiche vendeur en attente.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {pendingQuery.data!.map((p) => (
@@ -154,7 +153,7 @@ export function ProductModerationManager() {
                     <Badge variant="outline">{p.moderation_status}</Badge>
                   </div>
                   <Button size="sm" onClick={() => moderate(p.id)} disabled={running === p.id}>
-                    {running === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "{t("adminProducts.moderation.analyze")}"}
+                    {running === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Analyser"}
                   </Button>
                 </div>
               ))}
@@ -165,10 +164,10 @@ export function ProductModerationManager() {
 
       <Card className="bg-noir-light/40 border-gold/20">
         <CardHeader>
-          <CardTitle className="text-cream">{t("adminProducts.moderation.recentAnalyses")}</CardTitle>
+          <CardTitle className="text-cream">Analyses récentes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {moderationsQuery.isLoading && <div className="text-cream/60">{t("adminProducts.moderation.loading")}</div>}
+          {moderationsQuery.isLoading && <div className="text-cream/60">Chargement…</div>}
           {(moderationsQuery.data ?? []).map((m) => (
             <div key={m.id} className="p-4 rounded border border-gold/10 space-y-2">
               <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -192,7 +191,7 @@ export function ProductModerationManager() {
               {(m.issues?.length ?? 0) > 0 && (
                 <div>
                   <div className="text-xs font-semibold text-red-400 flex items-center gap-1">
-                    <ShieldAlert className="h-3 w-3" /> {t("adminProducts.moderation.issues")}
+                    <ShieldAlert className="h-3 w-3" /> Problèmes
                   </div>
                   <ul className="text-xs text-cream/70 list-disc list-inside">
                     {m.issues.map((i, idx) => <li key={idx}>{i}</li>)}
@@ -201,7 +200,7 @@ export function ProductModerationManager() {
               )}
               {(m.suggestions?.length ?? 0) > 0 && (
                 <div>
-                  <div className="text-xs font-semibold text-primary">{t("adminProducts.moderation.suggestions")}</div>
+                  <div className="text-xs font-semibold text-primary">Suggestions</div>
                   <ul className="text-xs text-cream/70 list-disc list-inside">
                     {m.suggestions.map((s, idx) => <li key={idx}>{s}</li>)}
                   </ul>
@@ -213,14 +212,14 @@ export function ProductModerationManager() {
                   variant="outline"
                   onClick={() => overrideMutation.mutate({ product_id: m.product_id, status: "approved" })}
                 >
-                  <ShieldCheck className="h-4 w-4 mr-1 text-emerald-400" /> {t("adminProducts.moderation.approve")}
+                  <ShieldCheck className="h-4 w-4 mr-1 text-emerald-400" /> Approuver
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => overrideMutation.mutate({ product_id: m.product_id, status: "rejected" })}
                 >
-                  <ShieldX className="h-4 w-4 mr-1 text-red-400" /> {t("adminProducts.moderation.reject")}
+                  <ShieldX className="h-4 w-4 mr-1 text-red-400" /> Rejeter
                 </Button>
               </div>
             </div>

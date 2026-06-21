@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { format, subDays, eachDayOfInterval } from "date-fns";
-import { fr, enUS } from "date-fns/locale";
+import { fr } from "date-fns/locale";
 import { TrendingUp, TrendingDown, Calendar, AlertTriangle, XCircle, Loader2 } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Bar, BarChart } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useTranslation } from "react-i18next";
 
 interface AlertData {
   date: string;
@@ -25,7 +24,6 @@ interface ChartData {
 type PeriodOption = "7" | "14" | "30" | "90";
 
 export function StockAlertsChart() {
-  const { t, i18n } = useTranslation();
   const [period, setPeriod] = useState<PeriodOption>("30");
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,8 +33,6 @@ export function StockAlertsChart() {
     outOfStockCount: 0,
     trend: 0, // percentage change vs previous period
   });
-
-  const currentLocale = i18n.language === "fr" ? fr : enUS;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,7 +96,7 @@ export function StockAlertsChart() {
           const values = dateMap.get(key) || { low_stock: 0, out_of_stock: 0 };
           return {
             date: key,
-            displayDate: format(date, "dd MMM", { locale: currentLocale }),
+            displayDate: format(date, "dd MMM", { locale: fr }),
             low_stock: values.low_stock,
             out_of_stock: values.out_of_stock,
             total: values.low_stock + values.out_of_stock,
@@ -129,7 +125,7 @@ export function StockAlertsChart() {
     };
 
     fetchData();
-  }, [period, currentLocale]);
+  }, [period]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -143,7 +139,7 @@ export function StockAlertsChart() {
                 style={{ backgroundColor: entry.color }}
               />
               <span className="text-cream/70">
-                {entry.name === "low_stock" ? t("adminStock.lowStock") : t("adminStock.outOfStock")}:
+                {entry.name === "low_stock" ? "Stock faible" : "Rupture"}:
               </span>
               <span className="text-cream font-medium">{entry.value}</span>
             </div>
@@ -160,10 +156,10 @@ export function StockAlertsChart() {
         <div>
           <CardTitle className="text-cream flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-warning" />
-            {t("adminStock.evolution")}
+            Évolution des alertes de stock
           </CardTitle>
           <CardDescription className="text-cream/60">
-            {t("adminStock.history")} ({period} {t("adminStock.days")})
+            Historique des alertes sur les {period} derniers jours
           </CardDescription>
         </div>
         <Select value={period} onValueChange={(v) => setPeriod(v as PeriodOption)}>
@@ -172,10 +168,10 @@ export function StockAlertsChart() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/30">
-            <SelectItem value="7">7 {t("adminStock.days")}</SelectItem>
-            <SelectItem value="14">14 {t("adminStock.days")}</SelectItem>
-            <SelectItem value="30">30 {t("adminStock.days")}</SelectItem>
-            <SelectItem value="90">90 {t("adminStock.days")}</SelectItem>
+            <SelectItem value="7">7 jours</SelectItem>
+            <SelectItem value="14">14 jours</SelectItem>
+            <SelectItem value="30">30 jours</SelectItem>
+            <SelectItem value="90">90 jours</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -192,7 +188,7 @@ export function StockAlertsChart() {
               <div className="bg-warning/5 rounded-lg p-4 border border-warning/20">
                 <div className="flex items-center gap-2 text-cream/60 text-sm mb-1">
                   <AlertTriangle className="h-4 w-4 text-warning" />
-                  {t("adminStock.lowStock")}
+                  Stock faible
                 </div>
                 <p className="text-2xl font-bold text-warning">
                   {stats.lowStockCount}
@@ -201,7 +197,7 @@ export function StockAlertsChart() {
               <div className="bg-destructive/5 rounded-lg p-4 border border-destructive/20">
                 <div className="flex items-center gap-2 text-cream/60 text-sm mb-1">
                   <XCircle className="h-4 w-4 text-destructive" />
-                  {t("adminStock.outOfStock")}
+                  Ruptures
                 </div>
                 <p className="text-2xl font-bold text-destructive">
                   {stats.outOfStockCount}
@@ -214,14 +210,14 @@ export function StockAlertsChart() {
                   ) : (
                     <TrendingDown className="h-4 w-4 text-success" />
                   )}
-                  {t("adminStock.trend")}
+                  Tendance
                 </div>
                 <p className={`text-2xl font-bold ${
                   stats.trend >= 0 ? "text-warning" : "text-success"
                 }`}>
                   {stats.trend >= 0 ? "+" : ""}{stats.trend}%
                 </p>
-                <p className="text-xs text-cream/40">{t("adminStock.vsPreviousPeriod")}</p>
+                <p className="text-xs text-cream/40">vs période précédente</p>
               </div>
             </div>
 
@@ -230,7 +226,7 @@ export function StockAlertsChart() {
               {stats.totalAlerts === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-cream/40">
                   <AlertTriangle className="h-12 w-12 mb-3 opacity-30" />
-                  <p>{t("adminStock.noAlertsInPeriod")}</p>
+                  <p>Aucune alerte de stock sur cette période</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -251,7 +247,7 @@ export function StockAlertsChart() {
                     <Legend 
                       formatter={(value) => (
                         <span className="text-cream/70 text-sm">
-                          {value === "low_stock" ? t("adminStock.lowStock") : t("adminStock.outOfStock")}
+                          {value === "low_stock" ? "Stock faible" : "Rupture de stock"}
                         </span>
                       )}
                     />

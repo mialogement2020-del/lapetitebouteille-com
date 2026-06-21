@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { FolderOpen, Loader2, AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  Dialog{t("adminCategories.form.descriptionLabel")},
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -32,7 +31,7 @@ interface CategoryFormDialogProps {
   isSaving: boolean;
 }
 
-const generate{t("adminCategories.form.slugLabel")} = (name: string) => {
+const generateSlug = (name: string) => {
   return name
     .toLowerCase()
     .normalize("NFD")
@@ -92,7 +91,7 @@ export function CategoryFormDialog({
     setFormData((prev) => ({
       ...prev,
       name,
-      slug: !isEditing || prev.slug === generate{t("adminCategories.form.slugLabel")}(prev.name) ? generate{t("adminCategories.form.slugLabel")}(name) : prev.slug,
+      slug: !isEditing || prev.slug === generateSlug(prev.name) ? generateSlug(name) : prev.slug,
     }));
   };
 
@@ -106,47 +105,47 @@ export function CategoryFormDialog({
         <DialogHeader>
           <DialogTitle className="text-cream flex items-center gap-3">
             <FolderOpen className="h-5 w-5 text-primary" />
-            {isEditing ? t("adminCategories.form.editTitle") : t("adminCategories.form.addTitle")}
+            {isEditing ? "Modifier la catégorie" : "Ajouter une catégorie"}
           </DialogTitle>
-          <Dialog{t("adminCategories.form.descriptionLabel")} className="text-cream/60">
+          <DialogDescription className="text-cream/60">
             {isEditing
-              ? t("adminCategories.form.editDesc")
-              : t("adminCategories.form.addDesc")}
-          </Dialog{t("adminCategories.form.descriptionLabel")}>
+              ? "Modifiez les informations de la catégorie"
+              : "Remplissez les informations pour créer une nouvelle catégorie"}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label className="text-cream/80">{t("adminCategories.form.nameLabel")}</Label>
+            <Label className="text-cream/80">Nom de la catégorie *</Label>
             <Input
               value={formData.name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder={t("adminCategories.form.namePlaceholder")}
+              placeholder="Vins Rouges"
               className="bg-cream/5 border-gold/20 text-cream"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-cream/80">{t("adminCategories.form.slugLabel")}</Label>
+            <Label className="text-cream/80">Slug</Label>
             <Input
               value={formData.slug}
               onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-              placeholder={t("adminCategories.form.slugPlaceholder")}
+              placeholder="vins-rouges"
               className="bg-cream/5 border-gold/20 text-cream font-mono text-sm"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-cream/80">{t("adminCategories.form.parentLabel")}</Label>
+            <Label className="text-cream/80">Catégorie parente</Label>
             <Select
               value={formData.parent_id || "none"}
               onValueChange={(value) => setFormData((prev) => ({ ...prev, parent_id: value === "none" ? null : value }))}
             >
               <SelectTrigger className="bg-cream/5 border-gold/20 text-cream">
-                <SelectValue placeholder="{t("adminCategories.form.parentNone")}" />
+                <SelectValue placeholder="Aucune (catégorie racine)" />
               </SelectTrigger>
               <SelectContent className="bg-noir border-gold/20">
-                <SelectItem value="none" className="text-cream">{t("adminCategories.form.parentNone")}</SelectItem>
+                <SelectItem value="none" className="text-cream">Aucune (catégorie racine)</SelectItem>
                 {allCategories
                   .filter(c => !c.parent_id && c.id !== category?.id)
                   .map(c => (
@@ -158,18 +157,18 @@ export function CategoryFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-cream/80">{t("adminCategories.form.descriptionLabel")}</Label>
+            <Label className="text-cream/80">Description</Label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="{t("adminCategories.form.descriptionLabel")} de la catégorie..."
+              placeholder="Description de la catégorie..."
               rows={3}
               className="bg-cream/5 border-gold/20 text-cream resize-none"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-cream/80">{t("adminCategories.form.imageUrlLabel")}</Label>
+            <Label className="text-cream/80">Image URL</Label>
             <div className="flex gap-2">
               <Input
                 value={formData.image_url}
@@ -193,7 +192,7 @@ export function CategoryFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-cream/80">{t("adminCategories.form.orderLabel")}</Label>
+            <Label className="text-cream/80">Ordre d'affichage</Label>
             <Input
               type="number"
               value={formData.display_order || ""}
@@ -201,21 +200,21 @@ export function CategoryFormDialog({
               placeholder="0"
               className="bg-cream/5 border-gold/20 text-cream w-24"
             />
-            <p className="text-cream/40 text-xs">{t("adminCategories.form.orderHint")}</p>
+            <p className="text-cream/40 text-xs">Plus le nombre est petit, plus la catégorie apparaît en premier</p>
           </div>
 
           {/* Stock Alert Threshold */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Label className="text-cream/80">{t("adminCategories.form.stockThresholdLabel")}</Label>
+              <Label className="text-cream/80">Seuil d'alerte de stock</Label>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AlertTriangle className="h-4 w-4 text-primary/70 cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="bg-noir border-gold/30 text-cream max-w-xs">
-                    <p>{t("adminCategories.form.stockThresholdHint")}</p>
-                    <p className="text-cream/60 text-xs mt-1">{t("adminCategories.form.stockThresholdPriority")}</p>
+                    <p>Ce seuil sera utilisé pour tous les produits de cette catégorie qui n'ont pas de seuil personnalisé.</p>
+                    <p className="text-cream/60 text-xs mt-1">Priorité : Produit → Catégorie → Global (5)</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -229,16 +228,16 @@ export function CategoryFormDialog({
                 ...prev, 
                 low_stock_threshold: e.target.value ? Number(e.target.value) : null 
               }))}
-              placeholder={t("adminCategories.form.stockThresholdPlaceholder")}
+              placeholder="Non défini (utilise le seuil global)"
               className="bg-cream/5 border-gold/20 text-cream w-full"
             />
-            <p className="text-cream/40 text-xs">{t("adminCategories.form.stockThresholdEmpty")}</p>
+            <p className="text-cream/40 text-xs">Laissez vide pour utiliser le seuil global par défaut (5 unités)</p>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg bg-cream/5 border border-gold/10">
             <div>
-              <p className="text-cream font-medium">{t("adminCategories.form.activeLabel")}</p>
-              <p className="text-cream/50 text-sm">{t("adminCategories.form.activeDesc")}</p>
+              <p className="text-cream font-medium">Catégorie active</p>
+              <p className="text-cream/50 text-sm">Visible dans le catalogue</p>
             </div>
             <Switch
               checked={formData.is_active}
@@ -254,7 +253,7 @@ export function CategoryFormDialog({
             className="flex-1 border-gold/30 text-cream hover:bg-cream/10"
             onClick={() => onOpenChange(false)}
           >
-            {t("adminCategories.form.cancel")}
+            Annuler
           </Button>
           <Button
             className="flex-1 bg-gradient-gold text-noir font-semibold hover:opacity-90"
@@ -264,10 +263,10 @@ export function CategoryFormDialog({
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isEditing ? "{t("adminCategories.form.modifying")}" : "{t("adminCategories.form.creating")}"}
+                {isEditing ? "Modification..." : "Création..."}
               </>
             ) : (
-              <>{isEditing ? "{t("adminCategories.form.modify")}" : "{t("adminCategories.form.create")}"}</>
+              <>{isEditing ? "Modifier" : "Créer"}</>
             )}
           </Button>
         </div>
