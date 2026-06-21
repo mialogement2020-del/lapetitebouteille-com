@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 interface GiftPackagingOption {
   id: string;
@@ -28,6 +29,7 @@ export function GiftPackagingSelect({
   onSelect,
   onMessageChange,
 }: GiftPackagingSelectProps) {
+  const { t } = useTranslation();
   const [options, setOptions] = useState<GiftPackagingOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -57,7 +59,7 @@ export function GiftPackagingSelect({
   }, []);
 
   const formatPrice = (price: number) => {
-    if (price === 0) return "Gratuit";
+    if (price === 0) return t("giftPackaging.free");
     return new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
   };
 
@@ -89,7 +91,7 @@ export function GiftPackagingSelect({
             <Gift className="h-5 w-5 text-primary" />
           </div>
           <div className="text-left">
-            <p className="font-medium text-cream">Emballage cadeau</p>
+            <p className="font-medium text-cream">{t("giftPackaging.label")}</p>
             {selectedOption && (
               <p className="text-sm text-cream/60">
                 {selectedOption.name} - {formatPrice(selectedOption.price)}
@@ -138,7 +140,7 @@ export function GiftPackagingSelect({
                       <div className="absolute -top-2 -right-2">
                         <div className="bg-gradient-gold text-noir text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Sparkles className="h-3 w-3" />
-                          Premium
+                          {t("giftPackaging.premium")}
                         </div>
                       </div>
                     )}
@@ -190,18 +192,18 @@ export function GiftPackagingSelect({
                 >
                   <Label className="text-cream/80 flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" />
-                    Message personnalisé (optionnel)
+                    {t("giftPackaging.messageLabel")}
                   </Label>
                   <Textarea
                     value={giftMessage}
                     onChange={(e) => onMessageChange(e.target.value)}
-                    placeholder="Écrivez votre message pour le destinataire..."
+                    placeholder={t("giftPackaging.messagePlaceholder")}
                     maxLength={200}
                     className="bg-cream/5 border-gold/30 text-cream placeholder:text-cream/40 resize-none"
                     rows={3}
                   />
                   <p className="text-xs text-cream/40 text-right">
-                    {giftMessage.length}/200 caractères
+                    {t("giftPackaging.charCount", { n: giftMessage.length })}
                   </p>
                 </motion.div>
               )}
