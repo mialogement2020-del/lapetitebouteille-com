@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { 
   Package, 
   Clock, 
@@ -55,16 +56,17 @@ interface OrdersTableProps {
   onRefresh: () => void;
 }
 
-const statusConfig: Record<OrderStatus, { label: string; color: string; icon: any }> = {
-  pending: { label: "En attente", color: "bg-warning/20 text-warning border-warning/30", icon: Clock },
-  confirmed: { label: "Confirmée", color: "bg-info/20 text-info border-info/30", icon: CheckCircle },
-  processing: { label: "En préparation", color: "bg-primary/20 text-primary border-primary/30", icon: Package },
-  shipped: { label: "Expédiée", color: "bg-info/20 text-info border-info/30", icon: Truck },
-  delivered: { label: "Livrée", color: "bg-success/20 text-success border-success/30", icon: CheckCircle },
-  cancelled: { label: "Annulée", color: "bg-destructive/20 text-destructive border-destructive/30", icon: XCircle },
+const statusConfig: Record<OrderStatus, { color: string; icon: any }> = {
+  pending: { color: "bg-warning/20 text-warning border-warning/30", icon: Clock },
+  confirmed: { color: "bg-info/20 text-info border-info/30", icon: CheckCircle },
+  processing: { color: "bg-primary/20 text-primary border-primary/30", icon: Package },
+  shipped: { color: "bg-info/20 text-info border-info/30", icon: Truck },
+  delivered: { color: "bg-success/20 text-success border-success/30", icon: CheckCircle },
+  cancelled: { color: "bg-destructive/20 text-destructive border-destructive/30", icon: XCircle },
 };
 
 export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: OrdersTableProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -153,7 +155,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
 
     const exportData = filteredOrders.map((o) => ({
       ...o,
-      statusLabel: o.status ? statusConfig[o.status].label : "En attente",
+      statusLabel: o.status ? t(`adminOrders.status.${o.status}`) : t("adminOrders.status.pending"),
       subtotal: formatPriceForCSV(o.subtotal),
       delivery_fee: o.delivery_fee ? formatPriceForCSV(o.delivery_fee) : "0 FCFA",
       discount_amount: o.discount_amount ? formatPriceForCSV(o.discount_amount) : "0 FCFA",
@@ -166,7 +168,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
     const csv = convertToCSV(exportData, columns);
     const date = new Date().toISOString().split("T")[0];
     downloadCSV(csv, `commandes-${date}.csv`);
-    toast.success(`${filteredOrders.length} commande(s) exportée(s)`);
+    toast.success(t("adminOrders.table.exportSuccess", { count: filteredOrders.length }));
   };
 
   if (isLoading) {
@@ -190,7 +192,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/50" />
           <Input
-            placeholder="Rechercher par numéro, nom ou téléphone..."
+            placeholder={t("adminOrders.table.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-cream/5 border-gold/30 text-cream placeholder:text-cream/50"
@@ -198,13 +200,13 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-48 bg-cream/5 border-gold/30 text-cream">
-            <SelectValue placeholder="Filtrer par statut" />
+            <SelectValue placeholder={t("adminOrders.table.filterStatus")} />
           </SelectTrigger>
           <SelectContent className="bg-noir border-gold/30">
-            <SelectItem value="all" className="text-cream">Tous les statuts</SelectItem>
-            {Object.entries(statusConfig).map(([status, config]) => (
+            <SelectItem value="all" className="text-cream">{t("adminOrders.table.allStatus")}</SelectItem>
+            {Object.keys(statusConfig).map((status) => (
               <SelectItem key={status} value={status} className="text-cream">
-                {config.label}
+                {t(`adminOrders.status.${status}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -214,7 +216,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
           size="icon"
           onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
           className={`border-gold/30 text-cream hover:bg-cream/10 ${showAdvancedFilters ? 'bg-cream/10' : ''}`}
-          title="Filtres avancés"
+          title={t("adminOrders.table.advancedFilters")}
         >
           <Filter className="h-4 w-4" />
         </Button>
@@ -223,7 +225,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
           size="icon"
           className="border-gold/30 text-cream hover:bg-cream/10"
           onClick={exportToCSV}
-          title="Exporter en CSV"
+          title={t("adminOrders.table.exportCSV")}
         >
           <Download className="h-4 w-4" />
         </Button>
@@ -247,7 +249,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
         >
           {/* Date From */}
           <div className="flex items-center gap-2">
-            <span className="text-cream/60 text-sm whitespace-nowrap">Du:</span>
+            <span className="text-cream/60 text-sm whitespace-nowrap">{t("adminOrders.table.dateFrom")}</span>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -255,7 +257,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
                   className="w-40 justify-start text-left font-normal bg-cream/5 border-gold/20 text-cream hover:bg-cream/10"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
-                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : <span className="text-cream/40">Date début</span>}
+                  {dateFrom ? format(dateFrom, "dd/MM/yyyy") : <span className="text-cream/40">{t("adminOrders.table.dateStart")}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-noir border-gold/20" align="start">
@@ -282,7 +284,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
 
           {/* Date To */}
           <div className="flex items-center gap-2">
-            <span className="text-cream/60 text-sm whitespace-nowrap">Au:</span>
+            <span className="text-cream/60 text-sm whitespace-nowrap">{t("adminOrders.table.dateTo")}</span>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -290,7 +292,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
                   className="w-40 justify-start text-left font-normal bg-cream/5 border-gold/20 text-cream hover:bg-cream/10"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
-                  {dateTo ? format(dateTo, "dd/MM/yyyy") : <span className="text-cream/40">Date fin</span>}
+                  {dateTo ? format(dateTo, "dd/MM/yyyy") : <span className="text-cream/40">{t("adminOrders.table.dateEnd")}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-noir border-gold/20" align="start">
@@ -317,7 +319,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
 
           {/* Amount Min */}
           <div className="flex items-center gap-2">
-            <span className="text-cream/60 text-sm whitespace-nowrap">Montant min:</span>
+            <span className="text-cream/60 text-sm whitespace-nowrap">{t("adminOrders.table.amountMin")}</span>
             <Input
               type="number"
               placeholder="0"
@@ -330,7 +332,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
 
           {/* Amount Max */}
           <div className="flex items-center gap-2">
-            <span className="text-cream/60 text-sm whitespace-nowrap">Montant max:</span>
+            <span className="text-cream/60 text-sm whitespace-nowrap">{t("adminOrders.table.amountMax")}</span>
             <Input
               type="number"
               placeholder="∞"
@@ -350,7 +352,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
               className="text-cream/60 hover:text-cream hover:bg-cream/10 ml-auto"
             >
               <X className="h-4 w-4 mr-1" />
-              Réinitialiser les filtres
+              {t("adminOrders.table.resetFilters")}
             </Button>
           )}
         </motion.div>
@@ -366,17 +368,17 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
           )}
           {statusFilter !== "all" && (
             <Badge variant="outline" className="border-gold/30 text-cream/70">
-              Statut: {statusConfig[statusFilter as OrderStatus]?.label}
+              {t("adminOrders.table.headerStatus")}: {t(`adminOrders.status.${statusFilter}`)}
             </Badge>
           )}
           {dateFrom && (
             <Badge variant="outline" className="border-gold/30 text-cream/70">
-              Du: {format(dateFrom, "dd/MM/yyyy")}
+              {t("adminOrders.table.dateFrom")} {format(dateFrom, "dd/MM/yyyy")}
             </Badge>
           )}
           {dateTo && (
             <Badge variant="outline" className="border-gold/30 text-cream/70">
-              Au: {format(dateTo, "dd/MM/yyyy")}
+              {t("adminOrders.table.dateTo")} {format(dateTo, "dd/MM/yyyy")}
             </Badge>
           )}
           {amountMin && (
@@ -394,7 +396,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
 
       {/* Results count */}
       <p className="text-cream/60 text-sm">
-        {filteredOrders.length} commande{filteredOrders.length > 1 ? "s" : ""} trouvée{filteredOrders.length > 1 ? "s" : ""}
+        {t("adminOrders.table.resultsFound", { count: filteredOrders.length })}
       </p>
 
       {/* Table */}
@@ -402,12 +404,12 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
         <Table>
           <TableHeader>
             <TableRow className="border-gold/20 hover:bg-transparent">
-              <TableHead className="text-cream/60">Commande</TableHead>
-              <TableHead className="text-cream/60">Client</TableHead>
-              <TableHead className="text-cream/60">Statut</TableHead>
-              <TableHead className="text-cream/60 text-right">Total</TableHead>
-              <TableHead className="text-cream/60">Date</TableHead>
-              <TableHead className="text-cream/60 text-center">Actions</TableHead>
+              <TableHead className="text-cream/60">{t("adminOrders.table.headerOrder")}</TableHead>
+              <TableHead className="text-cream/60">{t("adminOrders.table.headerClient")}</TableHead>
+              <TableHead className="text-cream/60">{t("adminOrders.table.headerStatus")}</TableHead>
+              <TableHead className="text-cream/60 text-right">{t("adminOrders.table.headerTotal")}</TableHead>
+              <TableHead className="text-cream/60">{t("adminOrders.table.headerDate")}</TableHead>
+              <TableHead className="text-cream/60 text-center">{t("adminOrders.table.headerActions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -415,7 +417,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-12">
                   <Package className="h-12 w-12 mx-auto text-cream/20 mb-4" />
-                  <p className="text-cream/60">Aucune commande trouvée</p>
+                  <p className="text-cream/60">{t("adminOrders.table.noOrders")}</p>
                 </TableCell>
               </TableRow>
             ) : (
@@ -444,7 +446,7 @@ export function OrdersTable({ orders, isLoading, onOrderClick, onRefresh }: Orde
                     <TableCell>
                       <Badge className={`${statusConfig[status].color} border`}>
                         <StatusIcon className="h-3 w-3 mr-1" />
-                        {statusConfig[status].label}
+                        {t(`adminOrders.status.${status}`)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right text-primary font-semibold">
