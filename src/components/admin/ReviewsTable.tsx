@@ -156,7 +156,7 @@ export function ReviewsTable({
         <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 flex items-center gap-3">
           <MessageSquare className="h-5 w-5 text-warning" />
           <p className="text-cream text-sm">
-            <span className="font-semibold text-warning">{pendingCount}</span> {t("adminReviews.table.pendingReview", { count: pendingCount })}
+            {t("adminReviews.table.pendingReview", { count: pendingCount })}
           </p>
         </div>
       )}
