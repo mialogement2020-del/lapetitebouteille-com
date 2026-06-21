@@ -219,8 +219,7 @@ export function StockAlertsChart() {
                 }`}>
                   {stats.trend >= 0 ? "+" : ""}{stats.trend}%
                 </p>
-                <p className="text-xs text-cream/40">vs période précédente</p>
-                {/* keep original key */}
+                <p className="text-xs text-cream/40">{t("adminStock.vsPreviousPeriod")}</p>
               </div>
             </div>
 
