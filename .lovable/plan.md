@@ -1,227 +1,73 @@
 
-# 🍷 Plan de Développement - E-commerce Premium d'Alcools Cameroun
+# LPB Accounting & Reporting System — Implementation Plan
 
-## 🎨 Phase 1 : Design System & Structure de Base
-- **Thème luxe africain** avec palette Noir (#1A1A1A), Or (#D4AF37), Bordeaux (#7B2D2D), Blanc cassé (#F5F5F5)
-- **Typographie** : Playfair Display (titres), Inter (corps de texte)
-- **Design mobile-first** avec animations subtiles et élégantes
-- Composants réutilisables : boutons, cartes produits, badges
+This is a very large module (12 sub-systems). I recommend shipping it in **6 phases** so each phase is testable and stays within a reasonable build window. You approve phase by phase.
 
 ---
 
-## 🏠 Phase 2 : Pages Client Essentielles
+## Foundations (shared across all phases)
 
-### Page d'Accueil
-- Hero section immersive avec appel à l'action
-- Catégories visuelles (Vins, Champagnes, Spiritueux, Coffrets)
-- Nouveautés et promotions du moment
-- Section "Gagnez en recommandant" (teaser MLM)
+**New shared library — `src/lib/reporting/`**
+- `pdfGenerator.ts` — pdfmake-based generator with LPB branded header (logo, date, user, report type, pagination, totals, signature block).
+- `excelExporter.ts` — xlsx (SheetJS) export with typed columns + totals row.
+- `csvExporter.ts` — CSV with locale-safe escaping.
+- `printView.tsx` — A4 portrait/landscape print layout with `@media print` CSS.
+- `reportFilters.tsx` — shared filter bar (date range, vendor, country, category, product, warehouse, region).
+- `useReportExport.ts` — hook returning `{ exportPDF, exportExcel, exportCSV, print }`.
 
-### Catalogue & Recherche
-- Grille de produits avec filtres avancés (type, prix, région, cépage)
-- Recherche avec autocomplétion
-- Tri par popularité, prix, nouveautés
+**New DB tables (via migration)**
+- `report_archive` — id, user_id, report_type, params jsonb, file_url, format, created_at, scope (admin/vendor/wholesaler/ambassador).
+- `scheduled_reports` — id, user_id, report_type, cadence (daily/weekly/monthly/quarterly), delivery (email/notification/archive), params jsonb, next_run, last_run, active.
+- RLS: owners see their own rows; admins see all. GRANTs included.
 
-### Fiche Produit Complète
-- Galerie photos avec zoom
-- Description, notes de dégustation, accords mets-vins
-- Prix et disponibilité
-- Bouton de partage/parrainage intégré
-- Recommandations similaires
-- Section avis clients
+**Storage bucket**: `reports` (private) for archived PDF/XLSX files.
+
+**RBAC**: leverage existing `admin_permissions` + role checks (`admin`, `vendor`, `wholesaler`, `ambassador`). New permission keys: `reports.view_all`, `reports.export`, `reports.schedule`.
 
 ---
 
-## 🛒 Phase 3 : Parcours d'Achat
+## Phase 1 — Foundations + Inventory Export (§1, §7, §8)
+- Build the shared lib above.
+- `src/components/admin/reports/InventoryReports.tsx` with tabs: Current, Movements, History, Low Stock, Out of Stock, Reserved, Damaged, Warehouse, Regional.
+- Export buttons: PDF / Excel / CSV / Print on every tab.
+- Filters bar wired to existing inventory queries.
+- Add "Reports" entry in admin sidebar.
 
-### Panier Intelligent
-- Persistance entre sessions
-- Application automatique code parrain
-- Récapitulatif avec calcul automatique
+## Phase 2 — Sales Reporting (§2, §10)
+- `SalesReports.tsx`: Daily / Weekly / Monthly / Quarterly / Annual.
+- Columns: Revenue, COGS, Profit, Taxes, Discounts, Shipping, Commissions, MLM payouts.
+- Executive dashboard view with charts + export to PDF/Excel.
 
-### Checkout Optimisé
-- Option achat invité ou création compte
-- Champ "Code parrain" visible
-- Formulaire adresse de livraison (Yaoundé, Douala)
-- Vérification d'âge (18+ obligatoire)
-- Résumé commande avant paiement
+## Phase 3 — Marketplace (Vendor) + Wholesaler Reports (§3, §4, §12 partial)
+- Vendor portal: `vendor/reports` page — only own data (RLS enforced).
+- Sales, product performance, best sellers, orders, customers, refunds, commissions.
+- Wholesaler portal: `wholesaler/reports` — bulk sales, outstanding invoices, Net 15/30/60 aging, regional perf, top products.
 
-### Paiements (Architecture prête)
-- Interface préparée pour MTN Mobile Money, Orange Money
-- Intégration CinetPay/PayDunya (quand compte créé)
-- Paiement à la livraison comme option
+## Phase 4 — MLM Reports (§5)
+- Ambassador portal: `ambassador/reports` — earnings, commission history, network activity, bonuses, withdrawals, leaderboard.
+- Admin-wide MLM rollups.
 
----
+## Phase 5 — Accounting Export Center + ERP-ready exports (§6, §13)
+- `AccountingCenter.tsx`: one-click exports for Sales, Expenses, Taxes, Inventory, Vendors, Wholesalers, MLM commissions, Refunds, Donations, Social impact.
+- Export schemas mapped to standardized columns (chart-of-accounts friendly) compatible with QuickBooks IIF/CSV, Odoo CSV, Sage CSV, Zoho Books CSV. SAP/ERPNext use the same neutral CSV.
 
-## 👤 Phase 4 : Espace Client
-
-### Authentification
-- Inscription/Connexion sécurisée
-- Inscription avec code parrain optionnel
-- Vérification d'âge à l'inscription
-
-### Espace Personnel
-- Historique des commandes avec statuts
-- Suivi commande en temps réel
-- Liste de souhaits
-- Accès au tableau de bord MLM
+## Phase 6 — Scheduled Reports + Archive (§9, §11)
+- Edge function `run-scheduled-reports` triggered by pg_cron (hourly): generates due reports, stores in `reports` bucket, writes to `report_archive`, sends email via Resend + dashboard notification.
+- `ReportArchive.tsx`: search, filter by date/type, re-download, reprint.
+- UI to create/edit schedules.
 
 ---
 
-## 💰 Phase 5 : Système MLM / Marketing Relationnel (NOUVEAU)
-
-### Structure Multi-Niveaux (3+ niveaux)
-- **Niveau 1** : Filleuls directs (ex: 8% de commission)
-- **Niveau 2** : Filleuls de vos filleuls (ex: 4% de commission)
-- **Niveau 3** : 3ème génération (ex: 2% de commission)
-- Possibilité d'étendre à plus de niveaux
-
-### Tableau de Bord Ambassadeur
-- Vue d'ensemble des gains (total, ce mois, en attente)
-- Arbre de parrainage visuel (filleuls sur plusieurs niveaux)
-- Lien de parrainage unique personnalisable
-- Code promo personnel à partager
-- Statistiques de performance (clics, inscriptions, conversions)
-
-### Système de Commissions Hybride
-- **Commission de base** : Pourcentage sur chaque vente générée
-- **Bonus de palier** : Montants fixes lors d'objectifs atteints
-  - Ex: 10 000 FCFA à 10 filleuls actifs
-  - Ex: 50 000 FCFA à 100 000 FCFA de ventes cumulées
-- **Bonus de rang** : Augmentation des % selon le statut
-
-### Système de Rangs & Gamification
-- **🥉 Bronze** : 0-10 filleuls actifs
-  - Commission de base
-  - Badge profil
-- **🥈 Argent** : 11-30 filleuls actifs
-  - +1% commission tous niveaux
-  - Livraison gratuite personnelle
-- **🥇 Or** : 31-75 filleuls actifs
-  - +2% commission tous niveaux
-  - Produits exclusifs en avant-première
-  - Support prioritaire
-- **💎 Diamant** : 76-150 filleuls actifs
-  - +3% commission tous niveaux
-  - Cadeaux produits mensuels
-  - Invitation événements VIP
-- **👑 Élite** : 150+ filleuls actifs
-  - Commissions maximales
-  - Compte ambassadeur officiel
-  - Revenus récurrents sur tout le réseau
-
-### Outils de Partage
-- Génération de liens trackés (avec analytics)
-- Création de visuels/bannières à partager
-- Intégration WhatsApp, Facebook, Instagram
-- QR Code personnel
-- Mini-site ambassadeur personnalisable
-
-### Gestion des Gains
-- **Portefeuille virtuel** avec historique détaillé
-- **Option 1 : Crédit boutique**
-  - Conversion instantanée en bon d'achat
-  - Bonus de conversion (+5% en crédit)
-- **Option 2 : Retrait Mobile Money**
-  - Virement MTN Money / Orange Money
-  - Seuil minimum de retrait (ex: 5 000 FCFA)
-  - Délai de traitement (24-48h)
-- Historique des transactions
-- Factures téléchargeables
-
-### Notifications & Motivation
-- Alertes en temps réel (nouveau filleul, nouvelle commission)
-- Emails de progression vers le rang suivant
-- Classement des meilleurs ambassadeurs
-- Challenges mensuels avec récompenses
+## Technical notes
+- PDF: `pdfmake` (better Unicode + tables than jsPDF for FR content).
+- Excel: `xlsx` (SheetJS community).
+- Print: dedicated `/print/:reportId` route rendering a paginated A4 layout; uses `window.print()`.
+- All currency in FCFA; locale-aware via existing i18n (FR/EN).
+- All new UI strings use `useTranslation()` with new namespace `reports.*`.
 
 ---
 
-## 🤖 Phase 6 : Assistant IA Sommelier
-
-### Chatbot Conversationnel
-- Widget de chat élégant intégré
-- Conseils personnalisés selon l'occasion
-- Recommandations basées sur le budget
-- Suggestions d'accords mets-vins
-- Information sur le programme de parrainage
-
----
-
-## ⚙️ Phase 7 : Back-Office Admin
-
-### Dashboard
-- Vue d'ensemble : commandes, CA, stocks bas
-- KPIs du programme MLM (nouveaux ambassadeurs, commissions versées)
-
-### Gestion Produits
-- CRUD complet (créer, modifier, supprimer)
-- Gestion des stocks et alertes
-- Import/Export CSV
-
-### Gestion Commandes
-- Workflow de traitement
-- Suivi des commissions générées par commande
-- Attribution automatique aux parrains
-
-### Gestion MLM (Admin)
-- Liste des ambassadeurs et leurs statistiques
-- Visualisation du réseau complet
-- Configuration des taux de commission par niveau
-- Configuration des paliers et bonus
-- Gestion des rangs et seuils
-- Validation/rejet des demandes de retrait
-- Historique des paiements versés
-- Rapports de performance du réseau
-- Détection de comportements suspects
-
-### Promotions
-- Codes promo et réductions
-- Ventes flash
-- Bonus spéciaux pour ambassadeurs
-
----
-
-## 🗄️ Base de Données (Supabase)
-
-### Tables E-commerce
-- `products`, `categories`, `orders`, `order_items`
-- `users`, `profiles`, `reviews`, `wishlist`
-
-### Tables MLM
-- `referral_codes` : Codes uniques par utilisateur
-- `referral_relationships` : Liens parrain-filleul (multi-niveaux)
-- `commissions` : Historique des commissions générées
-- `wallets` : Portefeuilles virtuels des ambassadeurs
-- `wallet_transactions` : Historique des mouvements
-- `withdrawal_requests` : Demandes de retrait Mobile Money
-- `ambassador_ranks` : Configuration des rangs
-- `user_ranks` : Rang actuel de chaque ambassadeur
-- `mlm_bonuses` : Bonus et challenges
-
-### Sécurité
-- Authentification sécurisée
-- RLS (Row Level Security) 
-- Rôles admin séparés (table `user_roles`)
-- Edge Functions pour calculs de commissions
-
----
-
-## 📱 Phase 8 : Optimisations
-
-- **Performance** : Chargement < 3 secondes
-- **Responsive** : Parfait sur mobile (80% du trafic)
-- **SEO** : Métadonnées optimisées
-- **PWA** : Installation sur écran d'accueil
-- **Partage social** : Open Graph pour liens de parrainage
-
----
-
-## 📋 Livrables Finaux
-- Site e-commerce complet et fonctionnel
-- Système MLM multi-niveaux intégré
-- Tableau de bord ambassadeur
-- Back-office d'administration (produits + MLM)
-- Assistant IA conversationnel
-- Documentation utilisateur
-- Code source documenté
+## What I need from you
+1. **Approve the phased approach** (or ask me to compress phases).
+2. Confirm **Phase 1 starts now** (Foundations + Inventory Export). I'll come back for approval before Phase 2.
+3. Any specific ERP target to prioritize first? (default: QuickBooks + Odoo CSV).
