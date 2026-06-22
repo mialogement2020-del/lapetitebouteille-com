@@ -21,7 +21,8 @@ import {
   Award,
   ImageIcon,
   FileText,
-  Building2
+  Building2,
+  FileBarChart2
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -43,6 +44,7 @@ import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
 import { ReviewModerationDialog } from "@/components/admin/ReviewModerationDialog";
 import { LowStockDashboard } from "@/components/admin/LowStockDashboard";
+import InventoryReports from "@/components/admin/reports/InventoryReports";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { StockNotifications } from "@/components/admin/StockNotifications";
 import { PushNotificationToggle } from "@/components/admin/PushNotificationToggle";
@@ -166,6 +168,7 @@ const Admin = () => {
       { id: 'loyalty', label: 'Fidélité', icon: Award },
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
       { id: 'stock-alerts', label: 'Alertes Stock', icon: Bell },
+      { id: 'inventory-reports', label: 'Rapports Stock', icon: FileBarChart2 },
       { id: 'audit', label: 'Audit', icon: History },
       { id: 'mlm', label: 'MLM', icon: Users },
       { id: 'permissions', label: 'Permissions', icon: Shield },
@@ -713,6 +716,10 @@ const Admin = () => {
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <StockAlertsHistory />
                 </div>
+              </TabsContent>
+
+              <TabsContent value="inventory-reports" className="space-y-6">
+                <InventoryReports products={products} isLoading={isLoadingProducts} />
               </TabsContent>
 
               <TabsContent value="audit" className="space-y-6">
