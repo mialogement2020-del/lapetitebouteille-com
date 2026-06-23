@@ -17,6 +17,7 @@ import { useVendorOrders, type VendorFulfillmentStatus, type VendorOrderLine } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import VendorReports from "@/components/reports/VendorReports";
 
 const VendeurPage = () => {
   const navigate = useNavigate();
@@ -82,6 +83,7 @@ const VendeurPage = () => {
               <ShopSettingsCard shop={shop} onSave={(d) => updateShop.mutateAsync(d)} loading={updateShop.isPending} />
               <OrdersCard lines={orderLines} loading={ordersLoading} onUpdate={(itemId, status) => updateStatus.mutateAsync({ itemId, status })} updating={updateStatus.isPending} />
               <ProductsCard shopId={shop.id} products={products} loading={productsLoading} />
+              <VendorReports lines={orderLines} shopName={shop.name} />
             </>
           )}
         </div>

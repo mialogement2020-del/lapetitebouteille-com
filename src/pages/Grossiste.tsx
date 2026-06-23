@@ -23,6 +23,7 @@ import {
 import { useMyInvoices, useMyOutstanding, type WholesaleInvoice, type InvoiceStatus } from "@/hooks/useWholesaleInvoices";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import WholesalerReports from "@/components/reports/WholesalerReports";
 
 const GrossistePage = () => {
   const navigate = useNavigate();
@@ -78,6 +79,7 @@ const GrossistePage = () => {
               <BalanceCard profile={profile} outstanding={outstanding} />
               <InvoicesCard invoices={invoices} loading={invoicesLoading} />
               <QuotesCard quotes={quotes} loading={quotesLoading} />
+              <WholesalerReports invoices={invoices} outstanding={outstanding} companyName={profile.company_name} />
             </>
           ) : pendingApp ? (
             <PendingCard app={pendingApp} />
