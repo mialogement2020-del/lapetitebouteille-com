@@ -45,6 +45,7 @@ import { ReviewsTable } from "@/components/admin/ReviewsTable";
 import { ReviewModerationDialog } from "@/components/admin/ReviewModerationDialog";
 import { LowStockDashboard } from "@/components/admin/LowStockDashboard";
 import InventoryReports from "@/components/admin/reports/InventoryReports";
+import SalesReports from "@/components/admin/reports/SalesReports";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { StockNotifications } from "@/components/admin/StockNotifications";
 import { PushNotificationToggle } from "@/components/admin/PushNotificationToggle";
@@ -169,6 +170,7 @@ const Admin = () => {
       { id: 'restock', label: 'Réappro.', icon: RefreshCw },
       { id: 'stock-alerts', label: 'Alertes Stock', icon: Bell },
       { id: 'inventory-reports', label: 'Rapports Stock', icon: FileBarChart2 },
+      { id: 'sales-reports', label: 'Rapports Ventes', icon: FileBarChart2 },
       { id: 'audit', label: 'Audit', icon: History },
       { id: 'mlm', label: 'MLM', icon: Users },
       { id: 'permissions', label: 'Permissions', icon: Shield },
@@ -720,6 +722,10 @@ const Admin = () => {
 
               <TabsContent value="inventory-reports" className="space-y-6">
                 <InventoryReports products={products} isLoading={isLoadingProducts} />
+              </TabsContent>
+
+              <TabsContent value="sales-reports" className="space-y-6">
+                <SalesReports orders={orders} isLoading={isLoadingOrders} />
               </TabsContent>
 
               <TabsContent value="audit" className="space-y-6">
