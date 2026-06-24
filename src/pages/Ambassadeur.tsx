@@ -11,7 +11,8 @@ import {
   Trophy,
   Target,
   Calculator,
-  ImageIcon
+  ImageIcon,
+  FileBarChart2
 } from "lucide-react";
 import { AmbassadorNotifications } from "@/components/ambassador/AmbassadorNotifications";
 import { PushNotificationSettings } from "@/components/ambassador/PushNotificationSettings";
@@ -38,6 +39,7 @@ import { MonthlyLeaderboard } from "@/components/ambassador/MonthlyLeaderboard";
 import { ChallengesList } from "@/components/ambassador/ChallengesList";
 import { IncomeSimulator } from "@/components/ambassador/IncomeSimulator";
 import { ShareableAssetsLibrary } from "@/components/ambassador/ShareableAssetsLibrary";
+import AmbassadorReports from "@/components/reports/AmbassadorReports";
 import { useTranslation } from "react-i18next";
 
 export default function Ambassadeur() {
@@ -191,6 +193,13 @@ export default function Ambassadeur() {
                     <ImageIcon className="h-4 w-4 mr-2" />
                     {t("ambassador.tabAssets")}
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="reports"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-noir flex-shrink-0"
+                  >
+                    <FileBarChart2 className="h-4 w-4 mr-2" />
+                    Rapports
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -265,6 +274,15 @@ export default function Ambassadeur() {
                   <div className="bg-noir-light/30 rounded-xl border border-gold/10 p-6">
                     <ShareableAssetsLibrary />
                   </div>
+                </TabsContent>
+
+                <TabsContent value="reports">
+                  <AmbassadorReports
+                    stats={stats}
+                    commissions={commissions || []}
+                    referrals={referrals || []}
+                    transactions={transactions || []}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
