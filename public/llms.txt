@@ -1,0 +1,22 @@
+# La Petite Bouteille
+
+> Cave en ligne premium au Cameroun : vins, champagnes et spiritueux livrés à Yaoundé, Douala et partout au Cameroun. Paiement Mobile Money sécurisé.
+
+La Petite Bouteille est une boutique e-commerce camerounaise spécialisée dans les vins, champagnes, whiskies, rhums et spiritueux premium. Le site propose un catalogue complet, un programme ambassadeur (MLM 3 niveaux), un espace grossiste pour les achats en gros, et un sommelier IA pour conseiller les clients.
+
+## Pages
+
+- [Accueil](/): Boutique premium, sélections du moment et entrées par catégorie.
+- [Catalogue](/catalogue): Tout le catalogue avec filtres par catégorie, origine et prix.
+- [Programme Ambassadeur](/ambassadeur): MLM à 3 niveaux (8/4/2%) pour ambassadeurs au Cameroun.
+- [Espace Grossiste](/grossiste): Achat en gros par carton ou palette pour professionnels.
+- [Comparateur](/comparer): Comparez côte à côte vins et spiritueux.
+- [Recherche visuelle](/recherche-visuelle): Trouver un produit par photo via IA.
+- [Suivi de commande](/suivi-commande): Suivi guest par numéro de commande et contact.
+
+## Optional
+
+- [Conditions de vente](/conditions): CGV, livraison, paiement, retours.
+- [Politique de confidentialité](/confidentialite): Protection des données personnelles.
+- [Inscription](/inscription): Création de compte client.
+- [Connexion](/connexion): Accès au compte client.
