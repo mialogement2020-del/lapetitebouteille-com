@@ -12,3 +12,10 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /compte
+Disallow: /checkout
+Disallow: /commande-confirmee
+Disallow: /reset-password
+
+Sitemap: https://www.lapetitebouteille.com/sitemap.xml
