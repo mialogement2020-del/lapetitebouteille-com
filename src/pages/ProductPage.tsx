@@ -34,6 +34,7 @@ import { useProductReferral } from "@/hooks/useProductReferral";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 const ProductPage = () => {
   const { t } = useTranslation();
@@ -111,8 +112,43 @@ const ProductPage = () => {
     new Date(product.created_at) >
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
+  const productImage = product.image_url || "https://www.lapetitebouteille.com/og-image.jpg";
+  const productDesc = product.short_description
+    || `${product.name} disponible au Cameroun. Livraison Yaoundé, Douala et partout au pays.`;
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    image: productImage,
+    description: productDesc,
+    sku: product.id,
+    brand: product.category?.name ? { "@type": "Brand", name: product.category.name } : undefined,
+    aggregateRating: product.review_count > 0 ? {
+      "@type": "AggregateRating",
+      ratingValue: product.average_rating,
+      reviewCount: product.review_count,
+    } : undefined,
+    offers: {
+      "@type": "Offer",
+      url: `https://www.lapetitebouteille.com/produit/${product.slug}`,
+      price: product.price,
+      priceCurrency: "XAF",
+      availability: product.stock_quantity > 0
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+    },
+  };
+
   return (
     <div className="min-h-screen bg-noir">
+      <Seo
+        title={`${product.name} | La Petite Bouteille`}
+        description={productDesc.slice(0, 158)}
+        path={`/produit/${product.slug}`}
+        image={productImage}
+        type="product"
+        jsonLd={productJsonLd}
+      />
       <Header />
 
       <main className="pt-24 pb-12 relative">
