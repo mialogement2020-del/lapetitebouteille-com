@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import Seo from "@/components/seo/Seo";
 
 export default function Conditions() {
   const { t, i18n } = useTranslation();
@@ -13,6 +14,7 @@ export default function Conditions() {
 
   return (
     <div className="min-h-screen bg-noir">
+      <Seo title={"Conditions de vente | La Petite Bouteille"} description={"Conditions générales de vente de La Petite Bouteille. Modalités de commande, livraison, paiement et retour au Cameroun."} path={"/conditions"} />
       <Header />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">

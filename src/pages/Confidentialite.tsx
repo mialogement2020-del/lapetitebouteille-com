@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import Seo from "@/components/seo/Seo";
 
 export default function Confidentialite() {
   const { t, i18n } = useTranslation();
@@ -13,6 +14,7 @@ export default function Confidentialite() {
 
   return (
     <div className="min-h-screen bg-noir">
+      <Seo title={"Politique de confidentialité | La Petite Bouteille"} description={"Politique de confidentialité et de protection des données personnelles de La Petite Bouteille au Cameroun."} path={"/confidentialite"} />
       <Header />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">

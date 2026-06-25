@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -120,6 +121,7 @@ export default function ResetPassword() {
         title={t("resetPassword.checking")}
         subtitle={t("resetPassword.pleaseWait")}
       >
+      <Seo title={"Réinitialiser mot de passe | La Petite Bouteille"} description={"Définissez un nouveau mot de passe."} path={"/reset-password"} noindex />
         <div className="flex justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>

@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 interface OrderDetails {
   order_number: string;
@@ -137,6 +138,7 @@ export default function SuiviCommande() {
 
   return (
     <div className="min-h-screen bg-noir">
+      <Seo title={"Suivi de commande | La Petite Bouteille"} description={"Suivez votre commande de vin, champagne ou spiritueux livrée au Cameroun avec votre numéro de commande."} path={"/suivi-commande"} />
       <Header />
 
       <main className="pt-24 pb-16">

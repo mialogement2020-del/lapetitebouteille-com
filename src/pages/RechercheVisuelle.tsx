@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 type Match = {
   id: string;
@@ -63,6 +64,7 @@ const RechercheVisuelle = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo title={"Recherche visuelle IA | La Petite Bouteille"} description={"Trouvez un vin ou spiritueux par photo grâce à notre recherche visuelle IA. Disponible au Cameroun."} path={"/recherche-visuelle"} />
       <Header />
       <main className="container py-12 max-w-5xl">
         <div className="text-center mb-10">

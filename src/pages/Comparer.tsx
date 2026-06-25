@@ -9,6 +9,7 @@ import { useProductComparator } from "@/hooks/useProductComparator";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { formatPrice } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 export default function Comparer() {
   const { t } = useTranslation();
@@ -27,6 +28,7 @@ export default function Comparer() {
 
   return (
     <div className="min-h-screen bg-noir">
+      <Seo title={"Comparateur de vins & spiritueux | La Petite Bouteille"} description={"Comparez côte à côte vins, champagnes et spiritueux : prix, notes, origine et caractéristiques."} path={"/comparer"} />
       <Header />
 
       <main className="pt-24 pb-16">

@@ -18,6 +18,7 @@ import { LoyaltyCard } from "@/components/account/LoyaltyCard";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 export default function Compte() {
   const navigate = useNavigate();
@@ -36,7 +37,8 @@ export default function Compte() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-noir">
-        <Header />
+        <Seo title={"Mon compte | La Petite Bouteille"} description={"Espace personnel."} path={"/compte"} noindex />
+      <Header />
         <main className="pt-24 pb-16">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-center py-20">

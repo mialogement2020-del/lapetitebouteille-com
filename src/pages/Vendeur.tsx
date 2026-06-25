@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import VendorReports from "@/components/reports/VendorReports";
+import Seo from "@/components/seo/Seo";
 
 const VendeurPage = () => {
   const navigate = useNavigate();
@@ -34,7 +35,8 @@ const VendeurPage = () => {
   if (authLoading || rolesLoading || shopLoading) {
     return (
       <div className="min-h-screen bg-noir">
-        <Header />
+        <Seo title={"Espace Vendeur | La Petite Bouteille"} description={"Espace dédié aux vendeurs partenaires La Petite Bouteille au Cameroun."} path={"/vendeur"} />
+      <Header />
         <main className="pt-32 pb-16 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
         </main>

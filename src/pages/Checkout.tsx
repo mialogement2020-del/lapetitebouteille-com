@@ -11,6 +11,7 @@ import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { useCartContext } from "@/contexts/CartContext";
 import { useCheckout } from "@/hooks/useCheckout";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 const STEPS = [
   { id: "address", labelKey: "checkout.stepDelivery", icon: MapPin },
@@ -55,6 +56,7 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-noir">
+      <Seo title={"Checkout | La Petite Bouteille"} description={"Finalisation de commande."} path={"/checkout"} noindex />
       <Header />
 
       <main className="pt-24 pb-16">
