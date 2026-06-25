@@ -24,6 +24,7 @@ import { useMyInvoices, useMyOutstanding, type WholesaleInvoice, type InvoiceSta
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import WholesalerReports from "@/components/reports/WholesalerReports";
+import Seo from "@/components/seo/Seo";
 
 const GrossistePage = () => {
   const navigate = useNavigate();
@@ -45,7 +46,8 @@ const GrossistePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-noir">
-        <Header />
+        <Seo title={"Espace Grossiste – Achat en gros | La Petite Bouteille"} description={"Achetez en gros vins, champagnes et spiritueux par carton ou palette au Cameroun. Tarifs professionnels."} path={"/grossiste"} />
+      <Header />
         <main className="pt-32 pb-16 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
         </main>

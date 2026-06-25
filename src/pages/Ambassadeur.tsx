@@ -41,6 +41,7 @@ import { IncomeSimulator } from "@/components/ambassador/IncomeSimulator";
 import { ShareableAssetsLibrary } from "@/components/ambassador/ShareableAssetsLibrary";
 import AmbassadorReports from "@/components/reports/AmbassadorReports";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 export default function Ambassadeur() {
   const navigate = useNavigate();
@@ -72,6 +73,7 @@ export default function Ambassadeur() {
 
   return (
     <div className="min-h-screen bg-noir">
+      <Seo title={"Programme Ambassadeur MLM | La Petite Bouteille"} description={"Devenez ambassadeur La Petite Bouteille au Cameroun : commissions sur 3 niveaux (8/4/2%) et revenus récurrents."} path={"/ambassadeur"} />
       <Header />
 
       <main className="pt-24 pb-16">

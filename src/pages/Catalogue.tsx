@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useProducts, ProductFilters as Filters, useCategories } from "@/hooks/useProducts";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 const Catalogue = () => {
   const { t } = useTranslation();
@@ -87,8 +88,33 @@ const Catalogue = () => {
     syncToUrl(newFilters, debouncedSearch);
   };
 
+  const catalogTitle = currentCategory
+    ? `${currentCategory.name} – Catalogue | La Petite Bouteille`
+    : "Catalogue – Vins, Champagnes & Spiritueux | La Petite Bouteille";
+  const catalogDesc = currentCategory
+    ? `Découvrez notre sélection de ${currentCategory.name} au Cameroun. Livraison à Yaoundé, Douala et partout au Cameroun.`
+    : "Tout le catalogue : vins, champagnes, whiskies, rhums et spiritueux premium livrés au Cameroun.";
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: catalogTitle,
+    numberOfItems: products.length,
+    itemListElement: products.slice(0, 30).map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `https://www.lapetitebouteille.com/produit/${p.slug}`,
+      name: p.name,
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-noir">
+      <Seo
+        title={catalogTitle}
+        description={catalogDesc}
+        path="/catalogue"
+        jsonLd={itemListJsonLd}
+      />
       <Header />
       
       <main className="pt-20">

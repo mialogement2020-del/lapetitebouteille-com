@@ -7,6 +7,7 @@ import { useVendorShopBySlug, useVendorShopProducts } from "@/hooks/useVendorSho
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import Seo from "@/components/seo/Seo";
 
 const BoutiquePage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -40,6 +41,12 @@ const BoutiquePage = () => {
 
   return (
     <div className="min-h-screen bg-noir">
+      <Seo
+        title={`${shop.name} – Boutique partenaire | La Petite Bouteille`}
+        description={shop.description?.slice(0,158) || `Découvrez la boutique ${shop.name} sur La Petite Bouteille.`}
+        path={`/boutique/${shop.slug}`}
+        image={shop.logo_url || undefined}
+      />
       <Header />
       <main className="pt-20 pb-16">
         {/* Banner */}

@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 export default function OrderConfirmation() {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ export default function OrderConfirmation() {
 
   return (
     <div className="min-h-screen bg-noir">
+      <Seo title={"Commande confirmée | La Petite Bouteille"} description={"Confirmation de votre commande."} path={"/commande-confirmee"} noindex />
       <Header />
 
       <main className="pt-24 pb-16">

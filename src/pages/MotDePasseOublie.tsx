@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/seo/Seo";
 
 export default function MotDePasseOublie() {
   const { resetPassword } = useAuthContext();
@@ -52,6 +53,7 @@ export default function MotDePasseOublie() {
       title={t("forgotPassword.title")}
       subtitle={t("forgotPassword.subtitle")}
     >
+      <Seo title={"Mot de passe oublié | La Petite Bouteille"} description={"Réinitialisez votre mot de passe La Petite Bouteille."} path={"/mot-de-passe-oublie"} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
