@@ -148,6 +148,8 @@ const FeaturedProducts = () => {
                           <motion.button 
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
+                            aria-label="Ajouter aux favoris"
+                            type="button"
                             className="w-11 h-11 rounded-full bg-card/95 backdrop-blur-sm flex items-center justify-center text-foreground hover:text-secondary transition-colors shadow-lg"
                           >
                             <Heart className="h-5 w-5" />
