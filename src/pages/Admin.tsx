@@ -22,7 +22,8 @@ import {
   ImageIcon,
   FileText,
   Building2,
-  FileBarChart2
+  FileBarChart2,
+  Activity
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -39,6 +40,7 @@ import { ProductFormDialog } from "@/components/admin/ProductFormDialog";
 import { CategoriesTable } from "@/components/admin/CategoriesTable";
 import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
 import { PerformanceCharts } from "@/components/admin/PerformanceCharts";
+import { InfrastructureMonitoring } from "@/components/admin/InfrastructureMonitoring";
 import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
 import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
@@ -155,6 +157,7 @@ const Admin = () => {
   const availableTabs = useMemo(() => {
     const allTabs = [
       { id: 'performance', label: 'Performance', icon: BarChart3 },
+      { id: 'infrastructure', label: 'Infrastructure', icon: Activity },
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
@@ -596,6 +599,10 @@ const Admin = () => {
 
               <TabsContent value="performance" className="space-y-8">
                 <PerformanceCharts orders={orders} products={products} />
+              </TabsContent>
+
+              <TabsContent value="infrastructure" className="space-y-8">
+                <InfrastructureMonitoring />
               </TabsContent>
 
               <TabsContent value="restock" className="space-y-8">
