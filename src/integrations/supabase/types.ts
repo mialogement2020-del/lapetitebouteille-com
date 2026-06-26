@@ -521,6 +521,48 @@ export type Database = {
           },
         ]
       }
+      domain_events: {
+        Row: {
+          actor_id: string | null
+          aggregate_id: string | null
+          aggregate_type: string
+          error: string | null
+          event_type: string
+          id: number
+          occurred_at: string
+          payload: Json
+          processed_at: string | null
+          source: string | null
+          status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          aggregate_id?: string | null
+          aggregate_type: string
+          error?: string | null
+          event_type: string
+          id?: number
+          occurred_at?: string
+          payload?: Json
+          processed_at?: string | null
+          source?: string | null
+          status?: string
+        }
+        Update: {
+          actor_id?: string | null
+          aggregate_id?: string | null
+          aggregate_type?: string
+          error?: string | null
+          event_type?: string
+          id?: number
+          occurred_at?: string
+          payload?: Json
+          processed_at?: string | null
+          source?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       flash_sale_products: {
         Row: {
           created_at: string
@@ -2488,6 +2530,111 @@ export type Database = {
           },
         ]
       }
+      workflow_executions: {
+        Row: {
+          actions_run: number
+          duration_ms: number | null
+          error: string | null
+          event_id: number | null
+          event_type: string | null
+          executed_at: string
+          id: number
+          result: Json | null
+          rule_id: string | null
+          rule_name: string | null
+          status: string
+        }
+        Insert: {
+          actions_run?: number
+          duration_ms?: number | null
+          error?: string | null
+          event_id?: number | null
+          event_type?: string | null
+          executed_at?: string
+          id?: number
+          result?: Json | null
+          rule_id?: string | null
+          rule_name?: string | null
+          status: string
+        }
+        Update: {
+          actions_run?: number
+          duration_ms?: number | null
+          error?: string | null
+          event_id?: number | null
+          event_type?: string | null
+          executed_at?: string
+          id?: number
+          result?: Json | null
+          rule_id?: string | null
+          rule_name?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_executions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "domain_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          name: string
+          priority: number
+          run_count: number
+          trigger_event: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          name: string
+          priority?: number
+          run_count?: number
+          trigger_event: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          name?: string
+          priority?: number
+          run_count?: number
+          trigger_event?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       admin_2fa_status: {
@@ -2741,6 +2888,17 @@ export type Database = {
           similarity: number
           slug: string
         }[]
+      }
+      publish_event: {
+        Args: {
+          _actor_id?: string
+          _aggregate_id: string
+          _aggregate_type: string
+          _event_type: string
+          _payload?: Json
+          _source?: string
+        }
+        Returns: number
       }
       purge_old_perf_metrics: { Args: never; Returns: undefined }
       recompute_vendor_trust_score: {
