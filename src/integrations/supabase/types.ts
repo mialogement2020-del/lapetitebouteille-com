@@ -1052,6 +1052,45 @@ export type Database = {
           },
         ]
       }
+      perf_metrics: {
+        Row: {
+          created_at: string
+          id: number
+          metric: string
+          navigation_type: string | null
+          rating: string | null
+          route: string
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          metric: string
+          navigation_type?: string | null
+          rating?: string | null
+          route: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          metric?: string
+          navigation_type?: string | null
+          rating?: string | null
+          route?: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
       product_moderations: {
         Row: {
           analyzed_image_url: string | null
@@ -2703,6 +2742,7 @@ export type Database = {
           slug: string
         }[]
       }
+      purge_old_perf_metrics: { Args: never; Returns: undefined }
       recompute_vendor_trust_score: {
         Args: { _shop_id: string }
         Returns: number
