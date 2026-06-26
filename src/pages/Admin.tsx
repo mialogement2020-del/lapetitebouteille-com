@@ -601,6 +601,10 @@ const Admin = () => {
                 <PerformanceCharts orders={orders} products={products} />
               </TabsContent>
 
+              <TabsContent value="infrastructure" className="space-y-8">
+                <InfrastructureMonitoring />
+              </TabsContent>
+
               <TabsContent value="restock" className="space-y-8">
                 <LowStockDashboard 
                   products={products} 
