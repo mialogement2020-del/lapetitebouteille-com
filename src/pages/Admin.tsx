@@ -25,7 +25,7 @@ import {
   FileBarChart2,
   Activity,
   Workflow,
-  Database
+  Database as DatabaseIcon
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -163,7 +163,7 @@ const Admin = () => {
       { id: 'performance', label: 'Performance', icon: BarChart3 },
       { id: 'infrastructure', label: 'Infrastructure', icon: Activity },
       { id: 'orchestration', label: 'Orchestration', icon: Workflow },
-      { id: 'data-platform', label: 'Data Platform', icon: Database },
+      { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
