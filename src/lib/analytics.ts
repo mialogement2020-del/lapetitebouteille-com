@@ -51,9 +51,10 @@ async function flush() {
     const { data: auth } = await supabase.auth.getUser();
     const rows = batch.map((e) => ({
       ...e,
+      properties: e.properties as never,
       user_id: auth.user?.id ?? null,
     }));
-    await supabase.from("analytics_events").insert(rows);
+    await supabase.from("analytics_events").insert(rows as never);
   } catch {
     // silent — analytics must never break the app
   }
