@@ -25,7 +25,8 @@ import {
   FileBarChart2,
   Activity,
   Workflow,
-  Database as DatabaseIcon
+  Database as DatabaseIcon,
+  Shield as ShieldIcon
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -45,6 +46,7 @@ import { PerformanceCharts } from "@/components/admin/PerformanceCharts";
 import { InfrastructureMonitoring } from "@/components/admin/InfrastructureMonitoring";
 import { OrchestrationDashboard } from "@/components/admin/OrchestrationDashboard";
 import { DataPlatformDashboard } from "@/components/admin/DataPlatformDashboard";
+import { ReputationDashboard } from "@/components/admin/ReputationDashboard";
 import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
 import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
@@ -164,6 +166,7 @@ const Admin = () => {
       { id: 'infrastructure', label: 'Infrastructure', icon: Activity },
       { id: 'orchestration', label: 'Orchestration', icon: Workflow },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
+      { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
@@ -617,6 +620,10 @@ const Admin = () => {
 
               <TabsContent value="data-platform" className="space-y-8">
                 <DataPlatformDashboard />
+              </TabsContent>
+
+              <TabsContent value="reputation" className="space-y-8">
+                <ReputationDashboard />
               </TabsContent>
 
               <TabsContent value="restock" className="space-y-8">
