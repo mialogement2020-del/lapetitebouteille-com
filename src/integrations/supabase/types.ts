@@ -1912,6 +1912,78 @@ export type Database = {
           },
         ]
       }
+      trust_scores: {
+        Row: {
+          breakdown: Json
+          computed_at: string
+          id: string
+          negative_count: number
+          positive_count: number
+          score: number
+          subject_id: string
+          subject_type: Database["public"]["Enums"]["trust_subject_type"]
+          tier: string
+        }
+        Insert: {
+          breakdown?: Json
+          computed_at?: string
+          id?: string
+          negative_count?: number
+          positive_count?: number
+          score?: number
+          subject_id: string
+          subject_type: Database["public"]["Enums"]["trust_subject_type"]
+          tier?: string
+        }
+        Update: {
+          breakdown?: Json
+          computed_at?: string
+          id?: string
+          negative_count?: number
+          positive_count?: number
+          score?: number
+          subject_id?: string
+          subject_type?: Database["public"]["Enums"]["trust_subject_type"]
+          tier?: string
+        }
+        Relationships: []
+      }
+      trust_signals: {
+        Row: {
+          id: number
+          metadata: Json
+          occurred_at: string
+          polarity: number
+          signal_type: string
+          source: string | null
+          subject_id: string
+          subject_type: Database["public"]["Enums"]["trust_subject_type"]
+          weight: number
+        }
+        Insert: {
+          id?: number
+          metadata?: Json
+          occurred_at?: string
+          polarity?: number
+          signal_type: string
+          source?: string | null
+          subject_id: string
+          subject_type: Database["public"]["Enums"]["trust_subject_type"]
+          weight?: number
+        }
+        Update: {
+          id?: number
+          metadata?: Json
+          occurred_at?: string
+          polarity?: number
+          signal_type?: string
+          source?: string | null
+          subject_id?: string
+          subject_type?: Database["public"]["Enums"]["trust_subject_type"]
+          weight?: number
+        }
+        Relationships: []
+      }
       user_loyalty: {
         Row: {
           created_at: string | null
@@ -2840,6 +2912,13 @@ export type Database = {
         Returns: Json
       }
       calculate_order_risk_score: { Args: { _order_id: string }; Returns: Json }
+      compute_trust_score: {
+        Args: {
+          _subject_id: string
+          _subject_type: Database["public"]["Enums"]["trust_subject_type"]
+        }
+        Returns: number
+      }
       create_invoice_from_quote: {
         Args: { _due_days?: number; _quote_id: string }
         Returns: Json
@@ -2950,8 +3029,21 @@ export type Database = {
       }
       purge_old_analytics_events: { Args: never; Returns: undefined }
       purge_old_perf_metrics: { Args: never; Returns: undefined }
+      recompute_all_trust_scores: { Args: never; Returns: number }
       recompute_vendor_trust_score: {
         Args: { _shop_id: string }
+        Returns: number
+      }
+      record_trust_signal: {
+        Args: {
+          _metadata?: Json
+          _polarity?: number
+          _signal_type: string
+          _source?: string
+          _subject_id: string
+          _subject_type: Database["public"]["Enums"]["trust_subject_type"]
+          _weight?: number
+        }
         Returns: number
       }
       redeem_loyalty_points: {
@@ -3016,6 +3108,7 @@ export type Database = {
       payment_status: "pending" | "completed" | "failed" | "refunded"
       product_moderation_status: "pending" | "approved" | "flagged" | "rejected"
       product_moderation_verdict: "approved" | "review" | "rejected"
+      trust_subject_type: "customer" | "vendor" | "ambassador" | "wholesaler"
       vendor_fulfillment_status:
         | "pending"
         | "preparing"
@@ -3205,6 +3298,7 @@ export const Constants = {
       payment_status: ["pending", "completed", "failed", "refunded"],
       product_moderation_status: ["pending", "approved", "flagged", "rejected"],
       product_moderation_verdict: ["approved", "review", "rejected"],
+      trust_subject_type: ["customer", "vendor", "ambassador", "wholesaler"],
       vendor_fulfillment_status: [
         "pending",
         "preparing",
