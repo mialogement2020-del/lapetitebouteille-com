@@ -209,6 +209,54 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          category: string
+          country: string | null
+          currency: string | null
+          device: string | null
+          event_name: string
+          id: number
+          occurred_at: string
+          path: string | null
+          properties: Json
+          referrer: string | null
+          revenue: number | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string
+          country?: string | null
+          currency?: string | null
+          device?: string | null
+          event_name: string
+          id?: number
+          occurred_at?: string
+          path?: string | null
+          properties?: Json
+          referrer?: string | null
+          revenue?: number | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          country?: string | null
+          currency?: string | null
+          device?: string | null
+          event_name?: string
+          id?: number
+          occurred_at?: string
+          path?: string | null
+          properties?: Json
+          referrer?: string | null
+          revenue?: number | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       asset_downloads: {
         Row: {
           asset_id: string
@@ -2900,6 +2948,7 @@ export type Database = {
         }
         Returns: number
       }
+      purge_old_analytics_events: { Args: never; Returns: undefined }
       purge_old_perf_metrics: { Args: never; Returns: undefined }
       recompute_vendor_trust_score: {
         Args: { _shop_id: string }
