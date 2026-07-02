@@ -47,6 +47,7 @@ import { InfrastructureMonitoring } from "@/components/admin/InfrastructureMonit
 import { OrchestrationDashboard } from "@/components/admin/OrchestrationDashboard";
 import { DataPlatformDashboard } from "@/components/admin/DataPlatformDashboard";
 import { ReputationDashboard } from "@/components/admin/ReputationDashboard";
+import { MediaEngineManager } from "@/components/admin/MediaEngineManager";
 import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
 import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
@@ -167,6 +168,7 @@ const Admin = () => {
       { id: 'orchestration', label: 'Orchestration', icon: Workflow },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
+      { id: 'media', label: 'Magazine', icon: FileText },
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
@@ -624,6 +626,10 @@ const Admin = () => {
 
               <TabsContent value="reputation" className="space-y-8">
                 <ReputationDashboard />
+              </TabsContent>
+
+              <TabsContent value="media" className="space-y-8">
+                <MediaEngineManager />
               </TabsContent>
 
               <TabsContent value="restock" className="space-y-8">
