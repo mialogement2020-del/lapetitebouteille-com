@@ -30,6 +30,8 @@ const Vendeur = lazy(() => import("./pages/Vendeur"));
 const Boutique = lazy(() => import("./pages/Boutique"));
 const Grossiste = lazy(() => import("./pages/Grossiste"));
 const RechercheVisuelle = lazy(() => import("./pages/RechercheVisuelle"));
+const Magazine = lazy(() => import("./pages/Magazine"));
+const Article = lazy(() => import("./pages/Article"));
 
 const SommelierChat = lazy(() =>
   import("./components/chat/SommelierChat").then((m) => ({ default: m.SommelierChat }))
@@ -72,6 +74,8 @@ const App = () => (
               <Route path="/boutique/:slug" element={<Boutique />} />
               <Route path="/grossiste" element={<Grossiste />} />
               <Route path="/recherche-visuelle" element={<RechercheVisuelle />} />
+              <Route path="/magazine" element={<Magazine />} />
+              <Route path="/magazine/:slug" element={<Article />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
