@@ -1181,6 +1181,48 @@ export type Database = {
         }
         Relationships: []
       }
+      product_affinities: {
+        Row: {
+          co_count: number
+          id: string
+          product_a: string
+          product_b: string
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          co_count?: number
+          id?: string
+          product_a: string
+          product_b: string
+          score?: number
+          updated_at?: string
+        }
+        Update: {
+          co_count?: number
+          id?: string
+          product_a?: string
+          product_b?: string
+          score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_affinities_product_a_fkey"
+            columns: ["product_a"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_b_fkey"
+            columns: ["product_b"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_moderations: {
         Row: {
           analyzed_image_url: string | null
@@ -2080,6 +2122,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_recommendations: {
+        Row: {
+          computed_at: string
+          id: string
+          product_id: string
+          reason: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          id?: string
+          product_id: string
+          reason?: string
+          score?: number
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          id?: string
+          product_id?: string
+          reason?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -2919,6 +2996,10 @@ export type Database = {
         }
         Returns: number
       }
+      compute_user_recommendations: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       create_invoice_from_quote: {
         Args: { _due_days?: number; _quote_id: string }
         Returns: Json
@@ -2943,6 +3024,14 @@ export type Database = {
       get_user_rank: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["ambassador_rank"]
+      }
+      get_user_recommendations: {
+        Args: { _limit?: number; _user_id: string }
+        Returns: {
+          product_id: string
+          reason: string
+          score: number
+        }[]
       }
       get_vendor_order_lines: {
         Args: never
@@ -3050,6 +3139,7 @@ export type Database = {
         Args: { _points: number; _user_id: string }
         Returns: Json
       }
+      refresh_product_affinities: { Args: never; Returns: number }
       register_invoice_payment: {
         Args: {
           _amount: number

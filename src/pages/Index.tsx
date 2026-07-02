@@ -5,6 +5,7 @@ import CategoriesSection from "@/components/home/CategoriesSection";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import CategoryProductsSection from "@/components/home/CategoryProductsSection";
 import MLMTeaser from "@/components/home/MLMTeaser";
+import RecommendedForYou from "@/components/home/RecommendedForYou";
 import Seo from "@/components/seo/Seo";
 
 const Index = () => {
@@ -20,6 +21,7 @@ const Index = () => {
         <HeroSection />
         <CategoriesSection />
         <FeaturedProducts />
+        <RecommendedForYou />
         <CategoryProductsSection />
         <MLMTeaser />
       </main>
