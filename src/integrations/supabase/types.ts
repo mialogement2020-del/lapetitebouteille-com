@@ -839,6 +839,110 @@ export type Database = {
         }
         Relationships: []
       }
+      media_articles: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          category_id: string | null
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string | null
+          featured: boolean
+          id: string
+          published_at: string | null
+          reading_time_minutes: number
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          category_id?: string | null
+          content: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          featured?: boolean
+          id?: string
+          published_at?: string | null
+          reading_time_minutes?: number
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          status?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          category_id?: string | null
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          featured?: boolean
+          id?: string
+          published_at?: string | null
+          reading_time_minutes?: number
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_articles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "media_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mlm_bonuses: {
         Row: {
           achieved_at: string | null
@@ -3078,6 +3182,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_article_views: { Args: { _slug: string }; Returns: undefined }
       increment_asset_download: {
         Args: { asset_uuid: string }
         Returns: undefined
