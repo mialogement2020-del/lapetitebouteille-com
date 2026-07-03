@@ -48,6 +48,7 @@ import { OrchestrationDashboard } from "@/components/admin/OrchestrationDashboar
 import { DataPlatformDashboard } from "@/components/admin/DataPlatformDashboard";
 import { ReputationDashboard } from "@/components/admin/ReputationDashboard";
 import { MediaEngineManager } from "@/components/admin/MediaEngineManager";
+import { RetentionDashboard } from "@/components/admin/RetentionDashboard";
 import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
 import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
@@ -169,6 +170,7 @@ const Admin = () => {
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
+      { id: 'retention', label: 'Retention', icon: Users },
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
@@ -630,6 +632,10 @@ const Admin = () => {
 
               <TabsContent value="media" className="space-y-8">
                 <MediaEngineManager />
+              </TabsContent>
+
+              <TabsContent value="retention" className="space-y-8">
+                <RetentionDashboard />
               </TabsContent>
 
               <TabsContent value="restock" className="space-y-8">
