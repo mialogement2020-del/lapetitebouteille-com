@@ -36,6 +36,7 @@ interface SegmentRow {
 interface Campaign {
   id: string;
   name: string;
+  description?: string | null;
   target_segment: string;
   channel: string;
   subject: string | null;
