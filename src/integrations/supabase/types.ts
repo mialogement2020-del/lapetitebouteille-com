@@ -354,6 +354,47 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_deliveries: {
+        Row: {
+          campaign_id: string
+          channel: string
+          created_at: string
+          delivered_at: string
+          error: string | null
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          channel: string
+          created_at?: string
+          delivered_at?: string
+          error?: string | null
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          channel?: string
+          created_at?: string
+          delivered_at?: string
+          error?: string | null
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_deliveries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "retention_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cart_items: {
         Row: {
           created_at: string | null
@@ -568,6 +609,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      customer_segments: {
+        Row: {
+          computed_at: string
+          created_at: string
+          f_score: number
+          frequency: number
+          id: string
+          last_order_at: string | null
+          m_score: number
+          monetary: number
+          r_score: number
+          recency_days: number
+          segment: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          created_at?: string
+          f_score?: number
+          frequency?: number
+          id?: string
+          last_order_at?: string | null
+          m_score?: number
+          monetary?: number
+          r_score?: number
+          recency_days?: number
+          segment?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          created_at?: string
+          f_score?: number
+          frequency?: number
+          id?: string
+          last_order_at?: string | null
+          m_score?: number
+          monetary?: number
+          r_score?: number
+          recency_days?: number
+          segment?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       domain_events: {
         Row: {
@@ -1922,6 +2011,60 @@ export type Database = {
         }
         Relationships: []
       }
+      retention_campaigns: {
+        Row: {
+          channel: string
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          message: string
+          name: string
+          scheduled_at: string | null
+          subject: string | null
+          target_segment: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          message: string
+          name: string
+          scheduled_at?: string | null
+          subject?: string | null
+          target_segment: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          message?: string
+          name?: string
+          scheduled_at?: string | null
+          subject?: string | null
+          target_segment?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
@@ -3189,6 +3332,10 @@ export type Database = {
       }
       increment_referral_clicks: { Args: { _code: string }; Returns: Json }
       is_2fa_session_valid: { Args: { _user_id: string }; Returns: boolean }
+      label_rfm_segment: {
+        Args: { _f: number; _m: number; _r: number }
+        Returns: string
+      }
       lookup_guest_order: {
         Args: { _identifier: string; _method?: string; _order_number: string }
         Returns: Json
@@ -3224,6 +3371,7 @@ export type Database = {
       purge_old_analytics_events: { Args: never; Returns: undefined }
       purge_old_perf_metrics: { Args: never; Returns: undefined }
       recompute_all_trust_scores: { Args: never; Returns: number }
+      recompute_customer_segments: { Args: never; Returns: number }
       recompute_vendor_trust_score: {
         Args: { _shop_id: string }
         Returns: number
