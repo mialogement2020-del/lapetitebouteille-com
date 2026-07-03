@@ -154,9 +154,10 @@ export function RetentionDashboard() {
       const notifPayloads = recipients.map((u) => ({
         user_id: u.user_id,
         title: c.subject || c.name,
-        message: c.message,
+        message: c.cta_url ? `${c.message}\n${c.cta_label || "En savoir plus"} : ${c.cta_url}` : c.message,
         type: "campaign",
-        link: c.cta_url || null,
+        reference_type: "campaign",
+        reference_id: c.id,
       }));
       const { error: nErr } = await supabase.from("user_notifications").insert(notifPayloads);
       if (nErr) throw nErr;
