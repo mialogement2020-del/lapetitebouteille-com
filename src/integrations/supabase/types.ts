@@ -1335,6 +1335,131 @@ export type Database = {
           },
         ]
       }
+      payment_intents: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          external_reference: string | null
+          failure_reason: string | null
+          id: string
+          metadata: Json
+          method: string
+          order_id: string | null
+          processed_at: string | null
+          provider: string
+          provider_response: Json
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          external_reference?: string | null
+          failure_reason?: string | null
+          id?: string
+          metadata?: Json
+          method: string
+          order_id?: string | null
+          processed_at?: string | null
+          provider: string
+          provider_response?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          external_reference?: string | null
+          failure_reason?: string | null
+          id?: string
+          metadata?: Json
+          method?: string
+          order_id?: string | null
+          processed_at?: string | null
+          provider?: string
+          provider_response?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_reconciliations: {
+        Row: {
+          created_at: string
+          currency: string
+          expected_amount: number
+          id: string
+          notes: string | null
+          order_id: string | null
+          payment_intent_id: string | null
+          received_amount: number
+          reconciled_at: string | null
+          reconciled_by: string | null
+          status: string
+          updated_at: string
+          variance: number | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          expected_amount: number
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          payment_intent_id?: string | null
+          received_amount: number
+          reconciled_at?: string | null
+          reconciled_by?: string | null
+          status?: string
+          updated_at?: string
+          variance?: number | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          expected_amount?: number
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          payment_intent_id?: string | null
+          received_amount?: number
+          reconciled_at?: string | null
+          reconciled_by?: string | null
+          status?: string
+          updated_at?: string
+          variance?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_reconciliations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reconciliations_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perf_metrics: {
         Row: {
           created_at: string
@@ -2509,6 +2634,59 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_ledger: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string
+          currency: string
+          entry_type: string
+          id: number
+          metadata: Json
+          reason: string
+          reference_id: string | null
+          reference_type: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string
+          currency?: string
+          entry_type: string
+          id?: number
+          metadata?: Json
+          reason: string
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string
+          currency?: string
+          entry_type?: string
+          id?: number
+          metadata?: Json
+          reason?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_ledger_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -3405,6 +3583,39 @@ export type Database = {
       }
       validate_referral_code: { Args: { _code: string }; Returns: Json }
       verify_2fa_session: { Args: { _user_id: string }; Returns: undefined }
+      wallet_credit: {
+        Args: {
+          _amount: number
+          _metadata?: Json
+          _reason: string
+          _reference_id?: string
+          _reference_type?: string
+          _user_id: string
+        }
+        Returns: Json
+      }
+      wallet_debit: {
+        Args: {
+          _amount: number
+          _metadata?: Json
+          _reason: string
+          _reference_id?: string
+          _reference_type?: string
+          _user_id: string
+        }
+        Returns: Json
+      }
+      wallet_transfer: {
+        Args: {
+          _amount: number
+          _from_user: string
+          _reason: string
+          _reference_id?: string
+          _reference_type?: string
+          _to_user: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       admin_permission:
