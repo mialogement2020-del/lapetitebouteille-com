@@ -610,6 +610,45 @@ export type Database = {
           },
         ]
       }
+      currency_rates: {
+        Row: {
+          base_currency: string
+          created_at: string
+          id: string
+          metadata: Json
+          quote_currency: string
+          rate: number
+          source: string
+          updated_at: string
+          valid_from: string
+          valid_to: string | null
+        }
+        Insert: {
+          base_currency: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          quote_currency: string
+          rate: number
+          source?: string
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Update: {
+          base_currency?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          quote_currency?: string
+          rate?: number
+          source?: string
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Relationships: []
+      }
       customer_segments: {
         Row: {
           computed_at: string
@@ -1286,8 +1325,10 @@ export type Database = {
       orders: {
         Row: {
           created_at: string | null
+          currency: string
           delivery_fee: number | null
           discount_amount: number | null
+          exchange_rate: number
           gift_message: string | null
           gift_packaging_id: string | null
           gift_packaging_price: number | null
@@ -1320,8 +1361,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          currency?: string
           delivery_fee?: number | null
           discount_amount?: number | null
+          exchange_rate?: number
           gift_message?: string | null
           gift_packaging_id?: string | null
           gift_packaging_price?: number | null
@@ -1354,8 +1397,10 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          currency?: string
           delivery_fee?: number | null
           discount_amount?: number | null
+          exchange_rate?: number
           gift_message?: string | null
           gift_packaging_id?: string | null
           gift_packaging_price?: number | null
@@ -1408,6 +1453,7 @@ export type Database = {
           amount: number
           created_at: string
           currency: string
+          exchange_rate: number
           external_reference: string | null
           failure_reason: string | null
           id: string
@@ -1425,6 +1471,7 @@ export type Database = {
           amount: number
           created_at?: string
           currency?: string
+          exchange_rate?: number
           external_reference?: string | null
           failure_reason?: string | null
           id?: string
@@ -1442,6 +1489,7 @@ export type Database = {
           amount?: number
           created_at?: string
           currency?: string
+          exchange_rate?: number
           external_reference?: string | null
           failure_reason?: string | null
           id?: string
@@ -3493,6 +3541,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      convert_currency: {
+        Args: { _amount: number; _from: string; _to: string }
+        Returns: number
+      }
       create_invoice_from_quote: {
         Args: { _due_days?: number; _quote_id: string }
         Returns: Json
@@ -3527,6 +3579,7 @@ export type Database = {
       }
       generate_order_number: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
+      get_active_rate: { Args: { _from: string; _to: string }; Returns: number }
       get_my_roles: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"][]
