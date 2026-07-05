@@ -3529,6 +3529,7 @@ export type Database = {
         Args: { _app_id: string }
         Returns: Json
       }
+      auto_reconcile_pending: { Args: never; Returns: number }
       calculate_order_risk_score: { Args: { _order_id: string }; Returns: Json }
       compute_trust_score: {
         Args: {
@@ -3693,6 +3694,10 @@ export type Database = {
       recompute_vendor_trust_score: {
         Args: { _shop_id: string }
         Returns: number
+      }
+      reconcile_payment_intent: {
+        Args: { _intent_id: string }
+        Returns: string
       }
       record_trust_signal: {
         Args: {
