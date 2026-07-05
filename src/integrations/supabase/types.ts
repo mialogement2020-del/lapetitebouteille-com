@@ -1068,6 +1068,74 @@ export type Database = {
         }
         Relationships: []
       }
+      order_escrows: {
+        Row: {
+          amount: number
+          buyer_id: string
+          captured_amount: number
+          captured_at: string | null
+          created_at: string
+          currency: string
+          held_at: string
+          hold_reason: string | null
+          id: string
+          metadata: Json
+          order_id: string
+          refunded_amount: number
+          refunded_at: string | null
+          release_reason: string | null
+          seller_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          captured_amount?: number
+          captured_at?: string | null
+          created_at?: string
+          currency?: string
+          held_at?: string
+          hold_reason?: string | null
+          id?: string
+          metadata?: Json
+          order_id: string
+          refunded_amount?: number
+          refunded_at?: string | null
+          release_reason?: string | null
+          seller_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          captured_amount?: number
+          captured_at?: string | null
+          created_at?: string
+          currency?: string
+          held_at?: string
+          hold_reason?: string | null
+          id?: string
+          metadata?: Json
+          order_id?: string
+          refunded_amount?: number
+          refunded_at?: string | null
+          release_reason?: string | null
+          seller_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_escrows_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -3431,6 +3499,25 @@ export type Database = {
       }
       create_referral_relationship: {
         Args: { _referral_code: string }
+        Returns: Json
+      }
+      escrow_capture: {
+        Args: { _amount?: number; _escrow_id: string; _reason?: string }
+        Returns: Json
+      }
+      escrow_hold: {
+        Args: {
+          _amount: number
+          _buyer_id: string
+          _currency?: string
+          _order_id: string
+          _reason?: string
+          _seller_id: string
+        }
+        Returns: string
+      }
+      escrow_refund: {
+        Args: { _amount?: number; _escrow_id: string; _reason?: string }
         Returns: Json
       }
       generate_invoice_number: { Args: never; Returns: string }
