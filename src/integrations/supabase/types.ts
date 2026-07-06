@@ -3531,6 +3531,14 @@ export type Database = {
       }
       auto_reconcile_pending: { Args: never; Returns: number }
       calculate_order_risk_score: { Args: { _order_id: string }; Returns: Json }
+      compute_order_risk_score: {
+        Args: { _order_id: string }
+        Returns: {
+          factors: Json
+          risk_level: string
+          score: number
+        }[]
+      }
       compute_trust_score: {
         Args: {
           _subject_id: string
@@ -3726,6 +3734,7 @@ export type Database = {
         }
         Returns: Json
       }
+      score_order_risk: { Args: { _order_id: string }; Returns: string }
       validate_referral_code: { Args: { _code: string }; Returns: Json }
       verify_2fa_session: { Args: { _user_id: string }; Returns: undefined }
       wallet_credit: {
