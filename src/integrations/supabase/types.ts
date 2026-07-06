@@ -3530,7 +3530,12 @@ export type Database = {
         Returns: Json
       }
       auto_reconcile_pending: { Args: never; Returns: number }
+      auto_release_delivered_escrows: { Args: never; Returns: number }
       calculate_order_risk_score: { Args: { _order_id: string }; Returns: Json }
+      capture_escrow: {
+        Args: { _escrow_id: string; _reason?: string }
+        Returns: boolean
+      }
       compute_order_risk_score: {
         Args: { _order_id: string }
         Returns: {
@@ -3553,6 +3558,10 @@ export type Database = {
       convert_currency: {
         Args: { _amount: number; _from: string; _to: string }
         Returns: number
+      }
+      create_escrow_from_payment: {
+        Args: { _intent_id: string }
+        Returns: string
       }
       create_invoice_from_quote: {
         Args: { _due_days?: number; _quote_id: string }
@@ -3724,6 +3733,10 @@ export type Database = {
         Returns: Json
       }
       refresh_product_affinities: { Args: never; Returns: number }
+      refund_escrow: {
+        Args: { _amount: number; _escrow_id: string; _reason: string }
+        Returns: boolean
+      }
       register_invoice_payment: {
         Args: {
           _amount: number
