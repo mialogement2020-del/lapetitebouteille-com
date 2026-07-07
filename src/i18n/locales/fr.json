@@ -2953,5 +2953,32 @@
     "toastGalleryAdded": "{{count}} image(s) ajoutée(s) à la galerie",
     "toastUploadError": "Erreur d'upload",
     "toastUploadFailed": "Échec"
+  },
+  "reputationDashboard": {
+    "title": "Reputation Graph",
+    "subtitle": "Trust Score unifié · clients · vendeurs · ambassadeurs · grossistes",
+    "recomputeAll": "Recalculer tous",
+    "kpiSubjects": "Sujets",
+    "kpiAvgScore": "Score moyen",
+    "filterAll": "Tous",
+    "tabRanking": "Classement",
+    "tabSignals": "Signaux récents",
+    "topScores": "Top scores",
+    "signalsLog": "Journal des signaux",
+    "colSubject": "Sujet",
+    "colType": "Type",
+    "colScore": "Score",
+    "colTier": "Tier",
+    "colPosNeg": "+ / −",
+    "colRecomputed": "Recalculé",
+    "colWhen": "Quand",
+    "colSignal": "Signal",
+    "colWeight": "Poids",
+    "colSource": "Source",
+    "noScores": "Aucun score encore — les signaux se cumulent avec l'activité (commandes livrées, avis, commissions payées). Cliquez \"Recalculer tous\" après quelques transactions.",
+    "noSignals": "Aucun signal.",
+    "toastRecomputeDone": "Recalcul terminé",
+    "toastRecomputeDesc": "{{count}} sujets recalculés.",
+    "toastError": "Erreur"
   }
 }
