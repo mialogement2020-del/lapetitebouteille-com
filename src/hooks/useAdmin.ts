@@ -64,6 +64,15 @@ export interface AdminProduct {
   category?: { id: string; name: string } | null;
 }
 
+// Extra pricing/case fields available on admin products
+export interface AdminProductExtra {
+  purchase_price: number | null;
+  markup_percent_override: number | null;
+  available_as_case: boolean | null;
+  units_per_case: number | null;
+  case_price: number | null;
+}
+
 export interface AdminCategory {
   id: string;
   name: string;
@@ -157,6 +166,13 @@ export interface ProductFormData {
   tasting_notes?: string;
   food_pairing?: string;
   serving_temperature?: string;
+  // Pricing helpers (admin only)
+  purchase_price?: number | null;
+  markup_percent_override?: number | null;
+  // Caisse / carton
+  available_as_case?: boolean;
+  units_per_case?: number | null;
+  case_price?: number | null;
 }
 
 export function useAdmin() {
