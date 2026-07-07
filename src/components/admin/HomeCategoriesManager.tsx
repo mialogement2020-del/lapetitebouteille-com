@@ -239,3 +239,47 @@ export function HomeCategoriesManager() {
     </div>
   );
 }
+
+function SortableCategoryCard({ c, onEdit, onToggle, onDelete }: {
+  c: HomeCategory; onEdit: () => void; onToggle: () => void; onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: c.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}
+      className="border border-border rounded-xl overflow-hidden bg-card">
+      <div className="relative h-40 bg-muted">
+        {c.image_url ? (
+          <img src={c.image_url} alt={c.title_fr} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">Pas d'image</div>
+        )}
+        <button
+          className="absolute top-2 left-2 p-1.5 rounded-md bg-noir/70 text-cream cursor-grab active:cursor-grabbing touch-none"
+          {...attributes} {...listeners}
+          aria-label="Réordonner"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        {!c.is_visible && <Badge className="absolute top-2 left-12" variant="secondary">Masquée</Badge>}
+        <Badge className="absolute top-2 right-2" variant="outline">#{c.display_order}</Badge>
+      </div>
+      <div className="p-4 space-y-2">
+        <div>
+          <div className="font-medium">{c.title_fr}</div>
+          <div className="text-xs text-muted-foreground truncate">{c.description_fr}</div>
+          <div className="text-xs text-primary mt-1 truncate">→ {c.href}</div>
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <Button size="icon" variant="ghost" onClick={onToggle}>
+            {c.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </Button>
+          <div className="flex gap-1">
+            <Button size="icon" variant="ghost" onClick={onEdit}><Edit className="h-4 w-4" /></Button>
+            <Button size="icon" variant="ghost" onClick={onDelete}><Trash2 className="h-4 w-4" /></Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
