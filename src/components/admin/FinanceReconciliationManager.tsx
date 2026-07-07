@@ -32,6 +32,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import {
   Scale,
   AlertTriangle,
@@ -86,6 +87,8 @@ const riskColor: Record<string, string> = {
 };
 
 export function FinanceReconciliationManager() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? undefined : fr;
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -149,13 +152,13 @@ export function FinanceReconciliationManager() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Rapprochement validé" });
+      toast({ title: t("reconciliation.toastValidated") });
       qc.invalidateQueries({ queryKey: ["admin-finance-overview"] });
       setSelected(null);
       setNote("");
     },
     onError: (e: any) =>
-      toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+      toast({ title: t("reconciliation.toastError"), description: e.message, variant: "destructive" }),
   });
 
   return (
@@ -164,7 +167,7 @@ export function FinanceReconciliationManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Rapprochés
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> {t("reconciliation.kpiMatched")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -174,7 +177,7 @@ export function FinanceReconciliationManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-400" /> Écarts
+              <AlertTriangle className="h-4 w-4 text-orange-400" /> {t("reconciliation.kpiVariance")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -185,7 +188,7 @@ export function FinanceReconciliationManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <HelpCircle className="h-4 w-4 text-red-400" /> Sans commande
+              <HelpCircle className="h-4 w-4 text-red-400" /> {t("reconciliation.kpiMissing")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -195,7 +198,7 @@ export function FinanceReconciliationManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <BadgeCheck className="h-4 w-4 text-blue-400" /> Validés admin
+              <BadgeCheck className="h-4 w-4 text-blue-400" /> {t("reconciliation.kpiReconciled")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -205,12 +208,12 @@ export function FinanceReconciliationManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <RefreshCw className="h-4 w-4" /> Actualiser
+              <RefreshCw className="h-4 w-4" /> {t("reconciliation.refresh")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Button size="sm" className="w-full" onClick={() => refetch()}>
-              Recharger
+              {t("reconciliation.reload")}
             </Button>
           </CardContent>
         </Card>
@@ -219,13 +222,13 @@ export function FinanceReconciliationManager() {
       <Card className="bg-noir/50 border-gold/20">
         <CardHeader>
           <CardTitle className="text-cream flex items-center gap-2">
-            <Scale className="h-5 w-5" /> Rapprochement financier consolidé
+            <Scale className="h-5 w-5" /> {t("reconciliation.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3 items-center">
             <Input
-              placeholder="Rechercher (order, intent, email, provider)…"
+              placeholder={t("reconciliation.search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-xs bg-noir/40 border-gold/20"
@@ -235,11 +238,11 @@ export function FinanceReconciliationManager() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous statuts</SelectItem>
-                <SelectItem value="matched">Rapproché</SelectItem>
-                <SelectItem value="variance">Écart</SelectItem>
-                <SelectItem value="missing_order">Sans commande</SelectItem>
-                <SelectItem value="reconciled">Validé admin</SelectItem>
+                <SelectItem value="all">{t("reconciliation.allStatuses")}</SelectItem>
+                <SelectItem value="matched">{t("reconciliation.statusMatched")}</SelectItem>
+                <SelectItem value="variance">{t("reconciliation.statusVariance")}</SelectItem>
+                <SelectItem value="missing_order">{t("reconciliation.statusMissing")}</SelectItem>
+                <SelectItem value="reconciled">{t("reconciliation.statusReconciled")}</SelectItem>
               </SelectContent>
             </Select>
             <label className="flex items-center gap-2 text-sm text-cream/80">
@@ -248,7 +251,7 @@ export function FinanceReconciliationManager() {
                 checked={onlyVariance}
                 onChange={(e) => setOnlyVariance(e.target.checked)}
               />
-              Écarts uniquement
+              {t("reconciliation.onlyVariance")}
             </label>
           </div>
 
@@ -256,29 +259,29 @@ export function FinanceReconciliationManager() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Commande</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Attendu</TableHead>
-                  <TableHead>Reçu</TableHead>
-                  <TableHead>Écart</TableHead>
-                  <TableHead>Rapprochement</TableHead>
-                  <TableHead>Escrow</TableHead>
-                  <TableHead>Risque</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("reconciliation.colDate")}</TableHead>
+                  <TableHead>{t("reconciliation.colOrder")}</TableHead>
+                  <TableHead>{t("reconciliation.colProvider")}</TableHead>
+                  <TableHead>{t("reconciliation.colExpected")}</TableHead>
+                  <TableHead>{t("reconciliation.colReceived")}</TableHead>
+                  <TableHead>{t("reconciliation.colVariance")}</TableHead>
+                  <TableHead>{t("reconciliation.colRecon")}</TableHead>
+                  <TableHead>{t("reconciliation.colEscrow")}</TableHead>
+                  <TableHead>{t("reconciliation.colRisk")}</TableHead>
+                  <TableHead className="text-right">{t("reconciliation.colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center text-cream/50">
-                      Chargement…
+                      {t("reconciliation.loading")}
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center text-cream/50">
-                      Aucune ligne
+                      {t("reconciliation.empty")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -289,7 +292,7 @@ export function FinanceReconciliationManager() {
                         <TableCell className="text-xs">
                           {r.order_created_at
                             ? format(new Date(r.order_created_at), "dd MMM yy", {
-                                locale: fr,
+                                locale,
                               })
                             : "—"}
                         </TableCell>
@@ -357,7 +360,7 @@ export function FinanceReconciliationManager() {
                                 variant="outline"
                                 onClick={() => setSelected(r)}
                               >
-                                Valider
+                                {t("reconciliation.validate")}
                               </Button>
                             )}
                         </TableCell>
@@ -374,28 +377,28 @@ export function FinanceReconciliationManager() {
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="bg-noir border-gold/20">
           <DialogHeader>
-            <DialogTitle className="text-cream">Valider le rapprochement</DialogTitle>
+            <DialogTitle className="text-cream">{t("reconciliation.dialogTitle")}</DialogTitle>
             <DialogDescription>
               {selected && (
-                <>
-                  Attendu {fmt(selected.recon_expected)} — Reçu{" "}
-                  {fmt(selected.recon_received)} — Écart{" "}
-                  {fmt(selected.recon_variance)}
-                </>
+                <>{t("reconciliation.summary", {
+                  expected: fmt(selected.recon_expected),
+                  received: fmt(selected.recon_received),
+                  variance: fmt(selected.recon_variance),
+                })}</>
               )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label>Note (facultatif)</Label>
+            <Label>{t("reconciliation.noteLabel")}</Label>
             <Input
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Contexte du rapprochement…"
+              placeholder={t("reconciliation.notePh")}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSelected(null)}>
-              Annuler
+              {t("reconciliation.cancel")}
             </Button>
             <Button
               onClick={() =>
@@ -404,7 +407,7 @@ export function FinanceReconciliationManager() {
               }
               disabled={mut.isPending}
             >
-              Confirmer
+              {t("reconciliation.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
