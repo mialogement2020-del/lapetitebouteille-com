@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Clock, ArrowRight, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -18,15 +19,6 @@ interface OrderStatusHistoryProps {
   orderId: string;
 }
 
-const statusLabels: Record<string, string> = {
-  pending: "En attente",
-  confirmed: "Confirmée",
-  processing: "En préparation",
-  shipped: "Expédiée",
-  delivered: "Livrée",
-  cancelled: "Annulée",
-};
-
 const statusColors: Record<string, string> = {
   pending: "text-yellow-500",
   confirmed: "text-blue-500",
@@ -37,6 +29,7 @@ const statusColors: Record<string, string> = {
 };
 
 export function OrderStatusHistory({ orderId }: OrderStatusHistoryProps) {
+  const { t, i18n } = useTranslation();
   const { data: history = [], isLoading } = useQuery({
     queryKey: ["order-status-history", orderId],
     queryFn: async () => {
@@ -53,7 +46,7 @@ export function OrderStatusHistory({ orderId }: OrderStatusHistoryProps) {
   });
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
+    return new Date(dateStr).toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -63,8 +56,10 @@ export function OrderStatusHistory({ orderId }: OrderStatusHistoryProps) {
   };
 
   const getStatusLabel = (status: string | null) => {
-    if (!status) return "Création";
-    return statusLabels[status] || status;
+    if (!status) return t("orderStatus.history_creation");
+    const key = `orderStatus.labels.${status}`;
+    const translated = t(key);
+    return translated === key ? status : translated;
   };
 
   const getStatusColor = (status: string | null) => {
@@ -85,7 +80,7 @@ export function OrderStatusHistory({ orderId }: OrderStatusHistoryProps) {
   if (history.length === 0) {
     return (
       <p className="text-cream/50 text-sm text-center py-4">
-        Aucun historique disponible
+        {t("orderStatus.history_empty")}
       </p>
     );
   }
@@ -120,7 +115,7 @@ export function OrderStatusHistory({ orderId }: OrderStatusHistoryProps) {
               {entry.changed_by && (
                 <span className="flex items-center gap-1 text-xs text-cream/40">
                   <User className="h-3 w-3" />
-                  Admin
+                  {t("orderStatus.history_admin")}
                 </span>
               )}
             </div>
