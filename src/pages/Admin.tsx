@@ -78,6 +78,8 @@ import { FinanceReconciliationManager } from "@/components/admin/FinanceReconcil
 import { ProductModerationManager } from "@/components/admin/ProductModerationManager";
 import { BusinessAnalyticsDashboard } from "@/components/admin/BusinessAnalyticsDashboard";
 import { HomeCategoriesManager } from "@/components/admin/HomeCategoriesManager";
+import { HeroConfigManager } from "@/components/admin/HeroConfigManager";
+import { FeaturedProductsManager } from "@/components/admin/FeaturedProductsManager";
 import { ShieldAlert, Sparkles, LineChart } from "lucide-react";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
@@ -178,6 +180,8 @@ const Admin = () => {
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
       { id: 'home-categories', label: 'Catégories Accueil', icon: LayoutDashboard },
+      { id: 'home-hero', label: 'Héro Accueil', icon: ImageIcon },
+      { id: 'home-featured', label: 'Nouveautés Accueil', icon: Sparkles },
       { id: 'images', label: 'Images', icon: ImageIcon },
       { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
       { id: 'quotes', label: 'Devis Gros', icon: FileText },
@@ -712,6 +716,18 @@ const Admin = () => {
               <TabsContent value="home-categories" className="space-y-6">
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
                   <HomeCategoriesManager />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="home-hero" className="space-y-6">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <HeroConfigManager />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="home-featured" className="space-y-6">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <FeaturedProductsManager />
                 </div>
               </TabsContent>
 

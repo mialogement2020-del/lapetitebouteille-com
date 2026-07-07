@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { Plus, Edit, Trash2, Loader2, ArrowUp, ArrowDown, Eye, EyeOff, Upload, LayoutGrid } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, Eye, EyeOff, Upload, LayoutGrid, GripVertical, History, Undo2 } from "lucide-react";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, arrayMove, useSortable, rectSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +14,7 @@ import {
   useHomeCategories, useSaveHomeCategory, useDeleteHomeCategory,
   uploadHomeCategoryImage, type HomeCategory,
 } from "@/hooks/useHomeCategories";
+import { useHomeCategoriesHistory, useRollbackHomeCategory } from "@/hooks/useHomeCategoriesHistory";
 import { toast } from "@/hooks/use-toast";
 
 function slugify(s: string) {
@@ -27,6 +31,10 @@ export function HomeCategoriesManager() {
   const { data: items, isLoading } = useHomeCategories();
   const save = useSaveHomeCategory();
   const del = useDeleteHomeCategory();
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const { data: history, refetch: refetchHistory } = useHomeCategoriesHistory();
+  const rollback = useRollbackHomeCategory();
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<HomeCategory>>(empty);
@@ -69,18 +77,18 @@ export function HomeCategoriesManager() {
     }
   };
 
-  const move = async (c: HomeCategory, dir: -1 | 1) => {
-    const list = [...(items ?? [])].sort((a, b) => a.display_order - b.display_order);
-    const idx = list.findIndex(x => x.id === c.id);
-    const swap = list[idx + dir];
-    if (!swap) return;
+  const onDragEnd = async (evt: any) => {
+    const { active, over } = evt;
+    if (!over || active.id === over.id || !items) return;
+    const oldIdx = items.findIndex(x => x.id === active.id);
+    const newIdx = items.findIndex(x => x.id === over.id);
+    const reordered = arrayMove(items, oldIdx, newIdx);
     try {
-      await Promise.all([
-        save.mutateAsync({ id: c.id, slug: c.slug, title_fr: c.title_fr, display_order: swap.display_order } as any),
-        save.mutateAsync({ id: swap.id, slug: swap.slug, title_fr: swap.title_fr, display_order: c.display_order } as any),
-      ]);
+      await Promise.all(reordered.map((c, i) =>
+        save.mutateAsync({ id: c.id, slug: c.slug, title_fr: c.title_fr, display_order: i + 1 } as any)
+      ));
     } catch (e: any) {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+      toast({ title: "Erreur réordonnancement", description: e.message, variant: "destructive" });
     }
   };
 
@@ -105,10 +113,15 @@ export function HomeCategoriesManager() {
           <LayoutGrid className="h-6 w-6 text-primary" />
           <div>
             <h2 className="font-serif text-2xl">Catégories Accueil</h2>
-            <p className="text-sm text-muted-foreground">Section "Nos Catégories" de la page d'accueil</p>
+            <p className="text-sm text-muted-foreground">Glissez les cartes pour réordonner. Un historique complet est disponible.</p>
           </div>
         </div>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" /> Nouvelle catégorie</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => { setHistoryOpen(true); refetchHistory(); }}>
+            <History className="h-4 w-4 mr-2" /> Historique
+          </Button>
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" /> Nouvelle catégorie</Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -118,51 +131,19 @@ export function HomeCategoriesManager() {
           Aucune catégorie. Créez-en une.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((c, i) => (
-            <div key={c.id} className="border border-border rounded-xl overflow-hidden bg-card">
-              <div className="relative h-40 bg-muted">
-                {c.image_url ? (
-                  <img src={c.image_url} alt={c.title_fr} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">Pas d'image</div>
-                )}
-                {!c.is_visible && (
-                  <Badge className="absolute top-2 left-2" variant="secondary">Masquée</Badge>
-                )}
-                <Badge className="absolute top-2 right-2" variant="outline">#{c.display_order}</Badge>
-              </div>
-              <div className="p-4 space-y-2">
-                <div>
-                  <div className="font-medium">{c.title_fr}</div>
-                  <div className="text-xs text-muted-foreground truncate">{c.description_fr}</div>
-                  <div className="text-xs text-primary mt-1 truncate">→ {c.href}</div>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" disabled={i === 0} onClick={() => move(c, -1)}>
-                      <ArrowUp className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" disabled={i === items.length - 1} onClick={() => move(c, 1)}>
-                      <ArrowDown className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => toggleVisible(c)}>
-                      {c.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" onClick={() => openEdit(c)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => remove(c.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={items.map(c => c.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {items.map((c) => (
+                <SortableCategoryCard key={c.id} c={c}
+                  onEdit={() => openEdit(c)}
+                  onToggle={() => toggleVisible(c)}
+                  onDelete={() => remove(c.id)}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -255,6 +236,99 @@ export function HomeCategoriesManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* History dialog */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Historique des modifications</DialogTitle>
+          </DialogHeader>
+          {!history?.length ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">Aucun historique.</p>
+          ) : (
+            <div className="space-y-2">
+              {history.map(h => {
+                const who = h.changed_by_profile
+                  ? `${h.changed_by_profile.first_name ?? ""} ${h.changed_by_profile.last_name ?? ""}`.trim() || h.changed_by_profile.email
+                  : "Système";
+                const snap = h.snapshot ?? {};
+                return (
+                  <div key={h.id} className="flex items-start gap-3 p-3 border border-border rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant={h.action === "delete" ? "destructive" : h.action === "insert" ? "default" : "outline"}>
+                          {h.action}
+                        </Badge>
+                        <span className="text-sm font-medium truncate">{snap.title_fr ?? "—"}</span>
+                        <span className="text-xs text-muted-foreground">/{snap.slug}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {new Date(h.changed_at).toLocaleString("fr-FR")} · par {who || "inconnu"}
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" disabled={rollback.isPending}
+                      onClick={async () => {
+                        if (!confirm("Restaurer cette version ?")) return;
+                        try {
+                          await rollback.mutateAsync(h);
+                          toast({ title: "Version restaurée" });
+                        } catch (e: any) {
+                          toast({ title: "Erreur", description: e.message, variant: "destructive" });
+                        }
+                      }}>
+                      <Undo2 className="h-4 w-4 mr-1" /> Restaurer
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function SortableCategoryCard({ c, onEdit, onToggle, onDelete }: {
+  c: HomeCategory; onEdit: () => void; onToggle: () => void; onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: c.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}
+      className="border border-border rounded-xl overflow-hidden bg-card">
+      <div className="relative h-40 bg-muted">
+        {c.image_url ? (
+          <img src={c.image_url} alt={c.title_fr} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">Pas d'image</div>
+        )}
+        <button
+          className="absolute top-2 left-2 p-1.5 rounded-md bg-noir/70 text-cream cursor-grab active:cursor-grabbing touch-none"
+          {...attributes} {...listeners}
+          aria-label="Réordonner"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        {!c.is_visible && <Badge className="absolute top-2 left-12" variant="secondary">Masquée</Badge>}
+        <Badge className="absolute top-2 right-2" variant="outline">#{c.display_order}</Badge>
+      </div>
+      <div className="p-4 space-y-2">
+        <div>
+          <div className="font-medium">{c.title_fr}</div>
+          <div className="text-xs text-muted-foreground truncate">{c.description_fr}</div>
+          <div className="text-xs text-primary mt-1 truncate">→ {c.href}</div>
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <Button size="icon" variant="ghost" onClick={onToggle}>
+            {c.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </Button>
+          <div className="flex gap-1">
+            <Button size="icon" variant="ghost" onClick={onEdit}><Edit className="h-4 w-4" /></Button>
+            <Button size="icon" variant="ghost" onClick={onDelete}><Trash2 className="h-4 w-4" /></Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

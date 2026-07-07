@@ -8,12 +8,25 @@ import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { useTranslation } from "react-i18next";
+import { useFeaturedHomeProducts } from "@/hooks/useFeaturedHomeProducts";
 
 const FeaturedProducts = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const sectionRef = useRef<HTMLElement>(null);
   const formatPrice = useFormatPrice();
-  const { data: products, isLoading } = useProducts({ featured: true, sortBy: "newest", limit: 4 });
+  const { data: featuredRows, isLoading: featuredLoading } = useFeaturedHomeProducts({ visibleOnly: true });
+  const { data: fallbackProducts, isLoading: fallbackLoading } = useProducts({ featured: true, sortBy: "newest", limit: 4 });
+  const isEn = i18n.language?.startsWith("en");
+  const useAdminList = (featuredRows?.length ?? 0) > 0;
+  const isLoading = useAdminList ? featuredLoading : fallbackLoading;
+
+  const displayProducts = useAdminList
+    ? (featuredRows ?? []).slice(0, 8).map(r => ({
+        ...r.product,
+        name: (isEn ? r.custom_title_en : r.custom_title_fr) || r.product?.name,
+        price: r.custom_price ?? r.product?.price,
+      }))
+    : (fallbackProducts || []);
   
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -22,8 +35,6 @@ const FeaturedProducts = () => {
   
   const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
   const y = useTransform(scrollYProgress, [0, 0.3], [80, 0]);
-
-  const displayProducts = products || [];
 
   if (!isLoading && displayProducts.length === 0) return null;
   
