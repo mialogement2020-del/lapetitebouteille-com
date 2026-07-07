@@ -1804,6 +1804,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_config: {
+        Row: {
+          ambassador_percent: number
+          created_at: string
+          global_markup_percent: number
+          id: string
+          is_active: boolean
+          platform_percent: number
+          points_tiers: Json
+          updated_at: string
+        }
+        Insert: {
+          ambassador_percent?: number
+          created_at?: string
+          global_markup_percent?: number
+          id?: string
+          is_active?: boolean
+          platform_percent?: number
+          points_tiers?: Json
+          updated_at?: string
+        }
+        Update: {
+          ambassador_percent?: number
+          created_at?: string
+          global_markup_percent?: number
+          id?: string
+          is_active?: boolean
+          platform_percent?: number
+          points_tiers?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_affinities: {
         Row: {
           co_count: number
@@ -1897,7 +1930,9 @@ export type Database = {
       products: {
         Row: {
           alcohol_percentage: number | null
+          available_as_case: boolean
           average_rating: number | null
+          case_price: number | null
           category_id: string | null
           created_at: string | null
           description: string | null
@@ -1912,11 +1947,13 @@ export type Database = {
           is_active: boolean | null
           is_featured: boolean | null
           low_stock_threshold: number | null
+          markup_percent_override: number | null
           moderation_status: Database["public"]["Enums"]["product_moderation_status"]
           name: string
           origin_country: string | null
           original_price: number | null
           price: number
+          purchase_price: number | null
           region: string | null
           review_count: number | null
           serving_temperature: string | null
@@ -1925,6 +1962,7 @@ export type Database = {
           slug: string
           stock_quantity: number | null
           tasting_notes: string | null
+          units_per_case: number | null
           updated_at: string | null
           vendor_id: string | null
           vintage_year: number | null
@@ -1932,7 +1970,9 @@ export type Database = {
         }
         Insert: {
           alcohol_percentage?: number | null
+          available_as_case?: boolean
           average_rating?: number | null
+          case_price?: number | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -1947,11 +1987,13 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           low_stock_threshold?: number | null
+          markup_percent_override?: number | null
           moderation_status?: Database["public"]["Enums"]["product_moderation_status"]
           name: string
           origin_country?: string | null
           original_price?: number | null
           price: number
+          purchase_price?: number | null
           region?: string | null
           review_count?: number | null
           serving_temperature?: string | null
@@ -1960,6 +2002,7 @@ export type Database = {
           slug: string
           stock_quantity?: number | null
           tasting_notes?: string | null
+          units_per_case?: number | null
           updated_at?: string | null
           vendor_id?: string | null
           vintage_year?: number | null
@@ -1967,7 +2010,9 @@ export type Database = {
         }
         Update: {
           alcohol_percentage?: number | null
+          available_as_case?: boolean
           average_rating?: number | null
+          case_price?: number | null
           category_id?: string | null
           created_at?: string | null
           description?: string | null
@@ -1982,11 +2027,13 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           low_stock_threshold?: number | null
+          markup_percent_override?: number | null
           moderation_status?: Database["public"]["Enums"]["product_moderation_status"]
           name?: string
           origin_country?: string | null
           original_price?: number | null
           price?: number
+          purchase_price?: number | null
           region?: string | null
           review_count?: number | null
           serving_temperature?: string | null
@@ -1995,6 +2042,7 @@ export type Database = {
           slug?: string
           stock_quantity?: number | null
           tasting_notes?: string | null
+          units_per_case?: number | null
           updated_at?: string | null
           vendor_id?: string | null
           vintage_year?: number | null
