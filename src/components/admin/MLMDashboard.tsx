@@ -47,7 +47,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { TwoFAVerifyDialog } from "./TwoFAVerifyDialog";
  
@@ -104,6 +105,8 @@ import { TwoFAVerifyDialog } from "./TwoFAVerifyDialog";
  };
  
 export function MLMDashboard() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "en" ? enUS : fr;
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [rankFilter, setRankFilter] = useState<string>("all");
@@ -122,8 +125,8 @@ export function MLMDashboard() {
     operationName,
     operationDescription,
   } = useSensitiveOperation({
-    operationName: "Validation retrait",
-    description: "L'approbation ou le rejet d'un retrait nécessite une vérification 2FA",
+    operationName: t("mlmDashboard.opValidateWithdrawal"),
+    description: t("mlmDashboard.opValidateWithdrawalDesc"),
   });
  
    // Fetch ambassadors with their stats
@@ -276,14 +279,14 @@ export function MLMDashboard() {
       try {
         await processWithdrawal.mutateAsync({ id: withdrawal.id, action: "approve" });
         toast({
-          title: "Retrait approuvé",
-          description: `Le retrait de ${withdrawal.amount.toLocaleString()} FCFA a été approuvé.`,
+          title: t("mlmDashboard.toastApproved"),
+          description: t("mlmDashboard.toastApprovedDesc", { amount: withdrawal.amount.toLocaleString() }),
         });
         setSelectedWithdrawal(null);
       } catch (error) {
         toast({
-          title: "Erreur",
-          description: "Impossible de traiter le retrait",
+          title: t("mlmDashboard.toastError"),
+          description: t("mlmDashboard.toastProcessError"),
           variant: "destructive",
         });
       } finally {
@@ -295,8 +298,8 @@ export function MLMDashboard() {
   const handleRejectWithdrawal = async () => {
     if (!selectedWithdrawal || !rejectionReason.trim()) {
       toast({
-        title: "Raison requise",
-        description: "Veuillez indiquer la raison du rejet",
+        title: t("mlmDashboard.toastReasonRequired"),
+        description: t("mlmDashboard.toastReasonRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -311,15 +314,15 @@ export function MLMDashboard() {
           reason: rejectionReason 
         });
         toast({
-          title: "Retrait rejeté",
-          description: "La demande de retrait a été rejetée.",
+          title: t("mlmDashboard.toastRejected"),
+          description: t("mlmDashboard.toastRejectedDesc"),
         });
         setSelectedWithdrawal(null);
         setRejectionReason("");
       } catch (error) {
         toast({
-          title: "Erreur",
-          description: "Impossible de rejeter le retrait",
+          title: t("mlmDashboard.toastError"),
+          description: t("mlmDashboard.toastRejectError"),
           variant: "destructive",
         });
       } finally {
@@ -334,49 +337,49 @@ export function MLMDashboard() {
        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
          <Card className="bg-noir/50 border-gold/20">
            <CardHeader className="flex flex-row items-center justify-between pb-2">
-             <CardTitle className="text-sm font-medium text-cream/70">Ambassadeurs</CardTitle>
+             <CardTitle className="text-sm font-medium text-cream/70">{t("mlmDashboard.kpiAmbassadors")}</CardTitle>
              <Users className="h-4 w-4 text-primary" />
            </CardHeader>
            <CardContent>
              <div className="text-2xl font-bold text-cream">{stats.totalAmbassadors}</div>
-             <p className="text-xs text-cream/50">inscrits au programme</p>
+             <p className="text-xs text-cream/50">{t("mlmDashboard.kpiAmbassadorsSub")}</p>
            </CardContent>
          </Card>
  
          <Card className="bg-noir/50 border-gold/20">
            <CardHeader className="flex flex-row items-center justify-between pb-2">
-             <CardTitle className="text-sm font-medium text-cream/70">CA Généré</CardTitle>
+             <CardTitle className="text-sm font-medium text-cream/70">{t("mlmDashboard.kpiRevenue")}</CardTitle>
              <TrendingUp className="h-4 w-4 text-success" />
            </CardHeader>
            <CardContent>
              <div className="text-2xl font-bold text-cream">
                {stats.totalRevenue.toLocaleString()} <span className="text-sm">FCFA</span>
              </div>
-             <p className="text-xs text-cream/50">par le réseau MLM</p>
+             <p className="text-xs text-cream/50">{t("mlmDashboard.kpiRevenueSub")}</p>
            </CardContent>
          </Card>
  
          <Card className="bg-noir/50 border-gold/20">
            <CardHeader className="flex flex-row items-center justify-between pb-2">
-             <CardTitle className="text-sm font-medium text-cream/70">Commissions</CardTitle>
+             <CardTitle className="text-sm font-medium text-cream/70">{t("mlmDashboard.kpiCommissions")}</CardTitle>
              <Wallet className="h-4 w-4 text-info" />
            </CardHeader>
            <CardContent>
              <div className="text-2xl font-bold text-cream">
                {stats.totalCommissions.toLocaleString()} <span className="text-sm">FCFA</span>
              </div>
-             <p className="text-xs text-cream/50">versées aux ambassadeurs</p>
+             <p className="text-xs text-cream/50">{t("mlmDashboard.kpiCommissionsSub")}</p>
            </CardContent>
          </Card>
  
          <Card className="bg-noir/50 border-gold/20">
            <CardHeader className="flex flex-row items-center justify-between pb-2">
-             <CardTitle className="text-sm font-medium text-cream/70">Retraits en attente</CardTitle>
+             <CardTitle className="text-sm font-medium text-cream/70">{t("mlmDashboard.kpiPendingWithdrawals")}</CardTitle>
              <Crown className="h-4 w-4 text-warning" />
            </CardHeader>
            <CardContent>
              <div className="text-2xl font-bold text-cream">{stats.pendingWithdrawals}</div>
-             <p className="text-xs text-cream/50">à traiter</p>
+             <p className="text-xs text-cream/50">{t("mlmDashboard.kpiPendingWithdrawalsSub")}</p>
            </CardContent>
          </Card>
        </div>
@@ -390,7 +393,7 @@ export function MLMDashboard() {
          >
            <h3 className="font-semibold text-warning mb-3 flex items-center gap-2">
              <Wallet className="h-5 w-5" />
-             Demandes de retrait en attente ({withdrawals.filter(w => w.status === "pending").length})
+             {t("mlmDashboard.pendingTitle", { count: withdrawals.filter(w => w.status === "pending").length })}
            </h3>
            <div className="space-y-2">
              {withdrawals.filter(w => w.status === "pending").map(withdrawal => (
@@ -403,10 +406,10 @@ export function MLMDashboard() {
                      {withdrawal.profile?.first_name} {withdrawal.profile?.last_name}
                    </p>
                    <p className="text-sm text-cream/60">
-                     {withdrawal.amount.toLocaleString()} FCFA via {withdrawal.payment_method === "mtn_money" ? "MTN Money" : "Orange Money"}
+                     {withdrawal.amount.toLocaleString()} FCFA via {withdrawal.payment_method === "mtn_money" ? t("mlmDashboard.paymentMtn") : t("mlmDashboard.paymentOrange")}
                    </p>
                    <p className="text-xs text-cream/40">
-                     {format(new Date(withdrawal.created_at), "dd MMM yyyy à HH:mm", { locale: fr })}
+                     {format(new Date(withdrawal.created_at), "dd MMM yyyy à HH:mm", { locale: dateLocale })}
                    </p>
                  </div>
                  <div className="flex gap-2">
@@ -440,13 +443,13 @@ export function MLMDashboard() {
          <div className="flex items-center justify-between mb-6">
            <h3 className="text-lg font-semibold text-cream flex items-center gap-2">
              <Users className="h-5 w-5 text-primary" />
-             Liste des Ambassadeurs
+             {t("mlmDashboard.listTitle")}
            </h3>
            <div className="flex items-center gap-3">
              <div className="relative">
                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
                <Input
-                 placeholder="Rechercher..."
+                 placeholder={t("mlmDashboard.searchPlaceholder")}
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
                  className="pl-10 w-64 bg-cream/5 border-gold/30"
@@ -455,15 +458,15 @@ export function MLMDashboard() {
              <Select value={rankFilter} onValueChange={setRankFilter}>
                <SelectTrigger className="w-40 bg-cream/5 border-gold/30">
                  <Filter className="h-4 w-4 mr-2" />
-                 <SelectValue placeholder="Rang" />
+                 <SelectValue placeholder={t("mlmDashboard.rank")} />
                </SelectTrigger>
                <SelectContent>
-                 <SelectItem value="all">Tous les rangs</SelectItem>
-                 <SelectItem value="bronze">🥉 Bronze</SelectItem>
-                 <SelectItem value="silver">🥈 Argent</SelectItem>
-                 <SelectItem value="gold">🥇 Or</SelectItem>
-                 <SelectItem value="diamond">💎 Diamant</SelectItem>
-                 <SelectItem value="elite">👑 Élite</SelectItem>
+                 <SelectItem value="all">{t("mlmDashboard.allRanks")}</SelectItem>
+                 <SelectItem value="bronze">🥉 {t("mlmDashboard.rankBronze")}</SelectItem>
+                 <SelectItem value="silver">🥈 {t("mlmDashboard.rankSilver")}</SelectItem>
+                 <SelectItem value="gold">🥇 {t("mlmDashboard.rankGold")}</SelectItem>
+                 <SelectItem value="diamond">💎 {t("mlmDashboard.rankDiamond")}</SelectItem>
+                 <SelectItem value="elite">👑 {t("mlmDashboard.rankElite")}</SelectItem>
                </SelectContent>
              </Select>
              <Button
@@ -483,19 +486,19 @@ export function MLMDashboard() {
            </div>
          ) : filteredAmbassadors.length === 0 ? (
            <div className="text-center py-12 text-cream/60">
-             Aucun ambassadeur trouvé
+             {t("mlmDashboard.noAmbassadors")}
            </div>
          ) : (
            <Table>
              <TableHeader>
                <TableRow className="border-gold/20 hover:bg-transparent">
-                 <TableHead className="text-cream/70">Ambassadeur</TableHead>
-                 <TableHead className="text-cream/70">Code</TableHead>
-                 <TableHead className="text-cream/70">Rang</TableHead>
-                 <TableHead className="text-cream/70 text-right">Filleuls</TableHead>
-                 <TableHead className="text-cream/70 text-right">CA Généré</TableHead>
-                 <TableHead className="text-cream/70 text-right">Gains</TableHead>
-                 <TableHead className="text-cream/70 text-right">Solde</TableHead>
+                 <TableHead className="text-cream/70">{t("mlmDashboard.colAmbassador")}</TableHead>
+                 <TableHead className="text-cream/70">{t("mlmDashboard.colCode")}</TableHead>
+                 <TableHead className="text-cream/70">{t("mlmDashboard.colRank")}</TableHead>
+                 <TableHead className="text-cream/70 text-right">{t("mlmDashboard.colReferrals")}</TableHead>
+                 <TableHead className="text-cream/70 text-right">{t("mlmDashboard.colRevenueGenerated")}</TableHead>
+                 <TableHead className="text-cream/70 text-right">{t("mlmDashboard.colEarnings")}</TableHead>
+                 <TableHead className="text-cream/70 text-right">{t("mlmDashboard.colBalance")}</TableHead>
                </TableRow>
              </TableHeader>
              <TableBody>
@@ -538,7 +541,7 @@ export function MLMDashboard() {
                      </span>
                      {ambassador.pending_balance > 0 && (
                        <p className="text-xs text-warning">
-                         +{ambassador.pending_balance.toLocaleString()} en attente
+                         +{ambassador.pending_balance.toLocaleString()} {t("mlmDashboard.pending")}
                        </p>
                      )}
                    </TableCell>
@@ -553,16 +556,16 @@ export function MLMDashboard() {
        <Dialog open={!!selectedWithdrawal} onOpenChange={() => setSelectedWithdrawal(null)}>
          <DialogContent className="bg-noir border-gold/30">
            <DialogHeader>
-             <DialogTitle className="text-cream">Rejeter la demande de retrait</DialogTitle>
+             <DialogTitle className="text-cream">{t("mlmDashboard.rejectTitle")}</DialogTitle>
              <DialogDescription className="text-cream/60">
-               Indiquez la raison du rejet pour{" "}
+               {t("mlmDashboard.rejectDesc")}{" "}
                <strong>{selectedWithdrawal?.profile?.first_name} {selectedWithdrawal?.profile?.last_name}</strong>
                {" "}({selectedWithdrawal?.amount.toLocaleString()} FCFA)
              </DialogDescription>
            </DialogHeader>
            <div className="space-y-4">
              <Textarea
-               placeholder="Raison du rejet..."
+               placeholder={t("mlmDashboard.rejectReasonPlaceholder")}
                value={rejectionReason}
                onChange={(e) => setRejectionReason(e.target.value)}
                className="bg-cream/5 border-gold/30 text-cream"
@@ -575,7 +578,7 @@ export function MLMDashboard() {
                onClick={() => setSelectedWithdrawal(null)}
                className="border-gold/30"
              >
-               Annuler
+               {t("mlmDashboard.cancel")}
              </Button>
              <Button
                variant="destructive"
@@ -585,7 +588,7 @@ export function MLMDashboard() {
                {isProcessing ? (
                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                ) : null}
-                Confirmer le rejet
+                {t("mlmDashboard.confirmReject")}
               </Button>
             </DialogFooter>
           </DialogContent>
