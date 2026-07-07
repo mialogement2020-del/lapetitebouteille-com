@@ -921,7 +921,7 @@ export function ProductFormDialog({
           <Button
             className="flex-1 bg-gradient-gold text-noir font-semibold hover:opacity-90"
             onClick={handleSubmit}
-            disabled={!formData.name || !formData.price || isSaving}
+            disabled={hasErrors || isSaving}
           >
             {isSaving ? (
               <>
