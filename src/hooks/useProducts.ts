@@ -27,10 +27,19 @@ export interface Product {
   average_rating: number;
   review_count: number;
   created_at: string;
+  // Pricing/points helpers (admin-managed, exposed for ambassador estimates)
+  purchase_price?: number | null;
+  markup_percent_override?: number | null;
+  points_override?: number | null;
+  points_tiers_override?: { max: number | null; points: number }[] | null;
+  available_as_case?: boolean | null;
+  units_per_case?: number | null;
+  case_price?: number | null;
   category?: {
     id: string;
     name: string;
     slug: string;
+    points_tiers_override?: { max: number | null; points: number }[] | null;
   };
 }
 

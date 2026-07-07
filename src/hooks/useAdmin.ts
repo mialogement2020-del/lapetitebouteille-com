@@ -169,6 +169,8 @@ export interface ProductFormData {
   // Pricing helpers (admin only)
   purchase_price?: number | null;
   markup_percent_override?: number | null;
+  points_override?: number | null;
+  points_tiers_override?: { max: number | null; points: number }[] | null;
   // Caisse / carton
   available_as_case?: boolean;
   units_per_case?: number | null;
