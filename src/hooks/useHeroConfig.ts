@@ -38,7 +38,7 @@ export function useHeroConfig() {
         .eq("id", 1)
         .maybeSingle();
       if (error) throw error;
-      return data as HeroConfigRow | null;
+      return data as unknown as HeroConfigRow | null;
     },
   });
 }
@@ -48,7 +48,7 @@ export function useSaveHeroDraft() {
   return useMutation({
     mutationFn: async (draft: Partial<HeroData>) => {
       const { error } = await supabase.from("hero_config")
-        .update({ draft, updated_at: new Date().toISOString() })
+        .update({ draft: draft as any, updated_at: new Date().toISOString() })
         .eq("id", 1);
       if (error) throw error;
     },
@@ -61,7 +61,7 @@ export function usePublishHero() {
   return useMutation({
     mutationFn: async (data: HeroData) => {
       const { error } = await supabase.from("hero_config")
-        .update({ published: data, draft: {}, updated_at: new Date().toISOString() })
+        .update({ published: data as any, draft: {} as any, updated_at: new Date().toISOString() })
         .eq("id", 1);
       if (error) throw error;
     },
