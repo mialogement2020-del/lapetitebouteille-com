@@ -64,6 +64,15 @@ export interface AdminProduct {
   category?: { id: string; name: string } | null;
 }
 
+// Extra pricing/case fields available on admin products
+export interface AdminProductExtra {
+  purchase_price: number | null;
+  markup_percent_override: number | null;
+  available_as_case: boolean | null;
+  units_per_case: number | null;
+  case_price: number | null;
+}
+
 export interface AdminCategory {
   id: string;
   name: string;
@@ -157,6 +166,13 @@ export interface ProductFormData {
   tasting_notes?: string;
   food_pairing?: string;
   serving_temperature?: string;
+  // Pricing helpers (admin only)
+  purchase_price?: number | null;
+  markup_percent_override?: number | null;
+  // Caisse / carton
+  available_as_case?: boolean;
+  units_per_case?: number | null;
+  case_price?: number | null;
 }
 
 export function useAdmin() {
@@ -554,6 +570,11 @@ export function useAdmin() {
           tasting_notes: data.tasting_notes || null,
           food_pairing: data.food_pairing || null,
           serving_temperature: data.serving_temperature || null,
+          purchase_price: data.purchase_price ?? null,
+          markup_percent_override: data.markup_percent_override ?? null,
+          available_as_case: data.available_as_case ?? false,
+          units_per_case: data.units_per_case ?? null,
+          case_price: data.case_price ?? null,
         }])
         .select("id")
         .single();
@@ -602,6 +623,11 @@ export function useAdmin() {
           tasting_notes: data.tasting_notes,
           food_pairing: data.food_pairing,
           serving_temperature: data.serving_temperature,
+          purchase_price: data.purchase_price,
+          markup_percent_override: data.markup_percent_override,
+          available_as_case: data.available_as_case,
+          units_per_case: data.units_per_case,
+          case_price: data.case_price,
         })
         .eq("id", id);
 

@@ -26,7 +26,8 @@ import {
   Activity,
   Workflow,
   Database as DatabaseIcon,
-  Shield as ShieldIcon
+  Shield as ShieldIcon,
+  Calculator
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -87,6 +88,7 @@ import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
 import { ProductImageManager } from "@/components/admin/ProductImageManager";
 import { QuotesTable } from "@/components/admin/QuotesTable";
 import { WholesaleSettings } from "@/components/admin/WholesaleSettings";
+import { PricingSettings } from "@/components/admin/PricingSettings";
 import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -178,6 +180,7 @@ const Admin = () => {
       { id: 'retention', label: 'Retention', icon: Users },
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
+      { id: 'pricing', label: 'Marge & Points', icon: Calculator },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
       { id: 'home-categories', label: 'Catégories Accueil', icon: LayoutDashboard },
       { id: 'home-hero', label: 'Héro Accueil', icon: ImageIcon },
@@ -804,6 +807,10 @@ const Admin = () => {
 
               <TabsContent value="audit" className="space-y-6">
                 <AuditLogsTable />
+              </TabsContent>
+
+              <TabsContent value="pricing" className="space-y-6">
+                <PricingSettings />
               </TabsContent>
 
               <TabsContent value="quotes" className="space-y-6">
