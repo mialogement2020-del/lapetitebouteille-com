@@ -3,17 +3,11 @@
  import { ArrowRight } from "lucide-react";
  import { useRef } from "react";
  import { useTranslation } from "react-i18next";
- 
-const categoriesData = [
-  { id: "vins", key: "vins", image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=vins" },
-  { id: "champagnes", key: "champagnes", image: "https://images.unsplash.com/photo-1578911373434-0cb395d2cbfb?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=champagnes" },
-  { id: "spiritueux", key: "spiritueux", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=spiritueux" },
-  { id: "vins-mousseux", key: "vinsMousseux", image: "https://images.unsplash.com/photo-1549834125-82d3c48159a3?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=vins-mousseux" },
-  { id: "coffrets", key: "coffrets", image: "https://images.unsplash.com/photo-1608885898957-a559228e8749?auto=format&fit=crop&q=72&w=520", href: "/catalogue?category=coffrets" },
-];
+ import { useHomeCategories } from "@/hooks/useHomeCategories";
  
  const CategoriesSection = () => {
-   const { t } = useTranslation();
+   const { t, i18n } = useTranslation();
+   const { data: categories } = useHomeCategories({ visibleOnly: true });
    const sectionRef = useRef<HTMLElement>(null);
    
    const { scrollYProgress } = useScroll({
@@ -66,9 +60,10 @@ const categoriesData = [
             className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-6"
            style={{ scale, opacity }}
          >
-            {categoriesData.map((category, index) => {
-              const title = t(`categoriesSection.${category.key}`);
-              const description = t(`categoriesSection.${category.key}Desc`);
+            {(categories ?? []).map((category, index) => {
+              const isEn = i18n.language?.startsWith("en");
+              const title = (isEn ? category.title_en : category.title_fr) || category.title_fr;
+              const description = (isEn ? category.description_en : category.description_fr) || category.description_fr;
               return (
              <motion.div
                key={category.id}
@@ -88,7 +83,7 @@ const categoriesData = [
                >
                  {/* Image */}
                  <img
-                   src={category.image}
+                   src={category.image_url}
                     alt={title}
                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"

@@ -77,6 +77,7 @@ import { EscrowsManager } from "@/components/admin/EscrowsManager";
 import { FinanceReconciliationManager } from "@/components/admin/FinanceReconciliationManager";
 import { ProductModerationManager } from "@/components/admin/ProductModerationManager";
 import { BusinessAnalyticsDashboard } from "@/components/admin/BusinessAnalyticsDashboard";
+import { HomeCategoriesManager } from "@/components/admin/HomeCategoriesManager";
 import { ShieldAlert, Sparkles, LineChart } from "lucide-react";
 import { TwoFASettings } from "@/components/admin/TwoFASettings";
 import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
@@ -176,6 +177,7 @@ const Admin = () => {
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
+      { id: 'home-categories', label: 'Catégories Accueil', icon: LayoutDashboard },
       { id: 'images', label: 'Images', icon: ImageIcon },
       { id: 'promo-codes', label: 'Codes Promo', icon: Ticket },
       { id: 'quotes', label: 'Devis Gros', icon: FileText },
@@ -704,6 +706,12 @@ const Admin = () => {
                     onDeleteCategory={handleDeleteCategory}
                     onRefresh={() => refetchCategories()}
                   />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="home-categories" className="space-y-6">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <HomeCategoriesManager />
                 </div>
               </TabsContent>
 
