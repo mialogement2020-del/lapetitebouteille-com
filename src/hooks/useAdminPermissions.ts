@@ -35,6 +35,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   performance: ['full_access', 'orders', 'products'], // Visible if any of these
   orders: ['orders'],
   products: ['products'],
+  pricing: ['products'],
   categories: ['categories'],
   'promo-codes': ['promo_codes'],
   reviews: ['reviews'],
