@@ -74,7 +74,7 @@ export const useProducts = (filters: ProductFilters = {}) => {
         .from("products")
         .select(`
           *,
-          category:categories(id, name, slug)
+          category:categories(id, name, slug, points_tiers_override)
         `)
         .eq("is_active", true);
 
@@ -174,7 +174,7 @@ export const useProduct = (slug: string) => {
         .from("products")
         .select(`
           *,
-          category:categories(id, name, slug)
+          category:categories(id, name, slug, points_tiers_override)
         `)
         .eq("slug", slug)
         .eq("is_active", true)
@@ -213,7 +213,7 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
         .from("products")
         .select(`
           *,
-          category:categories(id, name, slug)
+          category:categories(id, name, slug, points_tiers_override)
         `)
         .eq("category_id", categoryId)
         .eq("is_active", true)
