@@ -74,6 +74,7 @@ import { WholesaleInvoicesManager } from "@/components/admin/WholesaleInvoicesMa
 import { EmbeddingsManager } from "@/components/admin/EmbeddingsManager";
 import { FraudManager } from "@/components/admin/FraudManager";
 import { EscrowsManager } from "@/components/admin/EscrowsManager";
+import { FinanceReconciliationManager } from "@/components/admin/FinanceReconciliationManager";
 import { ProductModerationManager } from "@/components/admin/ProductModerationManager";
 import { BusinessAnalyticsDashboard } from "@/components/admin/BusinessAnalyticsDashboard";
 import { ShieldAlert, Sparkles, LineChart } from "lucide-react";
@@ -182,6 +183,7 @@ const Admin = () => {
       { id: 'wholesale-invoices', label: 'Factures B2B', icon: FileText },
       { id: 'fraud', label: 'Anti-fraude', icon: ShieldAlert },
       { id: 'escrows', label: 'Escrows', icon: ShieldAlert },
+      { id: 'reconciliation', label: 'Rapprochement', icon: ShieldAlert },
       { id: 'moderation', label: 'Modération IA', icon: Sparkles },
       { id: 'analytics', label: 'Analytics', icon: LineChart },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
