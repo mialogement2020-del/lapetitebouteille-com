@@ -3240,19 +3240,31 @@ export type Database = {
       wholesale_tier_config: {
         Row: {
           card_tiers: string[]
+          discount_overrides: Json
+          enabled: boolean
           id: string
+          labels: Json
+          tva_rate: number
           updated_at: string | null
           visible_tiers: string[]
         }
         Insert: {
           card_tiers?: string[]
+          discount_overrides?: Json
+          enabled?: boolean
           id?: string
+          labels?: Json
+          tva_rate?: number
           updated_at?: string | null
           visible_tiers?: string[]
         }
         Update: {
           card_tiers?: string[]
+          discount_overrides?: Json
+          enabled?: boolean
           id?: string
+          labels?: Json
+          tva_rate?: number
           updated_at?: string | null
           visible_tiers?: string[]
         }
