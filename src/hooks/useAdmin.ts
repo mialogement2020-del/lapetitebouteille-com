@@ -129,6 +129,7 @@ export interface CategoryFormData {
   is_active?: boolean;
   low_stock_threshold?: number | null;
   parent_id?: string | null;
+  points_tiers_override?: { max: number | null; points: number }[] | null;
 }
 
 export interface PromoCodeFormData {
