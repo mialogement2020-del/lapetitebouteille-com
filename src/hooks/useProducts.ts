@@ -71,6 +71,10 @@ export const useProducts = (filters: ProductFilters = {}) => {
 
       // Filter by category (including subcategories)
       if (filters.categorySlug) {
+        // Virtual "Caisse" category: filter by available_as_case flag
+        if (filters.categorySlug === "caisse") {
+          query = query.eq("available_as_case", true);
+        } else {
         const { data: category } = await supabase
           .from("categories")
           .select("id")
@@ -86,6 +90,7 @@ export const useProducts = (filters: ProductFilters = {}) => {
           
           const categoryIds = [category.id, ...(subcategories?.map(s => s.id) || [])];
           query = query.in("category_id", categoryIds);
+        }
         }
       }
 
