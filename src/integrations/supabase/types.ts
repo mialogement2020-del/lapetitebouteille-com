@@ -441,6 +441,7 @@ export type Database = {
           low_stock_threshold: number | null
           name: string
           parent_id: string | null
+          points_tiers_override: Json | null
           slug: string
           updated_at: string | null
         }
@@ -454,6 +455,7 @@ export type Database = {
           low_stock_threshold?: number | null
           name: string
           parent_id?: string | null
+          points_tiers_override?: Json | null
           slug: string
           updated_at?: string | null
         }
@@ -467,6 +469,7 @@ export type Database = {
           low_stock_threshold?: number | null
           name?: string
           parent_id?: string | null
+          points_tiers_override?: Json | null
           slug?: string
           updated_at?: string | null
         }
@@ -1952,6 +1955,8 @@ export type Database = {
           name: string
           origin_country: string | null
           original_price: number | null
+          points_override: number | null
+          points_tiers_override: Json | null
           price: number
           purchase_price: number | null
           region: string | null
@@ -1992,6 +1997,8 @@ export type Database = {
           name: string
           origin_country?: string | null
           original_price?: number | null
+          points_override?: number | null
+          points_tiers_override?: Json | null
           price: number
           purchase_price?: number | null
           region?: string | null
@@ -2032,6 +2039,8 @@ export type Database = {
           name?: string
           origin_country?: string | null
           original_price?: number | null
+          points_override?: number | null
+          points_tiers_override?: Json | null
           price?: number
           purchase_price?: number | null
           region?: string | null
