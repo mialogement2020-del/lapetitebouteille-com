@@ -2953,5 +2953,32 @@
     "toastGalleryAdded": "{{count}} image(s) added to the gallery",
     "toastUploadError": "Upload error",
     "toastUploadFailed": "Failed"
+  },
+  "reputationDashboard": {
+    "title": "Reputation Graph",
+    "subtitle": "Unified Trust Score · customers · vendors · ambassadors · wholesalers",
+    "recomputeAll": "Recompute all",
+    "kpiSubjects": "Subjects",
+    "kpiAvgScore": "Average score",
+    "filterAll": "All",
+    "tabRanking": "Ranking",
+    "tabSignals": "Recent signals",
+    "topScores": "Top scores",
+    "signalsLog": "Signals log",
+    "colSubject": "Subject",
+    "colType": "Type",
+    "colScore": "Score",
+    "colTier": "Tier",
+    "colPosNeg": "+ / −",
+    "colRecomputed": "Recomputed",
+    "colWhen": "When",
+    "colSignal": "Signal",
+    "colWeight": "Weight",
+    "colSource": "Source",
+    "noScores": "No scores yet — signals accumulate with activity (delivered orders, reviews, paid commissions). Click \"Recompute all\" after a few transactions.",
+    "noSignals": "No signals.",
+    "toastRecomputeDone": "Recompute done",
+    "toastRecomputeDesc": "{{count}} subjects recomputed.",
+    "toastError": "Error"
   }
 }
