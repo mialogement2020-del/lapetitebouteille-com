@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,15 +15,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import { RefreshCw, Send, Plus, Users, TrendingUp, Loader2 } from "lucide-react";
 
-const SEGMENTS: { id: string; label: string; color: string }[] = [
-  { id: "champions", label: "Champions", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40" },
-  { id: "loyal", label: "Loyaux", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40" },
-  { id: "promising", label: "Prometteurs", color: "bg-blue-500/20 text-blue-400 border-blue-500/40" },
-  { id: "new", label: "Nouveaux", color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/40" },
-  { id: "regular", label: "Réguliers", color: "bg-slate-500/20 text-slate-300 border-slate-500/40" },
-  { id: "at_risk", label: "À risque", color: "bg-orange-500/20 text-orange-400 border-orange-500/40" },
-  { id: "hibernating", label: "Hibernation", color: "bg-purple-500/20 text-purple-400 border-purple-500/40" },
-  { id: "lost", label: "Perdus", color: "bg-red-500/20 text-red-400 border-red-500/40" },
+const SEGMENT_DEFS: { id: string; labelKey: string; color: string }[] = [
+  { id: "champions", labelKey: "segChampions", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40" },
+  { id: "loyal", labelKey: "segLoyal", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40" },
+  { id: "promising", labelKey: "segPromising", color: "bg-blue-500/20 text-blue-400 border-blue-500/40" },
+  { id: "new", labelKey: "segNew", color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/40" },
+  { id: "regular", labelKey: "segRegular", color: "bg-slate-500/20 text-slate-300 border-slate-500/40" },
+  { id: "at_risk", labelKey: "segAtRisk", color: "bg-orange-500/20 text-orange-400 border-orange-500/40" },
+  { id: "hibernating", labelKey: "segHibernating", color: "bg-purple-500/20 text-purple-400 border-purple-500/40" },
+  { id: "lost", labelKey: "segLost", color: "bg-red-500/20 text-red-400 border-red-500/40" },
 ];
 
 interface SegmentRow {
@@ -49,6 +50,8 @@ interface Campaign {
 }
 
 export function RetentionDashboard() {
+  const { t, i18n } = useTranslation();
+  const SEGMENTS = SEGMENT_DEFS.map((s) => ({ ...s, label: t(`retentionDashboard.${s.labelKey}`) }));
   const [segments, setSegments] = useState<SegmentRow[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,16 +98,16 @@ export function RetentionDashboard() {
     const { data, error } = await supabase.rpc("recompute_customer_segments");
     setRecomputing(false);
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: t("retentionDashboard.toastError"), description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Segments recalculés", description: `${data} clients segmentés` });
+    toast({ title: t("retentionDashboard.toastRecomputed"), description: t("retentionDashboard.toastRecomputedDesc", { count: data ?? 0 }) });
     fetchAll();
   };
 
   const saveCampaign = async () => {
     if (!editing?.name || !editing?.message || !editing?.target_segment) {
-      toast({ title: "Champs requis manquants", variant: "destructive" });
+      toast({ title: t("retentionDashboard.toastMissing"), variant: "destructive" });
       return;
     }
     const payload = {
@@ -122,10 +125,10 @@ export function RetentionDashboard() {
       ? await supabase.from("retention_campaigns").update(payload).eq("id", editing.id)
       : await supabase.from("retention_campaigns").insert(payload);
     if (res.error) {
-      toast({ title: "Erreur", description: res.error.message, variant: "destructive" });
+      toast({ title: t("retentionDashboard.toastError"), description: res.error.message, variant: "destructive" });
       return;
     }
-    toast({ title: editing.id ? "Campagne mise à jour" : "Campagne créée" });
+    toast({ title: editing.id ? t("retentionDashboard.toastUpdated") : t("retentionDashboard.toastCreated") });
     setDialogOpen(false);
     setEditing(null);
     fetchAll();
@@ -147,14 +150,14 @@ export function RetentionDashboard() {
       if (error) throw error;
       const recipients = users || [];
       if (recipients.length === 0) {
-        toast({ title: "Aucun destinataire dans ce segment" });
+        toast({ title: t("retentionDashboard.toastNoRecipients") });
         return;
       }
       // Insert notifications for each recipient
       const notifPayloads = recipients.map((u) => ({
         user_id: u.user_id,
         title: c.subject || c.name,
-        message: c.cta_url ? `${c.message}\n${c.cta_label || "En savoir plus"} : ${c.cta_url}` : c.message,
+        message: c.cta_url ? `${c.message}\n${c.cta_label || t("retentionDashboard.learnMore")} : ${c.cta_url}` : c.message,
         type: "campaign",
         reference_type: "campaign",
         reference_id: c.id,
@@ -171,10 +174,10 @@ export function RetentionDashboard() {
       await supabase.from("campaign_deliveries").insert(deliveries);
       await supabase.from("retention_campaigns").update({ last_run_at: new Date().toISOString() }).eq("id", c.id);
 
-      toast({ title: "Campagne envoyée", description: `${recipients.length} destinataires` });
+      toast({ title: t("retentionDashboard.toastSent"), description: t("retentionDashboard.toastSentDesc", { count: recipients.length }) });
       fetchAll();
     } catch (e: any) {
-      toast({ title: "Erreur d'envoi", description: e.message, variant: "destructive" });
+      toast({ title: t("retentionDashboard.toastSendError"), description: e.message, variant: "destructive" });
     } finally {
       setSending(null);
     }
@@ -187,18 +190,18 @@ export function RetentionDashboard() {
     return { totalCustomers, totalRevenue, atRisk };
   }, [segments]);
 
-  const fmt = new Intl.NumberFormat("fr-FR");
+  const fmt = new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR");
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-display text-cream">Fidélisation & Retention</h2>
-          <p className="text-cream/60 text-sm">Segmentation RFM et campagnes ciblées</p>
+          <h2 className="text-2xl font-display text-cream">{t("retentionDashboard.title")}</h2>
+          <p className="text-cream/60 text-sm">{t("retentionDashboard.subtitle")}</p>
         </div>
         <Button onClick={recompute} disabled={recomputing} variant="outline" className="border-gold/30">
           {recomputing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-          Recalculer les segments
+          {t("retentionDashboard.recompute")}
         </Button>
       </div>
 
@@ -208,7 +211,7 @@ export function RetentionDashboard() {
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-primary" />
               <div>
-                <p className="text-xs text-cream/60">Clients segmentés</p>
+                <p className="text-xs text-cream/60">{t("retentionDashboard.kpiCustomers")}</p>
                 <p className="text-2xl font-bold text-cream">{fmt.format(totals.totalCustomers)}</p>
               </div>
             </div>
@@ -219,7 +222,7 @@ export function RetentionDashboard() {
             <div className="flex items-center gap-3">
               <TrendingUp className="h-8 w-8 text-emerald-500" />
               <div>
-                <p className="text-xs text-cream/60">CA total segmenté</p>
+                <p className="text-xs text-cream/60">{t("retentionDashboard.kpiRevenue")}</p>
                 <p className="text-2xl font-bold text-cream">{fmt.format(Math.round(totals.totalRevenue))} FCFA</p>
               </div>
             </div>
@@ -230,7 +233,7 @@ export function RetentionDashboard() {
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-orange-500" />
               <div>
-                <p className="text-xs text-cream/60">À risque / perdus</p>
+                <p className="text-xs text-cream/60">{t("retentionDashboard.kpiAtRisk")}</p>
                 <p className="text-2xl font-bold text-cream">{fmt.format(totals.atRisk)}</p>
               </div>
             </div>
@@ -240,29 +243,29 @@ export function RetentionDashboard() {
 
       <Tabs defaultValue="segments">
         <TabsList className="bg-noir/50 border border-gold/20">
-          <TabsTrigger value="segments">Segments RFM</TabsTrigger>
-          <TabsTrigger value="campaigns">Campagnes</TabsTrigger>
+          <TabsTrigger value="segments">{t("retentionDashboard.tabSegments")}</TabsTrigger>
+          <TabsTrigger value="campaigns">{t("retentionDashboard.tabCampaigns")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="segments" className="mt-4">
           <Card className="bg-noir/50 border-gold/20">
             <CardHeader>
-              <CardTitle className="text-cream text-lg">Répartition par segment</CardTitle>
+              <CardTitle className="text-cream text-lg">{t("retentionDashboard.distribution")}</CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-cream/60">Chargement…</p>
+                <p className="text-cream/60">{t("retentionDashboard.loading")}</p>
               ) : segments.length === 0 ? (
-                <p className="text-cream/60">Aucun segment. Lance « Recalculer » pour générer.</p>
+                <p className="text-cream/60">{t("retentionDashboard.noSegments")}</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Segment</TableHead>
-                      <TableHead className="text-right">Clients</TableHead>
-                      <TableHead className="text-right">CA cumulé</TableHead>
-                      <TableHead className="text-right">Récence moy.</TableHead>
-                      <TableHead className="text-right">Fréquence moy.</TableHead>
+                      <TableHead>{t("retentionDashboard.colSegment")}</TableHead>
+                      <TableHead className="text-right">{t("retentionDashboard.colCustomers")}</TableHead>
+                      <TableHead className="text-right">{t("retentionDashboard.colRevenue")}</TableHead>
+                      <TableHead className="text-right">{t("retentionDashboard.colRecency")}</TableHead>
+                      <TableHead className="text-right">{t("retentionDashboard.colFrequency")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -276,7 +279,7 @@ export function RetentionDashboard() {
                           </TableCell>
                           <TableCell className="text-right text-cream">{fmt.format(row.count)}</TableCell>
                           <TableCell className="text-right text-cream">{fmt.format(Math.round(row.revenue))} FCFA</TableCell>
-                          <TableCell className="text-right text-cream/70">{row.avg_recency} j</TableCell>
+                          <TableCell className="text-right text-cream/70">{row.avg_recency} {t("retentionDashboard.days")}</TableCell>
                           <TableCell className="text-right text-cream/70">{row.avg_frequency}</TableCell>
                         </TableRow>
                       );
@@ -293,21 +296,21 @@ export function RetentionDashboard() {
             <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null); }}>
               <DialogTrigger asChild>
                 <Button onClick={() => setEditing({ channel: "notification", target_segment: "at_risk", is_active: true })} className="bg-primary text-noir">
-                  <Plus className="h-4 w-4 mr-2" /> Nouvelle campagne
+                  <Plus className="h-4 w-4 mr-2" /> {t("retentionDashboard.newCampaign")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-noir border-gold/30 max-w-lg">
                 <DialogHeader>
-                  <DialogTitle className="text-cream">{editing?.id ? "Modifier" : "Nouvelle"} campagne</DialogTitle>
+                  <DialogTitle className="text-cream">{editing?.id ? t("retentionDashboard.editCampaign") : t("retentionDashboard.createCampaign")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-cream/70">Nom</Label>
+                    <Label className="text-cream/70">{t("retentionDashboard.fieldName")}</Label>
                     <Input value={editing?.name || ""} onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-cream/70">Segment cible</Label>
+                      <Label className="text-cream/70">{t("retentionDashboard.fieldTargetSegment")}</Label>
                       <Select value={editing?.target_segment} onValueChange={(v) => setEditing({ ...editing, target_segment: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -316,43 +319,43 @@ export function RetentionDashboard() {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-cream/70">Canal</Label>
+                      <Label className="text-cream/70">{t("retentionDashboard.fieldChannel")}</Label>
                       <Select value={editing?.channel} onValueChange={(v) => setEditing({ ...editing, channel: v })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="notification">Notification in-app</SelectItem>
-                          <SelectItem value="email">Email</SelectItem>
-                          <SelectItem value="push">Push</SelectItem>
+                          <SelectItem value="notification">{t("retentionDashboard.channelNotification")}</SelectItem>
+                          <SelectItem value="email">{t("retentionDashboard.channelEmail")}</SelectItem>
+                          <SelectItem value="push">{t("retentionDashboard.channelPush")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div>
-                    <Label className="text-cream/70">Sujet / titre</Label>
+                    <Label className="text-cream/70">{t("retentionDashboard.fieldSubject")}</Label>
                     <Input value={editing?.subject || ""} onChange={(e) => setEditing({ ...editing, subject: e.target.value })} />
                   </div>
                   <div>
-                    <Label className="text-cream/70">Message</Label>
+                    <Label className="text-cream/70">{t("retentionDashboard.fieldMessage")}</Label>
                     <Textarea rows={4} value={editing?.message || ""} onChange={(e) => setEditing({ ...editing, message: e.target.value })} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-cream/70">CTA label</Label>
+                      <Label className="text-cream/70">{t("retentionDashboard.fieldCtaLabel")}</Label>
                       <Input value={editing?.cta_label || ""} onChange={(e) => setEditing({ ...editing, cta_label: e.target.value })} />
                     </div>
                     <div>
-                      <Label className="text-cream/70">CTA URL</Label>
+                      <Label className="text-cream/70">{t("retentionDashboard.fieldCtaUrl")}</Label>
                       <Input value={editing?.cta_url || ""} onChange={(e) => setEditing({ ...editing, cta_url: e.target.value })} />
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Switch checked={editing?.is_active ?? true} onCheckedChange={(v) => setEditing({ ...editing, is_active: v })} />
-                    <Label className="text-cream/70">Active</Label>
+                    <Label className="text-cream/70">{t("retentionDashboard.fieldActive")}</Label>
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
-                  <Button onClick={saveCampaign} className="bg-primary text-noir">Enregistrer</Button>
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>{t("retentionDashboard.cancel")}</Button>
+                  <Button onClick={saveCampaign} className="bg-primary text-noir">{t("retentionDashboard.save")}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -363,17 +366,17 @@ export function RetentionDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Segment</TableHead>
-                    <TableHead>Canal</TableHead>
-                    <TableHead>Dernier envoi</TableHead>
-                    <TableHead>Active</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("retentionDashboard.colName")}</TableHead>
+                    <TableHead>{t("retentionDashboard.colSegment")}</TableHead>
+                    <TableHead>{t("retentionDashboard.colChannel")}</TableHead>
+                    <TableHead>{t("retentionDashboard.colLastRun")}</TableHead>
+                    <TableHead>{t("retentionDashboard.colActive")}</TableHead>
+                    <TableHead className="text-right">{t("retentionDashboard.colActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {campaigns.length === 0 && (
-                    <TableRow><TableCell colSpan={6} className="text-center text-cream/60 py-6">Aucune campagne. Crée-en une pour ré-engager tes clients.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center text-cream/60 py-6">{t("retentionDashboard.noCampaigns")}</TableCell></TableRow>
                   )}
                   {campaigns.map((c) => {
                     const seg = SEGMENTS.find((s) => s.id === c.target_segment);
@@ -382,12 +385,12 @@ export function RetentionDashboard() {
                         <TableCell className="text-cream cursor-pointer" onClick={() => { setEditing(c); setDialogOpen(true); }}>{c.name}</TableCell>
                         <TableCell><Badge variant="outline" className={seg?.color}>{seg?.label || c.target_segment}</Badge></TableCell>
                         <TableCell className="text-cream/70">{c.channel}</TableCell>
-                        <TableCell className="text-cream/60 text-xs">{c.last_run_at ? new Date(c.last_run_at).toLocaleString("fr-FR") : "—"}</TableCell>
+                        <TableCell className="text-cream/60 text-xs">{c.last_run_at ? new Date(c.last_run_at).toLocaleString(i18n.language === "en" ? "en-US" : "fr-FR") : "—"}</TableCell>
                         <TableCell><Switch checked={c.is_active} onCheckedChange={() => toggleCampaign(c)} /></TableCell>
                         <TableCell className="text-right">
                           <Button size="sm" variant="outline" disabled={!c.is_active || sending === c.id} onClick={() => runCampaign(c)}>
                             {sending === c.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
-                            Envoyer
+                            {t("retentionDashboard.send")}
                           </Button>
                         </TableCell>
                       </TableRow>
