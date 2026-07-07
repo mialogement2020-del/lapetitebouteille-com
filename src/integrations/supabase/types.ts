@@ -899,6 +899,51 @@ export type Database = {
         }
         Relationships: []
       }
+      home_categories: {
+        Row: {
+          created_at: string
+          description_en: string
+          description_fr: string
+          display_order: number
+          href: string
+          id: string
+          image_url: string
+          is_visible: boolean
+          slug: string
+          title_en: string
+          title_fr: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_en?: string
+          description_fr?: string
+          display_order?: number
+          href?: string
+          id?: string
+          image_url?: string
+          is_visible?: boolean
+          slug: string
+          title_en?: string
+          title_fr: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_en?: string
+          description_fr?: string
+          display_order?: number
+          href?: string
+          id?: string
+          image_url?: string
+          is_visible?: boolean
+          slug?: string
+          title_en?: string
+          title_fr?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       loyalty_config: {
         Row: {
           birthday_bonus: number | null
