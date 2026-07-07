@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +46,7 @@ function TierBadge({ tier }: { tier: string }) {
 }
 
 export const ReputationDashboard = () => {
+  const { t, i18n } = useTranslation();
   const [scores, setScores] = useState<TrustScore[]>([]);
   const [signals, setSignals] = useState<TrustSignal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,10 +71,10 @@ export const ReputationDashboard = () => {
     try {
       const { data, error } = await supabase.rpc("recompute_all_trust_scores");
       if (error) throw error;
-      toast({ title: "Recalcul terminé", description: `${data ?? 0} sujets recalculés.` });
+      toast({ title: t("reputationDashboard.toastRecomputeDone"), description: t("reputationDashboard.toastRecomputeDesc", { count: data ?? 0 }) });
       await load();
     } catch (e) {
-      toast({ title: "Erreur", description: String((e as Error).message), variant: "destructive" });
+      toast({ title: t("reputationDashboard.toastError"), description: String((e as Error).message), variant: "destructive" });
     } finally {
       setRecomputing(false);
     }
@@ -95,9 +97,9 @@ export const ReputationDashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-display text-primary">Reputation Graph</h2>
+          <h2 className="text-2xl font-display text-primary">{t("reputationDashboard.title")}</h2>
           <p className="text-sm text-muted-foreground">
-            Trust Score unifié · clients · vendeurs · ambassadeurs · grossistes
+            {t("reputationDashboard.subtitle")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -106,18 +108,18 @@ export const ReputationDashboard = () => {
           </Button>
           <Button size="sm" onClick={recompute} disabled={recomputing}>
             {recomputing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shield className="h-4 w-4 mr-2" />}
-            Recalculer tous
+            {t("reputationDashboard.recomputeAll")}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card className="bg-noir/50 border-gold/20">
-          <CardHeader className="pb-2"><CardDescription>Sujets</CardDescription></CardHeader>
+          <CardHeader className="pb-2"><CardDescription>{t("reputationDashboard.kpiSubjects")}</CardDescription></CardHeader>
           <CardContent><div className="text-2xl font-display text-primary">{kpis.total}</div></CardContent>
         </Card>
         <Card className="bg-noir/50 border-gold/20">
-          <CardHeader className="pb-2"><CardDescription>Score moyen</CardDescription></CardHeader>
+          <CardHeader className="pb-2"><CardDescription>{t("reputationDashboard.kpiAvgScore")}</CardDescription></CardHeader>
           <CardContent><div className="text-2xl font-display text-primary">{kpis.avg.toFixed(1)}</div></CardContent>
         </Card>
         {["diamond", "platinum", "gold"].map((t) => (
@@ -131,34 +133,34 @@ export const ReputationDashboard = () => {
       <div className="flex gap-2 flex-wrap">
         {(["all", "customer", "vendor", "ambassador", "wholesaler"] as const).map((f) => (
           <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
-            {f === "all" ? "Tous" : f}
+            {f === "all" ? t("reputationDashboard.filterAll") : f}
           </Button>
         ))}
       </div>
 
       <Tabs defaultValue="scores">
         <TabsList className="bg-noir/50 border border-gold/20">
-          <TabsTrigger value="scores"><Award className="h-4 w-4 mr-2" />Classement</TabsTrigger>
-          <TabsTrigger value="signals"><TrendingUp className="h-4 w-4 mr-2" />Signaux récents</TabsTrigger>
+          <TabsTrigger value="scores"><Award className="h-4 w-4 mr-2" />{t("reputationDashboard.tabRanking")}</TabsTrigger>
+          <TabsTrigger value="signals"><TrendingUp className="h-4 w-4 mr-2" />{t("reputationDashboard.tabSignals")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="scores">
           <Card className="bg-noir/50 border-gold/20">
-            <CardHeader><CardTitle className="text-primary text-base">Top scores</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-primary text-base">{t("reputationDashboard.topScores")}</CardTitle></CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead><tr className="text-left text-muted-foreground border-b border-gold/10">
-                    <th className="py-2 pr-3">Sujet</th>
-                    <th className="py-2 pr-3">Type</th>
-                    <th className="py-2 pr-3">Score</th>
-                    <th className="py-2 pr-3">Tier</th>
-                    <th className="py-2 pr-3">+ / −</th>
-                    <th className="py-2 pr-3">Recalculé</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colSubject")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colType")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colScore")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colTier")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colPosNeg")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colRecomputed")}</th>
                   </tr></thead>
                   <tbody>
                     {filtered.length === 0 && !loading && (
-                      <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">Aucun score encore — les signaux se cumulent avec l'activité (commandes livrées, avis, commissions payées). Clique "Recalculer tous" après quelques transactions.</td></tr>
+                      <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">{t("reputationDashboard.noScores")}</td></tr>
                     )}
                     {filtered.map((s) => (
                       <tr key={s.id} className="border-b border-gold/5">
@@ -167,7 +169,7 @@ export const ReputationDashboard = () => {
                         <td className="py-2 pr-3 text-primary font-medium">{Number(s.score).toFixed(1)}</td>
                         <td className="py-2 pr-3"><TierBadge tier={s.tier} /></td>
                         <td className="py-2 pr-3 text-xs"><span className="text-success">{s.positive_count}</span> / <span className="text-destructive">{s.negative_count}</span></td>
-                        <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(s.computed_at).toLocaleString("fr-FR")}</td>
+                        <td className="py-2 pr-3 text-xs text-muted-foreground">{new Date(s.computed_at).toLocaleString(i18n.language === "en" ? "en-US" : "fr-FR")}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -179,23 +181,23 @@ export const ReputationDashboard = () => {
 
         <TabsContent value="signals">
           <Card className="bg-noir/50 border-gold/20">
-            <CardHeader><CardTitle className="text-primary text-base">Journal des signaux</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-primary text-base">{t("reputationDashboard.signalsLog")}</CardTitle></CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead><tr className="text-left text-muted-foreground border-b border-gold/10">
-                    <th className="py-2 pr-3">Quand</th>
-                    <th className="py-2 pr-3">Type</th>
-                    <th className="py-2 pr-3">Sujet</th>
-                    <th className="py-2 pr-3">Signal</th>
-                    <th className="py-2 pr-3">Poids</th>
-                    <th className="py-2 pr-3">Source</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colWhen")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colType")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colSubject")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colSignal")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colWeight")}</th>
+                    <th className="py-2 pr-3">{t("reputationDashboard.colSource")}</th>
                   </tr></thead>
                   <tbody>
-                    {signals.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">Aucun signal.</td></tr>}
+                    {signals.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">{t("reputationDashboard.noSignals")}</td></tr>}
                     {signals.map((sig) => (
                       <tr key={sig.id} className="border-b border-gold/5">
-                        <td className="py-2 pr-3 text-xs text-muted-foreground whitespace-nowrap">{new Date(sig.occurred_at).toLocaleString("fr-FR")}</td>
+                        <td className="py-2 pr-3 text-xs text-muted-foreground whitespace-nowrap">{new Date(sig.occurred_at).toLocaleString(i18n.language === "en" ? "en-US" : "fr-FR")}</td>
                         <td className="py-2 pr-3 capitalize">{sig.subject_type}</td>
                         <td className="py-2 pr-3 font-mono text-xs truncate max-w-[140px]">{sig.subject_id}</td>
                         <td className="py-2 pr-3">{sig.signal_type}</td>
