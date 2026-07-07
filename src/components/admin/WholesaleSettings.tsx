@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
 import { useWholesaleTierConfig, useUpdateWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const STORAGE_KEY = "wholesale_default_discounts";
 
@@ -20,6 +21,7 @@ function getStoredDiscounts(): Record<string, number> {
 }
 
 export function WholesaleSettings() {
+  const { t } = useTranslation();
   const stored = getStoredDiscounts();
   const { data: tierConfig } = useWholesaleTierConfig();
   const updateConfig = useUpdateWholesaleTierConfig();
@@ -56,8 +58,8 @@ export function WholesaleSettings() {
       const val = discounts[tier.type];
       if (val < 0 || val > 50) {
         toast({
-          title: "Erreur",
-          description: `Le pourcentage pour ${tier.label} doit être entre 0% et 50%`,
+          title: t("wholesaleSettings.errTitle"),
+          description: t("wholesaleSettings.errRange", { label: tier.label }),
           variant: "destructive",
         });
         setSaving(false);
@@ -77,13 +79,13 @@ export function WholesaleSettings() {
       });
 
       toast({
-        title: "✅ Paramètres sauvegardés",
-        description: "Les remises et la visibilité des paliers ont été mis à jour.",
+        title: t("wholesaleSettings.savedTitle"),
+        description: t("wholesaleSettings.savedDesc"),
       });
     } catch {
       toast({
-        title: "Erreur",
-        description: "Impossible de sauvegarder la configuration des paliers.",
+        title: t("wholesaleSettings.errTitle"),
+        description: t("wholesaleSettings.saveError"),
         variant: "destructive",
       });
     }
@@ -97,10 +99,10 @@ export function WholesaleSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-cream font-display text-lg">
             <Percent className="h-5 w-5 text-primary" />
-            Pourcentages de remise par défaut
+            {t("wholesaleSettings.discountsTitle")}
           </CardTitle>
           <p className="text-sm text-cream/50">
-            Ces remises s'appliquent à tous les produits sauf ceux avec un prix personnalisé.
+            {t("wholesaleSettings.discountsHelp")}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -111,7 +113,7 @@ export function WholesaleSettings() {
                 <p className="text-sm font-medium text-cream">
                   {tier.icon} {tier.label}
                 </p>
-                <p className="text-xs text-cream/40">{tier.quantity} bouteilles</p>
+                <p className="text-xs text-cream/40">{t("wholesaleSettings.bottles", { count: tier.quantity })}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Input
@@ -139,24 +141,24 @@ export function WholesaleSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-cream font-display text-lg">
             <Eye className="h-5 w-5 text-primary" />
-            Visibilité des paliers
+            {t("wholesaleSettings.visibilityTitle")}
           </CardTitle>
           <p className="text-sm text-cream/50">
-            Choisissez quels paliers sont visibles pour les clients.
+            {t("wholesaleSettings.visibilityHelp")}
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {WHOLESALE_TIERS.map((tier) => (
             <div key={tier.type} className="p-4 rounded-lg border border-cream/10 bg-cream/5 space-y-3">
               <p className="text-sm font-medium text-cream">
-                {tier.icon} {tier.label} ({tier.quantity} bouteilles)
+                {tier.icon} {tier.label} ({t("wholesaleSettings.bottles", { count: tier.quantity })})
               </p>
               <div className="flex flex-col gap-3 pl-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <LayoutGrid className="h-4 w-4 text-cream/50" />
                     <Label className="text-xs text-cream/70 cursor-pointer">
-                      Afficher sur les fiches produit (catalogue)
+                      {t("wholesaleSettings.showOnCards")}
                     </Label>
                   </div>
                   <Switch
@@ -169,7 +171,7 @@ export function WholesaleSettings() {
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4 text-cream/50" />
                     <Label className="text-xs text-cream/70 cursor-pointer">
-                      Afficher sur la page détail du produit
+                      {t("wholesaleSettings.showOnDetail")}
                     </Label>
                   </div>
                   <Switch
@@ -190,7 +192,7 @@ export function WholesaleSettings() {
         className="w-full bg-gradient-gold text-noir font-semibold gap-2 rounded-full h-11"
       >
         <Save className="h-4 w-4" />
-        Sauvegarder tous les paramètres
+        {t("wholesaleSettings.save")}
       </Button>
     </div>
   );
