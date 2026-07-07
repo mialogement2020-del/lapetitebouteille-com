@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, ShieldCheck, ShieldAlert, ShieldX, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ModerationRow {
   id: string;
@@ -37,6 +38,7 @@ const verdictBadge: Record<string, string> = {
 };
 
 export function ProductModerationManager() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [running, setRunning] = useState<string | null>(null);
   const [batching, setBatching] = useState(false);
@@ -78,13 +80,13 @@ export function ProductModerationManager() {
       if (error) throw error;
       const d = data as any;
       toast({
-        title: `Analyse: ${d.verdict}`,
-        description: `Score ${d.quality_score}/100 · contrefaçon ${d.counterfeit_risk}%`,
+        title: t("productModeration.toastAnalysisTitle", { verdict: d.verdict }),
+        description: t("productModeration.toastAnalysisDesc", { score: d.quality_score, risk: d.counterfeit_risk }),
       });
       qc.invalidateQueries({ queryKey: ["product-moderations"] });
       qc.invalidateQueries({ queryKey: ["products-pending-moderation"] });
     } catch (e: any) {
-      toast({ title: "Erreur IA", description: e.message, variant: "destructive" });
+      toast({ title: t("productModeration.toastAiError"), description: e.message, variant: "destructive" });
     } finally {
       setRunning(null);
     }
@@ -104,7 +106,7 @@ export function ProductModerationManager() {
       }
     }
     setBatching(false);
-    toast({ title: "Modération terminée", description: `${ok} ok, ${fail} erreurs` });
+    toast({ title: t("productModeration.toastBatchDone"), description: t("productModeration.toastBatchDesc", { ok, fail }) });
     qc.invalidateQueries({ queryKey: ["product-moderations"] });
     qc.invalidateQueries({ queryKey: ["products-pending-moderation"] });
   };
@@ -119,7 +121,7 @@ export function ProductModerationManager() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["products-pending-moderation"] });
-      toast({ title: "Décision enregistrée" });
+      toast({ title: t("productModeration.toastDecision") });
     },
   });
 
@@ -129,16 +131,16 @@ export function ProductModerationManager() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-cream">
             <Sparkles className="h-5 w-5 text-primary" />
-            Modération IA des fiches vendeurs
+            {t("productModeration.title")}
           </CardTitle>
           <Button onClick={moderateAllPending} disabled={batching || (pendingQuery.data?.length ?? 0) === 0}>
             {batching ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-            Analyser tout ({pendingQuery.data?.length ?? 0})
+            {t("productModeration.analyzeAll", { count: pendingQuery.data?.length ?? 0 })}
           </Button>
         </CardHeader>
         <CardContent>
           {(pendingQuery.data ?? []).length === 0 ? (
-            <p className="text-cream/60 text-sm">Aucune fiche vendeur en attente.</p>
+            <p className="text-cream/60 text-sm">{t("productModeration.noneVendor")}</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {pendingQuery.data!.map((p) => (
@@ -153,7 +155,7 @@ export function ProductModerationManager() {
                     <Badge variant="outline">{p.moderation_status}</Badge>
                   </div>
                   <Button size="sm" onClick={() => moderate(p.id)} disabled={running === p.id}>
-                    {running === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Analyser"}
+                    {running === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : t("productModeration.analyze")}
                   </Button>
                 </div>
               ))}
@@ -164,10 +166,10 @@ export function ProductModerationManager() {
 
       <Card className="bg-noir-light/40 border-gold/20">
         <CardHeader>
-          <CardTitle className="text-cream">Analyses récentes</CardTitle>
+          <CardTitle className="text-cream">{t("productModeration.recentTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {moderationsQuery.isLoading && <div className="text-cream/60">Chargement…</div>}
+          {moderationsQuery.isLoading && <div className="text-cream/60">{t("productModeration.loading")}</div>}
           {(moderationsQuery.data ?? []).map((m) => (
             <div key={m.id} className="p-4 rounded border border-gold/10 space-y-2">
               <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -182,16 +184,16 @@ export function ProductModerationManager() {
                 </div>
                 <div className="flex gap-2 items-center">
                   <Badge className={verdictBadge[m.verdict]}>{m.verdict}</Badge>
-                  <Badge variant="outline">Qualité {m.quality_score}/100</Badge>
-                  <Badge variant="outline">Contrefaçon {m.counterfeit_risk}%</Badge>
-                  {!m.compliance_ok && <Badge className="bg-red-500/15 text-red-400">Non conforme</Badge>}
+                  <Badge variant="outline">{t("productModeration.quality", { value: m.quality_score })}</Badge>
+                  <Badge variant="outline">{t("productModeration.counterfeit", { value: m.counterfeit_risk })}</Badge>
+                  {!m.compliance_ok && <Badge className="bg-red-500/15 text-red-400">{t("productModeration.nonCompliant")}</Badge>}
                 </div>
               </div>
               {m.summary && <p className="text-sm text-cream/80">{m.summary}</p>}
               {(m.issues?.length ?? 0) > 0 && (
                 <div>
                   <div className="text-xs font-semibold text-red-400 flex items-center gap-1">
-                    <ShieldAlert className="h-3 w-3" /> Problèmes
+                    <ShieldAlert className="h-3 w-3" /> {t("productModeration.issues")}
                   </div>
                   <ul className="text-xs text-cream/70 list-disc list-inside">
                     {m.issues.map((i, idx) => <li key={idx}>{i}</li>)}
@@ -200,7 +202,7 @@ export function ProductModerationManager() {
               )}
               {(m.suggestions?.length ?? 0) > 0 && (
                 <div>
-                  <div className="text-xs font-semibold text-primary">Suggestions</div>
+                  <div className="text-xs font-semibold text-primary">{t("productModeration.suggestions")}</div>
                   <ul className="text-xs text-cream/70 list-disc list-inside">
                     {m.suggestions.map((s, idx) => <li key={idx}>{s}</li>)}
                   </ul>
@@ -212,14 +214,14 @@ export function ProductModerationManager() {
                   variant="outline"
                   onClick={() => overrideMutation.mutate({ product_id: m.product_id, status: "approved" })}
                 >
-                  <ShieldCheck className="h-4 w-4 mr-1 text-emerald-400" /> Approuver
+                  <ShieldCheck className="h-4 w-4 mr-1 text-emerald-400" /> {t("productModeration.approve")}
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => overrideMutation.mutate({ product_id: m.product_id, status: "rejected" })}
                 >
-                  <ShieldX className="h-4 w-4 mr-1 text-red-400" /> Rejeter
+                  <ShieldX className="h-4 w-4 mr-1 text-red-400" /> {t("productModeration.reject")}
                 </Button>
               </div>
             </div>
