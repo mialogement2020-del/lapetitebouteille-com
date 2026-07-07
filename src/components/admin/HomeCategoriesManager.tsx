@@ -236,6 +236,55 @@ export function HomeCategoriesManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* History dialog */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Historique des modifications</DialogTitle>
+          </DialogHeader>
+          {!history?.length ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">Aucun historique.</p>
+          ) : (
+            <div className="space-y-2">
+              {history.map(h => {
+                const who = h.changed_by_profile
+                  ? `${h.changed_by_profile.first_name ?? ""} ${h.changed_by_profile.last_name ?? ""}`.trim() || h.changed_by_profile.email
+                  : "Système";
+                const snap = h.snapshot ?? {};
+                return (
+                  <div key={h.id} className="flex items-start gap-3 p-3 border border-border rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant={h.action === "delete" ? "destructive" : h.action === "insert" ? "default" : "outline"}>
+                          {h.action}
+                        </Badge>
+                        <span className="text-sm font-medium truncate">{snap.title_fr ?? "—"}</span>
+                        <span className="text-xs text-muted-foreground">/{snap.slug}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {new Date(h.changed_at).toLocaleString("fr-FR")} · par {who || "inconnu"}
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" disabled={rollback.isPending}
+                      onClick={async () => {
+                        if (!confirm("Restaurer cette version ?")) return;
+                        try {
+                          await rollback.mutateAsync(h);
+                          toast({ title: "Version restaurée" });
+                        } catch (e: any) {
+                          toast({ title: "Erreur", description: e.message, variant: "destructive" });
+                        }
+                      }}>
+                      <Undo2 className="h-4 w-4 mr-1" /> Restaurer
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
