@@ -827,6 +827,11 @@ const Admin = () => {
                 <EscrowsManager />
               </TabsContent>
 
+              {/* Rapprochement financier */}
+              <TabsContent value="reconciliation" className="space-y-6">
+                <FinanceReconciliationManager />
+              </TabsContent>
+
               {/* IA moderation */}
               <TabsContent value="moderation" className="space-y-6">
                 <ProductModerationManager />
