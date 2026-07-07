@@ -1,4 +1,5 @@
 import { Star, CheckCircle, XCircle, ShoppingBag, Calendar, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -27,11 +28,12 @@ export function ReviewModerationDialog({
   onReject,
   isUpdating 
 }: ReviewModerationDialogProps) {
+  const { t, i18n } = useTranslation();
   if (!review) return null;
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "—";
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
+    return new Date(dateStr).toLocaleDateString(i18n.language === "en" ? "en-US" : "fr-FR", {
       day: "2-digit",
       month: "long",
       year: "numeric",
@@ -73,10 +75,10 @@ export function ReviewModerationDialog({
         <DialogHeader>
           <DialogTitle className="text-cream flex items-center gap-3">
             <Star className="h-5 w-5 text-primary" />
-            Modération d'avis
+            {t("reviewModeration.title")}
           </DialogTitle>
           <DialogDescription className="text-cream/60">
-            Examiner et modérer cet avis client
+            {t("reviewModeration.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
@@ -96,7 +98,7 @@ export function ReviewModerationDialog({
             )}
             <div>
               <p className="text-cream font-medium">
-                {review.product?.name || "Produit supprimé"}
+                {review.product?.name || t("reviewModeration.productDeleted")}
               </p>
               <div className="flex items-center gap-2 mt-1">
                 {renderStars(review.rating)}
@@ -112,12 +114,12 @@ export function ReviewModerationDialog({
                 ? "bg-success/20 text-success border-success/30" 
                 : "bg-warning/20 text-warning border-warning/30"
             } border`}>
-              {review.is_approved ? "Approuvé" : "En attente de modération"}
+              {review.is_approved ? t("reviewModeration.approved") : t("reviewModeration.pending")}
             </Badge>
             {review.is_verified_purchase && (
               <Badge className="bg-info/20 text-info border-info/30 border">
                 <ShoppingBag className="h-3 w-3 mr-1" />
-                Achat vérifié
+                {t("reviewModeration.verifiedPurchase")}
               </Badge>
             )}
           </div>
@@ -126,15 +128,15 @@ export function ReviewModerationDialog({
           <div className="space-y-3">
             {review.title && (
               <div>
-                <p className="text-cream/60 text-xs mb-1">Titre</p>
+                <p className="text-cream/60 text-xs mb-1">{t("reviewModeration.reviewTitle")}</p>
                 <p className="text-cream font-medium">{review.title}</p>
               </div>
             )}
             <div>
-              <p className="text-cream/60 text-xs mb-1">Commentaire</p>
+              <p className="text-cream/60 text-xs mb-1">{t("reviewModeration.comment")}</p>
               <div className="p-3 rounded-lg bg-cream/5 border border-gold/10">
                 <p className="text-cream text-sm whitespace-pre-wrap">
-                  {review.comment || "Aucun commentaire"}
+                  {review.comment || t("reviewModeration.noComment")}
                 </p>
               </div>
             </div>
@@ -155,7 +157,7 @@ export function ReviewModerationDialog({
               className="flex-1 border-gold/30 text-cream hover:bg-cream/10"
               onClick={() => onOpenChange(false)}
             >
-              Fermer
+              {t("reviewModeration.close")}
             </Button>
             {!review.is_approved ? (
               <>
@@ -170,7 +172,7 @@ export function ReviewModerationDialog({
                   ) : (
                     <>
                       <XCircle className="h-4 w-4 mr-2" />
-                      Supprimer
+                      {t("reviewModeration.delete")}
                     </>
                   )}
                 </Button>
@@ -184,7 +186,7 @@ export function ReviewModerationDialog({
                   ) : (
                     <>
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Approuver
+                      {t("reviewModeration.approve")}
                     </>
                   )}
                 </Button>
@@ -201,7 +203,7 @@ export function ReviewModerationDialog({
                 ) : (
                   <>
                     <XCircle className="h-4 w-4 mr-2" />
-                    Désapprouver
+                    {t("reviewModeration.unapprove")}
                   </>
                 )}
               </Button>
