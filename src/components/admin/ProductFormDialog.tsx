@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import { Wine, Loader2, Image as ImageIcon, Upload, X, Plus, GripVertical } from "lucide-react";
+import { Wine, Loader2, Image as ImageIcon, Upload, X, Plus, GripVertical, Calculator, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -25,6 +25,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { AdminProduct, ProductFormData } from "@/hooks/useAdmin";
+import {
+  usePricingConfig,
+  computePricingBreakdown,
+  computePointsForPrice,
+} from "@/hooks/usePricingConfig";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 
 interface ProductFormDialogProps {
   product: AdminProduct | null;
@@ -72,6 +78,8 @@ export function ProductFormDialog({
   const galleryImageRef = useRef<HTMLInputElement>(null);
   const [isUploadingMain, setIsUploadingMain] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const { data: pricingConfig } = usePricingConfig();
+  const formatPrice = useFormatPrice();
   
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
@@ -95,10 +103,16 @@ export function ProductFormDialog({
     tasting_notes: "",
     food_pairing: "",
     serving_temperature: "",
+    purchase_price: null,
+    markup_percent_override: null,
+    available_as_case: false,
+    units_per_case: null,
+    case_price: null,
   });
 
   useEffect(() => {
     if (product) {
+      const p = product as unknown as Record<string, unknown>;
       setFormData({
         name: product.name,
         slug: product.slug,
@@ -121,6 +135,11 @@ export function ProductFormDialog({
         tasting_notes: product.tasting_notes || "",
         food_pairing: product.food_pairing || "",
         serving_temperature: product.serving_temperature || "",
+        purchase_price: (p.purchase_price as number | null) ?? null,
+        markup_percent_override: (p.markup_percent_override as number | null) ?? null,
+        available_as_case: (p.available_as_case as boolean) ?? false,
+        units_per_case: (p.units_per_case as number | null) ?? null,
+        case_price: (p.case_price as number | null) ?? null,
       });
     } else {
       setFormData({
@@ -145,6 +164,11 @@ export function ProductFormDialog({
         tasting_notes: "",
         food_pairing: "",
         serving_temperature: "",
+        purchase_price: null,
+        markup_percent_override: null,
+        available_as_case: false,
+        units_per_case: null,
+        case_price: null,
       });
     }
   }, [product, open]);
