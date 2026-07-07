@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FileDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   generatePerformanceReportPDF,
   type ReportStats,
@@ -28,6 +29,7 @@ export function ExportReportButton({
   chartsContainerRef,
 }: ExportReportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const { t } = useTranslation();
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -42,13 +44,13 @@ export function ExportReportButton({
         chartsContainerRef?.current
       );
 
-      toast.success("Rapport PDF généré avec succès", {
-        description: "Le téléchargement devrait commencer automatiquement",
+      toast.success(t("exportReportButton.success"), {
+        description: t("exportReportButton.successDesc"),
       });
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Erreur lors de la génération du PDF", {
-        description: "Veuillez réessayer",
+      toast.error(t("exportReportButton.error"), {
+        description: t("exportReportButton.errorDesc"),
       });
     } finally {
       setIsExporting(false);
@@ -65,12 +67,12 @@ export function ExportReportButton({
       {isExporting ? (
         <>
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Génération...
+          {t("exportReportButton.generating")}
         </>
       ) : (
         <>
           <FileDown className="h-4 w-4 mr-2" />
-          Exporter PDF
+          {t("exportReportButton.exportPdf")}
         </>
       )}
     </Button>
