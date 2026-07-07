@@ -820,6 +820,11 @@ const Admin = () => {
                 <FraudManager />
               </TabsContent>
 
+              {/* Escrows */}
+              <TabsContent value="escrows" className="space-y-6">
+                <EscrowsManager />
+              </TabsContent>
+
               {/* IA moderation */}
               <TabsContent value="moderation" className="space-y-6">
                 <ProductModerationManager />
