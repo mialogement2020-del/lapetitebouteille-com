@@ -99,8 +99,8 @@ export interface ProductPricingInput {
   purchase_price?: number | null;
   markup_percent_override?: number | null;
   points_override?: number | null;
-  points_tiers_override?: PointsTier[] | null;
-  category?: { points_tiers_override?: PointsTier[] | null } | null;
+  points_tiers_override?: unknown;
+  category?: { points_tiers_override?: unknown } | null;
 }
 
 export function computeProductPricing(
@@ -127,12 +127,17 @@ export function computeProductPricing(
         platformEarning: 0,
       };
 
+  const productTiers = Array.isArray(product.points_tiers_override)
+    ? (product.points_tiers_override as PointsTier[])
+    : null;
+  const categoryTiers = Array.isArray(product.category?.points_tiers_override)
+    ? (product.category!.points_tiers_override as PointsTier[])
+    : null;
   const tiers =
-    (product.points_tiers_override && product.points_tiers_override.length > 0
-      ? product.points_tiers_override
-      : product.category?.points_tiers_override &&
-          product.category.points_tiers_override.length > 0
-        ? product.category.points_tiers_override
+    (productTiers && productTiers.length > 0
+      ? productTiers
+      : categoryTiers && categoryTiers.length > 0
+        ? categoryTiers
         : config?.points_tiers) || [];
   const points =
     product.points_override != null && product.points_override >= 0

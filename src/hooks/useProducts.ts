@@ -31,7 +31,7 @@ export interface Product {
   purchase_price?: number | null;
   markup_percent_override?: number | null;
   points_override?: number | null;
-  points_tiers_override?: { max: number | null; points: number }[] | null;
+  points_tiers_override?: unknown;
   available_as_case?: boolean | null;
   units_per_case?: number | null;
   case_price?: number | null;
@@ -39,7 +39,7 @@ export interface Product {
     id: string;
     name: string;
     slug: string;
-    points_tiers_override?: { max: number | null; points: number }[] | null;
+    points_tiers_override?: unknown;
   };
 }
 
