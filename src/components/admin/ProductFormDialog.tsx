@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import { Wine, Loader2, Image as ImageIcon, Upload, X, Plus, GripVertical, Calculator, Package } from "lucide-react";
+import { Wine, Loader2, Image as ImageIcon, Upload, X, Plus, GripVertical, Calculator, Package, AlertCircle, Trash2, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -29,6 +29,7 @@ import {
   usePricingConfig,
   computePricingBreakdown,
   computePointsForPrice,
+  type PointsTier,
 } from "@/hooks/usePricingConfig";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 
@@ -105,6 +106,8 @@ export function ProductFormDialog({
     serving_temperature: "",
     purchase_price: null,
     markup_percent_override: null,
+      points_override: null,
+      points_tiers_override: null,
     available_as_case: false,
     units_per_case: null,
     case_price: null,
@@ -137,6 +140,10 @@ export function ProductFormDialog({
         serving_temperature: product.serving_temperature || "",
         purchase_price: (p.purchase_price as number | null) ?? null,
         markup_percent_override: (p.markup_percent_override as number | null) ?? null,
+        points_override: (p.points_override as number | null) ?? null,
+        points_tiers_override: Array.isArray(p.points_tiers_override)
+          ? (p.points_tiers_override as { max: number | null; points: number }[])
+          : null,
         available_as_case: (p.available_as_case as boolean) ?? false,
         units_per_case: (p.units_per_case as number | null) ?? null,
         case_price: (p.case_price as number | null) ?? null,
@@ -166,6 +173,8 @@ export function ProductFormDialog({
         serving_temperature: "",
         purchase_price: null,
         markup_percent_override: null,
+        points_override: null,
+        points_tiers_override: null,
         available_as_case: false,
         units_per_case: null,
         case_price: null,
@@ -226,9 +235,65 @@ export function ProductFormDialog({
     setFormData((prev) => ({ ...prev, image_url: galleryUrl, gallery_urls: newGallery }));
   };
 
+  // Validation
+  const validationErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    if (!formData.name?.trim()) errs.name = "Le nom est requis.";
+    if (!formData.price || formData.price <= 0)
+      errs.price = "Le prix de vente doit être supérieur à 0.";
+    if (
+      formData.purchase_price != null &&
+      formData.purchase_price < 0
+    )
+      errs.purchase_price = "Le prix d'achat ne peut pas être négatif.";
+    if (formData.available_as_case) {
+      if (!formData.units_per_case || formData.units_per_case <= 0)
+        errs.units_per_case =
+          "Indiquez un nombre d'unités par caisse supérieur à 0.";
+      if (!formData.case_price || formData.case_price <= 0)
+        errs.case_price = "Le prix de la caisse est requis et doit être > 0.";
+    }
+    if (
+      formData.points_override != null &&
+      formData.points_override < 0
+    )
+      errs.points_override = "Les points ne peuvent pas être négatifs.";
+    return errs;
+  }, [formData]);
+
+  const hasErrors = Object.keys(validationErrors).length > 0;
+
   const handleSubmit = async () => {
+    if (hasErrors) {
+      toast({
+        title: "Formulaire incomplet",
+        description: Object.values(validationErrors)[0],
+        variant: "destructive",
+      });
+      return;
+    }
     await onSave(formData, product?.id);
   };
+
+  const productTiers = (formData.points_tiers_override ?? []) as PointsTier[];
+  const updateProductTier = (idx: number, patch: Partial<PointsTier>) => {
+    setFormData((prev) => ({
+      ...prev,
+      points_tiers_override: productTiers.map((t, i) =>
+        i === idx ? { ...t, ...patch } : t,
+      ),
+    }));
+  };
+  const addProductTier = () =>
+    setFormData((prev) => ({
+      ...prev,
+      points_tiers_override: [...productTiers, { max: null, points: 10 }],
+    }));
+  const removeProductTier = (idx: number) =>
+    setFormData((prev) => ({
+      ...prev,
+      points_tiers_override: productTiers.filter((_, i) => i !== idx),
+    }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
