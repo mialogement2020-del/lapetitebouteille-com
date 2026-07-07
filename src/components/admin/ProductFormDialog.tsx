@@ -629,8 +629,14 @@ export function ProductFormDialog({
                           }))
                         }
                         placeholder="12"
-                        className="bg-cream/5 border-gold/20 text-cream"
+                        className={`bg-cream/5 border-gold/20 text-cream ${validationErrors.units_per_case ? "border-destructive" : ""}`}
                       />
+                      {validationErrors.units_per_case && (
+                        <p className="text-[11px] text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {validationErrors.units_per_case}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <Label className="text-cream/70 text-xs">Prix par caisse (FCFA)</Label>
@@ -644,11 +650,126 @@ export function ProductFormDialog({
                           }))
                         }
                         placeholder="150000"
-                        className="bg-cream/5 border-gold/20 text-cream"
+                        className={`bg-cream/5 border-gold/20 text-cream ${validationErrors.case_price ? "border-destructive" : ""}`}
                       />
+                      {validationErrors.case_price && (
+                        <p className="text-[11px] text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {validationErrors.case_price}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Points ambassadeur (par produit) */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="inline h-4 w-4" />
+                Points ambassadeur (spécifique à ce produit)
+              </h3>
+              <div className="rounded-lg border border-gold/20 p-3 space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-cream/80">
+                    Points fixes (facultatif)
+                  </Label>
+                  <Input
+                    type="number"
+                    value={formData.points_override ?? ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        points_override: e.target.value
+                          ? Number(e.target.value)
+                          : null,
+                      }))
+                    }
+                    placeholder="Laisser vide pour utiliser les paliers"
+                    className={`bg-cream/5 border-gold/20 text-cream ${validationErrors.points_override ? "border-destructive" : ""}`}
+                  />
+                  <p className="text-[11px] text-cream/50">
+                    Si renseigné, ce nombre remplace tous les paliers pour ce
+                    produit.
+                  </p>
+                  {validationErrors.points_override && (
+                    <p className="text-[11px] text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {validationErrors.points_override}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-gold/10">
+                  <Label className="text-cream/80">
+                    Paliers spécifiques (facultatif)
+                  </Label>
+                  <p className="text-[11px] text-cream/50">
+                    Utilisés uniquement si aucun nombre fixe n'est défini.
+                    Sinon, les paliers de la catégorie ou globaux s'appliquent.
+                  </p>
+                  {productTiers.map((tier, idx) => (
+                    <div
+                      key={idx}
+                      className="grid grid-cols-12 gap-2 items-end"
+                    >
+                      <div className="col-span-6">
+                        <Label className="text-cream/60 text-[11px]">
+                          Prix jusqu'à (FCFA)
+                        </Label>
+                        <Input
+                          type="number"
+                          placeholder="Illimité"
+                          value={tier.max ?? ""}
+                          onChange={(e) =>
+                            updateProductTier(idx, {
+                              max: e.target.value
+                                ? Number(e.target.value)
+                                : null,
+                            })
+                          }
+                          className="bg-cream/5 border-gold/20 text-cream h-8 text-xs"
+                        />
+                      </div>
+                      <div className="col-span-4">
+                        <Label className="text-cream/60 text-[11px]">
+                          Points
+                        </Label>
+                        <Input
+                          type="number"
+                          value={tier.points}
+                          onChange={(e) =>
+                            updateProductTier(idx, {
+                              points: Number(e.target.value),
+                            })
+                          }
+                          className="bg-cream/5 border-gold/20 text-cream h-8 text-xs"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive h-8 w-8"
+                          onClick={() => removeProductTier(idx)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addProductTier}
+                    className="border-gold/30 text-cream hover:bg-cream/10"
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Ajouter un palier
+                  </Button>
+                </div>
               </div>
             </div>
 
