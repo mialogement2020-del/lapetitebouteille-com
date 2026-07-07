@@ -623,6 +623,11 @@ export function useAdmin() {
           tasting_notes: data.tasting_notes,
           food_pairing: data.food_pairing,
           serving_temperature: data.serving_temperature,
+          purchase_price: data.purchase_price,
+          markup_percent_override: data.markup_percent_override,
+          available_as_case: data.available_as_case,
+          units_per_case: data.units_per_case,
+          case_price: data.case_price,
         })
         .eq("id", id);
 
