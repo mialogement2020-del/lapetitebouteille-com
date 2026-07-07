@@ -3218,10 +3218,12 @@
     "colPctSlow": "% lent",
     "colStatus": "Statut",
     "bestPractices": "Bonnes pratiques recommandées",
-    "tipLazy": "Utilisez <1>&lt;LazyImage&gt;</1> pour toutes les images hors écran (chargement différé natif).",
-    "tipHero": "Marquez l'image héro avec <1>priority</1> pour réserver la priorité réseau.",
     "tipTargets": "LCP cible < 2,5 s · INP cible < 200 ms · CLS cible < 0,1.",
-    "tipPurge": "Les mesures de plus de 30 jours sont purgées automatiquement."
+    "tipPurge": "Les mesures de plus de 30 jours sont purgées automatiquement.",
+    "tipLazyPrefix": "Utilisez ",
+    "tipLazySuffix": " pour toutes les images hors écran (chargement différé natif).",
+    "tipHeroPrefix": "Marquez l'image héro avec ",
+    "tipHeroSuffix": " pour réserver la priorité réseau."
   },
   "productModeration": {
     "title": "Modération IA des fiches vendeurs",

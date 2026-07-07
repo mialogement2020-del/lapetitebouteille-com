@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Gauge, MousePointerClick, Layers, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useTranslation, Trans } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 type Row = { metric: string; value: number; route: string; rating: string | null; created_at: string };
 
@@ -209,8 +209,8 @@ export const InfrastructureMonitoring = () => {
           <CardTitle className="text-primary text-base">{t("infraMonitoring.bestPractices")}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
-          <p>• <Trans i18nKey="infraMonitoring.tipLazy" components={[<code className="text-primary" />]} /></p>
-          <p>• <Trans i18nKey="infraMonitoring.tipHero" components={[<code className="text-primary" />]} /></p>
+          <p>• {t("infraMonitoring.tipLazyPrefix")}<code className="text-primary">{"<LazyImage>"}</code>{t("infraMonitoring.tipLazySuffix")}</p>
+          <p>• {t("infraMonitoring.tipHeroPrefix")}<code className="text-primary">priority</code>{t("infraMonitoring.tipHeroSuffix")}</p>
           <p>• {t("infraMonitoring.tipTargets")}</p>
           <p>• {t("infraMonitoring.tipPurge")}</p>
         </CardContent>

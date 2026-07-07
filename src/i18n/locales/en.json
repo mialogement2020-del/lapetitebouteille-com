@@ -3218,10 +3218,12 @@
     "colPctSlow": "% slow",
     "colStatus": "Status",
     "bestPractices": "Recommended best practices",
-    "tipLazy": "Use <1>&lt;LazyImage&gt;</1> for all off-screen images (native lazy loading).",
-    "tipHero": "Mark the hero image with <1>priority</1> to reserve network priority.",
     "tipTargets": "LCP target < 2.5 s · INP target < 200 ms · CLS target < 0.1.",
-    "tipPurge": "Samples older than 30 days are purged automatically."
+    "tipPurge": "Samples older than 30 days are purged automatically.",
+    "tipLazyPrefix": "Use ",
+    "tipLazySuffix": " for all off-screen images (native lazy loading).",
+    "tipHeroPrefix": "Mark the hero image with ",
+    "tipHeroSuffix": " to reserve network priority."
   },
   "productModeration": {
     "title": "AI moderation of vendor listings",
