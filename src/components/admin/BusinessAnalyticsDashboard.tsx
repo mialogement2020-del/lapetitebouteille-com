@@ -34,11 +34,10 @@ import { Download, TrendingUp, Users, Crown, Layers } from "lucide-react";
 import { convertToCSV, downloadCSV } from "@/lib/csvExport";
 import { useTranslation } from "react-i18next";
 
-const fmt = (n: number) => new Intl.NumberFormat("fr-FR").format(Math.round(n || 0));
-const fmtFCFA = (n: number) => `${fmt(n)} FCFA`;
-
 export function BusinessAnalyticsDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const fmt = (n: number) => new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR").format(Math.round(n || 0));
+  const fmtFCFA = (n: number) => `${fmt(n)} FCFA`;
   const [days, setDays] = useState(90);
   const {
     cohorts,
