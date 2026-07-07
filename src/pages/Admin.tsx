@@ -73,6 +73,7 @@ import { WholesalerApplicationsManager } from "@/components/admin/WholesalerAppl
 import { WholesaleInvoicesManager } from "@/components/admin/WholesaleInvoicesManager";
 import { EmbeddingsManager } from "@/components/admin/EmbeddingsManager";
 import { FraudManager } from "@/components/admin/FraudManager";
+import { EscrowsManager } from "@/components/admin/EscrowsManager";
 import { ProductModerationManager } from "@/components/admin/ProductModerationManager";
 import { BusinessAnalyticsDashboard } from "@/components/admin/BusinessAnalyticsDashboard";
 import { ShieldAlert, Sparkles, LineChart } from "lucide-react";
@@ -180,6 +181,7 @@ const Admin = () => {
       { id: 'wholesaler-apps', label: 'Candidatures B2B', icon: Building2 },
       { id: 'wholesale-invoices', label: 'Factures B2B', icon: FileText },
       { id: 'fraud', label: 'Anti-fraude', icon: ShieldAlert },
+      { id: 'escrows', label: 'Escrows', icon: ShieldAlert },
       { id: 'moderation', label: 'Modération IA', icon: Sparkles },
       { id: 'analytics', label: 'Analytics', icon: LineChart },
       { id: 'reviews', label: 'Avis', icon: MessageSquare },
