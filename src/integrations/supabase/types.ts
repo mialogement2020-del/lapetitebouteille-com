@@ -605,6 +605,13 @@ export type Database = {
             foreignKeyName: "commissions_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1170,6 +1177,13 @@ export type Database = {
             foreignKeyName: "order_escrows_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_escrows_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1219,6 +1233,13 @@ export type Database = {
           vendor_updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
           {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
@@ -1313,6 +1334,13 @@ export type Database = {
           previous_status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
           {
             foreignKeyName: "order_status_history_order_id_fkey"
             columns: ["order_id"]
@@ -1508,6 +1536,13 @@ export type Database = {
             foreignKeyName: "payment_intents_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "payment_intents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1564,13 +1599,27 @@ export type Database = {
             foreignKeyName: "payment_reconciliations_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "payment_reconciliations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "payment_reconciliations_payment_intent_id_fkey"
             columns: ["payment_intent_id"]
-            isOneToOne: false
+            isOneToOne: true
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["payment_intent_id"]
+          },
+          {
+            foreignKeyName: "payment_reconciliations_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: true
             referencedRelation: "payment_intents"
             referencedColumns: ["id"]
           },
@@ -3405,6 +3454,40 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_finance_overview: {
+        Row: {
+          buyer_id: string | null
+          escrow_amount: number | null
+          escrow_captured: number | null
+          escrow_hold_reason: string | null
+          escrow_id: string | null
+          escrow_refunded: number | null
+          escrow_status: string | null
+          guest_email: string | null
+          order_created_at: string | null
+          order_id: string | null
+          order_status: Database["public"]["Enums"]["order_status"] | null
+          order_total: number | null
+          payment_amount: number | null
+          payment_intent_id: string | null
+          payment_method: string | null
+          payment_processed_at: string | null
+          payment_provider: string | null
+          payment_status: string | null
+          recon_expected: number | null
+          recon_received: number | null
+          recon_variance: number | null
+          reconciled_at: string | null
+          reconciliation_id: string | null
+          reconciliation_status: string | null
+          risk_level: Database["public"]["Enums"]["fraud_risk_level"] | null
+          risk_review_status:
+            | Database["public"]["Enums"]["fraud_review_status"]
+            | null
+          risk_score: number | null
+        }
+        Relationships: []
+      }
       monthly_leaderboard: {
         Row: {
           avatar_url: string | null
@@ -3712,6 +3795,10 @@ export type Database = {
         Args: { _shop_id: string }
         Returns: number
       }
+      reconcile_payment: {
+        Args: { _note?: string; _recon_id: string }
+        Returns: undefined
+      }
       reconcile_payment_intent: {
         Args: { _intent_id: string }
         Returns: string
@@ -3748,6 +3835,10 @@ export type Database = {
         Returns: Json
       }
       score_order_risk: { Args: { _order_id: string }; Returns: string }
+      upsert_payment_reconciliation: {
+        Args: { _intent_id: string }
+        Returns: string
+      }
       validate_referral_code: { Args: { _code: string }; Returns: Json }
       verify_2fa_session: { Args: { _user_id: string }; Returns: undefined }
       wallet_credit: {
