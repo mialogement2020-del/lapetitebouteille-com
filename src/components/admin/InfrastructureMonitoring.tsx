@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Gauge, MousePointerClick, Layers, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation, Trans } from "react-i18next";
 
 type Row = { metric: string; value: number; route: string; rating: string | null; created_at: string };
 
@@ -36,15 +37,16 @@ function format(metric: string, value: number) {
   return `${Math.round(value)} ms`;
 }
 
-function ratingBadge(metric: string, value: number) {
+function ratingBadge(metric: string, value: number, t: (k: string) => string) {
   const meta = VITAL_META[metric];
   if (!meta) return null;
-  if (value <= meta.goodMax) return <Badge className="bg-success/20 text-success border-success/30">Bon</Badge>;
-  if (value >= meta.poorMin) return <Badge variant="destructive">Lent</Badge>;
-  return <Badge className="bg-warning/20 text-warning-foreground border-warning/30">À améliorer</Badge>;
+  if (value <= meta.goodMax) return <Badge className="bg-success/20 text-success border-success/30">{t("infraMonitoring.good")}</Badge>;
+  if (value >= meta.poorMin) return <Badge variant="destructive">{t("infraMonitoring.slow")}</Badge>;
+  return <Badge className="bg-warning/20 text-warning-foreground border-warning/30">{t("infraMonitoring.improve")}</Badge>;
 }
 
 export const InfrastructureMonitoring = () => {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [hours, setHours] = useState<24 | 168>(24);
@@ -100,9 +102,9 @@ export const InfrastructureMonitoring = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-display text-primary">Performance & Infrastructure</h2>
+          <h2 className="text-2xl font-display text-primary">{t("infraMonitoring.heading")}</h2>
           <p className="text-sm text-muted-foreground">
-            Indicateurs Web Vitals collectés en temps réel auprès des visiteurs.
+            {t("infraMonitoring.subheading")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -111,14 +113,14 @@ export const InfrastructureMonitoring = () => {
             variant={hours === 24 ? "default" : "outline"}
             onClick={() => setHours(24)}
           >
-            24 h
+            {t("infraMonitoring.range24h")}
           </Button>
           <Button
             size="sm"
             variant={hours === 168 ? "default" : "outline"}
             onClick={() => setHours(168)}
           >
-            7 j
+            {t("infraMonitoring.range7d")}
           </Button>
           <Button size="sm" variant="outline" onClick={load} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -139,7 +141,7 @@ export const InfrastructureMonitoring = () => {
                     <Icon className="h-4 w-4 text-primary" />
                     {metric}
                   </CardTitle>
-                  {samples > 0 && ratingBadge(metric, p75)}
+                  {samples > 0 && ratingBadge(metric, p75, t)}
                 </div>
                 <CardDescription className="text-xs">{meta.label}</CardDescription>
               </CardHeader>
@@ -148,7 +150,7 @@ export const InfrastructureMonitoring = () => {
                   {samples === 0 ? "—" : format(metric, p75)}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  p75 · {samples} mesure{samples > 1 ? "s" : ""}
+                  {t("infraMonitoring.measures", { count: samples })}
                 </div>
               </CardContent>
             </Card>
@@ -159,27 +161,27 @@ export const InfrastructureMonitoring = () => {
       {/* Per-route table */}
       <Card className="bg-noir/50 border-gold/20">
         <CardHeader>
-          <CardTitle className="text-primary">Performance par route</CardTitle>
+          <CardTitle className="text-primary">{t("infraMonitoring.perRouteTitle")}</CardTitle>
           <CardDescription>
-            p75 par page · top 20 routes les plus visitées
+            {t("infraMonitoring.perRouteDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {topRoutes.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              {loading ? "Chargement…" : "Aucune mesure pour cette période. Les indicateurs se collectent automatiquement à chaque visite."}
+              {loading ? t("infraMonitoring.loading") : t("infraMonitoring.noData")}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gold/10 text-left text-muted-foreground">
-                    <th className="py-2 pr-4">Route</th>
-                    <th className="py-2 pr-4">Métrique</th>
-                    <th className="py-2 pr-4">p75</th>
-                    <th className="py-2 pr-4">Mesures</th>
-                    <th className="py-2 pr-4">% lent</th>
-                    <th className="py-2 pr-4">Statut</th>
+                    <th className="py-2 pr-4">{t("infraMonitoring.colRoute")}</th>
+                    <th className="py-2 pr-4">{t("infraMonitoring.colMetric")}</th>
+                    <th className="py-2 pr-4">{t("infraMonitoring.colP75")}</th>
+                    <th className="py-2 pr-4">{t("infraMonitoring.colSamples")}</th>
+                    <th className="py-2 pr-4">{t("infraMonitoring.colPctSlow")}</th>
+                    <th className="py-2 pr-4">{t("infraMonitoring.colStatus")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -192,7 +194,7 @@ export const InfrastructureMonitoring = () => {
                       <td className="py-2 pr-4 text-muted-foreground">
                         {r.samples === 0 ? "—" : `${Math.round((r.poor / r.samples) * 100)}%`}
                       </td>
-                      <td className="py-2 pr-4">{ratingBadge(r.metric, r.p75)}</td>
+                      <td className="py-2 pr-4">{ratingBadge(r.metric, r.p75, t)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -204,13 +206,13 @@ export const InfrastructureMonitoring = () => {
 
       <Card className="bg-noir/50 border-gold/20">
         <CardHeader>
-          <CardTitle className="text-primary text-base">Bonnes pratiques recommandées</CardTitle>
+          <CardTitle className="text-primary text-base">{t("infraMonitoring.bestPractices")}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
-          <p>• Utilisez <code className="text-primary">&lt;LazyImage&gt;</code> pour toutes les images hors écran (chargement différé natif).</p>
-          <p>• Marquez l'image héro avec <code className="text-primary">priority</code> pour réserver la priorité réseau.</p>
-          <p>• LCP cible &lt; 2,5 s · INP cible &lt; 200 ms · CLS cible &lt; 0,1.</p>
-          <p>• Les mesures de plus de 30 jours sont purgées automatiquement.</p>
+          <p>• <Trans i18nKey="infraMonitoring.tipLazy" components={[<code className="text-primary" />]} /></p>
+          <p>• <Trans i18nKey="infraMonitoring.tipHero" components={[<code className="text-primary" />]} /></p>
+          <p>• {t("infraMonitoring.tipTargets")}</p>
+          <p>• {t("infraMonitoring.tipPurge")}</p>
         </CardContent>
       </Card>
     </div>
