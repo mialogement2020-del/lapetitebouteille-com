@@ -33,6 +33,7 @@ import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Banknote, RotateCcw, CheckCircle2, PlayCircle, Wallet } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type EscrowRow = {
   id: string;
@@ -62,6 +63,8 @@ const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR").format(Math.round(n)) + " FCFA";
 
 export function EscrowsManager() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? undefined : fr;
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -123,12 +126,12 @@ export function EscrowsManager() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Escrow capturé" });
+      toast({ title: t("escrows.toastCaptured") });
       qc.invalidateQueries({ queryKey: ["admin-escrows"] });
       close();
     },
     onError: (e: any) =>
-      toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+      toast({ title: t("escrows.toastError"), description: e.message, variant: "destructive" }),
   });
 
   const refundMut = useMutation({
@@ -149,12 +152,12 @@ export function EscrowsManager() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Remboursement effectué" });
+      toast({ title: t("escrows.toastRefunded") });
       qc.invalidateQueries({ queryKey: ["admin-escrows"] });
       close();
     },
     onError: (e: any) =>
-      toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+      toast({ title: t("escrows.toastError"), description: e.message, variant: "destructive" }),
   });
 
   const autoReleaseMut = useMutation({
@@ -165,13 +168,13 @@ export function EscrowsManager() {
     },
     onSuccess: (n) => {
       toast({
-        title: "Libération automatique",
-        description: `${n ?? 0} escrow(s) libéré(s)`,
+        title: t("escrows.toastAutoRelease"),
+        description: t("escrows.autoReleased", { n: n ?? 0 }),
       });
       qc.invalidateQueries({ queryKey: ["admin-escrows"] });
     },
     onError: (e: any) =>
-      toast({ title: "Erreur", description: e.message, variant: "destructive" }),
+      toast({ title: t("escrows.toastError"), description: e.message, variant: "destructive" }),
   });
 
   const close = () => {
@@ -197,7 +200,7 @@ export function EscrowsManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <Wallet className="h-4 w-4" /> En dépôt
+              <Wallet className="h-4 w-4" /> {t("escrows.held")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -208,7 +211,7 @@ export function EscrowsManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" /> Capturé
+              <CheckCircle2 className="h-4 w-4" /> {t("escrows.captured")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -220,7 +223,7 @@ export function EscrowsManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <RotateCcw className="h-4 w-4" /> Remboursé
+              <RotateCcw className="h-4 w-4" /> {t("escrows.refunded")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -232,7 +235,7 @@ export function EscrowsManager() {
         <Card className="bg-noir/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-cream/70 text-xs flex items-center gap-2">
-              <PlayCircle className="h-4 w-4" /> Actions
+              <PlayCircle className="h-4 w-4" /> {t("escrows.actions")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -242,7 +245,7 @@ export function EscrowsManager() {
               disabled={autoReleaseMut.isPending}
               className="w-full"
             >
-              Libérer livrées
+              {t("escrows.releaseDelivered")}
             </Button>
           </CardContent>
         </Card>
@@ -251,13 +254,13 @@ export function EscrowsManager() {
       <Card className="bg-noir/50 border-gold/20">
         <CardHeader>
           <CardTitle className="text-cream flex items-center gap-2">
-            <Banknote className="h-5 w-5" /> Escrows paiements
+            <Banknote className="h-5 w-5" /> {t("escrows.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3">
             <Input
-              placeholder="Rechercher (order, id, motif)…"
+              placeholder={t("escrows.search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-xs bg-noir/40 border-gold/20"
@@ -267,12 +270,12 @@ export function EscrowsManager() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous statuts</SelectItem>
-                <SelectItem value="held">En dépôt</SelectItem>
-                <SelectItem value="captured">Capturé</SelectItem>
-                <SelectItem value="refunded">Remboursé</SelectItem>
-                <SelectItem value="partial_refund">Remb. partiel</SelectItem>
-                <SelectItem value="released">Libéré</SelectItem>
+                <SelectItem value="all">{t("escrows.allStatuses")}</SelectItem>
+                <SelectItem value="held">{t("escrows.statusHeld")}</SelectItem>
+                <SelectItem value="captured">{t("escrows.statusCaptured")}</SelectItem>
+                <SelectItem value="refunded">{t("escrows.statusRefunded")}</SelectItem>
+                <SelectItem value="partial_refund">{t("escrows.statusPartial")}</SelectItem>
+                <SelectItem value="released">{t("escrows.statusReleased")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -281,34 +284,34 @@ export function EscrowsManager() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Créé</TableHead>
-                  <TableHead>Commande</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Motif</TableHead>
-                  <TableHead>Capturé</TableHead>
-                  <TableHead>Remboursé</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("escrows.colDate")}</TableHead>
+                  <TableHead>{t("escrows.colOrder")}</TableHead>
+                  <TableHead>{t("escrows.colAmount")}</TableHead>
+                  <TableHead>{t("escrows.colStatus")}</TableHead>
+                  <TableHead>{t("escrows.colReason")}</TableHead>
+                  <TableHead>{t("escrows.colCaptured")}</TableHead>
+                  <TableHead>{t("escrows.colRefunded")}</TableHead>
+                  <TableHead className="text-right">{t("escrows.colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-cream/50">
-                      Chargement…
+                      {t("escrows.loading")}
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-cream/50">
-                      Aucun escrow
+                      {t("escrows.empty")}
                     </TableCell>
                   </TableRow>
                 ) : (
                   filtered.map((e) => (
                     <TableRow key={e.id}>
                       <TableCell className="text-xs">
-                        {format(new Date(e.created_at), "dd MMM yy", { locale: fr })}
+                        {format(new Date(e.created_at), "dd MMM yy", { locale })}
                       </TableCell>
                       <TableCell className="font-mono text-xs">
                         {e.order_id.slice(0, 8)}
@@ -342,7 +345,7 @@ export function EscrowsManager() {
                                 setAction("capture");
                               }}
                             >
-                              Capturer
+                              {t("escrows.capture")}
                             </Button>
                             <Button
                               size="sm"
@@ -352,7 +355,7 @@ export function EscrowsManager() {
                                 setAction("refund");
                               }}
                             >
-                              Rembourser
+                              {t("escrows.refund")}
                             </Button>
                           </>
                         )}
@@ -370,18 +373,18 @@ export function EscrowsManager() {
         <DialogContent className="bg-noir border-gold/20">
           <DialogHeader>
             <DialogTitle className="text-cream">
-              {action === "capture" ? "Capturer l'escrow" : "Rembourser l'escrow"}
+              {action === "capture" ? t("escrows.captureTitle") : t("escrows.refundTitle")}
             </DialogTitle>
             <DialogDescription>
               {selected && (
-                <>Montant en dépôt : {fmt(Number(selected.amount))}</>
+                <>{t("escrows.heldAmount", { amount: fmt(Number(selected.amount)) })}</>
               )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             {action === "refund" && (
               <div className="space-y-2">
-                <Label>Montant (vide = total)</Label>
+                <Label>{t("escrows.amountLabel")}</Label>
                 <Input
                   type="number"
                   value={refundAmount}
@@ -391,23 +394,23 @@ export function EscrowsManager() {
               </div>
             )}
             <div className="space-y-2">
-              <Label>Motif</Label>
+              <Label>{t("escrows.reasonLabel")}</Label>
               <Input
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Motif (facultatif)"
+                placeholder={t("escrows.reasonPh")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={close}>
-              Annuler
+              {t("escrows.cancel")}
             </Button>
             <Button
               onClick={submitAction}
               disabled={captureMut.isPending || refundMut.isPending}
             >
-              Confirmer
+              {t("escrows.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
