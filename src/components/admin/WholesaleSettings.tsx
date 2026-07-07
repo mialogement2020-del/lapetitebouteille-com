@@ -323,6 +323,98 @@ export function WholesaleSettings() {
         </CardContent>
       </Card>
 
+      {/* Live Price Preview */}
+      <Card className="bg-noir/50 border-primary/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-cream font-display text-lg">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Aperçu des prix (HT / TTC)
+          </CardTitle>
+          <p className="text-sm text-cream/50">
+            Simulation en temps réel avec les réglages ci-dessus (non sauvegardés inclus).
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-cream/60">Produit d'exemple</Label>
+              <Select value={previewProductId || "__custom__"} onValueChange={(v) => setPreviewProductId(v === "__custom__" ? "" : v)}>
+                <SelectTrigger className="bg-cream/5 border-cream/20 text-cream">
+                  <SelectValue placeholder="Choisir un produit" />
+                </SelectTrigger>
+                <SelectContent className="bg-noir border-cream/10 text-cream max-h-72">
+                  <SelectItem value="__custom__">Prix personnalisé</SelectItem>
+                  {products.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name} — {fmt(p.price)} FCFA
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-cream/60">Prix unitaire TTC (FCFA)</Label>
+              <Input
+                type="number"
+                min={0}
+                value={previewProduct ? previewProduct.price : previewCustomPrice}
+                disabled={!!previewProduct}
+                onChange={(e) => setPreviewCustomPrice(Number(e.target.value))}
+                className="bg-cream/5 border-cream/20 text-cream"
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-cream/10">
+            <table className="w-full text-sm">
+              <thead className="bg-cream/5">
+                <tr className="text-cream/60">
+                  <th className="text-left p-3 font-medium">Palier</th>
+                  <th className="text-right p-3 font-medium">Remise</th>
+                  <th className="text-right p-3 font-medium">Total HT</th>
+                  <th className="text-right p-3 font-medium">Total TTC</th>
+                  <th className="text-right p-3 font-medium">Économie TTC</th>
+                  <th className="text-center p-3 font-medium">Visible</th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewTiersTTC.map((ttc, idx) => {
+                  const ht = previewTiersHT[idx];
+                  const onDetail = visibleTiers.includes(ttc.type);
+                  const onCard = cardTiers.includes(ttc.type);
+                  const isVisible = enabled && (onDetail || onCard);
+                  return (
+                    <tr key={ttc.type} className={`border-t border-cream/5 ${!isVisible ? "opacity-50" : ""}`}>
+                      <td className="p-3 text-cream">
+                        {WHOLESALE_TIERS.find((w) => w.type === ttc.type)?.icon} {ttc.label}
+                        <span className="text-xs text-cream/40 ml-1">× {ttc.quantity}</span>
+                      </td>
+                      <td className="p-3 text-right text-primary font-medium">−{ttc.discountPercent}%</td>
+                      <td className="p-3 text-right text-cream/80">{fmt(ht.totalPrice)} FCFA</td>
+                      <td className="p-3 text-right text-cream font-semibold">{fmt(ttc.totalPrice)} FCFA</td>
+                      <td className="p-3 text-right text-green-400">−{fmt(ttc.savings)}</td>
+                      <td className="p-3 text-center">
+                        {isVisible ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-400">
+                            {onCard && <LayoutGrid className="h-3 w-3" />}
+                            {onDetail && <CreditCard className="h-3 w-3" />}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-cream/30">masqué</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-cream/40">
+            TVA appliquée pour l'affichage HT : <span className="text-cream/70">{tvaRate}%</span>.
+          </p>
+        </CardContent>
+      </Card>
+
       <Button
         onClick={handleSave}
         disabled={saving}
