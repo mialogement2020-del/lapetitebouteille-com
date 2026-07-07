@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Package, Truck, CheckCircle, XCircle, Clock, Loader2, History, MessageSquare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -30,48 +31,19 @@ interface OrderStatusDialogProps {
   isUpdating: boolean;
 }
 
-const statusConfig: Record<OrderStatus, { label: string; color: string; icon: any; description: string }> = {
-  pending: { 
-    label: "En attente", 
-    color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30", 
-    icon: Clock,
-    description: "Commande reçue, en attente de confirmation"
-  },
-  confirmed: { 
-    label: "Confirmée", 
-    color: "bg-blue-500/20 text-blue-500 border-blue-500/30", 
-    icon: CheckCircle,
-    description: "Commande confirmée, prête pour préparation"
-  },
-  processing: { 
-    label: "En préparation", 
-    color: "bg-purple-500/20 text-purple-500 border-purple-500/30", 
-    icon: Package,
-    description: "Les articles sont en cours de préparation"
-  },
-  shipped: { 
-    label: "Expédiée", 
-    color: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30", 
-    icon: Truck,
-    description: "Commande en cours de livraison"
-  },
-  delivered: { 
-    label: "Livrée", 
-    color: "bg-green-500/20 text-green-500 border-green-500/30", 
-    icon: CheckCircle,
-    description: "Commande livrée avec succès"
-  },
-  cancelled: { 
-    label: "Annulée", 
-    color: "bg-red-500/20 text-red-500 border-red-500/30", 
-    icon: XCircle,
-    description: "Commande annulée"
-  },
+const statusMeta: Record<OrderStatus, { color: string; icon: any }> = {
+  pending:    { color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30", icon: Clock },
+  confirmed:  { color: "bg-blue-500/20 text-blue-500 border-blue-500/30",     icon: CheckCircle },
+  processing: { color: "bg-purple-500/20 text-purple-500 border-purple-500/30", icon: Package },
+  shipped:    { color: "bg-indigo-500/20 text-indigo-500 border-indigo-500/30", icon: Truck },
+  delivered:  { color: "bg-green-500/20 text-green-500 border-green-500/30",  icon: CheckCircle },
+  cancelled:  { color: "bg-red-500/20 text-red-500 border-red-500/30",       icon: XCircle },
 };
 
 const statusFlow: OrderStatus[] = ["pending", "confirmed", "processing", "shipped", "delivered"];
 
 export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, isUpdating }: OrderStatusDialogProps) {
+  const { t, i18n } = useTranslation();
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [notes, setNotes] = useState("");
@@ -79,7 +51,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
   if (!order) return null;
 
   const currentStatus = order.status || "pending";
-  const currentIndex = statusFlow.indexOf(currentStatus);
+  const statusOrder: OrderStatus[] = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
 
   const handleUpdateStatus = async () => {
     if (selectedStatus && order) {
@@ -99,7 +71,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("fr-FR").format(price) + " FCFA";
+    return new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR").format(price) + " FCFA";
   };
 
   return (
@@ -111,27 +83,27 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
             {order.order_number}
           </DialogTitle>
           <DialogDescription className="text-cream/60">
-            Modifier le statut de la commande
+            {t("orderStatus.titleUpdate")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Current Status */}
           <div className="p-4 rounded-lg bg-cream/5 border border-gold/20">
-            <p className="text-cream/60 text-sm mb-2">Statut actuel</p>
-            <Badge className={`${statusConfig[currentStatus].color} border text-sm`}>
+            <p className="text-cream/60 text-sm mb-2">{t("orderStatus.currentStatus")}</p>
+            <Badge className={`${statusMeta[currentStatus].color} border text-sm`}>
               {(() => {
-                const StatusIcon = statusConfig[currentStatus].icon;
+                const StatusIcon = statusMeta[currentStatus].icon;
                 return <StatusIcon className="h-4 w-4 mr-2" />;
               })()}
-              {statusConfig[currentStatus].label}
+              {t(`orderStatus.labels.${currentStatus}`)}
             </Badge>
           </div>
 
           {/* Order Details */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="p-3 rounded-lg bg-cream/5">
-              <p className="text-cream/60 mb-1">Client</p>
+              <p className="text-cream/60 mb-1">{t("orderStatus.customer")}</p>
               <p className="text-cream font-medium">{order.shipping_full_name || "—"}</p>
               <p className="text-cream/60">{order.shipping_phone}</p>
               {order.guest_email && (
@@ -139,7 +111,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               )}
             </div>
             <div className="p-3 rounded-lg bg-cream/5">
-              <p className="text-cream/60 mb-1">Livraison</p>
+              <p className="text-cream/60 mb-1">{t("orderStatus.delivery")}</p>
               <p className="text-cream">{order.shipping_city}</p>
               <p className="text-cream/60">{order.shipping_neighborhood}</p>
               <p className="text-cream/60">{order.shipping_street}</p>
@@ -148,7 +120,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
 
           {/* Items */}
           <div className="space-y-2">
-            <p className="text-cream/60 text-sm">Articles ({order.items.length})</p>
+            <p className="text-cream/60 text-sm">{t("orderStatus.items", { n: order.items.length })}</p>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {order.items.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-cream/5">
@@ -170,7 +142,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               ))}
             </div>
             <div className="flex justify-between pt-2 border-t border-gold/20">
-              <span className="text-cream/60">Total</span>
+              <span className="text-cream/60">{t("orderStatus.total")}</span>
               <span className="text-primary font-bold">{formatPrice(order.total)}</span>
             </div>
           </div>
@@ -184,7 +156,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               >
                 <span className="flex items-center gap-2">
                   <History className="h-4 w-4" />
-                  Historique des changements
+                  {t("orderStatus.history")}
                 </span>
                 <motion.span
                   animate={{ rotate: historyOpen ? 180 : 0 }}
@@ -201,10 +173,11 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
 
           {/* Status Selection */}
           <div className="space-y-3">
-            <p className="text-cream font-medium">Changer le statut</p>
+            <p className="text-cream font-medium">{t("orderStatus.changeStatus")}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {Object.entries(statusConfig).map(([status, config]) => {
-                const StatusIcon = config.icon;
+              {statusOrder.map((status) => {
+                const meta = statusMeta[status];
+                const StatusIcon = meta.icon;
                 const isSelected = selectedStatus === status;
                 const isCurrent = currentStatus === status;
                 
@@ -228,11 +201,11 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
                     <div className="flex items-center gap-2 mb-1">
                       <StatusIcon className={`h-4 w-4 ${isSelected ? "text-primary" : "text-cream/60"}`} />
                       <span className={`text-sm font-medium ${isSelected ? "text-primary" : "text-cream"}`}>
-                        {config.label}
+                        {t(`orderStatus.labels.${status}`)}
                       </span>
                     </div>
                     <p className="text-xs text-cream/50 line-clamp-2">
-                      {config.description}
+                      {t(`orderStatus.descriptions.${status}`)}
                     </p>
                   </motion.button>
                 );
@@ -250,13 +223,13 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="h-4 w-4 text-cream/60" />
                   <label className="text-sm text-cream/60">
-                    Note (optionnelle)
+                    {t("orderStatus.noteLabel")}
                   </label>
                 </div>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ajouter une note pour ce changement de statut..."
+                  placeholder={t("orderStatus.notePlaceholder")}
                   className="bg-cream/5 border-gold/20 text-cream placeholder:text-cream/40 resize-none"
                   rows={2}
                 />
@@ -271,7 +244,7 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               className="flex-1 border-gold/30 text-cream hover:bg-cream/10"
               onClick={() => onOpenChange(false)}
             >
-              Annuler
+              {t("orderStatus.cancel")}
             </Button>
             <Button
               className="flex-1 bg-gradient-gold text-noir font-semibold hover:opacity-90"
@@ -281,10 +254,10 @@ export function OrderStatusDialog({ order, open, onOpenChange, onUpdateStatus, i
               {isUpdating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Mise à jour...
+                  {t("orderStatus.updating")}
                 </>
               ) : (
-                "Confirmer le changement"
+                t("orderStatus.confirm")
               )}
             </Button>
           </div>
