@@ -45,7 +45,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 interface UserLoyalty {
   id: string;
@@ -90,14 +91,15 @@ const tierColors: Record<string, string> = {
   platinum: "bg-purple-400 text-white",
 };
 
-const tierLabels: Record<string, string> = {
-  bronze: "Bronze",
-  silver: "Argent",
-  gold: "Or",
-  platinum: "Platine",
-};
-
 export function LoyaltyDashboard() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "en" ? enUS : fr;
+  const tierLabels: Record<string, string> = {
+    bronze: t("loyaltyDashboard.tierBronze"),
+    silver: t("loyaltyDashboard.tierSilver"),
+    gold: t("loyaltyDashboard.tierGold"),
+    platinum: t("loyaltyDashboard.tierPlatinum"),
+  };
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<string>("all");
@@ -215,7 +217,7 @@ export function LoyaltyDashboard() {
       const newBalance = currentPoints + adjustment;
 
       if (newBalance < 0) {
-        throw new Error("Le solde ne peut pas être négatif");
+        throw new Error(t("loyaltyDashboard.errNegativeBalance"));
       }
 
       // Update user_loyalty
@@ -252,8 +254,8 @@ export function LoyaltyDashboard() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Points ajustés",
-        description: `Le nouveau solde est de ${data.newBalance} points.`,
+        title: t("loyaltyDashboard.toastAdjusted"),
+        description: t("loyaltyDashboard.toastAdjustedDesc", { balance: data.newBalance }),
       });
       queryClient.invalidateQueries({ queryKey: ["admin-loyalty-users"] });
       queryClient.invalidateQueries({ queryKey: ["admin-loyalty-stats"] });
@@ -264,8 +266,8 @@ export function LoyaltyDashboard() {
     },
     onError: (error: any) => {
       toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'ajuster les points",
+        title: t("loyaltyDashboard.toastError"),
+        description: error.message || t("loyaltyDashboard.toastAdjustError"),
         variant: "destructive",
       });
     },
@@ -283,16 +285,16 @@ export function LoyaltyDashboard() {
     },
     onSuccess: () => {
       toast({
-        title: "Configuration mise à jour",
-        description: "Les paramètres de fidélité ont été enregistrés.",
+        title: t("loyaltyDashboard.toastConfigSaved"),
+        description: t("loyaltyDashboard.toastConfigSavedDesc"),
       });
       queryClient.invalidateQueries({ queryKey: ["admin-loyalty-config"] });
       setIsConfigDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
-        title: "Erreur",
-        description: error.message || "Impossible de mettre à jour la configuration",
+        title: t("loyaltyDashboard.toastError"),
+        description: error.message || t("loyaltyDashboard.toastConfigError"),
         variant: "destructive",
       });
     },
@@ -317,8 +319,8 @@ export function LoyaltyDashboard() {
     const points = parseInt(adjustmentAmount, 10);
     if (isNaN(points) || points <= 0) {
       toast({
-        title: "Erreur",
-        description: "Veuillez entrer un nombre de points valide",
+        title: t("loyaltyDashboard.toastError"),
+        description: t("loyaltyDashboard.toastInvalidPoints"),
         variant: "destructive",
       });
       return;
@@ -332,7 +334,7 @@ export function LoyaltyDashboard() {
     });
   };
 
-  const formatNumber = (num: number) => new Intl.NumberFormat("fr-FR").format(num);
+  const formatNumber = (num: number) => new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "fr-FR").format(num);
 
   return (
     <div className="space-y-6">
@@ -341,7 +343,7 @@ export function LoyaltyDashboard() {
         <div className="bg-noir/50 border border-gold/20 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-cream/60 text-sm">Membres fidélité</p>
+              <p className="text-cream/60 text-sm">{t("loyaltyDashboard.kpiMembers")}</p>
               <p className="text-2xl font-bold text-cream">{formatNumber(stats?.totalUsers || 0)}</p>
             </div>
             <Users className="h-8 w-8 text-primary" />
@@ -351,7 +353,7 @@ export function LoyaltyDashboard() {
         <div className="bg-noir/50 border border-gold/20 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-cream/60 text-sm">Points en circulation</p>
+              <p className="text-cream/60 text-sm">{t("loyaltyDashboard.kpiPointsInCirculation")}</p>
               <p className="text-2xl font-bold text-cream">{formatNumber(stats?.totalPointsInCirculation || 0)}</p>
             </div>
             <Award className="h-8 w-8 text-warning" />
@@ -361,7 +363,7 @@ export function LoyaltyDashboard() {
         <div className="bg-noir/50 border border-gold/20 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-cream/60 text-sm">Points totaux gagnés</p>
+              <p className="text-cream/60 text-sm">{t("loyaltyDashboard.kpiPointsEarned")}</p>
               <p className="text-2xl font-bold text-cream">{formatNumber(stats?.totalPointsEarned || 0)}</p>
             </div>
             <TrendingUp className="h-8 w-8 text-success" />
@@ -371,7 +373,7 @@ export function LoyaltyDashboard() {
         <div className="bg-noir/50 border border-gold/20 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-cream/60 text-sm">Valeur en FCFA</p>
+              <p className="text-cream/60 text-sm">{t("loyaltyDashboard.kpiFCFAValue")}</p>
               <p className="text-2xl font-bold text-cream">
                 {formatNumber((stats?.totalPointsInCirculation || 0) * (config?.points_value_fcfa || 10))}
               </p>
@@ -383,12 +385,12 @@ export function LoyaltyDashboard() {
 
       {/* Tier Distribution */}
       <div className="bg-noir/50 border border-gold/20 rounded-lg p-4">
-        <h3 className="text-cream font-semibold mb-4">Répartition par niveau</h3>
+        <h3 className="text-cream font-semibold mb-4">{t("loyaltyDashboard.distribution")}</h3>
         <div className="flex flex-wrap gap-4">
           {Object.entries(stats?.tierCounts || {}).map(([tier, count]) => (
             <div key={tier} className="flex items-center gap-2">
               <Badge className={tierColors[tier]}>{tierLabels[tier]}</Badge>
-              <span className="text-cream">{count} membres</span>
+              <span className="text-cream">{count} {t("loyaltyDashboard.members")}</span>
             </div>
           ))}
         </div>
@@ -400,7 +402,7 @@ export function LoyaltyDashboard() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream/40" />
             <Input
-              placeholder="Rechercher par nom ou email..."
+              placeholder={t("loyaltyDashboard.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-noir/50 border-gold/20 text-cream"
@@ -408,14 +410,14 @@ export function LoyaltyDashboard() {
           </div>
           <Select value={tierFilter} onValueChange={setTierFilter}>
             <SelectTrigger className="w-[150px] bg-noir/50 border-gold/20 text-cream">
-              <SelectValue placeholder="Niveau" />
+              <SelectValue placeholder={t("loyaltyDashboard.tier")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les niveaux</SelectItem>
-              <SelectItem value="bronze">Bronze</SelectItem>
-              <SelectItem value="silver">Argent</SelectItem>
-              <SelectItem value="gold">Or</SelectItem>
-              <SelectItem value="platinum">Platine</SelectItem>
+              <SelectItem value="all">{t("loyaltyDashboard.allTiers")}</SelectItem>
+              <SelectItem value="bronze">{t("loyaltyDashboard.tierBronze")}</SelectItem>
+              <SelectItem value="silver">{t("loyaltyDashboard.tierSilver")}</SelectItem>
+              <SelectItem value="gold">{t("loyaltyDashboard.tierGold")}</SelectItem>
+              <SelectItem value="platinum">{t("loyaltyDashboard.tierPlatinum")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -427,7 +429,7 @@ export function LoyaltyDashboard() {
             className="border-gold/30 text-cream hover:bg-cream/10"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
+            {t("loyaltyDashboard.refresh")}
           </Button>
           <Button
             variant="outline"
@@ -436,7 +438,7 @@ export function LoyaltyDashboard() {
             className="border-gold/30 text-cream hover:bg-cream/10"
           >
             <Settings className="h-4 w-4 mr-2" />
-            Configuration
+            {t("loyaltyDashboard.config")}
           </Button>
         </div>
       </div>
@@ -451,18 +453,18 @@ export function LoyaltyDashboard() {
           <Table>
             <TableHeader>
               <TableRow className="border-gold/20 hover:bg-transparent">
-                <TableHead className="text-cream/80">Membre</TableHead>
-                <TableHead className="text-cream/80">Niveau</TableHead>
-                <TableHead className="text-cream/80 text-right">Points actuels</TableHead>
-                <TableHead className="text-cream/80 text-right">Points à vie</TableHead>
-                <TableHead className="text-cream/80 text-right">Actions</TableHead>
+                <TableHead className="text-cream/80">{t("loyaltyDashboard.colMember")}</TableHead>
+                <TableHead className="text-cream/80">{t("loyaltyDashboard.colTier")}</TableHead>
+                <TableHead className="text-cream/80 text-right">{t("loyaltyDashboard.colCurrentPoints")}</TableHead>
+                <TableHead className="text-cream/80 text-right">{t("loyaltyDashboard.colLifetimePoints")}</TableHead>
+                <TableHead className="text-cream/80 text-right">{t("loyaltyDashboard.colActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-cream/60 py-8">
-                    Aucun membre trouvé
+                    {t("loyaltyDashboard.noMembers")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -542,23 +544,23 @@ export function LoyaltyDashboard() {
       {isHistoryOpen && selectedUser && (
         <div className="bg-noir/50 border border-gold/20 rounded-lg p-4">
           <h3 className="text-cream font-semibold mb-4">
-            Historique de {selectedUser.profile?.first_name} {selectedUser.profile?.last_name}
+            {t("loyaltyDashboard.historyOf")} {selectedUser.profile?.first_name} {selectedUser.profile?.last_name}
           </h3>
           <Table>
             <TableHeader>
               <TableRow className="border-gold/20">
-                <TableHead className="text-cream/80">Date</TableHead>
-                <TableHead className="text-cream/80">Type</TableHead>
-                <TableHead className="text-cream/80">Description</TableHead>
-                <TableHead className="text-cream/80 text-right">Points</TableHead>
-                <TableHead className="text-cream/80 text-right">Solde après</TableHead>
+                <TableHead className="text-cream/80">{t("loyaltyDashboard.colDate")}</TableHead>
+                <TableHead className="text-cream/80">{t("loyaltyDashboard.colType")}</TableHead>
+                <TableHead className="text-cream/80">{t("loyaltyDashboard.colDescription")}</TableHead>
+                <TableHead className="text-cream/80 text-right">{t("loyaltyDashboard.colPoints")}</TableHead>
+                <TableHead className="text-cream/80 text-right">{t("loyaltyDashboard.colBalanceAfter")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {userTransactions?.map((tx) => (
                 <TableRow key={tx.id} className="border-gold/10">
                   <TableCell className="text-cream/60">
-                    {format(new Date(tx.created_at), "dd/MM/yyyy HH:mm", { locale: fr })}
+                    {format(new Date(tx.created_at), "dd/MM/yyyy HH:mm", { locale: dateLocale })}
                   </TableCell>
                   <TableCell>
                     <Badge variant={tx.points > 0 ? "default" : "destructive"}>
@@ -584,30 +586,30 @@ export function LoyaltyDashboard() {
         <DialogContent className="bg-noir border-gold/20">
           <DialogHeader>
             <DialogTitle className="text-cream">
-              {adjustmentType === "add" ? "Ajouter des points" : "Retirer des points"}
+              {adjustmentType === "add" ? t("loyaltyDashboard.dialogAddTitle") : t("loyaltyDashboard.dialogRemoveTitle")}
             </DialogTitle>
             <DialogDescription className="text-cream/60">
               {selectedUser?.profile?.first_name} {selectedUser?.profile?.last_name} - 
-              Solde actuel: {formatNumber(selectedUser?.total_points || 0)} points
+              {t("loyaltyDashboard.currentBalance")}: {formatNumber(selectedUser?.total_points || 0)}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-cream">Nombre de points</Label>
+              <Label className="text-cream">{t("loyaltyDashboard.pointsCount")}</Label>
               <Input
                 type="number"
                 value={adjustmentAmount}
                 onChange={(e) => setAdjustmentAmount(e.target.value)}
-                placeholder="Ex: 100"
+                placeholder={t("loyaltyDashboard.pointsPlaceholder")}
                 className="bg-noir/50 border-gold/20 text-cream"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-cream">Raison</Label>
+              <Label className="text-cream">{t("loyaltyDashboard.reason")}</Label>
               <Textarea
                 value={adjustmentReason}
                 onChange={(e) => setAdjustmentReason(e.target.value)}
-                placeholder="Expliquez la raison de cet ajustement..."
+                placeholder={t("loyaltyDashboard.reasonPlaceholder")}
                 className="bg-noir/50 border-gold/20 text-cream"
               />
             </div>
@@ -618,7 +620,7 @@ export function LoyaltyDashboard() {
               onClick={() => setIsAdjustDialogOpen(false)}
               className="border-gold/30 text-cream"
             >
-              Annuler
+              {t("loyaltyDashboard.cancel")}
             </Button>
             <Button
               onClick={handleAdjustPoints}
@@ -626,7 +628,7 @@ export function LoyaltyDashboard() {
               className={adjustmentType === "add" ? "bg-success hover:bg-success/90" : "bg-destructive hover:bg-destructive/90"}
             >
               {adjustPointsMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {adjustmentType === "add" ? "Ajouter" : "Retirer"}
+              {adjustmentType === "add" ? t("loyaltyDashboard.add") : t("loyaltyDashboard.remove")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -636,9 +638,9 @@ export function LoyaltyDashboard() {
       <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
         <DialogContent className="bg-noir border-gold/20">
           <DialogHeader>
-            <DialogTitle className="text-cream">Configuration du programme fidélité</DialogTitle>
+            <DialogTitle className="text-cream">{t("loyaltyDashboard.configTitle")}</DialogTitle>
             <DialogDescription className="text-cream/60">
-              Paramétrez les règles d'accumulation et d'utilisation des points
+              {t("loyaltyDashboard.configDesc")}
             </DialogDescription>
           </DialogHeader>
           {config && (
@@ -659,64 +661,64 @@ export function LoyaltyDashboard() {
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-cream">Points par FCFA</Label>
+                  <Label className="text-cream">{t("loyaltyDashboard.pointsPerFcfa")}</Label>
                   <Input
                     name="points_per_fcfa"
                     type="number"
                     defaultValue={config.points_per_fcfa}
                     className="bg-noir/50 border-gold/20 text-cream"
                   />
-                  <p className="text-xs text-cream/40">Points gagnés pour X FCFA</p>
+                  <p className="text-xs text-cream/40">{t("loyaltyDashboard.pointsPerFcfaHelp")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream">FCFA par point</Label>
+                  <Label className="text-cream">{t("loyaltyDashboard.fcfaPerPoint")}</Label>
                   <Input
                     name="fcfa_per_point"
                     type="number"
                     defaultValue={config.fcfa_per_point}
                     className="bg-noir/50 border-gold/20 text-cream"
                   />
-                  <p className="text-xs text-cream/40">Dépense requise pour 1 point</p>
+                  <p className="text-xs text-cream/40">{t("loyaltyDashboard.fcfaPerPointHelp")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream">Minimum pour utiliser</Label>
+                  <Label className="text-cream">{t("loyaltyDashboard.minRedeem")}</Label>
                   <Input
                     name="min_points_redeem"
                     type="number"
                     defaultValue={config.min_points_redeem}
                     className="bg-noir/50 border-gold/20 text-cream"
                   />
-                  <p className="text-xs text-cream/40">Points minimum à utiliser</p>
+                  <p className="text-xs text-cream/40">{t("loyaltyDashboard.minRedeemHelp")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream">Valeur point (FCFA)</Label>
+                  <Label className="text-cream">{t("loyaltyDashboard.pointValue")}</Label>
                   <Input
                     name="points_value_fcfa"
                     type="number"
                     defaultValue={config.points_value_fcfa}
                     className="bg-noir/50 border-gold/20 text-cream"
                   />
-                  <p className="text-xs text-cream/40">Valeur d'1 point en FCFA</p>
+                  <p className="text-xs text-cream/40">{t("loyaltyDashboard.pointValueHelp")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream">Bonus bienvenue</Label>
+                  <Label className="text-cream">{t("loyaltyDashboard.welcomeBonus")}</Label>
                   <Input
                     name="welcome_bonus"
                     type="number"
                     defaultValue={config.welcome_bonus}
                     className="bg-noir/50 border-gold/20 text-cream"
                   />
-                  <p className="text-xs text-cream/40">Points offerts à l'inscription</p>
+                  <p className="text-xs text-cream/40">{t("loyaltyDashboard.welcomeBonusHelp")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-cream">Bonus anniversaire</Label>
+                  <Label className="text-cream">{t("loyaltyDashboard.birthdayBonus")}</Label>
                   <Input
                     name="birthday_bonus"
                     type="number"
                     defaultValue={config.birthday_bonus}
                     className="bg-noir/50 border-gold/20 text-cream"
                   />
-                  <p className="text-xs text-cream/40">Points offerts chaque anniversaire</p>
+                  <p className="text-xs text-cream/40">{t("loyaltyDashboard.birthdayBonusHelp")}</p>
                 </div>
               </div>
               <DialogFooter>
@@ -726,7 +728,7 @@ export function LoyaltyDashboard() {
                   onClick={() => setIsConfigDialogOpen(false)}
                   className="border-gold/30 text-cream"
                 >
-                  Annuler
+                  {t("loyaltyDashboard.cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -734,7 +736,7 @@ export function LoyaltyDashboard() {
                   className="bg-gradient-gold text-noir"
                 >
                   {updateConfigMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Enregistrer
+                  {t("loyaltyDashboard.save")}
                 </Button>
               </DialogFooter>
             </form>
