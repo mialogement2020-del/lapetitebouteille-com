@@ -1,19 +1,28 @@
-import { useState, useEffect } from "react";
-import { Save, Percent, Package, Eye, CreditCard, LayoutGrid, Power, Receipt, Tag } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Save, Percent, Package, Eye, CreditCard, LayoutGrid, Power, Receipt, Tag, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { WHOLESALE_TIERS, calculateWholesalePrices } from "@/hooks/useWholesale";
+import { useProducts } from "@/hooks/useProducts";
 import { useWholesaleTierConfig, useUpdateWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
 export function WholesaleSettings() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: tierConfig } = useWholesaleTierConfig();
   const updateConfig = useUpdateWholesaleTierConfig();
+  const { data: products = [] } = useProducts({ limit: 50, sortBy: "popular" });
+
+  const [previewProductId, setPreviewProductId] = useState<string>("");
+  const [previewCustomPrice, setPreviewCustomPrice] = useState<number>(50000);
+
+  const previewProduct = products.find((p) => p.id === previewProductId);
+  const previewUnitPrice = previewProduct?.price ?? previewCustomPrice;
 
   const [discounts, setDiscounts] = useState<Record<string, number>>(
     WHOLESALE_TIERS.reduce((acc, tier) => {
@@ -28,6 +37,29 @@ export function WholesaleSettings() {
   const [cardTiers, setCardTiers] = useState<string[]>(["carton_6"]);
   const [visibleTiers, setVisibleTiers] = useState<string[]>(["carton_6"]);
   const [saving, setSaving] = useState(false);
+
+  const fmt = (n: number) => new Intl.NumberFormat("fr-FR").format(Math.round(n));
+
+  const previewTiersTTC = useMemo(
+    () =>
+      calculateWholesalePrices(previewUnitPrice, [], false, {
+        discountOverrides: discounts,
+        tvaRate: tvaRate / 100,
+        labels,
+        lang: i18n.language,
+      }),
+    [previewUnitPrice, discounts, tvaRate, labels, i18n.language]
+  );
+  const previewTiersHT = useMemo(
+    () =>
+      calculateWholesalePrices(previewUnitPrice, [], true, {
+        discountOverrides: discounts,
+        tvaRate: tvaRate / 100,
+        labels,
+        lang: i18n.language,
+      }),
+    [previewUnitPrice, discounts, tvaRate, labels, i18n.language]
+  );
 
   useEffect(() => {
     if (tierConfig) {
