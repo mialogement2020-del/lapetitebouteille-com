@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import { Wine, Loader2, Image as ImageIcon, Upload, X, Plus, GripVertical, Calculator, Package } from "lucide-react";
+import { Wine, Loader2, Image as ImageIcon, Upload, X, Plus, GripVertical, Calculator, Package, AlertCircle, Trash2, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -29,6 +29,7 @@ import {
   usePricingConfig,
   computePricingBreakdown,
   computePointsForPrice,
+  type PointsTier,
 } from "@/hooks/usePricingConfig";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 
@@ -105,6 +106,8 @@ export function ProductFormDialog({
     serving_temperature: "",
     purchase_price: null,
     markup_percent_override: null,
+      points_override: null,
+      points_tiers_override: null,
     available_as_case: false,
     units_per_case: null,
     case_price: null,
@@ -137,6 +140,10 @@ export function ProductFormDialog({
         serving_temperature: product.serving_temperature || "",
         purchase_price: (p.purchase_price as number | null) ?? null,
         markup_percent_override: (p.markup_percent_override as number | null) ?? null,
+        points_override: (p.points_override as number | null) ?? null,
+        points_tiers_override: Array.isArray(p.points_tiers_override)
+          ? (p.points_tiers_override as { max: number | null; points: number }[])
+          : null,
         available_as_case: (p.available_as_case as boolean) ?? false,
         units_per_case: (p.units_per_case as number | null) ?? null,
         case_price: (p.case_price as number | null) ?? null,
@@ -166,6 +173,8 @@ export function ProductFormDialog({
         serving_temperature: "",
         purchase_price: null,
         markup_percent_override: null,
+        points_override: null,
+        points_tiers_override: null,
         available_as_case: false,
         units_per_case: null,
         case_price: null,
@@ -226,9 +235,65 @@ export function ProductFormDialog({
     setFormData((prev) => ({ ...prev, image_url: galleryUrl, gallery_urls: newGallery }));
   };
 
+  // Validation
+  const validationErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    if (!formData.name?.trim()) errs.name = "Le nom est requis.";
+    if (!formData.price || formData.price <= 0)
+      errs.price = "Le prix de vente doit être supérieur à 0.";
+    if (
+      formData.purchase_price != null &&
+      formData.purchase_price < 0
+    )
+      errs.purchase_price = "Le prix d'achat ne peut pas être négatif.";
+    if (formData.available_as_case) {
+      if (!formData.units_per_case || formData.units_per_case <= 0)
+        errs.units_per_case =
+          "Indiquez un nombre d'unités par caisse supérieur à 0.";
+      if (!formData.case_price || formData.case_price <= 0)
+        errs.case_price = "Le prix de la caisse est requis et doit être > 0.";
+    }
+    if (
+      formData.points_override != null &&
+      formData.points_override < 0
+    )
+      errs.points_override = "Les points ne peuvent pas être négatifs.";
+    return errs;
+  }, [formData]);
+
+  const hasErrors = Object.keys(validationErrors).length > 0;
+
   const handleSubmit = async () => {
+    if (hasErrors) {
+      toast({
+        title: "Formulaire incomplet",
+        description: Object.values(validationErrors)[0],
+        variant: "destructive",
+      });
+      return;
+    }
     await onSave(formData, product?.id);
   };
+
+  const productTiers = (formData.points_tiers_override ?? []) as PointsTier[];
+  const updateProductTier = (idx: number, patch: Partial<PointsTier>) => {
+    setFormData((prev) => ({
+      ...prev,
+      points_tiers_override: productTiers.map((t, i) =>
+        i === idx ? { ...t, ...patch } : t,
+      ),
+    }));
+  };
+  const addProductTier = () =>
+    setFormData((prev) => ({
+      ...prev,
+      points_tiers_override: [...productTiers, { max: null, points: 10 }],
+    }));
+  const removeProductTier = (idx: number) =>
+    setFormData((prev) => ({
+      ...prev,
+      points_tiers_override: productTiers.filter((_, i) => i !== idx),
+    }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -564,8 +629,14 @@ export function ProductFormDialog({
                           }))
                         }
                         placeholder="12"
-                        className="bg-cream/5 border-gold/20 text-cream"
+                        className={`bg-cream/5 border-gold/20 text-cream ${validationErrors.units_per_case ? "border-destructive" : ""}`}
                       />
+                      {validationErrors.units_per_case && (
+                        <p className="text-[11px] text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {validationErrors.units_per_case}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <Label className="text-cream/70 text-xs">Prix par caisse (FCFA)</Label>
@@ -579,11 +650,126 @@ export function ProductFormDialog({
                           }))
                         }
                         placeholder="150000"
-                        className="bg-cream/5 border-gold/20 text-cream"
+                        className={`bg-cream/5 border-gold/20 text-cream ${validationErrors.case_price ? "border-destructive" : ""}`}
                       />
+                      {validationErrors.case_price && (
+                        <p className="text-[11px] text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {validationErrors.case_price}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Points ambassadeur (par produit) */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="inline h-4 w-4" />
+                Points ambassadeur (spécifique à ce produit)
+              </h3>
+              <div className="rounded-lg border border-gold/20 p-3 space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-cream/80">
+                    Points fixes (facultatif)
+                  </Label>
+                  <Input
+                    type="number"
+                    value={formData.points_override ?? ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        points_override: e.target.value
+                          ? Number(e.target.value)
+                          : null,
+                      }))
+                    }
+                    placeholder="Laisser vide pour utiliser les paliers"
+                    className={`bg-cream/5 border-gold/20 text-cream ${validationErrors.points_override ? "border-destructive" : ""}`}
+                  />
+                  <p className="text-[11px] text-cream/50">
+                    Si renseigné, ce nombre remplace tous les paliers pour ce
+                    produit.
+                  </p>
+                  {validationErrors.points_override && (
+                    <p className="text-[11px] text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {validationErrors.points_override}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-gold/10">
+                  <Label className="text-cream/80">
+                    Paliers spécifiques (facultatif)
+                  </Label>
+                  <p className="text-[11px] text-cream/50">
+                    Utilisés uniquement si aucun nombre fixe n'est défini.
+                    Sinon, les paliers de la catégorie ou globaux s'appliquent.
+                  </p>
+                  {productTiers.map((tier, idx) => (
+                    <div
+                      key={idx}
+                      className="grid grid-cols-12 gap-2 items-end"
+                    >
+                      <div className="col-span-6">
+                        <Label className="text-cream/60 text-[11px]">
+                          Prix jusqu'à (FCFA)
+                        </Label>
+                        <Input
+                          type="number"
+                          placeholder="Illimité"
+                          value={tier.max ?? ""}
+                          onChange={(e) =>
+                            updateProductTier(idx, {
+                              max: e.target.value
+                                ? Number(e.target.value)
+                                : null,
+                            })
+                          }
+                          className="bg-cream/5 border-gold/20 text-cream h-8 text-xs"
+                        />
+                      </div>
+                      <div className="col-span-4">
+                        <Label className="text-cream/60 text-[11px]">
+                          Points
+                        </Label>
+                        <Input
+                          type="number"
+                          value={tier.points}
+                          onChange={(e) =>
+                            updateProductTier(idx, {
+                              points: Number(e.target.value),
+                            })
+                          }
+                          className="bg-cream/5 border-gold/20 text-cream h-8 text-xs"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive h-8 w-8"
+                          onClick={() => removeProductTier(idx)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addProductTier}
+                    className="border-gold/30 text-cream hover:bg-cream/10"
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Ajouter un palier
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -735,7 +921,7 @@ export function ProductFormDialog({
           <Button
             className="flex-1 bg-gradient-gold text-noir font-semibold hover:opacity-90"
             onClick={handleSubmit}
-            disabled={!formData.name || !formData.price || isSaving}
+            disabled={hasErrors || isSaving}
           >
             {isSaving ? (
               <>

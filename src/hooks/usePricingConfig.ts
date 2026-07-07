@@ -85,3 +85,73 @@ export function computePointsForPrice(price: number, tiers: PointsTier[]): numbe
   }
   return sorted[sorted.length - 1]?.points ?? 0;
 }
+
+/**
+ * Compute the full pricing/points breakdown for a product.
+ * - The "target sale price" is derived from purchase_price × (1 + markup) when a purchase
+ *   price is set, so the ambassador reward stays anchored to the configured margin
+ *   formula even if the admin later corrects the displayed price.
+ * - Falls back to the displayed price when no purchase price is available.
+ * - Points priority: product override → product tiers → category tiers → global tiers.
+ */
+export interface ProductPricingInput {
+  price: number;
+  purchase_price?: number | null;
+  markup_percent_override?: number | null;
+  points_override?: number | null;
+  points_tiers_override?: unknown;
+  category?: { points_tiers_override?: unknown } | null;
+}
+
+export function computeProductPricing(
+  product: ProductPricingInput,
+  config: PricingConfig | null | undefined,
+) {
+  const markup =
+    product.markup_percent_override ?? config?.global_markup_percent ?? 0;
+  const ambPercent = config?.ambassador_percent ?? 0;
+  const hasPurchase =
+    product.purchase_price !== null &&
+    product.purchase_price !== undefined &&
+    Number(product.purchase_price) > 0;
+  const purchase = Number(product.purchase_price ?? 0);
+  const targetSale = hasPurchase
+    ? Math.round(purchase * (1 + Number(markup) / 100))
+    : Number(product.price || 0);
+  const b = hasPurchase
+    ? computePricingBreakdown(purchase, Number(markup), Number(ambPercent))
+    : {
+        salePrice: targetSale,
+        margin: 0,
+        ambassadorEarning: Math.round((targetSale * Number(ambPercent)) / 100),
+        platformEarning: 0,
+      };
+
+  const productTiers = Array.isArray(product.points_tiers_override)
+    ? (product.points_tiers_override as PointsTier[])
+    : null;
+  const categoryTiers = Array.isArray(product.category?.points_tiers_override)
+    ? (product.category!.points_tiers_override as PointsTier[])
+    : null;
+  const tiers =
+    (productTiers && productTiers.length > 0
+      ? productTiers
+      : categoryTiers && categoryTiers.length > 0
+        ? categoryTiers
+        : config?.points_tiers) || [];
+  const points =
+    product.points_override != null && product.points_override >= 0
+      ? product.points_override
+      : computePointsForPrice(targetSale, tiers);
+
+  return {
+    hasPurchase,
+    markupPercent: Number(markup),
+    targetSalePrice: targetSale,
+    salePrice: b.salePrice,
+    margin: b.margin,
+    ambassadorEarning: b.ambassadorEarning,
+    platformEarning: b.platformEarning,
+    points,
+  };
+}

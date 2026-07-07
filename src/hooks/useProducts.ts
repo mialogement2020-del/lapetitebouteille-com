@@ -27,10 +27,19 @@ export interface Product {
   average_rating: number;
   review_count: number;
   created_at: string;
+  // Pricing/points helpers (admin-managed, exposed for ambassador estimates)
+  purchase_price?: number | null;
+  markup_percent_override?: number | null;
+  points_override?: number | null;
+  points_tiers_override?: unknown;
+  available_as_case?: boolean | null;
+  units_per_case?: number | null;
+  case_price?: number | null;
   category?: {
     id: string;
     name: string;
     slug: string;
+    points_tiers_override?: unknown;
   };
 }
 
@@ -65,7 +74,7 @@ export const useProducts = (filters: ProductFilters = {}) => {
         .from("products")
         .select(`
           *,
-          category:categories(id, name, slug)
+          category:categories(id, name, slug, points_tiers_override)
         `)
         .eq("is_active", true);
 
@@ -165,7 +174,7 @@ export const useProduct = (slug: string) => {
         .from("products")
         .select(`
           *,
-          category:categories(id, name, slug)
+          category:categories(id, name, slug, points_tiers_override)
         `)
         .eq("slug", slug)
         .eq("is_active", true)
@@ -204,7 +213,7 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
         .from("products")
         .select(`
           *,
-          category:categories(id, name, slug)
+          category:categories(id, name, slug, points_tiers_override)
         `)
         .eq("category_id", categoryId)
         .eq("is_active", true)

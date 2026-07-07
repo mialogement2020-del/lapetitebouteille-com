@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FolderOpen, Loader2, AlertTriangle } from "lucide-react";
+import { FolderOpen, Loader2, AlertTriangle, Sparkles, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -22,6 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AdminCategory, CategoryFormData } from "@/hooks/useAdmin";
+
+interface PointsTier {
+  max: number | null;
+  points: number;
+}
 
 interface CategoryFormDialogProps {
   category: AdminCategory | null;
@@ -62,9 +67,13 @@ export function CategoryFormDialog({
     low_stock_threshold: null,
     parent_id: null,
   });
+  const [pointsTiers, setPointsTiers] = useState<PointsTier[]>([]);
 
   useEffect(() => {
     if (category) {
+      const c = category as unknown as Record<string, unknown>;
+      const t = c.points_tiers_override;
+      setPointsTiers(Array.isArray(t) ? (t as PointsTier[]) : []);
       setFormData({
         name: category.name,
         slug: category.slug,
@@ -76,6 +85,7 @@ export function CategoryFormDialog({
         parent_id: category.parent_id || null,
       });
     } else {
+      setPointsTiers([]);
       setFormData({
         name: "",
         slug: "",
@@ -98,7 +108,14 @@ export function CategoryFormDialog({
   };
 
   const handleSubmit = async () => {
-    await onSave(formData, category?.id);
+    await onSave(
+      {
+        ...formData,
+        points_tiers_override:
+          pointsTiers.length > 0 ? pointsTiers : null,
+      } as CategoryFormData & { points_tiers_override: PointsTier[] | null },
+      category?.id,
+    );
   };
 
   return (
@@ -243,6 +260,81 @@ export function CategoryFormDialog({
               checked={formData.is_active}
               onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_active: checked }))}
             />
+          </div>
+
+          {/* Points ambassadeur — paliers spécifiques à la gamme */}
+          <div className="space-y-2 pt-3 border-t border-gold/10">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <Label className="text-cream/80">Paliers de points (gamme)</Label>
+            </div>
+            <p className="text-cream/40 text-xs">
+              Utilisés pour tous les produits de cette catégorie qui n'ont pas leur
+              propre configuration. Sinon, les paliers globaux s'appliquent.
+            </p>
+            {pointsTiers.map((tier, idx) => (
+              <div key={idx} className="grid grid-cols-12 gap-2 items-end">
+                <div className="col-span-6">
+                  <Label className="text-cream/60 text-[11px]">
+                    Prix jusqu'à (FCFA)
+                  </Label>
+                  <Input
+                    type="number"
+                    placeholder="Illimité"
+                    value={tier.max ?? ""}
+                    onChange={(e) =>
+                      setPointsTiers((prev) =>
+                        prev.map((x, i) =>
+                          i === idx
+                            ? { ...x, max: e.target.value ? Number(e.target.value) : null }
+                            : x,
+                        ),
+                      )
+                    }
+                    className="bg-cream/5 border-gold/20 text-cream h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-4">
+                  <Label className="text-cream/60 text-[11px]">Points</Label>
+                  <Input
+                    type="number"
+                    value={tier.points}
+                    onChange={(e) =>
+                      setPointsTiers((prev) =>
+                        prev.map((x, i) =>
+                          i === idx ? { ...x, points: Number(e.target.value) } : x,
+                        ),
+                      )
+                    }
+                    className="bg-cream/5 border-gold/20 text-cream h-8 text-xs"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive h-8 w-8"
+                    onClick={() =>
+                      setPointsTiers((prev) => prev.filter((_, i) => i !== idx))
+                    }
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setPointsTiers((prev) => [...prev, { max: null, points: 10 }])
+              }
+              className="border-gold/30 text-cream hover:bg-cream/10"
+            >
+              <Plus className="h-3 w-3 mr-1" /> Ajouter un palier
+            </Button>
           </div>
         </div>
 

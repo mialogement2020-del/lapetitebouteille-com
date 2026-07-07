@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Star, Sparkles, Share2, Check, QrCode, Download, Copy, Package } from "lucide-react";
+import { Star, Sparkles, Share2, Check, QrCode, Download, Copy, Package, TrendingUp, Coins } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Product } from "@/hooks/useProducts";
 import { toast } from "sonner";
 import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
 import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
+import { usePricingConfig, computeProductPricing } from "@/hooks/usePricingConfig";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { useTranslation } from "react-i18next";
@@ -37,6 +39,12 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const [copied, setCopied] = useState(false);
   const [qrCopied, setQrCopied] = useState(false);
   const { data: tierConfig } = useWholesaleTierConfig();
+  const { data: pricingConfig } = usePricingConfig();
+  const { isAdmin, isAmbassador } = useUserRoles();
+  const canSeeBreakdown = isAdmin || isAmbassador;
+  const breakdown = canSeeBreakdown
+    ? computeProductPricing(product, pricingConfig)
+    : null;
 
   const productQrUrl = `${PUBLISHED_URL}/produit/${product.slug}`;
 
@@ -251,6 +259,67 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {product.volume_ml && <span>{product.volume_ml}ml</span>}
           {product.alcohol_percentage && <span>{product.alcohol_percentage}%</span>}
         </div>
+
+        {/* Pricing breakdown — Admin & Ambassadeurs uniquement */}
+        {breakdown && pricingConfig && (
+          <div className="mt-3 rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 to-primary/5 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                <TrendingUp className="h-3 w-3" />
+                {isAdmin ? "Répartition" : "Vos gains estimés"}
+              </div>
+              {breakdown.hasPurchase && (
+                <span className="text-[10px] text-cream/50">
+                  vente conseillée {formatPrice(breakdown.targetSalePrice)}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+              <div className="flex items-center gap-1 rounded-md bg-green-500/10 border border-green-500/30 px-2 py-1">
+                <Coins className="h-3 w-3 text-green-400 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-cream/50 text-[9px] uppercase leading-none">
+                    Ambassadeur
+                  </p>
+                  <p className="text-green-400 font-semibold truncate">
+                    {formatPrice(breakdown.ambassadorEarning)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 rounded-md bg-primary/10 border border-primary/30 px-2 py-1">
+                <Sparkles className="h-3 w-3 text-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-cream/50 text-[9px] uppercase leading-none">
+                    Points
+                  </p>
+                  <p className="text-primary font-semibold truncate">
+                    {breakdown.points} pts
+                  </p>
+                </div>
+              </div>
+              {isAdmin && breakdown.hasPurchase && (
+                <>
+                  <div className="rounded-md bg-cream/5 border border-gold/10 px-2 py-1">
+                    <p className="text-cream/50 text-[9px] uppercase leading-none">
+                      Marge ({breakdown.markupPercent}%)
+                    </p>
+                    <p className="text-cream font-semibold truncate">
+                      {formatPrice(breakdown.margin)}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-blue-500/10 border border-blue-500/30 px-2 py-1">
+                    <p className="text-cream/50 text-[9px] uppercase leading-none">
+                      Plateforme
+                    </p>
+                    <p className="text-blue-400 font-semibold truncate">
+                      {formatPrice(breakdown.platformEarning)}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Wholesale CTA */}
         {(() => {
