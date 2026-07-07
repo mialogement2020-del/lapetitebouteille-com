@@ -709,6 +709,12 @@ const Admin = () => {
                 </div>
               </TabsContent>
 
+              <TabsContent value="home-categories" className="space-y-6">
+                <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
+                  <HomeCategoriesManager />
+                </div>
+              </TabsContent>
+
               <TabsContent value="images" className="space-y-6">
                 <EmbeddingsManager />
                 <div className="bg-noir/50 border border-gold/20 rounded-lg p-6">
