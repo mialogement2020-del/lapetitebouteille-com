@@ -899,6 +899,30 @@ export type Database = {
         }
         Relationships: []
       }
+      hero_config: {
+        Row: {
+          draft: Json
+          id: number
+          published: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          draft?: Json
+          id?: number
+          published?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          draft?: Json
+          id?: number
+          published?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       home_categories: {
         Row: {
           created_at: string
@@ -943,6 +967,77 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      home_categories_history: {
+        Row: {
+          action: string
+          category_id: string | null
+          changed_at: string
+          changed_by: string | null
+          id: string
+          snapshot: Json
+        }
+        Insert: {
+          action: string
+          category_id?: string | null
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          snapshot: Json
+        }
+        Update: {
+          action?: string
+          category_id?: string | null
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          snapshot?: Json
+        }
+        Relationships: []
+      }
+      home_featured_products: {
+        Row: {
+          created_at: string
+          custom_price: number | null
+          custom_title_en: string | null
+          custom_title_fr: string | null
+          display_order: number
+          id: string
+          is_visible: boolean
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          custom_price?: number | null
+          custom_title_en?: string | null
+          custom_title_fr?: string | null
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          custom_price?: number | null
+          custom_title_en?: string | null
+          custom_title_fr?: string | null
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_featured_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       loyalty_config: {
         Row: {
