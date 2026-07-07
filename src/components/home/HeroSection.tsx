@@ -5,9 +5,24 @@ import { ArrowRight, Star, ChevronDown } from "lucide-react";
 import heroBackground from "@/assets/hero-wine-cellar.webp";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useHeroConfig } from "@/hooks/useHeroConfig";
  
  const HeroSection = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { data: cfg } = useHeroConfig();
+  const isEn = i18n.language?.startsWith("en");
+  const hero = (cfg?.published ?? {}) as any;
+  const badge = (isEn ? hero.badge_en : hero.badge_fr) || t("hero.badge");
+  const titleLine1 = (isEn ? hero.title_line1_en : hero.title_line1_fr) || t("hero.titleLine1");
+  const titleHighlight = (isEn ? hero.title_highlight_en : hero.title_highlight_fr) || t("hero.titleHighlight");
+  const subtitle = (isEn ? hero.subtitle_en : hero.subtitle_fr) || t("hero.subtitle");
+  const ctaPrimary = (isEn ? hero.cta_primary_label_en : hero.cta_primary_label_fr) || t("hero.ctaPrimary");
+  const ctaSecondary = (isEn ? hero.cta_secondary_label_en : hero.cta_secondary_label_fr) || t("hero.ctaSecondary");
+  const ctaPrimaryLink = hero.cta_primary_link || "/catalogue";
+  const ctaSecondaryLink = hero.cta_secondary_link || "/ambassadeur";
+  const mediaType = hero.media_type || "image";
+  const bgUrl = hero.background_url || heroBackground;
+  const videoUrl = hero.video_url || "";
   const containerRef = useRef<HTMLElement>(null);
   
   const { scrollYProgress } = useScroll({
@@ -32,17 +47,25 @@ import { useTranslation } from "react-i18next";
         animate={{ scale: 1 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
        >
-        <img
-          src={heroBackground}
-          alt=""
-          aria-hidden="true"
-          width={1920}
-          height={1080}
-          className="h-full w-full object-cover object-center"
-          loading="eager"
-          decoding="async"
-          fetchPriority="high"
-        />
+        {mediaType === "video" && videoUrl ? (
+          <video
+            src={videoUrl}
+            autoPlay muted loop playsInline
+            className="h-full w-full object-cover object-center"
+          />
+        ) : (
+          <img
+            src={bgUrl}
+            alt=""
+            aria-hidden="true"
+            width={1920}
+            height={1080}
+            className="h-full w-full object-cover object-center"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-noir/90 via-noir/60 to-noir" />
       </motion.div>
  
@@ -88,7 +111,7 @@ import { useTranslation } from "react-i18next";
              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm"
            >
              <Star className="h-4 w-4 text-primary fill-primary animate-pulse" />
-             <span className="text-sm font-medium text-primary tracking-wide">{t("hero.badge")}</span>
+             <span className="text-sm font-medium text-primary tracking-wide">{badge}</span>
            </motion.div>
  
            {/* Heading */}
@@ -98,9 +121,9 @@ import { useTranslation } from "react-i18next";
              transition={{ duration: 0.6, delay: 0.1 }}
              className="font-display text-5xl md:text-6xl lg:text-8xl font-semibold text-cream leading-[0.95] mb-8"
            >
-             {t("hero.titleLine1")}
+             {titleLine1}
              <br />
-             <span className="text-gradient-gold">{t("hero.titleHighlight")}</span>
+             <span className="text-gradient-gold">{titleHighlight}</span>
            </motion.h1>
  
            {/* Subtitle */}
@@ -110,7 +133,7 @@ import { useTranslation } from "react-i18next";
              transition={{ duration: 0.6, delay: 0.2 }}
              className="text-lg md:text-xl text-cream/70 mb-12 max-w-2xl mx-auto leading-relaxed font-light"
            >
-             {t("hero.subtitle")}
+             {subtitle}
            </motion.p>
  
            {/* CTA Buttons */}
@@ -125,8 +148,8 @@ import { useTranslation } from "react-i18next";
                size="lg"
                className="bg-gradient-gold text-noir font-semibold text-lg px-10 py-7 hover:opacity-90 shadow-gold shine-effect rounded-full"
              >
-               <Link to="/catalogue">
-                 {t("hero.ctaPrimary")}
+                <Link to={ctaPrimaryLink}>
+                  {ctaPrimary}
                  <ArrowRight className="ml-2 h-5 w-5" />
                </Link>
              </Button>
@@ -136,8 +159,8 @@ import { useTranslation } from "react-i18next";
                size="lg"
                className="border-cream/20 text-cream hover:bg-cream/5 text-lg px-10 py-7 rounded-full backdrop-blur-sm"
              >
-               <Link to="/ambassadeur">
-                 {t("hero.ctaSecondary")}
+                <Link to={ctaSecondaryLink}>
+                  {ctaSecondary}
                </Link>
              </Button>
            </motion.div>
