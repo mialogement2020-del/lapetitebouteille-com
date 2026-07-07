@@ -570,6 +570,11 @@ export function useAdmin() {
           tasting_notes: data.tasting_notes || null,
           food_pairing: data.food_pairing || null,
           serving_temperature: data.serving_temperature || null,
+          purchase_price: data.purchase_price ?? null,
+          markup_percent_override: data.markup_percent_override ?? null,
+          available_as_case: data.available_as_case ?? false,
+          units_per_case: data.units_per_case ?? null,
+          case_price: data.case_price ?? null,
         }])
         .select("id")
         .single();
