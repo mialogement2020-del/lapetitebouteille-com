@@ -5,6 +5,10 @@ export interface WholesaleTierConfig {
   id: string;
   visible_tiers: string[];
   card_tiers: string[];
+  enabled: boolean;
+  discount_overrides: Record<string, number>;
+  tva_rate: number;
+  labels: Record<string, { fr?: string; en?: string }>;
   updated_at: string;
 }
 
@@ -29,12 +33,11 @@ export function useUpdateWholesaleTierConfig() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (config: { visible_tiers: string[]; card_tiers: string[] }) => {
+    mutationFn: async (config: Partial<Omit<WholesaleTierConfig, "id" | "updated_at">>) => {
       const { error } = await (supabase as any)
         .from("wholesale_tier_config")
         .update({
-          visible_tiers: config.visible_tiers,
-          card_tiers: config.card_tiers,
+          ...config,
           updated_at: new Date().toISOString(),
         })
         .eq("id", "default");
