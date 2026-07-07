@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Product } from "@/hooks/useProducts";
 import { WholesaleTierPrice, useSubmitQuoteRequest } from "@/hooks/useWholesale";
+import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -37,6 +38,19 @@ export function QuoteRequestDialog({
   const { t } = useTranslation();
   const { user } = useAuthContext();
   const submitQuote = useSubmitQuoteRequest();
+  const { data: tierConfig } = useWholesaleTierConfig();
+  const tvaRate = tierConfig?.tva_rate ?? 0.1925;
+
+  // tier.totalPrice is TTC unless the user is in HT-mode (hasNIU + valid NIU).
+  // Derive the counterpart consistently for a clear HT/TTC display.
+  const isHTMode = hasNIU && niuValue.length >= 10;
+  const totalHT = isHTMode
+    ? tier.totalPrice
+    : Math.round(tier.totalPrice / (1 + tvaRate));
+  const totalTTC = isHTMode
+    ? Math.round(tier.totalPrice * (1 + tvaRate))
+    : tier.totalPrice;
+  const tvaAmount = totalTTC - totalHT;
 
   const [formData, setFormData] = useState({
     name: "",
@@ -118,11 +132,21 @@ export function QuoteRequestDialog({
           <p className="text-xs text-cream/60 mt-1">
             {tier.icon} {tier.label} — {t("quote.bottles", { count: tier.quantity })}
           </p>
-          <p className="font-bold text-primary mt-1">
-            {formatPrice(tier.totalPrice)} FCFA
-            {hasNIU && <span className="text-xs text-cream/40 ml-1">HT</span>}
-          </p>
-          <p className="text-xs text-green-400">
+          <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+            <div className="rounded bg-cream/5 p-2">
+              <p className="text-cream/50">Total HT</p>
+              <p className="text-cream font-semibold">{formatPrice(totalHT)} FCFA</p>
+            </div>
+            <div className="rounded bg-cream/5 p-2">
+              <p className="text-cream/50">TVA ({(tvaRate * 100).toFixed(2)}%)</p>
+              <p className="text-cream font-semibold">{formatPrice(tvaAmount)} FCFA</p>
+            </div>
+            <div className="rounded bg-primary/10 p-2 border border-primary/30">
+              <p className="text-cream/50">Total TTC</p>
+              <p className="text-primary font-bold">{formatPrice(totalTTC)} FCFA</p>
+            </div>
+          </div>
+          <p className="text-xs text-green-400 mt-2">
             {t("quote.savings", { amount: formatPrice(tier.savings) })}
           </p>
         </div>
