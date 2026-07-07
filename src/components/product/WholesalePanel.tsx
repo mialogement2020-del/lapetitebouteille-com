@@ -23,7 +23,7 @@ const formatPrice = (price: number) => {
 };
 
 export function WholesalePanel({ product }: WholesalePanelProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<PackagingType | null>(null);
   const [buyerType, setBuyerType] = useState<"individual" | "business">("individual");
@@ -34,8 +34,18 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
   const { data: tierConfig } = useWholesaleTierConfig();
   const { addItem } = useCartContext();
 
-  const allTiers = calculateWholesalePrices(product.price, customPricing || [], hasNIU && niuValue.length >= 10);
-  const tiers = allTiers.filter(t => tierConfig?.visible_tiers?.includes(t.type));
+  const allTiers = calculateWholesalePrices(
+    product.price,
+    customPricing || [],
+    hasNIU && niuValue.length >= 10,
+    {
+      discountOverrides: tierConfig?.discount_overrides,
+      tvaRate: tierConfig?.tva_rate,
+      labels: tierConfig?.labels,
+      lang: i18n.language,
+    }
+  );
+  const tiers = allTiers.filter((t) => tierConfig?.visible_tiers?.includes(t.type));
 
   const handleAddToCart = async (tier: WholesaleTierPrice) => {
     try {
@@ -55,6 +65,7 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
 
   const selectedTierData = tiers.find((t) => t.type === selectedTier);
 
+  if (tierConfig && tierConfig.enabled === false) return null;
   if (tiers.length === 0) return null;
 
   return (

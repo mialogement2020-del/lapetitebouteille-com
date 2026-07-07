@@ -52,13 +52,23 @@ export interface WholesaleTierPrice {
   isCustom: boolean;
 }
 
-const TVA_RATE = 0.1925; // 19.25% Cameroon VAT
+const DEFAULT_TVA_RATE = 0.1925; // 19.25% Cameroon VAT
 
 export function calculateWholesalePrices(
   unitPrice: number,
   customPricing?: WholesalePricing[],
-  isHT: boolean = false
+  isHT: boolean = false,
+  options?: {
+    discountOverrides?: Record<string, number>;
+    tvaRate?: number;
+    labels?: Record<string, { fr?: string; en?: string }>;
+    lang?: string;
+  }
 ): WholesaleTierPrice[] {
+  const tvaRate = options?.tvaRate ?? DEFAULT_TVA_RATE;
+  const overrides = options?.discountOverrides ?? {};
+  const labels = options?.labels ?? {};
+  const lang = options?.lang ?? "fr";
   return WHOLESALE_TIERS.map((tier) => {
     const custom = customPricing?.find((p) => p.packaging_type === tier.type && p.is_active);
     
@@ -66,28 +76,32 @@ export function calculateWholesalePrices(
     let discountPercent: number;
     let isCustom = false;
 
+    const baseDiscount = overrides[tier.type] ?? tier.discountPercent;
+
     if (custom?.custom_price) {
       totalPrice = custom.custom_price;
       discountPercent = custom.discount_percentage || Math.round((1 - totalPrice / (unitPrice * tier.quantity)) * 100);
       isCustom = true;
     } else {
-      discountPercent = custom?.discount_percentage || tier.discountPercent;
+      discountPercent = custom?.discount_percentage || baseDiscount;
       totalPrice = Math.round(unitPrice * tier.quantity * (1 - discountPercent / 100));
     }
 
     // If HT mode, remove TVA from displayed price
     if (isHT) {
-      totalPrice = Math.round(totalPrice / (1 + TVA_RATE));
+      totalPrice = Math.round(totalPrice / (1 + tvaRate));
     }
 
     const fullPrice = isHT 
-      ? Math.round((unitPrice * tier.quantity) / (1 + TVA_RATE))
+      ? Math.round((unitPrice * tier.quantity) / (1 + tvaRate))
       : unitPrice * tier.quantity;
     const savings = fullPrice - totalPrice;
 
+    const customLabel = labels[tier.type]?.[lang as "fr" | "en"];
+
     return {
       type: tier.type,
-      label: tier.label,
+      label: customLabel || tier.label,
       quantity: tier.quantity,
       unitPrice,
       totalPrice,
