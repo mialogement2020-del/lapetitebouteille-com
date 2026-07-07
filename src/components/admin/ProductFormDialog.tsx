@@ -383,7 +383,102 @@ export function ProductFormDialog({
               <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">
                 {t("productForm.sectionPricing")}
               </h3>
-              
+
+              {/* Purchase price + markup override */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-cream/80">Prix d'achat (FCFA)</Label>
+                  <Input
+                    type="number"
+                    value={formData.purchase_price ?? ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        purchase_price: e.target.value ? Number(e.target.value) : null,
+                      }))
+                    }
+                    placeholder="15000"
+                    className="bg-cream/5 border-gold/20 text-cream"
+                  />
+                  <p className="text-xs text-cream/50">Coût d'acquisition (usage interne).</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-cream/80">
+                    Marge (%) — laisser vide pour utiliser {pricingConfig?.global_markup_percent ?? 30}%
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={formData.markup_percent_override ?? ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        markup_percent_override: e.target.value ? Number(e.target.value) : null,
+                      }))
+                    }
+                    placeholder={String(pricingConfig?.global_markup_percent ?? 30)}
+                    className="bg-cream/5 border-gold/20 text-cream"
+                  />
+                </div>
+              </div>
+
+              {/* Live preview */}
+              {(() => {
+                const purchase = Number(formData.purchase_price ?? 0);
+                if (!purchase || !pricingConfig) return null;
+                const markup =
+                  formData.markup_percent_override ?? pricingConfig.global_markup_percent;
+                const ambPercent = pricingConfig.ambassador_percent;
+                const b = computePricingBreakdown(purchase, Number(markup), Number(ambPercent));
+                const pts = computePointsForPrice(b.salePrice, pricingConfig.points_tiers);
+                return (
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calculator className="h-4 w-4 text-primary" />
+                      <span className="text-xs uppercase tracking-wider text-primary font-semibold">
+                        Aperçu de la répartition
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                      <div className="p-2 rounded bg-cream/5 border border-gold/10">
+                        <p className="text-cream/50">Vente conseillée</p>
+                        <p className="text-primary font-bold">{formatPrice(b.salePrice)}</p>
+                        <button
+                          type="button"
+                          className="mt-1 text-[10px] underline text-cream/60 hover:text-primary"
+                          onClick={() =>
+                            setFormData((prev) => ({ ...prev, price: b.salePrice }))
+                          }
+                        >
+                          Appliquer au prix
+                        </button>
+                      </div>
+                      <div className="p-2 rounded bg-cream/5 border border-gold/10">
+                        <p className="text-cream/50">Marge</p>
+                        <p className="text-cream font-semibold">{formatPrice(b.margin)}</p>
+                      </div>
+                      <div className="p-2 rounded bg-green-500/10 border border-green-500/30">
+                        <p className="text-cream/60">Ambassadeur</p>
+                        <p className="text-green-400 font-semibold">
+                          {formatPrice(b.ambassadorEarning)}
+                        </p>
+                        <p className="text-[10px] text-cream/40">{pts} pts</p>
+                      </div>
+                      <div className="p-2 rounded bg-blue-500/10 border border-blue-500/30">
+                        <p className="text-cream/60">Plateforme</p>
+                        <p className="text-blue-400 font-semibold">
+                          {formatPrice(b.platformEarning)}
+                        </p>
+                      </div>
+                      <div className="p-2 rounded bg-cream/5 border border-gold/10">
+                        <p className="text-cream/50">Marge appliquée</p>
+                        <p className="text-cream font-semibold">{Number(markup)}%</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="text-cream/80">{t("productForm.price")}</Label>
@@ -434,6 +529,61 @@ export function ProductFormDialog({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Caisse / carton */}
+              <div className="rounded-lg border border-gold/20 p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
+                    <div>
+                      <p className="text-cream text-sm font-medium">Disponible en caisse / carton</p>
+                      <p className="text-cream/50 text-xs">
+                        Le produit apparaîtra aussi dans la catégorie « Caisse ».
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={formData.available_as_case ?? false}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, available_as_case: checked }))
+                    }
+                  />
+                </div>
+                {formData.available_as_case && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-cream/70 text-xs">Unités par caisse</Label>
+                      <Input
+                        type="number"
+                        value={formData.units_per_case ?? ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            units_per_case: e.target.value ? Number(e.target.value) : null,
+                          }))
+                        }
+                        placeholder="12"
+                        className="bg-cream/5 border-gold/20 text-cream"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-cream/70 text-xs">Prix par caisse (FCFA)</Label>
+                      <Input
+                        type="number"
+                        value={formData.case_price ?? ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            case_price: e.target.value ? Number(e.target.value) : null,
+                          }))
+                        }
+                        placeholder="150000"
+                        className="bg-cream/5 border-gold/20 text-cream"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
