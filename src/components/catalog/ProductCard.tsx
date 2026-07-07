@@ -254,9 +254,13 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
         {/* Wholesale CTA */}
         {(() => {
+          if (tierConfig && tierConfig.enabled === false) return null;
           const enabledCardTiers = WHOLESALE_TIERS.filter(t => tierConfig?.card_tiers?.includes(t.type));
           if (enabledCardTiers.length === 0) return null;
-          const maxDiscount = Math.max(...enabledCardTiers.map(t => t.discountPercent));
+          const overrides = (tierConfig?.discount_overrides || {}) as Record<string, number>;
+          const maxDiscount = Math.max(
+            ...enabledCardTiers.map((t) => overrides[t.type] ?? t.discountPercent)
+          );
           return (
             <Link
               to={`/produit/${product.slug}#wholesale`}
