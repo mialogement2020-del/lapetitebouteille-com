@@ -35,6 +35,7 @@ import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { useTranslation } from "react-i18next";
 import Seo from "@/components/seo/Seo";
+import { buildProductSeo } from "@/lib/productSeo";
 
 const ProductPage = () => {
   const { t } = useTranslation();
@@ -112,42 +113,17 @@ const ProductPage = () => {
     new Date(product.created_at) >
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const productImage = product.image_url || "https://www.lapetitebouteille.com/og-image.jpg";
-  const productDesc = product.short_description
-    || `${product.name} disponible au Cameroun. Livraison Yaoundé, Douala et partout au pays.`;
-  const productJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    image: productImage,
-    description: productDesc,
-    sku: product.id,
-    brand: product.category?.name ? { "@type": "Brand", name: product.category.name } : undefined,
-    aggregateRating: product.review_count > 0 ? {
-      "@type": "AggregateRating",
-      ratingValue: product.average_rating,
-      reviewCount: product.review_count,
-    } : undefined,
-    offers: {
-      "@type": "Offer",
-      url: `https://www.lapetitebouteille.com/produit/${product.slug}`,
-      price: product.price,
-      priceCurrency: "XAF",
-      availability: product.stock_quantity > 0
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-    },
-  };
+  const productSeo = buildProductSeo(product);
 
   return (
     <div className="min-h-screen bg-noir">
       <Seo
-        title={`${product.name} | La Petite Bouteille`}
-        description={productDesc.slice(0, 158)}
-        path={`/produit/${product.slug}`}
-        image={productImage}
+        title={productSeo.title}
+        description={productSeo.description}
+        path={productSeo.path}
+        image={productSeo.image}
         type="product"
-        jsonLd={productJsonLd}
+        jsonLd={productSeo.jsonLd}
       />
       <Header />
 
@@ -437,6 +413,25 @@ const ProductPage = () => {
               </TabsContent>
             </Tabs>
           </motion.div>
+
+          <motion.section
+            className="mt-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
+          >
+            <h2 className="font-display text-2xl md:text-3xl font-semibold text-cream mb-6">
+              Questions frequentes
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              {productSeo.faq.map((item) => (
+                <div key={item.question} className="border border-cream/10 rounded-lg p-5 bg-cream/5">
+                  <h3 className="font-semibold text-cream mb-2">{item.question}</h3>
+                  <p className="text-sm text-cream/70 leading-relaxed">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </motion.section>
         </div>
 
         {/* Related Products */}
