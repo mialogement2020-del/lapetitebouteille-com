@@ -124,13 +124,14 @@ const Header = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsSearchOpen(!isSearchOpen)}
+              aria-label={isSearchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
               className="p-3 text-cream/70 hover:text-cream transition-colors"
             >
               <Search className="h-5 w-5" />
             </motion.button>
 
             {/* Wishlist */}
-            <Link to={isAuthenticated ? "/compte?tab=wishlist" : "/connexion"}>
+            <Link to={isAuthenticated ? "/compte?tab=wishlist" : "/connexion"} aria-label="Voir la liste d'envies">
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -167,6 +168,7 @@ const Header = () => {
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
+                    aria-label="Ouvrir le menu du compte"
                     className="p-3 text-cream/70 hover:text-cream transition-colors"
                   >
                     <User className="h-5 w-5" />
@@ -220,6 +222,7 @@ const Header = () => {
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
+                  aria-label="Se connecter"
                   className="p-3 text-cream/70 hover:text-cream transition-colors"
                 >
                   <LogIn className="h-5 w-5" />
@@ -232,6 +235,8 @@ const Header = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="lg:hidden p-3 text-cream/70 hover:text-cream transition-colors"
+              aria-label={isMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -262,6 +267,7 @@ const Header = () => {
                 <Button 
                   type="submit"
                   size="icon" 
+                  aria-label="Rechercher"
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-primary hover:bg-primary/90 text-noir h-10 w-10"
                 >
                   <Search className="h-5 w-5" />

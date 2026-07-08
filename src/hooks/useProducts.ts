@@ -70,12 +70,13 @@ export const useProducts = (filters: ProductFilters = {}) => {
     queryKey: ["products", filters],
     enabled: filters.enabled ?? true,
     queryFn: async () => {
-      let query = supabase
-        .from("products")
-        .select(`
+      const selectWithCategory = `
           *,
           category:categories(id, name, slug, points_tiers_override)
-        `)
+        `;
+      let query = supabase
+        .from("products")
+        .select(selectWithCategory)
         .eq("is_active", true);
 
       // Filter by category (including subcategories)
@@ -150,7 +151,48 @@ export const useProducts = (filters: ProductFilters = {}) => {
         query = query.limit(filters.limit);
       }
 
-      const { data, error } = await query;
+      let { data, error } = await query;
+
+      if (error && /has_role|permission denied|categories/i.test(error.message)) {
+        let fallbackQuery = supabase
+          .from("products")
+          .select("*")
+          .eq("is_active", true);
+
+        if (filters.categorySlug && filters.categorySlug === "caisse") {
+          fallbackQuery = fallbackQuery.eq("available_as_case", true);
+        }
+        if (filters.minPrice !== undefined) fallbackQuery = fallbackQuery.gte("price", filters.minPrice);
+        if (filters.maxPrice !== undefined) fallbackQuery = fallbackQuery.lte("price", filters.maxPrice);
+        if (filters.origin) fallbackQuery = fallbackQuery.eq("origin_country", filters.origin);
+        if (filters.search) fallbackQuery = fallbackQuery.ilike("name", `%${filters.search}%`);
+        if (filters.featured) fallbackQuery = fallbackQuery.eq("is_featured", true);
+
+        switch (filters.sortBy) {
+          case "price_asc":
+            fallbackQuery = fallbackQuery.order("price", { ascending: true });
+            break;
+          case "price_desc":
+            fallbackQuery = fallbackQuery.order("price", { ascending: false });
+            break;
+          case "newest":
+            fallbackQuery = fallbackQuery.order("created_at", { ascending: false });
+            break;
+          case "rating":
+            fallbackQuery = fallbackQuery.order("average_rating", { ascending: false });
+            break;
+          case "popular":
+          default:
+            fallbackQuery = fallbackQuery.order("review_count", { ascending: false });
+            break;
+        }
+
+        if (filters.limit) fallbackQuery = fallbackQuery.limit(filters.limit);
+
+        const fallbackResult = await fallbackQuery;
+        data = fallbackResult.data;
+        error = fallbackResult.error;
+      }
 
       if (error) throw error;
       
@@ -170,7 +212,7 @@ export const useProduct = (slug: string) => {
   return useQuery({
     queryKey: ["product", slug],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from("products")
         .select(`
           *,
@@ -179,6 +221,17 @@ export const useProduct = (slug: string) => {
         .eq("slug", slug)
         .eq("is_active", true)
         .maybeSingle();
+
+      if (error && /has_role|permission denied|categories/i.test(error.message)) {
+        const fallbackResult = await supabase
+          .from("products")
+          .select("*")
+          .eq("slug", slug)
+          .eq("is_active", true)
+          .maybeSingle();
+        data = fallbackResult.data;
+        error = fallbackResult.error;
+      }
 
       if (error) throw error;
       return data as Product | null;
@@ -197,6 +250,10 @@ export const useCategories = () => {
         .eq("is_active", true)
         .order("display_order", { ascending: true });
 
+      if (error && /has_role|permission denied/i.test(error.message)) {
+        console.warn("Categories unavailable because of RLS helper permissions:", error.message);
+        return [] as Category[];
+      }
       if (error) throw error;
       return data as Category[];
     },
@@ -209,7 +266,7 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
     queryFn: async () => {
       if (!categoryId) return [];
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from("products")
         .select(`
           *,
@@ -219,6 +276,18 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
         .eq("is_active", true)
         .neq("id", productId)
         .limit(4);
+
+      if (error && /has_role|permission denied|categories/i.test(error.message)) {
+        const fallbackResult = await supabase
+          .from("products")
+          .select("*")
+          .eq("category_id", categoryId)
+          .eq("is_active", true)
+          .neq("id", productId)
+          .limit(4);
+        data = fallbackResult.data;
+        error = fallbackResult.error;
+      }
 
       if (error) throw error;
       return data as Product[];

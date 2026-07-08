@@ -1,6 +1,6 @@
 // Service Worker for Push Notifications - La Petite Bouteille Admin
 
- const CACHE_NAME = "lpb-v2";
+ const CACHE_NAME = "lpb-v3";
  const STATIC_ASSETS = [
    "/",
    "/index.html",
@@ -43,11 +43,12 @@ self.addEventListener("activate", (event) => {
    // Skip non-GET requests
    if (event.request.method !== "GET") return;
    
-   // Skip API calls and external requests
+   // Skip API calls, dynamic application routes and external requests
    const url = new URL(event.request.url);
    if (url.pathname.startsWith("/api") || 
        url.pathname.startsWith("/rest") ||
-       url.hostname.includes("supabase")) {
+       url.hostname.includes("supabase") ||
+       ["/admin", "/compte", "/checkout", "/catalogue", "/produit", "/commande-confirmee", "/suivi-commande"].some((path) => url.pathname.startsWith(path))) {
      return;
    }
    
@@ -143,8 +144,7 @@ self.addEventListener("notificationclick", (event) => {
     return;
   }
 
-  // Default action or "view" action - open the admin page
-  const urlToOpen = notificationData.url || "/admin?tab=stock";
+  const urlToOpen = notificationData.url || "/";
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
