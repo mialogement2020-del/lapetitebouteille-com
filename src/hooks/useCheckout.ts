@@ -152,6 +152,11 @@ export function useCheckout() {
     setIsLoading(true);
 
     try {
+      // Resolve the authenticated user at submit time so RLS receives the
+      // exact user_id even if the React auth context is still hydrating.
+      const { data: sessionData } = await supabase.auth.getSession();
+      const checkoutUserId = user?.id ?? sessionData.session?.user?.id ?? null;
+
       // Use city directly as it's now stored with proper capitalization
       const cityLabel = addressData.city;
       const total = subtotal - discountAmount + giftPackagingPrice + deliveryFee;
@@ -187,7 +192,7 @@ export function useCheckout() {
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
-          user_id: user?.id || null,
+          user_id: checkoutUserId,
           order_number: orderNumber,
           subtotal,
           delivery_fee: deliveryFee,
@@ -288,11 +293,11 @@ export function useCheckout() {
       }
 
       // Send push notification for order confirmation if user is authenticated
-      if (user?.id) {
+      if (checkoutUserId) {
         try {
           await supabase.functions.invoke('send-order-push-notification', {
             body: {
-              userId: user.id,
+              userId: checkoutUserId,
               orderNumber,
               status: 'confirmed',
               customerName: addressData.fullName,
