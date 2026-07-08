@@ -190,7 +190,7 @@ export const useProducts = (filters: ProductFilters = {}) => {
         if (filters.limit) fallbackQuery = fallbackQuery.limit(filters.limit);
 
         const fallbackResult = await fallbackQuery;
-        data = fallbackResult.data;
+        data = fallbackResult.data as typeof data;
         error = fallbackResult.error;
       }
 
@@ -229,7 +229,7 @@ export const useProduct = (slug: string) => {
           .eq("slug", slug)
           .eq("is_active", true)
           .maybeSingle();
-        data = fallbackResult.data;
+        data = fallbackResult.data as typeof data;
         error = fallbackResult.error;
       }
 
@@ -285,7 +285,7 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
           .eq("is_active", true)
           .neq("id", productId)
           .limit(4);
-        data = fallbackResult.data;
+        data = fallbackResult.data as typeof data;
         error = fallbackResult.error;
       }
 
