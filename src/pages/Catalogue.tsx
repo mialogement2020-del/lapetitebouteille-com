@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Search, Sparkles } from "lucide-react";
@@ -67,7 +67,6 @@ const Catalogue = () => {
       }
       return prev;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Sync filters + search with URL (only when user changes them locally)
@@ -89,11 +88,11 @@ const Catalogue = () => {
   };
 
   const catalogTitle = currentCategory
-    ? `${currentCategory.name} – Catalogue | La Petite Bouteille`
-    : "Catalogue – Vins, Champagnes & Spiritueux | La Petite Bouteille";
+    ? `${currentCategory.name} - Catalogue | La Petite Bouteille`
+    : "Catalogue - Vins, Champagnes & Spiritueux | La Petite Bouteille";
   const catalogDesc = currentCategory
-    ? `Découvrez notre sélection de ${currentCategory.name} au Cameroun. Livraison à Yaoundé, Douala et partout au Cameroun.`
-    : "Tout le catalogue : vins, champagnes, whiskies, rhums et spiritueux premium livrés au Cameroun.";
+    ? `Decouvrez notre selection de ${currentCategory.name} au Cameroun. Livraison a Yaounde, Douala et partout au Cameroun.`
+    : "Tout le catalogue : vins, champagnes, whiskies, rhums et spiritueux premium livres au Cameroun.";
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",

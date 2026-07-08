@@ -23,6 +23,9 @@ const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Conditions = lazy(() => import("./pages/Conditions"));
 const Confidentialite = lazy(() => import("./pages/Confidentialite"));
+const Livraison = lazy(() => import("./pages/Livraison"));
+const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
+const Contact = lazy(() => import("./pages/Contact"));
 const SuiviCommande = lazy(() => import("./pages/SuiviCommande"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const Comparer = lazy(() => import("./pages/Comparer"));
@@ -67,6 +70,9 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/conditions" element={<Conditions />} />
               <Route path="/confidentialite" element={<Confidentialite />} />
+              <Route path="/livraison" element={<Livraison />} />
+              <Route path="/mentions-legales" element={<MentionsLegales />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/suivi-commande" element={<SuiviCommande />} />
               <Route path="/r/:code" element={<ShortLinkRedirect />} />
               <Route path="/comparer" element={<Comparer />} />

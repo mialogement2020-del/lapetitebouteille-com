@@ -85,13 +85,14 @@ const Footer = () => {
             </p>
             <div className="flex gap-3">
               {[
-                { icon: Facebook, href: "#" },
-                { icon: Instagram, href: "#" },
-                { icon: Twitter, href: "#" },
+                { icon: Facebook, href: "#", label: "Facebook" },
+                { icon: Instagram, href: "#", label: "Instagram" },
+                { icon: Twitter, href: "#", label: "Twitter" },
               ].map((social, index) => (
                 <motion.a
                   key={index}
                   href={social.href}
+                  aria-label={social.label}
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   className="w-11 h-11 rounded-xl bg-cream/5 border border-cream/10 flex items-center justify-center hover:bg-primary hover:border-primary hover:text-noir transition-all duration-300"
@@ -133,7 +134,7 @@ const Footer = () => {
               {[
                 { href: "/ambassadeur", label: t("footer.becomeAmbassador") },
                 { href: "/livraison", label: t("footer.delivery") },
-                { href: "/cgv", label: t("footer.terms") },
+                { href: "/conditions", label: t("footer.terms") },
                 { href: "/mentions-legales", label: t("footer.legal") },
                 { href: "/contact", label: t("footer.contactUs") },
               ].map((link) => (
