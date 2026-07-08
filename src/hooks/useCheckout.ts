@@ -192,7 +192,6 @@ export function useCheckout() {
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
-          user_id: user?.id || null,
           user_id: checkoutUserId,
           order_number: orderNumber,
           subtotal,
