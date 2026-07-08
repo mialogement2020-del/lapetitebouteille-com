@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+
+const getSupabase = () => import("@/integrations/supabase/client").then((m) => m.supabase);
 
 export interface HeroData {
   media_type: "image" | "video";
@@ -32,6 +34,7 @@ export function useHeroConfig() {
   return useQuery({
     queryKey: ["hero_config"],
     queryFn: async () => {
+      const supabase = await getSupabase();
       const { data, error } = await supabase
         .from("hero_config")
         .select("*")
@@ -47,8 +50,9 @@ export function useSaveHeroDraft() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (draft: Partial<HeroData>) => {
+      const supabase = await getSupabase();
       const { error } = await supabase.from("hero_config")
-        .update({ draft: draft as any, updated_at: new Date().toISOString() })
+        .update({ draft: draft as Json, updated_at: new Date().toISOString() })
         .eq("id", 1);
       if (error) throw error;
     },
@@ -60,8 +64,9 @@ export function usePublishHero() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: HeroData) => {
+      const supabase = await getSupabase();
       const { error } = await supabase.from("hero_config")
-        .update({ published: data as any, draft: {} as any, updated_at: new Date().toISOString() })
+        .update({ published: data as unknown as Json, draft: {} as Json, updated_at: new Date().toISOString() })
         .eq("id", 1);
       if (error) throw error;
     },

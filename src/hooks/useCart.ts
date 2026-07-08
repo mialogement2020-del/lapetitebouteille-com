@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
+const getSupabase = () => import("@/integrations/supabase/client").then((m) => m.supabase);
 
 export interface CartProduct {
   id: string;
@@ -22,6 +23,17 @@ export interface CartItem {
   quantity: number;
   product?: CartProduct;
 }
+
+type CartProductRow = CartProduct & {
+  category?: CartProduct["category"];
+};
+
+type CartItemRow = {
+  id: string;
+  product_id: string;
+  quantity: number;
+  products?: CartProductRow | null;
+};
 
 const CART_STORAGE_KEY = "prestigevins_cart";
 
@@ -49,6 +61,7 @@ export function useCart(userId: string | null) {
     setIsLoading(true);
 
     if (userId) {
+      const supabase = await getSupabase();
       // Authenticated user - fetch from Supabase
       const { data, error } = await supabase
         .from("cart_items")
@@ -74,7 +87,7 @@ export function useCart(userId: string | null) {
         .eq("user_id", userId);
 
       if (!error && data) {
-        const cartItems: CartItem[] = data.map((item: any) => ({
+        const cartItems: CartItem[] = (data as CartItemRow[]).map((item) => ({
           id: item.id,
           product_id: item.product_id,
           quantity: item.quantity,
@@ -90,6 +103,7 @@ export function useCart(userId: string | null) {
       const localItems = getLocalCart();
       
       if (localItems.length > 0) {
+        const supabase = await getSupabase();
         const productIds = localItems.map((item) => item.product_id);
         const { data: products } = await supabase
           .from("products")
@@ -111,7 +125,7 @@ export function useCart(userId: string | null) {
 
         const hydratedItems = localItems.map((item) => ({
           ...item,
-          product: products?.find((p: any) => p.id === item.product_id),
+          product: (products as CartProductRow[] | null)?.find((p) => p.id === item.product_id),
         }));
         setItems(hydratedItems);
       } else {
@@ -133,6 +147,7 @@ export function useCart(userId: string | null) {
       const existingItem = items.find((item) => item.product_id === productId);
 
       if (userId) {
+        const supabase = await getSupabase();
         // Authenticated user
         if (existingItem) {
           // Update quantity
@@ -170,6 +185,22 @@ export function useCart(userId: string | null) {
     [userId, items, fetchCart]
   );
 
+  // Remove item from cart
+  const removeItem = useCallback(
+    async (itemId: string) => {
+      if (userId) {
+        const supabase = await getSupabase();
+        await supabase.from("cart_items").delete().eq("id", itemId);
+      } else {
+        const localItems = getLocalCart().filter((i) => i.id !== itemId);
+        setLocalCart(localItems);
+      }
+
+      await fetchCart();
+    },
+    [userId, fetchCart]
+  );
+
   // Update item quantity
   const updateQuantity = useCallback(
     async (itemId: string, quantity: number) => {
@@ -179,6 +210,7 @@ export function useCart(userId: string | null) {
       }
 
       if (userId) {
+        const supabase = await getSupabase();
         await supabase
           .from("cart_items")
           .update({ quantity })
@@ -194,27 +226,13 @@ export function useCart(userId: string | null) {
 
       await fetchCart();
     },
-    [userId, fetchCart]
-  );
-
-  // Remove item from cart
-  const removeItem = useCallback(
-    async (itemId: string) => {
-      if (userId) {
-        await supabase.from("cart_items").delete().eq("id", itemId);
-      } else {
-        const localItems = getLocalCart().filter((i) => i.id !== itemId);
-        setLocalCart(localItems);
-      }
-
-      await fetchCart();
-    },
-    [userId, fetchCart]
+    [userId, fetchCart, removeItem]
   );
 
   // Clear cart
   const clearCart = useCallback(async () => {
     if (userId) {
+      const supabase = await getSupabase();
       await supabase.from("cart_items").delete().eq("user_id", userId);
     } else {
       localStorage.removeItem(CART_STORAGE_KEY);
@@ -228,6 +246,7 @@ export function useCart(userId: string | null) {
     const localItems = getLocalCart();
     
     if (localItems.length > 0) {
+      const supabase = await getSupabase();
       // Insert all local items to Supabase
       const itemsToInsert = localItems.map((item) => ({
         user_id: newUserId,
