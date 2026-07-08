@@ -1,0 +1,3 @@
+CREATE POLICY "Admins can view their own 2FA" ON public.admin_2fa FOR SELECT TO authenticated USING (auth.uid() = user_id AND public.has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "Admins can insert their own 2FA" ON public.admin_2fa FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id AND public.has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "Admins can delete their own 2FA" ON public.admin_2fa FOR DELETE TO authenticated USING (auth.uid() = user_id AND public.has_role(auth.uid(), 'admin'::app_role));
