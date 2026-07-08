@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => ({
   preview: {
     headers: securityHeaders,
   },
-  plugins: [react(), mcpPlugin(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [react(), mode === "development" && mcpPlugin(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -34,13 +34,17 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime"],
   },
   build: {
+    modulePreload: false,
     rollupOptions: {
+      input: {
+        app: path.resolve(__dirname, "index.html"),
+        bootstrap: path.resolve(__dirname, "src/bootstrap.ts"),
+      },
       output: {
+        entryFileNames: (chunkInfo) =>
+          chunkInfo.name === "bootstrap" ? "assets/bootstrap.js" : "assets/[name]-[hash].js",
         manualChunks: {
           "vendor-react": ["react", "react-dom", "react-router-dom", "@tanstack/react-query"],
-          "vendor-supabase": ["@supabase/supabase-js"],
-          "vendor-charts": ["recharts"],
-          "vendor-export": ["jspdf", "jspdf-autotable", "html2canvas", "xlsx"],
           "vendor-i18n": ["i18next", "react-i18next", "i18next-browser-languagedetector"],
         },
       },

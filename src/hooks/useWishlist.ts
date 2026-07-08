@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { Product } from "./useProducts";
+
+const getSupabase = () => import("@/integrations/supabase/client").then((m) => m.supabase);
 
 interface WishlistItem {
   id: string;
@@ -11,6 +12,10 @@ interface WishlistItem {
   created_at: string;
   product?: Product;
 }
+
+type WishlistError = {
+  code?: string;
+};
 
 export function useWishlist() {
   const { user } = useAuthContext();
@@ -22,6 +27,7 @@ export function useWishlist() {
     queryFn: async () => {
       if (!user?.id) return [];
 
+      const supabase = await getSupabase();
       const { data, error } = await supabase
         .from("wishlist")
         .select(`
@@ -51,6 +57,7 @@ export function useWishlist() {
     mutationFn: async (productId: string) => {
       if (!user?.id) throw new Error("Non authentifié");
 
+      const supabase = await getSupabase();
       const { error } = await supabase
         .from("wishlist")
         .insert([{ user_id: user.id, product_id: productId }]);
@@ -61,7 +68,7 @@ export function useWishlist() {
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       toast.success("Ajouté à vos favoris");
     },
-    onError: (error: any) => {
+    onError: (error: WishlistError) => {
       if (error.code === "23505") {
         toast.info("Ce produit est déjà dans vos favoris");
       } else {
@@ -75,6 +82,7 @@ export function useWishlist() {
     mutationFn: async (productId: string) => {
       if (!user?.id) throw new Error("Non authentifié");
 
+      const supabase = await getSupabase();
       const { error } = await supabase
         .from("wishlist")
         .delete()

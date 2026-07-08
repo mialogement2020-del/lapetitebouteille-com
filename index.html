@@ -75,30 +75,370 @@
      </script>
      
      <!-- Preconnect -->
-     <link rel="preconnect" href="https://fonts.googleapis.com" />
-     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
      <link rel="preconnect" href="https://bohtgmrlbaxtpwzbxhdq.supabase.co" crossorigin />
      <link rel="dns-prefetch" href="https://bohtgmrlbaxtpwzbxhdq.supabase.co" />
+     <style>
+       :root {
+         --lpb-noir: #0d0d0d;
+         --lpb-cream: #faf4e8;
+         --lpb-gold: #d7a63c;
+       }
+       body {
+         margin: 0;
+         background: var(--lpb-noir);
+         color: var(--lpb-cream);
+         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+       }
+       #root > div {
+         min-height: 100vh;
+         background: var(--lpb-noir);
+         color: var(--lpb-cream);
+       }
+       #root header {
+         position: fixed;
+         inset: 0 0 auto;
+         z-index: 50;
+         background: linear-gradient(to bottom, rgb(13 13 13 / 0.86), rgb(13 13 13 / 0));
+       }
+       #root .container {
+         width: min(100% - 2rem, 1400px);
+         margin-inline: auto;
+       }
+       #root header .container > div {
+         height: 5rem;
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+       }
+       #root a {
+         color: inherit;
+         text-decoration: none;
+       }
+       #root header svg {
+         width: 2.5rem;
+         height: 2.5rem;
+         color: var(--lpb-gold);
+       }
+       #root header .group {
+         display: flex;
+         align-items: center;
+         gap: 0.75rem;
+       }
+       #root header .flex-col {
+         display: flex;
+         flex-direction: column;
+       }
+       #root header .font-display {
+         font-family: Georgia, "Times New Roman", serif;
+       }
+       #root header .text-2xl {
+         font-size: 1.5rem;
+         line-height: 1;
+         font-weight: 600;
+       }
+       #root header .text-lg {
+         font-size: 1.125rem;
+         line-height: 1.35;
+       }
+       #root header .text-primary {
+         color: var(--lpb-gold);
+       }
+       #root nav {
+         display: none;
+       }
+       #root header .items-center.gap-1 {
+         display: flex;
+         align-items: center;
+         gap: 0.25rem;
+       }
+       #root header .p-3 {
+         padding: 0.75rem;
+         color: rgb(250 244 232 / 0.72);
+         font-size: 0.9rem;
+       }
+       #root main section {
+         position: relative;
+         min-height: 100vh;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         overflow: hidden;
+         padding-top: 6rem;
+         background: var(--lpb-noir);
+       }
+       #root main section > .absolute {
+         position: absolute;
+         inset: 0;
+       }
+       #root main section picture {
+         display: block;
+         width: 100%;
+         height: 100%;
+       }
+       #root main section img {
+         display: block;
+         width: 100%;
+         height: 100%;
+         object-fit: cover;
+         object-position: center;
+       }
+       #root main section > .absolute::after {
+         content: "";
+         position: absolute;
+         inset: 0;
+         background: linear-gradient(to bottom, rgb(13 13 13 / 0.9), rgb(13 13 13 / 0.62), var(--lpb-noir));
+       }
+       #root main section > .relative {
+         position: relative;
+         z-index: 1;
+         width: min(100% - 2rem, 1400px);
+         margin-inline: auto;
+       }
+       #root .max-w-4xl {
+         max-width: 56rem;
+         margin-inline: auto;
+         text-align: center;
+       }
+       #root .inline-flex {
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+       }
+       #root .rounded-full {
+         border-radius: 9999px;
+       }
+       #root .border {
+         border: 1px solid rgb(215 166 60 / 0.28);
+       }
+       #root .mb-8 {
+         margin-bottom: 2rem;
+       }
+       #root main h1 {
+         margin: 0 0 2rem;
+         font-family: Georgia, "Times New Roman", serif;
+         font-size: clamp(3rem, 13vw, 5rem);
+         line-height: 0.95;
+         font-weight: 600;
+         color: var(--lpb-cream);
+       }
+       #root .text-gradient-gold {
+         color: var(--lpb-gold);
+       }
+       #root main p {
+         max-width: 42rem;
+         margin: 0 auto 3rem;
+         color: rgb(250 244 232 / 0.72);
+         font-size: 1.125rem;
+         line-height: 1.7;
+       }
+       #root main .gap-4 {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         gap: 1rem;
+         margin-bottom: 3rem;
+       }
+       #root main .gap-4 a {
+         min-width: min(100%, 18rem);
+         padding: 1rem 2rem;
+         border-radius: 9999px;
+         font-weight: 650;
+       }
+       #root .bg-gradient-gold {
+         color: var(--lpb-noir);
+         background: linear-gradient(135deg, #d9aa45, #b9851f);
+       }
+       #root .grid-cols-3 {
+         display: grid;
+         grid-template-columns: repeat(3, minmax(0, 1fr));
+         gap: 1rem;
+         max-width: 42rem;
+         margin-inline: auto;
+       }
+       #root .grid-cols-3 .font-display {
+         font-family: Georgia, "Times New Roman", serif;
+         color: var(--lpb-gold);
+         font-size: clamp(1.65rem, 7vw, 2.5rem);
+         font-weight: 600;
+       }
+       #root .grid-cols-3 .text-sm {
+         margin-top: 0.5rem;
+         color: rgb(250 244 232 / 0.52);
+         font-size: 0.78rem;
+       }
+       @media (min-width: 1024px) {
+         #root header .container > div {
+           height: 6rem;
+         }
+         #root nav {
+           display: flex;
+           align-items: center;
+           gap: 0.25rem;
+         }
+         #root nav a {
+           padding: 0.5rem 1rem;
+           color: rgb(250 244 232 / 0.82);
+           font-size: 0.875rem;
+           font-weight: 600;
+           letter-spacing: 0.05em;
+           text-transform: uppercase;
+         }
+         #root main .gap-4 {
+           flex-direction: row;
+           margin-bottom: 4rem;
+         }
+       }
+       @media (max-width: 767px) {
+         #root main section > .absolute {
+           background: var(--lpb-noir);
+         }
+         #root main section {
+           min-height: 72vh;
+           padding-top: 5rem;
+         }
+         #root main h1 {
+           font-size: 2.25rem;
+           line-height: 1.05;
+           margin-bottom: 1rem;
+         }
+         #root main p {
+           font-size: 1rem;
+           line-height: 1.5;
+           margin-bottom: 1.5rem;
+         }
+         #root main .gap-4 {
+           margin-bottom: 0;
+         }
+         #root main .gap-4 a {
+           min-width: 14rem;
+           padding: 0.8rem 1.25rem;
+           font-size: 0.95rem;
+         }
+         #root main section picture,
+         #root main section > .absolute::after {
+           display: none;
+         }
+         #root .inline-flex.border,
+         #root .grid-cols-3 {
+           display: none;
+         }
+         #root header nav,
+         #root header .items-center.gap-1 a:not(:first-child) {
+           display: none;
+         }
+       }
+     </style>
   </head>
 
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-     
-     <!-- Register Service Worker -->
-     <script>
-       if ('serviceWorker' in navigator) {
-         window.addEventListener('load', () => {
-           navigator.serviceWorker.register('/sw.js')
-             .then(registration => {
-               console.log('SW registered:', registration.scope);
-             })
-             .catch(error => {
-               console.log('SW registration failed:', error);
-             });
-         });
-       }
-     </script>
+    <div id="root">
+      <div class="min-h-screen bg-noir text-cream">
+        <header class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-noir/80 to-transparent">
+          <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-20 lg:h-24">
+              <a href="/" class="group flex items-center gap-3" aria-label="La Petite Bouteille">
+                <svg class="h-10 w-10 text-primary" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M20 3C14 3 10 8 10 14C10 18 12 21 15 23V33H13C12 33 11 34 11 35V37H29V35C29 34 28 33 27 33H25V23C28 21 30 18 30 14C30 8 26 3 20 3Z" stroke="currentColor" stroke-width="1.5" fill="none"></path>
+                  <path d="M10 14C10 14 14 16 20 16C26 16 30 14 30 14" stroke="currentColor" stroke-width="1.5"></path>
+                  <circle cx="20" cy="10" r="2" fill="currentColor" opacity="0.6"></circle>
+                </svg>
+                <span class="flex flex-col">
+                  <span class="font-display text-2xl lg:text-3xl font-semibold text-cream tracking-tight leading-none">La Petite</span>
+                  <span class="font-display text-lg lg:text-xl text-primary tracking-widest uppercase">Bouteille</span>
+                </span>
+              </a>
+              <nav class="hidden lg:flex items-center gap-1" aria-label="Navigation principale">
+                <a href="/catalogue" class="relative px-4 py-2 text-cream/80 hover:text-cream transition-colors font-medium text-sm uppercase tracking-wider">Catalogue</a>
+                <a href="/catalogue?category=vins" class="relative px-4 py-2 text-cream/80 hover:text-cream transition-colors font-medium text-sm uppercase tracking-wider">Vins</a>
+                <a href="/catalogue?category=champagnes" class="relative px-4 py-2 text-cream/80 hover:text-cream transition-colors font-medium text-sm uppercase tracking-wider">Champagnes</a>
+                <a href="/catalogue?category=spiritueux" class="relative px-4 py-2 text-cream/80 hover:text-cream transition-colors font-medium text-sm uppercase tracking-wider">Spiritueux</a>
+                <a href="/suivi-commande" class="relative px-4 py-2 text-cream/80 hover:text-cream transition-colors font-medium text-sm uppercase tracking-wider">Suivi</a>
+              </nav>
+              <div class="flex items-center gap-1 lg:gap-2">
+                <a href="/catalogue" aria-label="Rechercher" class="p-3 text-cream/70 hover:text-cream transition-colors">Search</a>
+                <a href="/connexion" aria-label="Se connecter" class="p-3 text-cream/70 hover:text-cream transition-colors">Compte</a>
+                <a href="/checkout" aria-label="Voir le panier" class="p-3 text-cream/70 hover:text-cream transition-colors">Panier</a>
+                <a href="/catalogue" aria-label="Ouvrir le menu" class="lg:hidden p-3 text-cream/70 hover:text-cream transition-colors">Menu</a>
+              </div>
+            </div>
+          </div>
+        </header>
+        <main>
+          <section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-noir pt-24">
+            <div class="absolute inset-0 bg-cover bg-center bg-no-repeat">
+              <picture>
+                <source media="(max-width: 767px)" srcset="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+                <img src="/src/assets/hero-wine-cellar.webp" alt="" aria-hidden="true" width="1920" height="1080" class="h-full w-full object-cover object-center" loading="eager" decoding="async" fetchpriority="high">
+              </picture>
+              <div class="absolute inset-0 bg-gradient-to-b from-noir/90 via-noir/60 to-noir"></div>
+            </div>
+            <div class="relative z-10 container mx-auto px-4">
+              <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm">
+                  <span class="text-sm font-medium text-primary tracking-wide">Selection prestigieuse</span>
+                </div>
+                <h1 class="font-display text-5xl md:text-6xl lg:text-8xl font-semibold text-cream leading-[0.95] mb-8">
+                  L'Art de la degustation
+                  <br>
+                  <span class="text-gradient-gold">La Petite Bouteille</span>
+                </h1>
+                <p class="text-lg md:text-xl text-cream/70 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+                  Decouvrez notre collection exclusive.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+                  <a href="/catalogue" class="inline-flex items-center justify-center bg-gradient-gold text-noir font-semibold text-lg px-10 py-4 hover:opacity-90 shadow-gold shine-effect rounded-full">
+                    Explorer la collection
+                  </a>
+                  <a href="/ambassadeur" class="inline-flex items-center justify-center border border-cream/20 text-cream hover:bg-cream/5 text-lg px-10 py-4 rounded-full backdrop-blur-sm">
+                    Devenir ambassadeur
+                  </a>
+                </div>
+                <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+                  <div class="text-center">
+                    <div class="text-3xl md:text-4xl font-semibold text-primary font-display">500+</div>
+                    <div class="text-sm text-cream/50 mt-2 tracking-wide">References</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-3xl md:text-4xl font-semibold text-primary font-display">2000+</div>
+                    <div class="text-sm text-cream/50 mt-2 tracking-wide">Clients servis</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-3xl md:text-4xl font-semibold text-primary font-display">24h</div>
+                    <div class="text-sm text-cream/50 mt-2 tracking-wide">Livraison rapide</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const root = document.getElementById("root");
+        const isHomePage = window.location.pathname === "/" || window.location.pathname === "";
+        let appLoaded = false;
+        const loadApp = () => {
+          if (appLoaded) return;
+          appLoaded = true;
+          import("/assets/" + "bootstrap.js");
+        };
+        if (!isHomePage || !root || root.childNodes.length === 0) {
+          loadApp();
+          return;
+        }
+        const timer = window.setTimeout(loadApp, 60000);
+        const loadAndCleanup = () => {
+          window.clearTimeout(timer);
+          window.removeEventListener("pointerdown", loadAndCleanup);
+          window.removeEventListener("keydown", loadAndCleanup);
+          loadApp();
+        };
+        window.addEventListener("pointerdown", loadAndCleanup, { once: true, passive: true });
+        window.addEventListener("keydown", loadAndCleanup, { once: true });
+      })();
+    </script>
   </body>
 </html>
 
