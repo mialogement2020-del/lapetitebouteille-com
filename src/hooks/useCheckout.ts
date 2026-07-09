@@ -166,6 +166,7 @@ export function useCheckout() {
         .rpc("generate_order_number");
 
       const orderNumber = orderNumberData || `CMD-${Date.now()}`;
+      const orderId = crypto.randomUUID();
 
       // Determine referrer_id and referral_code_used
       let referrerId: string | null = null;
@@ -189,9 +190,10 @@ export function useCheckout() {
       }
 
       // Create order
-      const { data: order, error: orderError } = await supabase
+      const { error: orderError } = await supabase
         .from("orders")
         .insert({
+          id: orderId,
           user_id: checkoutUserId,
           order_number: orderNumber,
           subtotal,
@@ -214,9 +216,7 @@ export function useCheckout() {
           gift_packaging_id: giftPackaging?.id || null,
           gift_message: giftMessage || null,
           gift_packaging_price: giftPackagingPrice,
-        })
-        .select()
-        .single();
+        });
 
       if (orderError) throw orderError;
 
@@ -255,12 +255,12 @@ export function useCheckout() {
         }
 
         // Generate commissions for MLM (multi-level)
-        await generateMLMCommissions(order.id, referrerId!, total);
+        await generateMLMCommissions(orderId, referrerId!, total);
       }
 
       // Create order items
       const orderItems = items.map((item) => ({
-        order_id: order.id,
+        order_id: orderId,
         product_id: item.product_id,
         product_name: item.product?.name || "Produit",
         product_image: item.product?.image_url || null,
