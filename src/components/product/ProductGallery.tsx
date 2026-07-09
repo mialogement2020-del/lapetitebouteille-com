@@ -1,10 +1,13 @@
 import { useState } from "react";
+import type { SyntheticEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { useTranslation } from "react-i18next";
+
+const FALLBACK_IMAGE = "/placeholder.svg";
 
 interface ProductGalleryProps {
   mainImage: string | null;
@@ -19,7 +22,7 @@ export const ProductGallery = ({
 }: ProductGalleryProps) => {
   const { t } = useTranslation();
   const allImages = [
-    mainImage || "/placeholder.svg",
+    mainImage || FALLBACK_IMAGE,
     ...(galleryImages || []),
   ].filter(Boolean);
   
@@ -34,6 +37,17 @@ export const ProductGallery = ({
 
   const goToPrev = () => {
     setSelectedIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
+
+  const handleImageError = (event: SyntheticEvent<HTMLImageElement>, originalUrl: string) => {
+    const image = event.currentTarget;
+    if (originalUrl && image.src !== originalUrl && !originalUrl.endsWith(FALLBACK_IMAGE)) {
+      image.src = originalUrl;
+      return;
+    }
+    if (!image.src.endsWith(FALLBACK_IMAGE)) {
+      image.src = FALLBACK_IMAGE;
+    }
   };
 
   return (
@@ -57,6 +71,7 @@ export const ProductGallery = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => setIsZoomed(true)}
+            onError={(event) => handleImageError(event, currentImage)}
           />
         </AnimatePresence>
 
@@ -121,6 +136,7 @@ export const ProductGallery = ({
                 className="w-full h-full object-cover"
                 loading="lazy"
                 decoding="async"
+                onError={(event) => handleImageError(event, image)}
               />
             </motion.button>
           ))}
