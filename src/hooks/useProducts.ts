@@ -27,7 +27,8 @@ export interface Product {
   average_rating: number;
   review_count: number;
   created_at: string;
-  // Pricing/points helpers (admin-managed, exposed for ambassador estimates)
+  // Sensitive pricing helpers are intentionally not fetched by public product hooks.
+  // Admin screens use their own admin-only queries.
   purchase_price?: number | null;
   markup_percent_override?: number | null;
   points_override?: number | null;
@@ -104,9 +105,6 @@ const PRODUCT_COLUMNS = `
   average_rating,
   review_count,
   created_at,
-  purchase_price,
-  markup_percent_override,
-  points_override,
   points_tiers_override,
   available_as_case,
   units_per_case,
@@ -182,7 +180,10 @@ const applyProductFilters = async (filters: ProductFilters, options: ProductQuer
     query = query.limit(filters.limit);
   }
 
-  let { data, error, count } = await query;
+  const queryResult = await query;
+  let data = queryResult.data as unknown[] | null;
+  let error = queryResult.error;
+  let count = queryResult.count;
 
   if (error && /has_role|permission denied|categories/i.test(error.message)) {
     let fallbackQuery = supabase
@@ -229,7 +230,7 @@ const applyProductFilters = async (filters: ProductFilters, options: ProductQuer
     }
 
     const fallbackResult = await fallbackQuery;
-    data = fallbackResult.data;
+    data = fallbackResult.data as unknown[] | null;
     error = fallbackResult.error;
     count = fallbackResult.count;
   }
@@ -251,7 +252,7 @@ const applyProductFilters = async (filters: ProductFilters, options: ProductQuer
       .eq("is_active", true)
       .order("created_at", { ascending: false })
       .limit(filters.limit ?? 120);
-    data = fallbackResult.data;
+    data = fallbackResult.data as unknown[] | null;
     error = fallbackResult.error;
     count = fallbackResult.count;
   }
@@ -303,20 +304,19 @@ export const useProduct = (slug: string) => {
   return useQuery({
     queryKey: ["product", slug],
     queryFn: async () => {
-      let { data, error } = await supabase
+      const productResult = await supabase
         .from("products")
-        .select(`
-          *,
-          category:categories(id, name, slug, points_tiers_override)
-        `)
+        .select(SELECT_WITH_CATEGORY)
         .eq("slug", slug)
         .eq("is_active", true)
         .maybeSingle();
+      let data: unknown = productResult.data;
+      let error = productResult.error;
 
       if (error && /has_role|permission denied|categories/i.test(error.message)) {
         const fallbackResult = await supabase
           .from("products")
-          .select("*")
+          .select(PRODUCT_COLUMNS)
           .eq("slug", slug)
           .eq("is_active", true)
           .maybeSingle();
@@ -357,26 +357,25 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
     queryFn: async () => {
       if (!categoryId) return [];
 
-      let { data, error } = await supabase
+      const relatedResult = await supabase
         .from("products")
-        .select(`
-          *,
-          category:categories(id, name, slug, points_tiers_override)
-        `)
+        .select(SELECT_WITH_CATEGORY)
         .eq("category_id", categoryId)
         .eq("is_active", true)
         .neq("id", productId)
         .limit(4);
+      let data = relatedResult.data as unknown[] | null;
+      let error = relatedResult.error;
 
       if (error && /has_role|permission denied|categories/i.test(error.message)) {
         const fallbackResult = await supabase
           .from("products")
-          .select("*")
+          .select(PRODUCT_COLUMNS)
           .eq("category_id", categoryId)
           .eq("is_active", true)
           .neq("id", productId)
           .limit(4);
-        data = fallbackResult.data;
+        data = fallbackResult.data as unknown[] | null;
         error = fallbackResult.error;
       }
 

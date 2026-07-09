@@ -62,6 +62,9 @@ const statusColor: Record<string, string> = {
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR").format(Math.round(n)) + " FCFA";
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
+
 export function EscrowsManager() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "en" ? undefined : fr;
@@ -119,9 +122,12 @@ export function EscrowsManager() {
 
   const captureMut = useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
-      const { error } = await supabase.rpc("capture_escrow", {
-        _escrow_id: id,
-        _reason: reason || null,
+      const { error } = await supabase.functions.invoke("admin-finance-actions", {
+        body: {
+          action: "capture_escrow",
+          escrowId: id,
+          reason: reason || null,
+        },
       });
       if (error) throw error;
     },
@@ -130,8 +136,8 @@ export function EscrowsManager() {
       qc.invalidateQueries({ queryKey: ["admin-escrows"] });
       close();
     },
-    onError: (e: any) =>
-      toast({ title: t("escrows.toastError"), description: e.message, variant: "destructive" }),
+    onError: (e: unknown) =>
+      toast({ title: t("escrows.toastError"), description: getErrorMessage(e), variant: "destructive" }),
   });
 
   const refundMut = useMutation({
@@ -144,10 +150,13 @@ export function EscrowsManager() {
       amount: number | null;
       reason: string;
     }) => {
-      const { error } = await supabase.rpc("refund_escrow", {
-        _escrow_id: id,
-        _amount: amount,
-        _reason: reason || null,
+      const { error } = await supabase.functions.invoke("admin-finance-actions", {
+        body: {
+          action: "refund_escrow",
+          escrowId: id,
+          amount,
+          reason: reason || null,
+        },
       });
       if (error) throw error;
     },
@@ -156,15 +165,17 @@ export function EscrowsManager() {
       qc.invalidateQueries({ queryKey: ["admin-escrows"] });
       close();
     },
-    onError: (e: any) =>
-      toast({ title: t("escrows.toastError"), description: e.message, variant: "destructive" }),
+    onError: (e: unknown) =>
+      toast({ title: t("escrows.toastError"), description: getErrorMessage(e), variant: "destructive" }),
   });
 
   const autoReleaseMut = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc("auto_release_delivered_escrows");
+      const { data, error } = await supabase.functions.invoke("admin-finance-actions", {
+        body: { action: "auto_release_delivered_escrows" },
+      });
       if (error) throw error;
-      return data as number;
+      return (data?.data ?? 0) as number;
     },
     onSuccess: (n) => {
       toast({
@@ -173,8 +184,8 @@ export function EscrowsManager() {
       });
       qc.invalidateQueries({ queryKey: ["admin-escrows"] });
     },
-    onError: (e: any) =>
-      toast({ title: t("escrows.toastError"), description: e.message, variant: "destructive" }),
+    onError: (e: unknown) =>
+      toast({ title: t("escrows.toastError"), description: getErrorMessage(e), variant: "destructive" }),
   });
 
   const close = () => {

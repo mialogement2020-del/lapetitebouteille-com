@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import type { WalletTransaction, AmbassadorStats } from "@/hooks/useAmbassador";
 import { z } from "zod";
@@ -35,10 +34,12 @@ const TRANSACTION_ICONS: Record<string, typeof ArrowUpRight> = {
   adjustment: AlertCircle,
 };
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 export function WalletManager({ stats, transactions, isLoading, refetchStats }: WalletManagerProps) {
   const { t, i18n } = useTranslation("walletManager");
   const dateFnsLocale = i18n.language === "en" ? enUS : fr;
-  const { user } = useAuthContext();
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
@@ -65,17 +66,19 @@ export function WalletManager({ stats, transactions, isLoading, refetchStats }: 
     }
     setIsSubmitting(true);
     try {
-      const { data: wallet } = await supabase.from("wallets").select("id").eq("user_id", user?.id).single();
-      if (!wallet) throw new Error(t("error.walletNotFound"));
-      const { error } = await supabase.from("withdrawal_requests").insert({ user_id: user?.id, wallet_id: wallet.id, amount: Number(withdrawAmount), phone_number: withdrawPhone, payment_method: withdrawMethod });
+      const { error } = await supabase.rpc("request_withdrawal" as never, {
+        _amount: Number(withdrawAmount),
+        _phone_number: withdrawPhone,
+        _payment_method: withdrawMethod,
+      } as never);
       if (error) throw error;
       toast({ title: t("toast.withdrawSuccess"), description: t("toast.withdrawSuccessDesc", { amount: formatCurrency(Number(withdrawAmount)) }) });
       setIsWithdrawOpen(false);
       setWithdrawAmount("");
       setWithdrawPhone("");
       refetchStats();
-    } catch (error: any) {
-      toast({ title: t("toast.error"), description: error.message || t("toast.errorDesc"), variant: "destructive" });
+    } catch (error: unknown) {
+      toast({ title: t("toast.error"), description: getErrorMessage(error, t("toast.errorDesc")), variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }

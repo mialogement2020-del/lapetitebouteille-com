@@ -235,14 +235,12 @@ export function MLMDashboard() {
    // Process withdrawal mutation
    const processWithdrawal = useMutation({
      mutationFn: async ({ id, action, reason }: { id: string; action: "approve" | "reject"; reason?: string }) => {
-       const { error } = await supabase
-         .from("withdrawal_requests")
-         .update({
-           status: action === "approve" ? "completed" : "rejected",
-           processed_at: new Date().toISOString(),
-           rejection_reason: reason || null,
-         })
-         .eq("id", id);
+       const { error } = await supabase.rpc("process_withdrawal_request" as never, {
+         _withdrawal_id: id,
+         _action: action,
+         _reason: reason || null,
+         _transaction_reference: null,
+       } as never);
  
        if (error) throw error;
      },
