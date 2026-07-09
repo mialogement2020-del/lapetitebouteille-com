@@ -79,7 +79,7 @@
              >
                <Link
                  to={category.href}
-                 className="group block relative h-96 rounded-2xl overflow-hidden shadow-elegant hover:shadow-luxury transition-shadow duration-500"
+                 className="group block relative h-96 rounded-2xl overflow-hidden shadow-elegant hover:shadow-luxury transition-shadow duration-500 bg-gradient-to-br from-secondary via-noir to-primary"
                >
                  {/* Image */}
                  <img
@@ -88,6 +88,9 @@
                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     loading="lazy"
                     decoding="async"
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
                  />
                  
                  {/* Overlay */}
