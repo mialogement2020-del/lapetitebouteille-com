@@ -70,10 +70,45 @@ export const useProducts = (filters: ProductFilters = {}) => {
     queryKey: ["products", filters],
     enabled: filters.enabled ?? true,
     queryFn: async () => {
+      const productColumns = `
+          id,
+          name,
+          slug,
+          description,
+          short_description,
+          category_id,
+          price,
+          original_price,
+          stock_quantity,
+          is_active,
+          is_featured,
+          alcohol_percentage,
+          volume_ml,
+          origin_country,
+          region,
+          grape_variety,
+          vintage_year,
+          tasting_notes,
+          food_pairing,
+          serving_temperature,
+          image_url,
+          gallery_urls,
+          average_rating,
+          review_count,
+          created_at,
+          purchase_price,
+          markup_percent_override,
+          points_override,
+          points_tiers_override,
+          available_as_case,
+          units_per_case,
+          case_price
+        `;
       const selectWithCategory = `
-          *,
+          ${productColumns},
           category:categories(id, name, slug, points_tiers_override)
         `;
+      let categoryIds: string[] | null = null;
       let query = supabase
         .from("products")
         .select(selectWithCategory)
@@ -98,8 +133,10 @@ export const useProducts = (filters: ProductFilters = {}) => {
             .select("id")
             .eq("parent_id", category.id);
           
-          const categoryIds = [category.id, ...(subcategories?.map(s => s.id) || [])];
+          categoryIds = [category.id, ...(subcategories?.map(s => s.id) || [])];
           query = query.in("category_id", categoryIds);
+        } else {
+          return [] as Product[];
         }
         }
       }
@@ -156,11 +193,13 @@ export const useProducts = (filters: ProductFilters = {}) => {
       if (error && /has_role|permission denied|categories/i.test(error.message)) {
         let fallbackQuery = supabase
           .from("products")
-          .select("*")
+          .select(productColumns)
           .eq("is_active", true);
 
         if (filters.categorySlug && filters.categorySlug === "caisse") {
           fallbackQuery = fallbackQuery.eq("available_as_case", true);
+        } else if (categoryIds) {
+          fallbackQuery = fallbackQuery.in("category_id", categoryIds);
         }
         if (filters.minPrice !== undefined) fallbackQuery = fallbackQuery.gte("price", filters.minPrice);
         if (filters.maxPrice !== undefined) fallbackQuery = fallbackQuery.lte("price", filters.maxPrice);
@@ -190,6 +229,17 @@ export const useProducts = (filters: ProductFilters = {}) => {
         if (filters.limit) fallbackQuery = fallbackQuery.limit(filters.limit);
 
         const fallbackResult = await fallbackQuery;
+        data = fallbackResult.data as typeof data;
+        error = fallbackResult.error;
+      }
+
+      if (!error && (!data || data.length === 0) && !filters.categorySlug && !filters.minPrice && !filters.maxPrice && !filters.origin && !filters.search && !filters.featured) {
+        const fallbackResult = await supabase
+          .from("products")
+          .select(productColumns)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(filters.limit ?? 120);
         data = fallbackResult.data as typeof data;
         error = fallbackResult.error;
       }
