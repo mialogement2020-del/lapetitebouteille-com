@@ -36,13 +36,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     modulePreload: false,
     rollupOptions: {
-      input: {
-        app: path.resolve(__dirname, "index.html"),
-        bootstrap: path.resolve(__dirname, "src/bootstrap.ts"),
-      },
       output: {
-        entryFileNames: (chunkInfo) =>
-          chunkInfo.name === "bootstrap" ? "assets/bootstrap.js" : "assets/[name]-[hash].js",
         manualChunks: {
           "vendor-react": ["react", "react-dom", "react-router-dom", "@tanstack/react-query"],
           "vendor-i18n": ["i18next", "react-i18next", "i18next-browser-languagedetector"],

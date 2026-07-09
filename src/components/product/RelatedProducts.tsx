@@ -4,6 +4,9 @@ import { Product } from "@/hooks/useProducts";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { useTranslation } from "react-i18next";
+import type { SyntheticEvent } from "react";
+
+const FALLBACK_IMAGE = "/placeholder.svg";
 
 interface RelatedProductsProps {
   products: Product[];
@@ -13,6 +16,12 @@ export const RelatedProducts = ({ products }: RelatedProductsProps) => {
   const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   if (products.length === 0) return null;
+
+  const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    if (image.src.endsWith(FALLBACK_IMAGE)) return;
+    image.src = FALLBACK_IMAGE;
+  };
 
   return (
     <section className="py-12 border-t">
@@ -38,6 +47,7 @@ export const RelatedProducts = ({ products }: RelatedProductsProps) => {
                     className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                     decoding="async"
+                    onError={handleImageError}
                   />
                 </div>
                 <h3 className="font-semibold line-clamp-2 group-hover:text-gold transition-colors">

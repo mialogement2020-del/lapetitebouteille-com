@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
+import type { SyntheticEvent } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { useTranslation } from "react-i18next";
 import { useFeaturedHomeProducts } from "@/hooks/useFeaturedHomeProducts";
+
+const FALLBACK_IMAGE = "/placeholder.svg";
 
 const FeaturedProducts = () => {
   const { t, i18n } = useTranslation();
@@ -37,6 +40,12 @@ const FeaturedProducts = () => {
   const y = useTransform(scrollYProgress, [0, 0.3], [80, 0]);
 
   if (!isLoading && displayProducts.length === 0) return null;
+
+  const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    if (image.src.endsWith(FALLBACK_IMAGE)) return;
+    image.src = FALLBACK_IMAGE;
+  };
   
   return (
     <section ref={sectionRef} className="py-24 lg:py-32 bg-marble relative overflow-hidden">
@@ -134,6 +143,7 @@ const FeaturedProducts = () => {
                           loading={index < 2 ? "eager" : "lazy"}
                           decoding="async"
                           fetchPriority={index < 2 ? "high" : "auto"}
+                          onError={handleImageError}
                         />
                         
                         {/* Badges */}

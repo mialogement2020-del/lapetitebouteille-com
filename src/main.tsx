@@ -2,10 +2,7 @@ import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
-
-const startLocalization = () => {
-  void import("./i18n");
-};
+import "./i18n";
 
 const startMonitoring = () => {
   void Promise.all([
@@ -26,11 +23,9 @@ const registerServiceWorker = () => {
 };
 
 if ("requestIdleCallback" in window) {
-  window.requestIdleCallback(startLocalization, { timeout: 12000 });
   window.requestIdleCallback(startMonitoring, { timeout: 20000 });
   window.requestIdleCallback(registerServiceWorker, { timeout: 30000 });
 } else {
-  window.setTimeout(startLocalization, 12000);
   window.setTimeout(startMonitoring, 20000);
   window.setTimeout(registerServiceWorker, 30000);
 }
