@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, ShoppingCart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Star } from "lucide-react";
 import { useProducts, useCategories } from "@/hooks/useProducts";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,7 +46,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
   if (shouldLoad && !isLoading && displayProducts.length === 0) return null;
 
   return (
-    <div ref={rowRef} className="mb-16 last:mb-0 min-h-[520px]">
+    <div ref={rowRef} data-home-category-row className="mb-14 last:mb-0">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -67,85 +66,87 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
         </Link>
       </motion.div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
-        {!shouldLoad || isLoading
-          ? Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-card rounded-xl overflow-hidden border border-border/50">
-                <Skeleton className="aspect-[3/4] w-full" />
-                <div className="p-3 space-y-2">
-                  <Skeleton className="h-3 w-12" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-5 w-1/2" />
+      <div className="-mx-4 overflow-x-auto px-4 pb-4 [scrollbar-width:thin]">
+        <div data-home-product-rail className="flex gap-3 sm:gap-5">
+          {!shouldLoad || isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="w-[168px] flex-none overflow-hidden rounded-xl border border-border/50 bg-card sm:w-[210px] md:w-[230px]">
+                  <Skeleton className="aspect-[3/4] w-full" />
+                  <div className="p-3 space-y-2">
+                    <Skeleton className="h-3 w-12" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-5 w-1/2" />
+                  </div>
                 </div>
-              </div>
-            ))
-          : displayProducts.map((product, index) => {
-              const hasDiscount = product.original_price && product.original_price > product.price;
-              const inStock = (product.stock_quantity ?? 0) > 0;
+              ))
+            : displayProducts.map((product, index) => {
+                const hasDiscount = product.original_price && product.original_price > product.price;
+                const inStock = (product.stock_quantity ?? 0) > 0;
 
-              return (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.06 }}
-                  whileHover={{ y: -5 }}
-                  className="group"
-                >
-                  <div className="bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-card transition-all duration-500 border border-border/50">
-                    <Link to={`/produit/${product.slug}`} className="block">
-                      <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/30 to-muted/60">
-                        <img
-                          src={optimizeProductImage(product.image_url, { width: 320, height: 426 })}
-                          alt={product.name}
-                          className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
-                          loading="lazy"
-                          decoding="async"
-                          onError={handleImageError}
-                        />
-                        {hasDiscount && (
-                          <span className="absolute top-2 left-2 px-2 py-1 bg-secondary text-secondary-foreground text-[10px] font-bold rounded-full">
-                            -{Math.round((1 - product.price / product.original_price!) * 100)}%
-                          </span>
-                        )}
-                        {!inStock && (
-                          <span className="absolute top-2 right-2 px-2 py-1 bg-noir/80 text-cream text-[10px] font-medium rounded-full backdrop-blur-sm">
-                            {t("categoryRow.outOfStockBadge")}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-
-                    <div className="p-3">
-                      {product.average_rating > 0 && (
-                        <div className="flex items-center gap-1 mb-1">
-                          <Star className="h-3 w-3 text-primary fill-primary" />
-                          <span className="text-xs font-medium text-foreground">{product.average_rating}</span>
+                return (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.06 }}
+                    whileHover={{ y: -5 }}
+                    className="group w-[168px] flex-none sm:w-[210px] md:w-[230px]"
+                  >
+                    <div className="bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-card transition-all duration-500 border border-border/50">
+                      <Link to={`/produit/${product.slug}`} className="block">
+                        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/30 to-muted/60">
+                          <img
+                            src={optimizeProductImage(product.image_url, { width: 320, height: 426 })}
+                            alt={product.name}
+                            className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                            decoding="async"
+                            onError={handleImageError}
+                          />
+                          {hasDiscount && (
+                            <span className="absolute top-2 left-2 px-2 py-1 bg-secondary text-secondary-foreground text-[10px] font-bold rounded-full">
+                              -{Math.round((1 - product.price / product.original_price!) * 100)}%
+                            </span>
+                          )}
+                          {!inStock && (
+                            <span className="absolute top-2 right-2 px-2 py-1 bg-noir/80 text-cream text-[10px] font-medium rounded-full backdrop-blur-sm">
+                              {t("categoryRow.outOfStockBadge")}
+                            </span>
+                          )}
                         </div>
-                      )}
-
-                      <Link to={`/produit/${product.slug}`}>
-                        <h4 className="text-sm font-medium text-foreground hover:text-secondary transition-colors line-clamp-2 leading-tight mb-2">
-                          {product.name}
-                        </h4>
                       </Link>
 
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-base font-semibold text-secondary">
-                          {formatPrice(product.price)}
-                        </span>
-                        {hasDiscount && (
-                          <span className="text-[10px] text-muted-foreground line-through">
-                            {formatPrice(product.original_price!)}
-                          </span>
+                      <div className="p-3">
+                        {product.average_rating > 0 && (
+                          <div className="flex items-center gap-1 mb-1">
+                            <Star className="h-3 w-3 text-primary fill-primary" />
+                            <span className="text-xs font-medium text-foreground">{product.average_rating}</span>
+                          </div>
                         )}
+
+                        <Link to={`/produit/${product.slug}`}>
+                          <h4 className="text-sm font-medium text-foreground hover:text-secondary transition-colors line-clamp-2 leading-tight mb-2">
+                            {product.name}
+                          </h4>
+                        </Link>
+
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-base font-semibold text-secondary">
+                            {formatPrice(product.price)}
+                          </span>
+                          {hasDiscount && (
+                            <span className="text-[10px] text-muted-foreground line-through">
+                              {formatPrice(product.original_price!)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+        </div>
       </div>
     </div>
   );
