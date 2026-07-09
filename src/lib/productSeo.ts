@@ -1,4 +1,4 @@
-import type { Product } from "@/hooks/useProducts";
+﻿import type { Product } from "@/hooks/useProducts";
 
 export const SITE_URL = "https://www.lapetitebouteille.com";
 
@@ -202,3 +202,4 @@ export const buildProductSeo = (product: Product) => {
     jsonLd: [productSchema, breadcrumbSchema, faqSchema],
   };
 };
+

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import {
   buildCategorySchemas,
   getCategoryPath,
@@ -68,3 +68,4 @@ describe("catalog SEO", () => {
     expect(JSON.stringify(schemas)).toContain("/catalogue/rhums");
   });
 });
+

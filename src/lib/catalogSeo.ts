@@ -1,4 +1,4 @@
-import type { Category, Product } from "@/hooks/useProducts";
+﻿import type { Category, Product } from "@/hooks/useProducts";
 
 export const SITE_URL = "https://www.lapetitebouteille.com";
 
@@ -154,3 +154,4 @@ export const buildCategorySchemas = ({
     },
   ];
 };
+
