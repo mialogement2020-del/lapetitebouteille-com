@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { History, CheckCircle, XCircle, Clock, Mail, Users, AlertTriangle, RefreshCw, Calendar, Filter, Download } from "lucide-react";
 import { convertToCSV, downloadCSV, formatDateForCSV } from "@/lib/csvExport";
 import { toast } from "@/hooks/use-toast";
@@ -65,7 +65,7 @@ export function ReportHistory() {
   const [filteredCount, setFilteredCount] = useState(0);
 
   // Calculate date range based on preset
-  const getDateRange = () => {
+  const getDateRange = useCallback(() => {
     const now = new Date();
     
     switch (datePreset) {
@@ -75,9 +75,10 @@ export function ReportHistory() {
         return { start: startOfDay(subDays(now, 30)), end: endOfDay(now) };
       case "thisMonth":
         return { start: startOfMonth(now), end: endOfDay(now) };
-      case "lastMonth":
+      case "lastMonth": {
         const lastMonth = subMonths(now, 1);
         return { start: startOfMonth(lastMonth), end: endOfDay(subDays(startOfMonth(now), 1)) };
+      }
       case "custom":
         return { 
           start: startDate ? startOfDay(startDate) : undefined, 
@@ -86,9 +87,9 @@ export function ReportHistory() {
       default:
         return { start: undefined, end: undefined };
     }
-  };
+  }, [datePreset, endDate, startDate]);
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     setIsLoading(true);
     try {
       const { start, end } = getDateRange();
@@ -118,11 +119,11 @@ export function ReportHistory() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getDateRange]);
 
   useEffect(() => {
     fetchHistory();
-  }, [datePreset, startDate, endDate]);
+  }, [fetchHistory]);
 
   const handleExportCSV = () => {
     if (!history || history.length === 0) {

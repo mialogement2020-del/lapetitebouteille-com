@@ -1,36 +1,61 @@
 ﻿import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Search, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Sparkles } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { ProductFilters } from "@/components/catalog/ProductFilters";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { SortSelect } from "@/components/catalog/SortSelect";
 import { Input } from "@/components/ui/input";
-import { useProducts, ProductFilters as Filters, useCategories } from "@/hooks/useProducts";
+import {
+  DEFAULT_CATALOG_PAGE_SIZE,
+  useProductPage,
+  ProductFilters as Filters,
+  useCategories,
+} from "@/hooks/useProducts";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Seo from "@/components/seo/Seo";
+import { Button } from "@/components/ui/button";
+import { buildCategorySchemas, getCategoryPath, getCategorySeo } from "@/lib/catalogSeo";
 
 const Catalogue = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { categorySlug: routeCategorySlug } = useParams<{ categorySlug?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const heroRef = useRef<HTMLElement>(null);
+  const page = Math.max(1, Number(searchParams.get("page") || "1") || 1);
   
   const [filters, setFilters] = useState<Filters>({
-    categorySlug: searchParams.get("category") || undefined,
+    categorySlug: routeCategorySlug || searchParams.get("category") || undefined,
     sortBy: (searchParams.get("sort") as Filters["sortBy"]) || "popular",
     origin: searchParams.get("origin") || undefined,
   });
 
-  const { data: products = [], isLoading } = useProducts({
+  const {
+    data: productPage = {
+      products: [],
+      total: 0,
+      page,
+      pageSize: DEFAULT_CATALOG_PAGE_SIZE,
+      pageCount: 1,
+    },
+    isLoading,
+    isPlaceholderData,
+  } = useProductPage({
     ...filters,
     search: debouncedSearch,
+    page,
+    pageSize: DEFAULT_CATALOG_PAGE_SIZE,
   });
+  const products = productPage.products;
+  const totalProducts = productPage.total;
+  const pageCount = productPage.pageCount;
 
   const { data: categories = [] } = useCategories();
   
@@ -46,7 +71,7 @@ const Catalogue = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      syncToUrl(filters, searchQuery);
+      syncToUrl(filters, searchQuery, 1);
     }, 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,7 +83,7 @@ const Catalogue = () => {
     setSearchQuery(prev => prev !== urlSearch ? urlSearch : prev);
     setDebouncedSearch(prev => prev !== urlSearch ? urlSearch : prev);
     
-    const urlCategory = searchParams.get("category") || undefined;
+    const urlCategory = routeCategorySlug || searchParams.get("category") || undefined;
     const urlSort = (searchParams.get("sort") as Filters["sortBy"]) || "popular";
     const urlOrigin = searchParams.get("origin") || undefined;
     setFilters(prev => {
@@ -67,16 +92,22 @@ const Catalogue = () => {
       }
       return prev;
     });
-  }, [searchParams]);
+  }, [routeCategorySlug, searchParams]);
 
   // Sync filters + search with URL (only when user changes them locally)
-  const syncToUrl = (newFilters: Filters, search: string) => {
+  const syncToUrl = (newFilters: Filters, search: string, nextPage = 1) => {
     const params = new URLSearchParams();
-    if (newFilters.categorySlug) params.set("category", newFilters.categorySlug);
     if (newFilters.sortBy && newFilters.sortBy !== "popular") params.set("sort", newFilters.sortBy);
     if (newFilters.origin) params.set("origin", newFilters.origin);
     if (search.trim()) params.set("search", search.trim());
-    setSearchParams(params, { replace: true });
+    if (nextPage > 1) params.set("page", String(nextPage));
+
+    const nextPath = getCategoryPath(newFilters.categorySlug);
+    if (nextPath !== window.location.pathname) {
+      navigate(`${nextPath}${params.toString() ? `?${params}` : ""}`, { replace: true });
+    } else {
+      setSearchParams(params, { replace: true });
+    }
   };
 
   // Get current category name
@@ -84,35 +115,32 @@ const Catalogue = () => {
 
   const handleFiltersChange = (newFilters: Filters) => {
     setFilters(newFilters);
-    syncToUrl(newFilters, debouncedSearch);
+    syncToUrl(newFilters, debouncedSearch, 1);
   };
 
-  const catalogTitle = currentCategory
-    ? `${currentCategory.name} - Catalogue | La Petite Bouteille`
-    : "Catalogue - Vins, Champagnes & Spiritueux | La Petite Bouteille";
-  const catalogDesc = currentCategory
-    ? `Decouvrez notre selection de ${currentCategory.name} au Cameroun. Livraison a Yaounde, Douala et partout au Cameroun.`
-    : "Tout le catalogue : vins, champagnes, whiskies, rhums et spiritueux premium livres au Cameroun.";
-  const itemListJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: catalogTitle,
-    numberOfItems: products.length,
-    itemListElement: products.slice(0, 30).map((p, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      url: `https://www.lapetitebouteille.com/produit/${p.slug}`,
-      name: p.name,
-    })),
+  const catalogSeo = getCategorySeo(currentCategory, filters.categorySlug);
+  const catalogSchemas = buildCategorySchemas({
+    category: currentCategory,
+    slug: filters.categorySlug,
+    products,
+    total: totalProducts,
+  });
+
+  const goToPage = (nextPage: number) => {
+    const safePage = Math.min(Math.max(1, nextPage), pageCount);
+    syncToUrl(filters, debouncedSearch, safePage);
+    requestAnimationFrame(() => {
+      document.getElementById("catalog-products")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   return (
     <div className="min-h-screen bg-noir">
       <Seo
-        title={catalogTitle}
-        description={catalogDesc}
-        path="/catalogue"
-        jsonLd={itemListJsonLd}
+        title={catalogSeo.title}
+        description={catalogSeo.description}
+        path={catalogSeo.path}
+        jsonLd={catalogSchemas}
       />
       <Header />
       
@@ -161,7 +189,7 @@ const Catalogue = () => {
               >
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium text-primary tracking-wide">
-                  {t("catalogue.productsCount", { count: products.length })}
+                  {t("catalogue.productsCount", { count: totalProducts })}
                 </span>
               </motion.div>
               
@@ -212,14 +240,14 @@ const Catalogue = () => {
 
                 {/* Results Count */}
                 <span className="text-sm text-cream/50">
-                  {t("catalogue.resultsCount", { count: products.length })}
+                  {t("catalogue.resultsCount", { count: totalProducts })}
                   {debouncedSearch ? " " + t("catalogue.forQuery", { query: debouncedSearch }) : ""}
                 </span>
 
                 {/* Sort */}
                 <SortSelect
                   value={filters.sortBy}
-                  onChange={(value) => setFilters({ ...filters, sortBy: value })}
+                  onChange={(value) => handleFiltersChange({ ...filters, sortBy: value })}
                 />
               </div>
             </motion.div>
@@ -238,12 +266,42 @@ const Catalogue = () => {
 
               {/* Products */}
               <motion.div 
+                id="catalog-products"
                 className="flex-1"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                <ProductGrid products={products} isLoading={isLoading} />
+                <ProductGrid products={products} isLoading={isLoading && !isPlaceholderData} />
+                {totalProducts > 0 && (
+                  <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-cream/70">
+                    <p className="text-sm">
+                      Page {page} sur {pageCount} · {totalProducts} produit{totalProducts > 1 ? "s" : ""}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-cream/20 bg-transparent text-cream hover:bg-cream/10"
+                        disabled={page <= 1}
+                        onClick={() => goToPage(page - 1)}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Précédent
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-cream/20 bg-transparent text-cream hover:bg-cream/10"
+                        disabled={page >= pageCount}
+                        onClick={() => goToPage(page + 1)}
+                      >
+                        Suivant
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </div>
           </div>

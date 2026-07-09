@@ -71,6 +71,344 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/spiritueux</loc>
+    <lastmod>2026-02-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/champagnes</loc>
+    <lastmod>2026-02-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/vins</loc>
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/whiskies</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/cognacs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/rhums</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/coffrets</loc>
+    <lastmod>2026-03-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/aperitifs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/caisse</loc>
+    <lastmod>2026-07-07</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/coffrets-decouverte</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/prosecco</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/vins-rouges</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/champagne-brut</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/whisky</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/vins-blancs</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/cava</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/champagne-rose</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/coffrets-prestige</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/cognac</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/vins-roses</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/coffrets-cadeaux</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/rhum</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/champagne-millesime</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/cremant</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/mousseux-rose</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/champagne-blanc-de-blancs</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/vodka</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/gin</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/vins-mousseux</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/asti-moscato</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/liqueurs</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/tequila</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/medoc</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/haut-medoc</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/bordeaux</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/bordeaux-superieur</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/merlot</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/saint-emilion</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/pomerol</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/graves</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/margaux</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/pauillac</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/saint-julien</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/cotes-du-rhone</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/bourgogne</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/beaujolais</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/cabernet-sauvignon</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/catalogue/pinot-noir</loc>
+    <lastmod>2026-03-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/vinha-da-fonte-touriga-casa-ermelinda</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/stradivari-cabernet-sauvignon</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/huggo-moscato</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/filipetti-moscato-brut</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/jp-chenet-sparkling-spritz-6-x-75cl-case</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/chevalier-cavinal</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/haut-donjon</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/baron-de-valls-rose</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.lapetitebouteille.com/produit/remy-martin-1738</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.lapetitebouteille.com/produit/ch-valac-rouge-cuvee</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -137,19 +475,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.lapetitebouteille.com/produit/stradivari-cabernet-sauvignon</loc>
-    <lastmod>2026-07-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.lapetitebouteille.com/produit/cognac-courvoisier-vsop</loc>
-    <lastmod>2026-07-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.lapetitebouteille.com/produit/remy-martin-1738</loc>
     <lastmod>2026-07-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -157,12 +483,6 @@
   <url>
     <loc>https://www.lapetitebouteille.com/produit/remy-martin-vsop</loc>
     <lastmod>2026-07-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.lapetitebouteille.com/produit/huggo-moscato</loc>
-    <lastmod>2026-07-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -229,18 +549,6 @@
   <url>
     <loc>https://www.lapetitebouteille.com/produit/moet-chandon-nectar</loc>
     <lastmod>2026-06-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.lapetitebouteille.com/produit/haut-donjon</loc>
-    <lastmod>2026-06-24</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.lapetitebouteille.com/produit/chevalier-cavinal</loc>
-    <lastmod>2026-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -911,12 +1219,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.lapetitebouteille.com/produit/baron-de-valls-rose</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.lapetitebouteille.com/produit/vin-rose-cabernet-d-anjou</loc>
     <lastmod>2026-06-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -1109,19 +1411,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.lapetitebouteille.com/produit/jp-chenet-sparkling-spritz-6-x-75cl-case</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.lapetitebouteille.com/produit/whisky-old-pulteney-12-ans</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.lapetitebouteille.com/produit/vinha-da-fonte-touriga-casa-ermelinda</loc>
     <lastmod>2026-06-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1740,12 +2030,6 @@
   </url>
   <url>
     <loc>https://www.lapetitebouteille.com/produit/tiera-imperial-grand-reserve</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.lapetitebouteille.com/produit/filipetti-moscato-brut</loc>
     <lastmod>2026-06-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

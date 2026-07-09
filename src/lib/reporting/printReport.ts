@@ -1,6 +1,6 @@
 import type { ReportColumn, ReportMeta } from "./types";
 
-export function printReport<T extends Record<string, any>>(
+export function printReport<T extends Record<string, unknown>>(
   meta: ReportMeta,
   columns: ReportColumn<T>[],
   rows: T[],
@@ -21,7 +21,7 @@ export function printReport<T extends Record<string, any>>(
     .map((row) => {
       const tds = columns
         .map((c) => {
-          const raw = c.value ? c.value(row) : (row as any)[c.key];
+          const raw = c.value ? c.value(row) : row[c.key];
           const v = raw === null || raw === undefined ? "" : String(raw);
           return `<td style="${c.numeric ? "text-align:right" : ""}">${v}</td>`;
         })
@@ -85,7 +85,7 @@ export function printReport<T extends Record<string, any>>(
     <span>La Petite Bouteille — Rapport confidentiel</span>
     <span>${rows.length} ligne(s)</span>
   </div>
-  <script>window.addEventListener('load', () => { setTimeout(() => window.print(), 250); });<\/script>
+  <script>window.addEventListener('load', () => { setTimeout(() => window.print(), 250); });</script>
 </body></html>`);
   win.document.close();
 }

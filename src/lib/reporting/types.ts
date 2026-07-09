@@ -1,6 +1,6 @@
 export type ReportFormat = "pdf" | "xlsx" | "csv" | "print";
 
-export interface ReportColumn<T = any> {
+export interface ReportColumn<T = Record<string, unknown>> {
   key: string;
   label: string;
   value?: (row: T) => string | number | null | undefined;

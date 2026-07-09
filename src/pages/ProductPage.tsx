@@ -148,7 +148,7 @@ const ProductPage = () => {
               <>
                 <ChevronRight className="h-4 w-4 text-cream/40" />
                 <Link
-                  to={`/catalogue?category=${product.category.slug}`}
+                  to={`/catalogue/${product.category.slug}`}
                   className="hover:text-primary transition-colors"
                 >
                   {product.category.name}
@@ -187,7 +187,7 @@ const ProductPage = () => {
               <div className="flex items-center gap-3 flex-wrap">
                 {product.category && (
                   <Link
-                    to={`/catalogue?category=${product.category.slug}`}
+                    to={`/catalogue/${product.category.slug}`}
                     className="text-sm text-primary uppercase tracking-widest hover:underline font-medium"
                   >
                     {product.category.name}

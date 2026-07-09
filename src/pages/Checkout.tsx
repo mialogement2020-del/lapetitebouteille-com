@@ -16,7 +16,9 @@ import Seo from "@/components/seo/Seo";
 const STEPS = [
   { id: "address", labelKey: "checkout.stepDelivery", icon: MapPin },
   { id: "payment", labelKey: "checkout.stepPayment", icon: CreditCard },
-];
+] as const;
+
+type CheckoutStep = (typeof STEPS)[number]["id"];
 
 export default function Checkout() {
   const { t } = useTranslation();
@@ -86,7 +88,7 @@ export default function Checkout() {
             {STEPS.map((s, index) => (
               <div key={s.id} className="flex items-center">
                 <button
-                  onClick={() => index < currentStepIndex && setStep(s.id as any)}
+                  onClick={() => index < currentStepIndex && setStep(s.id as CheckoutStep)}
                   disabled={index > currentStepIndex}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
                     index === currentStepIndex

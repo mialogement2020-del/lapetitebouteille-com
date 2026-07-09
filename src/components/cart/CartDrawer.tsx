@@ -10,13 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { useCartContext } from "@/contexts/CartContext";
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
+import { calculateCartTotals } from "@/lib/cartTotals";
 import { useTranslation } from "react-i18next";
 
 interface CartDrawerProps {
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function CartDrawer({ children }: CartDrawerProps) {
+export function CartDrawer({ children, open, onOpenChange }: CartDrawerProps) {
   const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const { items, isLoading, updateQuantity, removeItem, subtotal, itemCount } = useCartContext();
@@ -37,11 +40,10 @@ export function CartDrawer({ children }: CartDrawerProps) {
   const hasActiveReferral = hasStoredReferral();
   const referralCode = hasActiveReferral ? getStoredReferralCode() : null;
 
-  const deliveryFee = subtotal >= 50000 ? 0 : 2000;
-  const total = subtotal + deliveryFee;
+  const { deliveryFee, total, freeDeliveryRemaining } = calculateCartTotals(items);
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         {children || (
           <motion.div
@@ -243,9 +245,9 @@ export function CartDrawer({ children }: CartDrawerProps) {
                     )}
                   </span>
                 </div>
-                {subtotal < 50000 && (
+                {freeDeliveryRemaining > 0 && (
                   <p className="text-xs text-primary">
-                    {t("cart.freeHint", { amount: formatPrice(50000 - subtotal) })}
+                    {t("cart.freeHint", { amount: formatPrice(freeDeliveryRemaining) })}
                   </p>
                 )}
               </div>

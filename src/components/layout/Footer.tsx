@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
 import { Facebook, Instagram, Phone, Mail, MapPin, Twitter, Send } from "lucide-react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
@@ -26,12 +25,7 @@ const Footer = () => {
       {!hideNewsletter && (
         <div className="relative border-b border-gold/10">
           <div className="container mx-auto px-4 py-16 lg:py-20">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="max-w-2xl mx-auto text-center"
-            >
+            <div className="max-w-2xl mx-auto text-center">
               <span className="text-primary text-sm uppercase tracking-[0.3em] font-medium mb-4 block">
                 {t("footer.newsletterLabel")}
               </span>
@@ -55,7 +49,7 @@ const Footer = () => {
                   {t("footer.subscribe")}
                 </Button>
               </form>
-            </motion.div>
+            </div>
           </div>
         </div>
       )}
@@ -89,16 +83,14 @@ const Footer = () => {
                 { icon: Instagram, href: "#", label: "Instagram" },
                 { icon: Twitter, href: "#", label: "Twitter" },
               ].map((social, index) => (
-                <motion.a
+                <a
                   key={index}
                   href={social.href}
                   aria-label={social.label}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
                   className="w-11 h-11 rounded-xl bg-cream/5 border border-cream/10 flex items-center justify-center hover:bg-primary hover:border-primary hover:text-noir transition-all duration-300"
                 >
                   <social.icon className="h-5 w-5" />
-                </motion.a>
+                </a>
               ))}
             </div>
           </div>
@@ -109,10 +101,10 @@ const Footer = () => {
             <ul className="space-y-4">
               {[
                 { href: "/catalogue", label: t("footer.allCollection") },
-                { href: "/catalogue?category=vins", label: t("nav.wines") },
-                { href: "/catalogue?category=champagnes", label: t("nav.champagnes") },
-                { href: "/catalogue?category=spiritueux", label: t("nav.spirits") },
-                { href: "/catalogue?category=coffrets", label: t("footer.giftBoxes") },
+                { href: "/catalogue/vins", label: t("nav.wines") },
+                { href: "/catalogue/champagnes", label: t("nav.champagnes") },
+                { href: "/catalogue/spiritueux", label: t("nav.spirits") },
+                { href: "/catalogue/coffrets", label: t("footer.giftBoxes") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link

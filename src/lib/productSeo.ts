@@ -53,7 +53,7 @@ export const buildProductDescription = (product: Product) => {
   const base =
     cleanText(product.short_description) ||
     cleanText(product.description) ||
-    `${cleanText(product.name)} disponible au Cameroun avec livraison a Yaounde, Douala et partout au pays.`;
+    `${cleanText(product.name)} disponible au Cameroun avec livraison à Yaoundé, Douala et partout au pays.`;
 
   const parts = [
     base,
@@ -69,23 +69,23 @@ export const buildProductFaq = (product: Product) => {
   const categoryName = cleanText(product.category?.name) || "produit";
   return [
     {
-      question: `Ou acheter ${productName} au Cameroun ?`,
+      question: `Où acheter ${productName} au Cameroun ?`,
       answer: `${productName} est disponible sur La Petite Bouteille, avec commande en ligne et livraison au Cameroun.`,
     },
     {
       question: `Quel est le prix de ${productName} ?`,
-      answer: `Le prix affiche de ${productName} est ${formatSeoPrice(product.price)}.`,
+      answer: `Le prix affiché de ${productName} est ${formatSeoPrice(product.price)}.`,
     },
     {
       question: `${productName} est-il en stock ?`,
       answer:
         product.stock_quantity > 0
-          ? `${productName} est indique en stock sur la fiche produit.`
-          : `${productName} est actuellement indique hors stock sur la fiche produit.`,
+          ? `${productName} est indiqué en stock sur la fiche produit.`
+          : `${productName} est actuellement indiqué hors stock sur la fiche produit.`,
     },
     {
-      question: `Dans quelle categorie se trouve ${productName} ?`,
-      answer: `${productName} est classe dans la categorie ${categoryName} sur La Petite Bouteille.`,
+      question: `Dans quelle catégorie se trouve ${productName} ?`,
+      answer: `${productName} est classé dans la catégorie ${categoryName} sur La Petite Bouteille.`,
     },
   ];
 };
@@ -167,7 +167,7 @@ export const buildProductSeo = (product: Product) => {
             "@type": "ListItem",
             position: 3,
             name: cleanText(product.category.name),
-            item: `${SITE_URL}/catalogue?category=${product.category.slug}`,
+            item: `${SITE_URL}/catalogue/${product.category.slug}`,
           }
         : null,
       {

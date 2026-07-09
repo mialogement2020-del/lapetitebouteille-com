@@ -1,6 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface LooseSupabaseError {
+  message?: string;
+}
+
+type LooseSupabaseResult = {
+  data: unknown;
+  error: LooseSupabaseError | null;
+};
+
+interface LooseSupabaseQuery extends PromiseLike<LooseSupabaseResult> {
+  select(columns?: string): LooseSupabaseQuery;
+  eq(column: string, value: unknown): LooseSupabaseQuery;
+  order(column: string, options?: { ascending?: boolean }): LooseSupabaseQuery;
+  insert(value: unknown): LooseSupabaseQuery;
+  update(value: unknown): LooseSupabaseQuery;
+  single(): Promise<LooseSupabaseResult>;
+}
+
+const looseSupabase = supabase as unknown as {
+  from(table: string): LooseSupabaseQuery;
+};
+
 // Default wholesale tiers with discount percentages
 const STORAGE_KEY = "wholesale_default_discounts";
 
@@ -8,7 +30,9 @@ function getStoredDiscounts(): Record<string, number> {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) return JSON.parse(stored);
-  } catch {}
+  } catch {
+    return {};
+  }
   return {};
 }
 
@@ -117,7 +141,7 @@ export function useWholesalePricing(productId: string) {
   return useQuery({
     queryKey: ["wholesale-pricing", productId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await looseSupabase
         .from("wholesale_pricing")
         .select("*")
         .eq("product_id", productId)
@@ -152,7 +176,7 @@ export function useSubmitQuoteRequest() {
 
   return useMutation({
     mutationFn: async (data: QuoteRequestData) => {
-      const { data: result, error } = await (supabase as any)
+      const { data: result, error } = await looseSupabase
         .from("quote_requests")
         .insert(data)
         .select()
@@ -164,7 +188,7 @@ export function useSubmitQuoteRequest() {
       try {
         await supabase.functions.invoke("send-quote-notification", {
           body: {
-            quoteId: result.id,
+            quoteId: (result as { id: string }).id,
             clientName: data.client_name,
             clientEmail: data.client_email,
             clientPhone: data.client_phone,
@@ -195,7 +219,7 @@ export function useQuoteRequests() {
   return useQuery({
     queryKey: ["quote-requests"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await looseSupabase
         .from("quote_requests")
         .select("*")
         .order("created_at", { ascending: false });
@@ -211,7 +235,7 @@ export function useUpdateQuoteStatus() {
 
   return useMutation({
     mutationFn: async ({ id, status, notes }: { id: string; status: string; notes?: string }) => {
-      const { error } = await (supabase as any)
+      const { error } = await looseSupabase
         .from("quote_requests")
         .update({
           status,

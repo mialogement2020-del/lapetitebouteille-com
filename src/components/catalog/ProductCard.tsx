@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Star, Sparkles, Share2, Check, QrCode, Download, Copy, Package, TrendingUp, Coins } from "lucide-react";
 import { useState } from "react";
+import type { SyntheticEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
@@ -27,6 +28,7 @@ import { QRCodeSVG } from "qrcode.react";
 import logoIcon from "@/assets/logo-icon.png";
 
 const PUBLISHED_URL = "https://lapetitebouteille.com";
+const FALLBACK_IMAGE = "/placeholder.svg";
 
 interface ProductCardProps {
   product: Product;
@@ -47,6 +49,11 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
     : null;
 
   const productQrUrl = `${PUBLISHED_URL}/produit/${product.slug}`;
+  const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    if (image.src.endsWith(FALLBACK_IMAGE)) return;
+    image.src = FALLBACK_IMAGE;
+  };
 
   const handleDownloadQR = () => {
     const svg = document.getElementById(`qr-code-${product.id}`);
@@ -163,6 +170,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           loading={index < 4 ? "eager" : "lazy"}
           decoding="async"
           fetchPriority={index < 4 ? "high" : "auto"}
+          onError={handleImageError}
         />
         
         {/* Badges */}
@@ -198,7 +206,7 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
         {/* Category */}
         {product.category && (
           <Link
-            to={`/catalogue?category=${product.category.slug}`}
+            to={`/catalogue/${product.category.slug}`}
             className="text-xs text-primary uppercase tracking-widest hover:underline font-medium"
           >
             {product.category.name}

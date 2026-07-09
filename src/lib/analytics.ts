@@ -19,7 +19,7 @@ const SESSION_KEY = "lpb_analytics_session";
 const FLUSH_INTERVAL_MS = 4000;
 const MAX_BATCH = 20;
 
-let queue: QueuedEvent[] = [];
+const queue: QueuedEvent[] = [];
 let flushTimer: number | null = null;
 let initialized = false;
 
