@@ -3824,6 +3824,10 @@ export type Database = {
       auto_reconcile_pending: { Args: never; Returns: number }
       auto_release_delivered_escrows: { Args: never; Returns: number }
       calculate_order_risk_score: { Args: { _order_id: string }; Returns: Json }
+      can_insert_order_item_for_current_actor: {
+        Args: { _order_id: string }
+        Returns: boolean
+      }
       capture_escrow: {
         Args: { _escrow_id: string; _reason?: string }
         Returns: boolean

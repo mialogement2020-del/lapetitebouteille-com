@@ -155,7 +155,7 @@ export function useCheckout() {
       // Resolve the authenticated user at submit time so RLS receives the
       // exact user_id even if the React auth context is still hydrating.
       const { data: sessionData } = await supabase.auth.getSession();
-      const checkoutUserId = user?.id ?? sessionData.session?.user?.id ?? null;
+      const checkoutUserId = sessionData.session?.user?.id ?? null;
 
       // Use city directly as it's now stored with proper capitalization
       const cityLabel = addressData.city;
@@ -166,6 +166,7 @@ export function useCheckout() {
         .rpc("generate_order_number");
 
       const orderNumber = orderNumberData || `CMD-${Date.now()}`;
+      const orderId = crypto.randomUUID();
 
       // Determine referrer_id and referral_code_used
       let referrerId: string | null = null;
@@ -189,9 +190,10 @@ export function useCheckout() {
       }
 
       // Create order
-      const { data: order, error: orderError } = await supabase
+      const { error: orderError } = await supabase
         .from("orders")
         .insert({
+          id: orderId,
           user_id: checkoutUserId,
           order_number: orderNumber,
           subtotal,
@@ -207,16 +209,14 @@ export function useCheckout() {
           shipping_neighborhood: addressData.neighborhood,
           shipping_street: addressData.streetAddress,
           shipping_notes: addressData.additionalInfo || null,
-          guest_email: !user?.id ? addressData.email?.trim() || null : null,
-          guest_phone: !user?.id ? addressData.phone : null,
+          guest_email: !checkoutUserId ? addressData.email?.trim() || null : null,
+          guest_phone: !checkoutUserId ? addressData.phone : null,
           referral_code_used: referralCodeUsed || promoCodeUsed || null,
           referrer_id: referrerId,
           gift_packaging_id: giftPackaging?.id || null,
           gift_message: giftMessage || null,
           gift_packaging_price: giftPackagingPrice,
-        })
-        .select()
-        .single();
+        });
 
       if (orderError) throw orderError;
 
@@ -255,12 +255,12 @@ export function useCheckout() {
         }
 
         // Generate commissions for MLM (multi-level)
-        await generateMLMCommissions(order.id, referrerId!, total);
+        await generateMLMCommissions(orderId, referrerId!, total);
       }
 
       // Create order items
       const orderItems = items.map((item) => ({
-        order_id: order.id,
+        order_id: orderId,
         product_id: item.product_id,
         product_name: item.product?.name || "Produit",
         product_image: item.product?.image_url || null,
