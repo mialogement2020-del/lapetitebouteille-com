@@ -159,11 +159,25 @@ export function useCheckout() {
       if (rpcError) throw rpcError;
 
       const result = rpcData as CheckoutRpcResponse | null;
-      if (!result?.success || !result.order_number) {
+      if (!result?.success || !result.order_number || !result.order_id) {
         throw new Error(result?.error || "La commande n'a pas pu etre creee");
       }
 
       const orderNumber = result.order_number;
+
+      if (method === "mtn_money" || method === "orange_money") {
+        const paymentResponse = await supabase.functions.invoke("initiate-mobile-money-payment", {
+          body: {
+            orderId: result.order_id,
+            paymentMethod: method,
+            paymentPhone: phone || addressData.phone,
+          },
+        });
+
+        if (paymentResponse.error) {
+          throw paymentResponse.error;
+        }
+      }
 
       // Send confirmation email - for both guests and authenticated users
       try {
