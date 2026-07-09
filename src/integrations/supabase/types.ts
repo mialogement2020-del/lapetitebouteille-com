@@ -3863,6 +3863,18 @@ export type Database = {
         Args: { _due_days?: number; _quote_id: string }
         Returns: Json
       }
+      create_order_from_checkout: {
+        Args: {
+          _address: Json
+          _cart_items: Json
+          _code?: string | null
+          _code_type?: string | null
+          _gift_message?: string | null
+          _gift_packaging_id?: string | null
+          _payment_method: Database["public"]["Enums"]["payment_method"]
+        }
+        Returns: Json
+      }
       create_referral_relationship: {
         Args: { _referral_code: string }
         Returns: Json
