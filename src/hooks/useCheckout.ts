@@ -155,7 +155,7 @@ export function useCheckout() {
       // Resolve the authenticated user at submit time so RLS receives the
       // exact user_id even if the React auth context is still hydrating.
       const { data: sessionData } = await supabase.auth.getSession();
-      const checkoutUserId = user?.id ?? sessionData.session?.user?.id ?? null;
+      const checkoutUserId = sessionData.session?.user?.id ?? null;
 
       // Use city directly as it's now stored with proper capitalization
       const cityLabel = addressData.city;
@@ -207,8 +207,8 @@ export function useCheckout() {
           shipping_neighborhood: addressData.neighborhood,
           shipping_street: addressData.streetAddress,
           shipping_notes: addressData.additionalInfo || null,
-          guest_email: !user?.id ? addressData.email?.trim() || null : null,
-          guest_phone: !user?.id ? addressData.phone : null,
+          guest_email: !checkoutUserId ? addressData.email?.trim() || null : null,
+          guest_phone: !checkoutUserId ? addressData.phone : null,
           referral_code_used: referralCodeUsed || promoCodeUsed || null,
           referrer_id: referrerId,
           gift_packaging_id: giftPackaging?.id || null,
