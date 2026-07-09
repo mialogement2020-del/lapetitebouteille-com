@@ -1,11 +1,14 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import Index from "./pages/Index";
 
-const AppRuntimeProviders = lazy(() =>
-  import("@/components/providers/AppRuntimeProviders").then((m) => ({ default: m.AppRuntimeProviders }))
-);
 const Catalogue = lazy(() => import("./pages/Catalogue"));
 const ProductPage = lazy(() => import("./pages/ProductPage"));
 const Inscription = lazy(() => import("./pages/Inscription"));
@@ -42,71 +45,55 @@ const ComparatorFloatingBar = lazy(() =>
 
 const queryClient = new QueryClient();
 
-const DeferredGlobalWidgets = () => {
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    const show = () => setEnabled(true);
-    const timer = window.setTimeout(show, 15000);
-    window.addEventListener("pointerdown", show, { once: true });
-    window.addEventListener("keydown", show, { once: true });
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("pointerdown", show);
-      window.removeEventListener("keydown", show);
-    };
-  }, []);
-
-  if (!enabled) return null;
-
-  return (
-    <Suspense fallback={null}>
-      <AppRuntimeProviders>
-        <SommelierChat />
-        <ComparatorFloatingBar />
-      </AppRuntimeProviders>
-    </Suspense>
-  );
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <Suspense fallback={null}>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/catalogue" element={<AppRuntimeProviders><Catalogue /></AppRuntimeProviders>} />
-          <Route path="/produit/:slug" element={<AppRuntimeProviders><ProductPage /></AppRuntimeProviders>} />
-          <Route path="/inscription" element={<AppRuntimeProviders><Inscription /></AppRuntimeProviders>} />
-          <Route path="/connexion" element={<AppRuntimeProviders><Connexion /></AppRuntimeProviders>} />
-          <Route path="/mot-de-passe-oublie" element={<AppRuntimeProviders><MotDePasseOublie /></AppRuntimeProviders>} />
-          <Route path="/reset-password" element={<AppRuntimeProviders><ResetPassword /></AppRuntimeProviders>} />
-          <Route path="/checkout" element={<AppRuntimeProviders><Checkout /></AppRuntimeProviders>} />
-          <Route path="/commande-confirmee" element={<AppRuntimeProviders><OrderConfirmation /></AppRuntimeProviders>} />
-          <Route path="/ambassadeur" element={<AppRuntimeProviders><Ambassadeur /></AppRuntimeProviders>} />
-          <Route path="/compte" element={<AppRuntimeProviders><Compte /></AppRuntimeProviders>} />
-          <Route path="/admin" element={<AppRuntimeProviders><Admin /></AppRuntimeProviders>} />
-          <Route path="/conditions" element={<AppRuntimeProviders><Conditions /></AppRuntimeProviders>} />
-          <Route path="/confidentialite" element={<AppRuntimeProviders><Confidentialite /></AppRuntimeProviders>} />
-          <Route path="/livraison" element={<AppRuntimeProviders><Livraison /></AppRuntimeProviders>} />
-          <Route path="/mentions-legales" element={<AppRuntimeProviders><MentionsLegales /></AppRuntimeProviders>} />
-          <Route path="/contact" element={<AppRuntimeProviders><Contact /></AppRuntimeProviders>} />
-          <Route path="/suivi-commande" element={<AppRuntimeProviders><SuiviCommande /></AppRuntimeProviders>} />
-          <Route path="/r/:code" element={<AppRuntimeProviders><ShortLinkRedirect /></AppRuntimeProviders>} />
-          <Route path="/comparer" element={<AppRuntimeProviders><Comparer /></AppRuntimeProviders>} />
-          <Route path="/vendeur" element={<AppRuntimeProviders><Vendeur /></AppRuntimeProviders>} />
-          <Route path="/boutique/:slug" element={<AppRuntimeProviders><Boutique /></AppRuntimeProviders>} />
-          <Route path="/grossiste" element={<AppRuntimeProviders><Grossiste /></AppRuntimeProviders>} />
-          <Route path="/recherche-visuelle" element={<AppRuntimeProviders><RechercheVisuelle /></AppRuntimeProviders>} />
-          <Route path="/magazine" element={<AppRuntimeProviders><Magazine /></AppRuntimeProviders>} />
-          <Route path="/magazine/:slug" element={<AppRuntimeProviders><Article /></AppRuntimeProviders>} />
-
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<AppRuntimeProviders><NotFound /></AppRuntimeProviders>} />
-        </Routes>
-      </Suspense>
-      <DeferredGlobalWidgets />
-    </BrowserRouter>
+    <AuthProvider>
+      <CurrencyProvider>
+      <CartProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={null}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/catalogue" element={<Catalogue />} />
+              <Route path="/produit/:slug" element={<ProductPage />} />
+              <Route path="/inscription" element={<Inscription />} />
+              <Route path="/connexion" element={<Connexion />} />
+              <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/commande-confirmee" element={<OrderConfirmation />} />
+              <Route path="/ambassadeur" element={<Ambassadeur />} />
+              <Route path="/compte" element={<Compte />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/conditions" element={<Conditions />} />
+              <Route path="/confidentialite" element={<Confidentialite />} />
+              <Route path="/livraison" element={<Livraison />} />
+              <Route path="/mentions-legales" element={<MentionsLegales />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/suivi-commande" element={<SuiviCommande />} />
+              <Route path="/r/:code" element={<ShortLinkRedirect />} />
+              <Route path="/comparer" element={<Comparer />} />
+              <Route path="/vendeur" element={<Vendeur />} />
+              <Route path="/boutique/:slug" element={<Boutique />} />
+              <Route path="/grossiste" element={<Grossiste />} />
+              <Route path="/recherche-visuelle" element={<RechercheVisuelle />} />
+              <Route path="/magazine" element={<Magazine />} />
+              <Route path="/magazine/:slug" element={<Article />} />
+              
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <SommelierChat />
+            <ComparatorFloatingBar />
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </CartProvider>
+      </CurrencyProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

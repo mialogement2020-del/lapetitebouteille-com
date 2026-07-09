@@ -1,22 +1,61 @@
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Star, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+ import { Button } from "@/components/ui/button";
+ import { Link } from "react-router-dom";
 import heroBackground from "@/assets/hero-wine-cellar.webp";
-import heroBackgroundMobile from "@/assets/hero-wine-cellar-mobile.webp";
+import { useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useHeroConfig } from "@/hooks/useHeroConfig";
  
  const HeroSection = () => {
+  const { t, i18n } = useTranslation();
+  const { data: cfg } = useHeroConfig();
+  const isEn = i18n.language?.startsWith("en");
+  const hero = (cfg?.published ?? {}) as any;
+  const badge = (isEn ? hero.badge_en : hero.badge_fr) || t("hero.badge");
+  const titleLine1 = (isEn ? hero.title_line1_en : hero.title_line1_fr) || t("hero.titleLine1");
+  const titleHighlight = (isEn ? hero.title_highlight_en : hero.title_highlight_fr) || t("hero.titleHighlight");
+  const subtitle = (isEn ? hero.subtitle_en : hero.subtitle_fr) || t("hero.subtitle");
+  const ctaPrimary = (isEn ? hero.cta_primary_label_en : hero.cta_primary_label_fr) || t("hero.ctaPrimary");
+  const ctaSecondary = (isEn ? hero.cta_secondary_label_en : hero.cta_secondary_label_fr) || t("hero.ctaSecondary");
+  const ctaPrimaryLink = hero.cta_primary_link || "/catalogue";
+  const ctaSecondaryLink = hero.cta_secondary_link || "/ambassadeur";
+  const mediaType = hero.media_type || "image";
+  const bgUrl = hero.background_url || heroBackground;
+  const videoUrl = hero.video_url || "";
+  const containerRef = useRef<HTMLElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [1, 0.5, 0]);
+  
    return (
     <section 
+      ref={containerRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-noir pt-24"
     >
        {/* Background Image with Overlay */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+      <motion.div
+        className="absolute inset-[-20%] bg-cover bg-center bg-no-repeat will-change-transform"
+         style={{ y: backgroundY }}
+        initial={{ scale: 1.1 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
        >
-        <picture>
-          <source media="(max-width: 767px)" srcSet={heroBackgroundMobile} />
+        {mediaType === "video" && videoUrl ? (
+          <video
+            src={videoUrl}
+            autoPlay muted loop playsInline
+            className="h-full w-full object-cover object-center"
+          />
+        ) : (
           <img
-            src={heroBackground}
+            src={bgUrl}
             alt=""
             aria-hidden="true"
             width={1920}
@@ -26,12 +65,28 @@ import heroBackgroundMobile from "@/assets/hero-wine-cellar-mobile.webp";
             decoding="async"
             fetchPriority="high"
           />
-        </picture>
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-noir/90 via-noir/60 to-noir" />
-      </div>
+      </motion.div>
  
        {/* Decorative Elements */}
        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+         <motion.div 
+           animate={{ y: [0, -30, 0] }}
+           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+           className="absolute top-1/4 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" 
+         />
+         <motion.div 
+           animate={{ y: [0, 20, 0] }}
+           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+           className="absolute bottom-1/4 right-10 w-96 h-96 bg-secondary/15 rounded-full blur-3xl" 
+         />
+         <motion.div 
+           animate={{ y: [0, -15, 0] }}
+           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+           className="absolute top-1/3 right-1/4 w-48 h-48 bg-primary/5 rounded-full blur-3xl" 
+         />
+         
          {/* Subtle grid pattern */}
          <div 
            className="absolute inset-0 opacity-[0.02]"
@@ -42,37 +97,50 @@ import heroBackgroundMobile from "@/assets/hero-wine-cellar-mobile.webp";
          />
        </div>
  
-      {/* Content */}
-      <div 
+       {/* Content */}
+      <motion.div 
         className="relative z-10 container mx-auto px-4"
+        style={{ y: textY, opacity }}
       >
          <div className="max-w-4xl mx-auto text-center">
            {/* Badge */}
-           <div
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.6 }}
              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm"
            >
              <Star className="h-4 w-4 text-primary fill-primary animate-pulse" />
-             <span className="text-sm font-medium text-primary tracking-wide">Selection prestigieuse</span>
-           </div>
+             <span className="text-sm font-medium text-primary tracking-wide">{badge}</span>
+           </motion.div>
  
            {/* Heading */}
-           <h1
+           <motion.h1
+             initial={{ opacity: 0, y: 30 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.6, delay: 0.1 }}
              className="font-display text-5xl md:text-6xl lg:text-8xl font-semibold text-cream leading-[0.95] mb-8"
            >
-             L'Art de la degustation
+             {titleLine1}
              <br />
-             <span className="text-gradient-gold">La Petite Bouteille</span>
-           </h1>
+             <span className="text-gradient-gold">{titleHighlight}</span>
+           </motion.h1>
  
            {/* Subtitle */}
-           <p
+           <motion.p
+             initial={{ opacity: 0, y: 30 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.6, delay: 0.2 }}
              className="text-lg md:text-xl text-cream/70 mb-12 max-w-2xl mx-auto leading-relaxed font-light"
            >
-             Decouvrez notre collection exclusive.
-           </p>
+             {subtitle}
+           </motion.p>
  
            {/* CTA Buttons */}
-           <div
+           <motion.div
+             initial={{ opacity: 0, y: 30 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.6, delay: 0.3 }}
              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
            >
              <Button
@@ -80,8 +148,8 @@ import heroBackgroundMobile from "@/assets/hero-wine-cellar-mobile.webp";
                size="lg"
                className="bg-gradient-gold text-noir font-semibold text-lg px-10 py-7 hover:opacity-90 shadow-gold shine-effect rounded-full"
              >
-                <Link to="/catalogue">
-                  Explorer la collection
+                <Link to={ctaPrimaryLink}>
+                  {ctaPrimary}
                  <ArrowRight className="ml-2 h-5 w-5" />
                </Link>
              </Button>
@@ -91,58 +159,72 @@ import heroBackgroundMobile from "@/assets/hero-wine-cellar-mobile.webp";
                size="lg"
                className="border-cream/20 text-cream hover:bg-cream/5 text-lg px-10 py-7 rounded-full backdrop-blur-sm"
              >
-                <Link to="/ambassadeur">
-                  Devenir ambassadeur
+                <Link to={ctaSecondaryLink}>
+                  {ctaSecondary}
                </Link>
              </Button>
-           </div>
+           </motion.div>
  
            {/* Stats */}
-           <div
+           <motion.div
+             initial={{ opacity: 0, y: 30 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.6, delay: 0.4 }}
              className="grid grid-cols-3 gap-8 max-w-2xl mx-auto"
            >
              {[
-               { value: "500+", label: "References" },
-               { value: "2000+", label: "Clients servis" },
-               { value: "24h", label: "Livraison rapide" },
+               { value: "500+", label: t("hero.stat1") },
+               { value: "2000+", label: t("hero.stat2") },
+               { value: "24h", label: t("hero.stat3") },
              ].map((stat, index) => (
-               <div 
+               <motion.div 
                  key={index} 
                  className="text-center"
+                 initial={{ opacity: 0, scale: 0.8 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 transition={{ delay: 0.5 + index * 0.1 }}
                >
                  <div className="text-3xl md:text-4xl font-semibold text-primary font-display">
                    {stat.value}
                  </div>
                  <div className="text-sm text-cream/50 mt-2 tracking-wide">{stat.label}</div>
-               </div>
+               </motion.div>
              ))}
-           </div>
+           </motion.div>
          </div>
-      </div>
+      </motion.div>
  
        {/* Scroll Indicator */}
-       <div
+       <motion.div
+         initial={{ opacity: 0 }}
+         animate={{ opacity: 1 }}
+         transition={{ delay: 1, duration: 0.6 }}
          className="absolute bottom-12 left-1/2 -translate-x-1/2"
        >
-         <div
+         <motion.div
+           animate={{ y: [0, 10, 0] }}
+           transition={{ repeat: Infinity, duration: 1.5 }}
            className="flex flex-col items-center gap-2 text-cream/40"
          >
-           <span className="text-xs uppercase tracking-widest">Decouvrir</span>
+           <span className="text-xs uppercase tracking-widest">Découvrir</span>
            <ChevronDown className="h-5 w-5" />
-         </div>
-       </div>
+         </motion.div>
+       </motion.div>
  
        {/* Decorative side elements */}
        <div className="hidden lg:block absolute left-8 top-1/2 -translate-y-1/2">
-         <div 
+         <motion.div 
+           initial={{ opacity: 0, x: -20 }}
+           animate={{ opacity: 1, x: 0 }}
+           transition={{ delay: 0.8 }}
            className="flex flex-col items-center gap-4"
          >
            <div className="w-px h-24 bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
            <span className="text-xs text-cream/30 tracking-widest transform -rotate-90 whitespace-nowrap">
-             Depuis 2024
+             {t("hero.since")}
            </span>
            <div className="w-px h-24 bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
-         </div>
+         </motion.div>
        </div>
      </section>
    );

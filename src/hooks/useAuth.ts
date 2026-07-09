@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
-
-const getSupabase = () => import("@/integrations/supabase/client").then((m) => m.supabase);
 
 export interface AuthState {
   user: User | null;
@@ -19,41 +18,30 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    let cancelled = false;
-    let unsubscribe: (() => void) | undefined;
-
-    getSupabase().then((supabase) => {
-      if (cancelled) return;
-
-      // Set up auth state listener BEFORE getting session
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          if (cancelled) return;
-          setState({
-            user: session?.user ?? null,
-            session,
-            loading: false,
-            isAuthenticated: !!session?.user,
-          });
-        }
-      );
-      unsubscribe = () => subscription.unsubscribe();
-
-      // Get initial session
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (cancelled) return;
+    // Set up auth state listener BEFORE getting session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
         setState({
           user: session?.user ?? null,
           session,
           loading: false,
           isAuthenticated: !!session?.user,
         });
+      }
+    );
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setState({
+        user: session?.user ?? null,
+        session,
+        loading: false,
+        isAuthenticated: !!session?.user,
       });
     });
 
     return () => {
-      cancelled = true;
-      unsubscribe?.();
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -91,7 +79,6 @@ export function useAuth() {
       }
     }
 
-    const supabase = await getSupabase();
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -137,7 +124,6 @@ export function useAuth() {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const supabase = await getSupabase();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -146,13 +132,11 @@ export function useAuth() {
   }, []);
 
   const signOut = useCallback(async () => {
-    const supabase = await getSupabase();
     const { error } = await supabase.auth.signOut();
     return { error };
   }, []);
 
   const resetPassword = useCallback(async (email: string) => {
-    const supabase = await getSupabase();
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
@@ -181,7 +165,6 @@ async function processReferralCodeSecure(code: string) {
     }
 
     // Use secure server-side function to create referral relationship
-    const supabase = await getSupabase();
     const { data, error } = await supabase.rpc('create_referral_relationship', {
       _referral_code: sanitizedCode
     });

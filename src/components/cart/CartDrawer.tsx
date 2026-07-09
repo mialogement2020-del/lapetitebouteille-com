@@ -14,11 +14,9 @@ import { useTranslation } from "react-i18next";
 
 interface CartDrawerProps {
   children?: React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
 }
 
-export function CartDrawer({ children, open, onOpenChange }: CartDrawerProps) {
+export function CartDrawer({ children }: CartDrawerProps) {
   const { t } = useTranslation();
   const formatPrice = useFormatPrice();
   const { items, isLoading, updateQuantity, removeItem, subtotal, itemCount } = useCartContext();
@@ -43,7 +41,7 @@ export function CartDrawer({ children, open, onOpenChange }: CartDrawerProps) {
   const total = subtotal + deliveryFee;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet>
       <SheetTrigger asChild>
         {children || (
           <motion.div
