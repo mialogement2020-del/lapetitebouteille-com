@@ -6,8 +6,11 @@ import { useProducts, useCategories } from "@/hooks/useProducts";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
+import type { SyntheticEvent } from "react";
 import { optimizeProductImage } from "@/lib/imageOptimization";
 import { useTranslation } from "react-i18next";
+
+const FALLBACK_IMAGE = "/placeholder.svg";
 
 const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; categoryName: string }) => {
   const { t } = useTranslation();
@@ -34,6 +37,12 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
+
+  const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+    if (image.src.endsWith(FALLBACK_IMAGE)) return;
+    image.src = FALLBACK_IMAGE;
+  };
 
   if (shouldLoad && !isLoading && displayProducts.length === 0) return null;
 
@@ -93,6 +102,7 @@ const CategoryRow = ({ categorySlug, categoryName }: { categorySlug: string; cat
                           className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"
                           decoding="async"
+                          onError={handleImageError}
                         />
                         {hasDiscount && (
                           <span className="absolute top-2 left-2 px-2 py-1 bg-secondary text-secondary-foreground text-[10px] font-bold rounded-full">

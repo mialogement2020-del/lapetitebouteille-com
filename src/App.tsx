@@ -74,7 +74,7 @@ const App = () => (
     <BrowserRouter>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<AppRuntimeProviders><Index /></AppRuntimeProviders>} />
           <Route path="/catalogue" element={<AppRuntimeProviders><Catalogue /></AppRuntimeProviders>} />
           <Route path="/produit/:slug" element={<AppRuntimeProviders><ProductPage /></AppRuntimeProviders>} />
           <Route path="/inscription" element={<AppRuntimeProviders><Inscription /></AppRuntimeProviders>} />
