@@ -8,34 +8,7 @@ import type { AddressFormData } from "@/components/checkout/AddressForm";
 import type { PaymentMethod } from "@/components/checkout/PaymentMethodSelect";
 import type { AppliedCode } from "@/components/checkout/UnifiedCodeInput";
 import { useProductReferral } from "@/hooks/useProductReferral";
-
-// Generate MLM commissions using atomic server-side function
-async function generateMLMCommissions(orderId: string, referrerId: string, orderTotal: number) {
-  try {
-    const { data, error } = await supabase.rpc('generate_mlm_commissions', {
-      _order_id: orderId,
-      _referrer_id: referrerId,
-      _order_total: orderTotal
-    });
-
-    if (error) {
-      console.error('Commission generation error:', error);
-      return { success: false, error: error.message };
-    }
-
-    // Type-safe response handling
-    const result = data as { success?: boolean; error?: string; commissions?: unknown[] } | null;
-    if (result && !result.success) {
-      console.error('Commission generation failed:', result.error);
-      return { success: false, error: result.error };
-    }
-
-    return { success: true, commissions: result?.commissions || [] };
-  } catch (error: any) {
-    console.error('Error generating commissions:', error);
-    return { success: false, error: error.message };
-  }
-}
+import type { Json } from "@/integrations/supabase/types";
 
 interface GiftPackagingOption {
   id: string;
@@ -46,10 +19,21 @@ interface GiftPackagingOption {
   display_order: number | null;
 }
 
+interface CheckoutRpcResponse {
+  success?: boolean;
+  order_id?: string;
+  order_number?: string;
+  total?: number;
+  error?: string;
+}
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Une erreur est survenue lors de la commande";
+
 export function useCheckout() {
   const navigate = useNavigate();
   const { user } = useAuthContext();
-  const { items, subtotal, clearCart } = useCartContext();
+  const { items, clearCart } = useCartContext();
   const { getStoredReferralCode, clearStoredReferralCode } = useProductReferral();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"address" | "payment" | "confirmation">("address");
@@ -113,10 +97,6 @@ export function useCheckout() {
     applyStoredReferralCode();
   }, [applyStoredReferralCode]);
 
-  const deliveryFee = subtotal >= 50000 ? 0 : 2000;
-  const discountAmount = appliedCode?.type === "promo" ? appliedCode.data.discountAmount : 0;
-  const giftPackagingPrice = giftPackaging?.price || 0;
-
   const handleCodeApply = (code: AppliedCode) => {
     setAppliedCode(code);
   };
@@ -152,128 +132,38 @@ export function useCheckout() {
     setIsLoading(true);
 
     try {
-      // Resolve the authenticated user at submit time so RLS receives the
-      // exact user_id even if the React auth context is still hydrating.
-      const { data: sessionData } = await supabase.auth.getSession();
-      const checkoutUserId = sessionData.session?.user?.id ?? null;
-
-      // Use city directly as it's now stored with proper capitalization
-      const cityLabel = addressData.city;
-      const total = subtotal - discountAmount + giftPackagingPrice + deliveryFee;
-
-      // Generate order number
-      const { data: orderNumberData } = await supabase
-        .rpc("generate_order_number");
-
-      const orderNumber = orderNumberData || `CMD-${Date.now()}`;
-      const orderId = crypto.randomUUID();
-
-      // Determine referrer_id and referral_code_used
-      let referrerId: string | null = null;
-      let referralCodeUsed: string | null = null;
-      let promoCodeUsed: string | null = null;
-
-      if (appliedCode?.type === "referral") {
-        referralCodeUsed = appliedCode.data.code;
-        
-        // Securely resolve referrer_id from code using server-side function
-        const { data: resolvedReferrerId, error: resolveError } = await supabase
-          .rpc('get_referrer_id_from_code', { _code: referralCodeUsed });
-        
-        if (resolveError) {
-          console.error('Error resolving referrer:', resolveError);
-        } else {
-          referrerId = resolvedReferrerId;
-        }
-      } else if (appliedCode?.type === "promo") {
-        promoCodeUsed = appliedCode.data.code;
-      }
-
-      // Create order
-      const { error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          id: orderId,
-          user_id: checkoutUserId,
-          order_number: orderNumber,
-          subtotal,
-          delivery_fee: deliveryFee,
-          discount_amount: discountAmount,
-          total,
-          status: "pending",
-          payment_method: method,
-          payment_status: method === "cash_on_delivery" ? "pending" : "pending",
-          shipping_full_name: addressData.fullName,
-          shipping_phone: addressData.phone,
-          shipping_city: cityLabel,
-          shipping_neighborhood: addressData.neighborhood,
-          shipping_street: addressData.streetAddress,
-          shipping_notes: addressData.additionalInfo || null,
-          guest_email: !checkoutUserId ? addressData.email?.trim() || null : null,
-          guest_phone: !checkoutUserId ? addressData.phone : null,
-          referral_code_used: referralCodeUsed || promoCodeUsed || null,
-          referrer_id: referrerId,
-          gift_packaging_id: giftPackaging?.id || null,
-          gift_message: giftMessage || null,
-          gift_packaging_price: giftPackagingPrice,
-        });
-
-      if (orderError) throw orderError;
-
-      // Increment promo code usage count if applied
-      if (appliedCode?.type === "promo") {
-        const { data: promoData } = await supabase
-          .from("promo_codes")
-          .select("used_count")
-          .eq("code", appliedCode.data.code)
-          .single();
-        
-        if (promoData) {
-          await supabase
-            .from("promo_codes")
-            .update({ used_count: (promoData.used_count || 0) + 1 })
-            .eq("code", appliedCode.data.code);
-        }
-      }
-
-      // If referral code was used, update referral_codes stats
-      if (appliedCode?.type === "referral") {
-        const { data: refData } = await supabase
-          .from("referral_codes")
-          .select("total_orders, total_revenue")
-          .eq("code", appliedCode.data.code)
-          .single();
-        
-        if (refData) {
-          await supabase
-            .from("referral_codes")
-            .update({
-              total_orders: (refData.total_orders || 0) + 1,
-              total_revenue: (refData.total_revenue || 0) + total,
-            })
-            .eq("code", appliedCode.data.code);
-        }
-
-        // Generate commissions for MLM (multi-level)
-        await generateMLMCommissions(orderId, referrerId!, total);
-      }
-
-      // Create order items
-      const orderItems = items.map((item) => ({
-        order_id: orderId,
+      const cartPayload = items.map((item) => ({
         product_id: item.product_id,
-        product_name: item.product?.name || "Produit",
-        product_image: item.product?.image_url || null,
         quantity: item.quantity,
-        unit_price: item.product?.price || 0,
-        total_price: (item.product?.price || 0) * item.quantity,
       }));
 
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
+      const { data: rpcData, error: rpcError } = await supabase.rpc("create_order_from_checkout", {
+        _cart_items: cartPayload as Json,
+        _address: {
+          fullName: addressData.fullName,
+          email: addressData.email || "",
+          phone: addressData.phone,
+          paymentPhone: phone || "",
+          city: addressData.city,
+          neighborhood: addressData.neighborhood || "",
+          streetAddress: addressData.streetAddress,
+          additionalInfo: addressData.additionalInfo || "",
+        } as Json,
+        _payment_method: method,
+        _code_type: appliedCode?.type ?? null,
+        _code: appliedCode?.data.code ?? null,
+        _gift_packaging_id: giftPackaging?.id ?? null,
+        _gift_message: giftMessage || null,
+      });
 
-      if (itemsError) throw itemsError;
+      if (rpcError) throw rpcError;
+
+      const result = rpcData as CheckoutRpcResponse | null;
+      if (!result?.success || !result.order_number) {
+        throw new Error(result?.error || "La commande n'a pas pu etre creee");
+      }
+
+      const orderNumber = result.order_number;
 
       // Send confirmation email - for both guests and authenticated users
       try {
@@ -293,11 +183,11 @@ export function useCheckout() {
       }
 
       // Send push notification for order confirmation if user is authenticated
-      if (checkoutUserId) {
+      if (user?.id) {
         try {
           await supabase.functions.invoke('send-order-push-notification', {
             body: {
-              userId: checkoutUserId,
+              userId: user.id,
               orderNumber,
               status: 'confirmed',
               customerName: addressData.fullName,
@@ -322,11 +212,11 @@ export function useCheckout() {
       setStep("confirmation");
       navigate(`/commande-confirmee?order=${orderNumber}`);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Checkout error:", error);
       toast({
         title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la commande",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
