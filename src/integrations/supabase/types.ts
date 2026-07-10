@@ -325,6 +325,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "back_in_stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
         ]
       }
       blocked_entities: {
@@ -426,6 +433,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -567,6 +581,7 @@ export type Database = {
           commission_amount: number
           commission_rate: number
           created_at: string | null
+          dedupe_key: string | null
           id: string
           level: number
           order_amount: number
@@ -581,6 +596,7 @@ export type Database = {
           commission_amount: number
           commission_rate: number
           created_at?: string | null
+          dedupe_key?: string | null
           id?: string
           level: number
           order_amount: number
@@ -595,6 +611,7 @@ export type Database = {
           commission_amount?: number
           commission_rate?: number
           created_at?: string | null
+          dedupe_key?: string | null
           id?: string
           level?: number
           order_amount?: number
@@ -790,6 +807,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flash_sale_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -1038,6 +1062,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: true
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "home_featured_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -1395,6 +1426,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
           {
@@ -1874,10 +1912,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "product_affinities_product_a_fkey"
+            columns: ["product_a"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "product_affinities_product_b_fkey"
             columns: ["product_b"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_b_fkey"
+            columns: ["product_b"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -2278,6 +2330,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "quote_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
         ]
       }
       rank_config: {
@@ -2344,6 +2403,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recently_viewed_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -2597,6 +2663,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
         ]
       }
       shareable_assets: {
@@ -2684,6 +2757,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_alerts_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -2887,6 +2967,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -3102,6 +3189,7 @@ export type Database = {
           created_at: string | null
           id: string
           pending_balance: number | null
+          pending_withdrawal_balance: number
           total_earned: number | null
           total_store_credit: number | null
           total_withdrawn: number | null
@@ -3113,6 +3201,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           pending_balance?: number | null
+          pending_withdrawal_balance?: number
           total_earned?: number | null
           total_store_credit?: number | null
           total_withdrawn?: number | null
@@ -3124,6 +3213,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           pending_balance?: number | null
+          pending_withdrawal_balance?: number
           total_earned?: number | null
           total_store_credit?: number | null
           total_withdrawn?: number | null
@@ -3290,6 +3380,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_pricing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -3466,6 +3563,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -3712,6 +3816,110 @@ export type Database = {
         }
         Relationships: []
       }
+      public_products: {
+        Row: {
+          alcohol_percentage: number | null
+          available_as_case: boolean | null
+          average_rating: number | null
+          case_price: number | null
+          category_id: string | null
+          created_at: string | null
+          description: string | null
+          food_pairing: string | null
+          gallery_urls: string[] | null
+          grape_variety: string | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          name: string | null
+          origin_country: string | null
+          original_price: number | null
+          points_tiers_override: Json | null
+          price: number | null
+          region: string | null
+          review_count: number | null
+          serving_temperature: string | null
+          short_description: string | null
+          slug: string | null
+          stock_quantity: number | null
+          tasting_notes: string | null
+          units_per_case: number | null
+          vintage_year: number | null
+          volume_ml: number | null
+        }
+        Insert: {
+          alcohol_percentage?: number | null
+          available_as_case?: boolean | null
+          average_rating?: number | null
+          case_price?: number | null
+          category_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          food_pairing?: string | null
+          gallery_urls?: string[] | null
+          grape_variety?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name?: string | null
+          origin_country?: string | null
+          original_price?: number | null
+          points_tiers_override?: Json | null
+          price?: number | null
+          region?: string | null
+          review_count?: number | null
+          serving_temperature?: string | null
+          short_description?: string | null
+          slug?: string | null
+          stock_quantity?: number | null
+          tasting_notes?: string | null
+          units_per_case?: number | null
+          vintage_year?: number | null
+          volume_ml?: number | null
+        }
+        Update: {
+          alcohol_percentage?: number | null
+          available_as_case?: boolean | null
+          average_rating?: number | null
+          case_price?: number | null
+          category_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          food_pairing?: string | null
+          gallery_urls?: string[] | null
+          grape_variety?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name?: string | null
+          origin_country?: string | null
+          original_price?: number | null
+          points_tiers_override?: Json | null
+          price?: number | null
+          region?: string | null
+          review_count?: number | null
+          serving_temperature?: string | null
+          short_description?: string | null
+          slug?: string | null
+          stock_quantity?: number | null
+          tasting_notes?: string | null
+          units_per_case?: number | null
+          vintage_year?: number | null
+          volume_ml?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews_public: {
         Row: {
           comment: string | null
@@ -3752,6 +3960,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -3867,10 +4082,10 @@ export type Database = {
         Args: {
           _address: Json
           _cart_items: Json
-          _code?: string | null
-          _code_type?: string | null
-          _gift_message?: string | null
-          _gift_packaging_id?: string | null
+          _code?: string
+          _code_type?: string
+          _gift_message?: string
+          _gift_packaging_id?: string
           _payment_method: Database["public"]["Enums"]["payment_method"]
         }
         Returns: Json
@@ -3900,7 +4115,11 @@ export type Database = {
       }
       generate_invoice_number: { Args: never; Returns: string }
       generate_mlm_commissions: {
-        Args: { _order_id: string; _order_total: number; _referrer_id: string }
+        Args: {
+          _order_id: string
+          _order_total?: number
+          _referrer_id?: string
+        }
         Returns: Json
       }
       generate_order_number: { Args: never; Returns: string }
@@ -4001,6 +4220,15 @@ export type Database = {
           slug: string
         }[]
       }
+      process_withdrawal_request: {
+        Args: {
+          _action: string
+          _reason?: string
+          _transaction_reference?: string
+          _withdrawal_id: string
+        }
+        Returns: Json
+      }
       publish_event: {
         Args: {
           _actor_id?: string
@@ -4057,6 +4285,18 @@ export type Database = {
           _notes?: string
           _reference?: string
         }
+        Returns: Json
+      }
+      request_withdrawal: {
+        Args: {
+          _amount: number
+          _payment_method: Database["public"]["Enums"]["payment_method"]
+          _phone_number: string
+        }
+        Returns: Json
+      }
+      reverse_mlm_commissions_for_order: {
+        Args: { _order_id: string }
         Returns: Json
       }
       score_order_risk: { Args: { _order_id: string }; Returns: string }
