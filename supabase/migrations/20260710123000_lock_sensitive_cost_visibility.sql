@@ -141,6 +141,10 @@ DROP POLICY IF EXISTS "Users can view their order items" ON public.order_items;
 DROP POLICY IF EXISTS "Guests can view order items via order lookup" ON public.order_items;
 DROP POLICY IF EXISTS "Vendors view own order items" ON public.order_items;
 DROP POLICY IF EXISTS "Admins can manage order items" ON public.order_items;
+DROP POLICY IF EXISTS "Users can read own safe order items" ON public.order_items;
+DROP POLICY IF EXISTS "Guests can read safe order items through lookup" ON public.order_items;
+DROP POLICY IF EXISTS "Vendors read own non-cost order items" ON public.order_items;
+DROP POLICY IF EXISTS "Admins manage order items" ON public.order_items;
 
 CREATE POLICY "Users can read own safe order items"
 ON public.order_items

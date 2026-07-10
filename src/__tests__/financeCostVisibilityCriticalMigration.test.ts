@@ -53,6 +53,10 @@ describe("critical cost visibility hardening", () => {
     expect(customerItems).not.toContain("purchase_unit_cost");
     expect(customerItems).not.toContain("line_cost_total");
     expect(migration).toContain('DROP POLICY IF EXISTS "Anyone can view order items"');
+    expect(migration).toContain('DROP POLICY IF EXISTS "Users can read own safe order items"');
+    expect(migration).toContain('DROP POLICY IF EXISTS "Guests can read safe order items through lookup"');
+    expect(migration).toContain('DROP POLICY IF EXISTS "Vendors read own non-cost order items"');
+    expect(migration).toContain('DROP POLICY IF EXISTS "Admins manage order items"');
     expect(migration).toContain("REVOKE SELECT (purchase_unit_cost, line_cost_total, accounting_metadata)");
     expect(useProfile).toContain('"customer_order_items" as never');
     expect(useReviews).toContain('"customer_order_items" as never');
