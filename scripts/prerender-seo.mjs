@@ -165,13 +165,21 @@ const fetchCategories = () =>
     order: "display_order.asc",
   });
 
-const fetchProducts = () =>
-  supabaseFetch("products", {
-    select:
-      "id,name,slug,description,short_description,category_id,price,original_price,stock_quantity,is_active,is_featured,alcohol_percentage,volume_ml,origin_country,region,grape_variety,vintage_year,tasting_notes,food_pairing,serving_temperature,image_url,gallery_urls,average_rating,review_count,created_at,updated_at,category:categories(id,name,slug)",
-    is_active: "eq.true",
-    order: "is_featured.desc,review_count.desc,created_at.desc",
-  });
+const fetchProducts = async () => {
+  try {
+    return await supabaseFetch("public_products", {
+      select:
+        "id,name,slug,description,short_description,category_id,price,original_price,stock_quantity,is_active,is_featured,alcohol_percentage,volume_ml,origin_country,region,grape_variety,vintage_year,tasting_notes,food_pairing,serving_temperature,image_url,gallery_urls,average_rating,review_count,created_at,updated_at",
+      is_active: "eq.true",
+      order: "is_featured.desc,review_count.desc,created_at.desc",
+    });
+  } catch (error) {
+    console.warn(
+      `Skipping product prerender because public_products is unavailable: ${error.message}`
+    );
+    return [];
+  }
+};
 
 const formatPrice = (price) =>
   new Intl.NumberFormat("fr-FR", {
@@ -419,6 +427,10 @@ const main = async () => {
     ).values()
   );
   const products = fetchedProducts.filter((product) => product.slug);
+  const categoryById = new Map(fetchedCategories.map((category) => [category.id, category]));
+  for (const product of products) {
+    product.category = product.category_id ? categoryById.get(product.category_id) || null : null;
+  }
   const childCategoryIdsByParent = fetchedCategories.reduce((map, category) => {
     if (!category.parent_id) return map;
     const children = map.get(category.parent_id) || [];

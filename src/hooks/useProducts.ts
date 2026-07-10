@@ -8,6 +8,7 @@ export interface Product {
   description: string | null;
   short_description: string | null;
   category_id: string | null;
+  vendor_id?: string | null;
   price: number;
   original_price: number | null;
   stock_quantity: number;
@@ -27,11 +28,6 @@ export interface Product {
   average_rating: number;
   review_count: number;
   created_at: string;
-  // Sensitive pricing helpers are intentionally not fetched by public product hooks.
-  // Admin screens use their own admin-only queries.
-  purchase_price?: number | null;
-  markup_percent_override?: number | null;
-  points_override?: number | null;
   points_tiers_override?: unknown;
   available_as_case?: boolean | null;
   units_per_case?: number | null;
@@ -116,11 +112,29 @@ const SELECT_WITH_CATEGORY = `
   category:categories(id, name, slug, points_tiers_override)
 `;
 
+const PUBLIC_PRODUCTS_TABLE = "public_products" as never;
+
+const attachCategories = async (products: Product[]) => {
+  const categoryIds = [...new Set(products.map((p) => p.category_id).filter(Boolean))] as string[];
+  if (categoryIds.length === 0) return products;
+
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("id, name, slug, points_tiers_override")
+    .in("id", categoryIds);
+
+  const byId = new Map((categories ?? []).map((category) => [category.id, category]));
+  return products.map((product) => ({
+    ...product,
+    category: product.category_id ? byId.get(product.category_id) ?? product.category : product.category,
+  }));
+};
+
 const applyProductFilters = async (filters: ProductFilters, options: ProductQueryOptions = {}) => {
   let categoryIds: string[] | null = null;
   let query = supabase
-    .from("products")
-    .select(SELECT_WITH_CATEGORY, options.includeCount ? { count: "exact" } : undefined)
+    .from(PUBLIC_PRODUCTS_TABLE)
+    .select(PRODUCT_COLUMNS, options.includeCount ? { count: "exact" } : undefined)
     .eq("is_active", true);
 
   if (filters.categorySlug) {
@@ -185,56 +199,6 @@ const applyProductFilters = async (filters: ProductFilters, options: ProductQuer
   let error = queryResult.error;
   let count = queryResult.count;
 
-  if (error && /has_role|permission denied|categories/i.test(error.message)) {
-    let fallbackQuery = supabase
-      .from("products")
-      .select(PRODUCT_COLUMNS, options.includeCount ? { count: "exact" } : undefined)
-      .eq("is_active", true);
-
-    if (filters.categorySlug && filters.categorySlug === "caisse") {
-      fallbackQuery = fallbackQuery.eq("available_as_case", true);
-    } else if (categoryIds) {
-      fallbackQuery = fallbackQuery.in("category_id", categoryIds);
-    }
-    if (filters.minPrice !== undefined) fallbackQuery = fallbackQuery.gte("price", filters.minPrice);
-    if (filters.maxPrice !== undefined) fallbackQuery = fallbackQuery.lte("price", filters.maxPrice);
-    if (filters.origin) fallbackQuery = fallbackQuery.eq("origin_country", filters.origin);
-    if (filters.search) fallbackQuery = fallbackQuery.ilike("name", `%${filters.search}%`);
-    if (filters.featured) fallbackQuery = fallbackQuery.eq("is_featured", true);
-
-    switch (filters.sortBy) {
-      case "price_asc":
-        fallbackQuery = fallbackQuery.order("price", { ascending: true });
-        break;
-      case "price_desc":
-        fallbackQuery = fallbackQuery.order("price", { ascending: false });
-        break;
-      case "newest":
-        fallbackQuery = fallbackQuery.order("created_at", { ascending: false });
-        break;
-      case "rating":
-        fallbackQuery = fallbackQuery.order("average_rating", { ascending: false });
-        break;
-      case "popular":
-      default:
-        fallbackQuery = fallbackQuery.order("review_count", { ascending: false });
-        break;
-    }
-
-    if (filters.pageSize) {
-      const page = Math.max(1, filters.page || 1);
-      const from = (page - 1) * filters.pageSize;
-      fallbackQuery = fallbackQuery.range(from, from + filters.pageSize - 1);
-    } else if (filters.limit) {
-      fallbackQuery = fallbackQuery.limit(filters.limit);
-    }
-
-    const fallbackResult = await fallbackQuery;
-    data = fallbackResult.data as unknown[] | null;
-    error = fallbackResult.error;
-    count = fallbackResult.count;
-  }
-
   if (
     !error &&
     (!data || data.length === 0) &&
@@ -247,7 +211,7 @@ const applyProductFilters = async (filters: ProductFilters, options: ProductQuer
     !filters.pageSize
   ) {
     const fallbackResult = await supabase
-      .from("products")
+      .from(PUBLIC_PRODUCTS_TABLE)
       .select(PRODUCT_COLUMNS, options.includeCount ? { count: "exact" } : undefined)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -266,7 +230,7 @@ const applyProductFilters = async (filters: ProductFilters, options: ProductQuer
     return true;
   });
 
-  return { products, count: count ?? products.length } satisfies ProductQueryResult;
+  return { products: await attachCategories(products), count: count ?? products.length } satisfies ProductQueryResult;
 };
 
 export const useProducts = (filters: ProductFilters = {}) => {
@@ -305,8 +269,8 @@ export const useProduct = (slug: string) => {
     queryKey: ["product", slug],
     queryFn: async () => {
       const productResult = await supabase
-        .from("products")
-        .select(SELECT_WITH_CATEGORY)
+        .from(PUBLIC_PRODUCTS_TABLE)
+        .select(PRODUCT_COLUMNS)
         .eq("slug", slug)
         .eq("is_active", true)
         .maybeSingle();
@@ -315,7 +279,7 @@ export const useProduct = (slug: string) => {
 
       if (error && /has_role|permission denied|categories/i.test(error.message)) {
         const fallbackResult = await supabase
-          .from("products")
+          .from(PUBLIC_PRODUCTS_TABLE)
           .select(PRODUCT_COLUMNS)
           .eq("slug", slug)
           .eq("is_active", true)
@@ -325,7 +289,8 @@ export const useProduct = (slug: string) => {
       }
 
       if (error) throw error;
-      return data as Product | null;
+      const products = data ? await attachCategories([data as Product]) : [];
+      return products[0] ?? null;
     },
     enabled: !!slug,
   });
@@ -358,8 +323,8 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
       if (!categoryId) return [];
 
       const relatedResult = await supabase
-        .from("products")
-        .select(SELECT_WITH_CATEGORY)
+        .from(PUBLIC_PRODUCTS_TABLE)
+        .select(PRODUCT_COLUMNS)
         .eq("category_id", categoryId)
         .eq("is_active", true)
         .neq("id", productId)
@@ -369,7 +334,7 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
 
       if (error && /has_role|permission denied|categories/i.test(error.message)) {
         const fallbackResult = await supabase
-          .from("products")
+          .from(PUBLIC_PRODUCTS_TABLE)
           .select(PRODUCT_COLUMNS)
           .eq("category_id", categoryId)
           .eq("is_active", true)
@@ -380,7 +345,7 @@ export const useRelatedProducts = (productId: string, categoryId: string | null)
       }
 
       if (error) throw error;
-      return data as Product[];
+      return attachCategories(data as Product[]);
     },
     enabled: !!categoryId,
   });
@@ -391,7 +356,7 @@ export const useProductOrigins = () => {
     queryKey: ["product-origins"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
+        .from(PUBLIC_PRODUCTS_TABLE)
         .select("origin_country")
         .eq("is_active", true)
         .not("origin_country", "is", null);

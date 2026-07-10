@@ -26,7 +26,7 @@ var search_products_default = defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ query, limit }) => {
-    const { data, error } = await sb().from("products").select("id, name, slug, price, short_description, image_url, stock_quantity").eq("is_active", true).ilike("name", `%${query}%`).limit(limit);
+    const { data, error } = await sb().from("public_products").select("id, name, slug, price, short_description, image_url, stock_quantity").eq("is_active", true).ilike("name", `%${query}%`).limit(limit);
     if (error) {
       return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
     }
@@ -61,7 +61,7 @@ var get_product_default = defineTool2({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ slug }) => {
-    const { data, error } = await sb2().from("products").select(
+    const { data, error } = await sb2().from("public_products").select(
       "id, name, slug, price, original_price, description, short_description, tasting_notes, food_pairing, grape_variety, origin_country, region, vintage_year, volume_ml, alcohol_percentage, serving_temperature, stock_quantity, image_url, average_rating, review_count"
     ).eq("slug", slug).eq("is_active", true).maybeSingle();
     if (error) {

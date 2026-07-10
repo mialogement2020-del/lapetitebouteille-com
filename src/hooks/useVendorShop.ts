@@ -126,8 +126,8 @@ export const useVendorShopProducts = (shopId: string | undefined) =>
     enabled: !!shopId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
-        .select("*, category:categories(id, name, slug)")
+        .from("public_products" as never)
+        .select("*")
         .eq("vendor_id", shopId!)
         .order("created_at", { ascending: false });
       if (error) throw error;

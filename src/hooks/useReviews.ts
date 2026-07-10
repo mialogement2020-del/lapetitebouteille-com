@@ -14,6 +14,8 @@ export interface ReviewWithProduct extends Review {
   } | null;
 }
 
+type ReviewProductSummary = NonNullable<ReviewWithProduct["product"]>;
+
 export interface PurchasedProduct {
   product_id: string;
   product_name: string;
@@ -43,15 +45,25 @@ export function useReviews() {
 
       const { data, error } = await supabase
         .from("reviews")
-        .select(`
-          *,
-          product:products(id, name, image_url)
-        `)
+        .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as ReviewWithProduct[];
+      const rows = (data ?? []) as ReviewWithProduct[];
+      const productIds = [...new Set(rows.map((row) => row.product_id).filter(Boolean))] as string[];
+      if (productIds.length === 0) return rows;
+
+      const { data: products, error: productsError } = await supabase
+        .from("public_products" as never)
+        .select("id, name, image_url")
+        .in("id", productIds);
+      if (productsError) throw productsError;
+
+      const productById = new Map(
+        ((products ?? []) as unknown as ReviewProductSummary[]).map((product) => [product.id, product]),
+      );
+      return rows.map((row) => ({ ...row, product: row.product_id ? productById.get(row.product_id) : null }));
     },
     enabled: !!user?.id,
   });
@@ -75,7 +87,7 @@ export function useReviews() {
       // Get order items for these orders
       const orderIds = orders.map(o => o.id);
       const { data: items, error: itemsError } = await supabase
-        .from("order_items")
+        .from("customer_order_items" as never)
         .select("product_id, product_name, product_image, order_id")
         .in("order_id", orderIds);
 
@@ -90,7 +102,12 @@ export function useReviews() {
       const reviewedProductIds = new Set((userReviews || []).map(r => r.product_id));
 
       // Map items to purchased products with review status
-      const products: PurchasedProduct[] = (items || [])
+      const products: PurchasedProduct[] = ((items || []) as unknown as Array<{
+        product_id: string | null;
+        product_name: string;
+        product_image: string | null;
+        order_id: string;
+      }>)
         .filter(item => item.product_id)
         .map(item => {
           const order = orders.find(o => o.id === item.order_id);
