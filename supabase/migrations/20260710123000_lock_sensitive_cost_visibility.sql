@@ -9,7 +9,6 @@ SELECT
   description,
   short_description,
   category_id,
-  vendor_id,
   price,
   original_price,
   stock_quantity,
@@ -29,11 +28,12 @@ SELECT
   average_rating,
   review_count,
   created_at,
-  updated_at,
   points_tiers_override,
   available_as_case,
   units_per_case,
-  case_price
+  case_price,
+  updated_at,
+  vendor_id
 FROM public.products
 WHERE is_active = true;
 
