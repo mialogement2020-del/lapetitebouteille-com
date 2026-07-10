@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,12 +21,51 @@ type TabId = "pnl" | "vat" | "discounts" | "shipping" | "commissions" | "payouts
 const formatPrice = (n: number) =>
   new Intl.NumberFormat("fr-FR").format(Math.round(n)) + " FCFA";
 
+type AccountingReportRow = {
+  order_id: string;
+  order_number: string;
+  order_created_at: string | null;
+  payment_status: string | null;
+  shipping_city: string | null;
+  gross_sales: number | null;
+  paid_sales: number | null;
+  pending_sales: number | null;
+  discount_amount: number | null;
+  delivery_fee: number | null;
+  tax_amount: number | null;
+  amount_excluding_tax: number | null;
+  amount_including_tax: number | null;
+  payment_provider_fee: number | null;
+  product_cost_total: number | null;
+  estimated_net_margin: number | null;
+  refunded_amount: number | null;
+  mlm_commissions: number | null;
+  pending_withdrawals: number | null;
+  completed_withdrawals: number | null;
+};
+
 export default function FinancialReports({ orders }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<TabId>("pnl");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [vatRate, setVatRate] = useState<number>(19.25); // Cameroon TVA standard
+
+  const { data: accountingRows = [] } = useQuery({
+    queryKey: ["admin-accounting-report"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_accounting_report" as never)
+        .select("*")
+        .order("order_created_at", { ascending: false })
+        .limit(5000);
+      if (error) {
+        console.warn("Snapshot accounting report unavailable; using legacy report fallback", error);
+        return [];
+      }
+      return (data ?? []) as unknown as AccountingReportRow[];
+    },
+  });
 
   // Fetch commissions + withdrawals (admin)
   const { data: commissions = [] } = useQuery({
@@ -54,29 +94,73 @@ export default function FinancialReports({ orders }: Props) {
     },
   });
 
-  const inRange = (iso?: string | null) => {
+  const inRange = useCallback((iso?: string | null) => {
     if (!iso) return false;
     const fromTs = from ? new Date(from).getTime() : -Infinity;
     const toTs = to ? new Date(to).getTime() + 86400000 : Infinity;
     const t = new Date(iso).getTime();
     return t >= fromTs && t < toTs;
-  };
+  }, [from, to]);
 
   const filteredOrders = useMemo(
     () => orders.filter((o) => inRange(o.created_at)),
-    [orders, from, to]
+    [orders, inRange]
   );
+  const filteredAccounting = useMemo(
+    () => accountingRows.filter((r) => inRange(r.order_created_at)),
+    [accountingRows, inRange]
+  );
+  const hasAccountingSnapshots = filteredAccounting.length > 0;
   const filteredCommissions = useMemo(
     () => commissions.filter((c) => inRange(c.created_at)),
-    [commissions, from, to]
+    [commissions, inRange]
   );
   const filteredWithdrawals = useMemo(
     () => withdrawals.filter((w) => inRange(w.created_at)),
-    [withdrawals, from, to]
+    [withdrawals, inRange]
   );
 
   // ---------- KPI / P&L ----------
   const fin = useMemo(() => {
+    if (hasAccountingSnapshots) {
+      const revenue = filteredAccounting.reduce((s, r) => s + Number(r.amount_including_tax ?? 0), 0);
+      const paidSales = filteredAccounting.reduce((s, r) => s + Number(r.paid_sales ?? 0), 0);
+      const pendingSales = filteredAccounting.reduce((s, r) => s + Number(r.pending_sales ?? 0), 0);
+      const subtotal = filteredAccounting.reduce((s, r) => s + Number(r.gross_sales ?? 0), 0);
+      const delivery = filteredAccounting.reduce((s, r) => s + Number(r.delivery_fee ?? 0), 0);
+      const discount = filteredAccounting.reduce((s, r) => s + Number(r.discount_amount ?? 0), 0);
+      const ht = filteredAccounting.reduce((s, r) => s + Number(r.amount_excluding_tax ?? 0), 0);
+      const tva = filteredAccounting.reduce((s, r) => s + Number(r.tax_amount ?? 0), 0);
+      const productCost = filteredAccounting.reduce((s, r) => s + Number(r.product_cost_total ?? 0), 0);
+      const providerFees = filteredAccounting.reduce((s, r) => s + Number(r.payment_provider_fee ?? 0), 0);
+      const refunds = filteredAccounting.reduce((s, r) => s + Number(r.refunded_amount ?? 0), 0);
+      const commissionTotal = filteredAccounting.reduce((s, r) => s + Number(r.mlm_commissions ?? 0), 0);
+      const withdrawalsPaid = filteredAccounting.reduce((s, r) => s + Number(r.completed_withdrawals ?? 0), 0);
+      const withdrawalsPending = filteredAccounting.reduce((s, r) => s + Number(r.pending_withdrawals ?? 0), 0);
+      const netMargin =
+        filteredAccounting.reduce((s, r) => s + Number(r.estimated_net_margin ?? 0), 0) -
+        commissionTotal;
+      return {
+        revenue,
+        paidSales,
+        pendingSales,
+        subtotal,
+        delivery,
+        discount,
+        ht,
+        tva,
+        productCost,
+        providerFees,
+        refunds,
+        commissionTotal,
+        commissionPaid: commissionTotal,
+        withdrawalsPaid,
+        withdrawalsPending,
+        netMargin,
+        orderCount: filteredAccounting.length,
+      };
+    }
+
     const revenue = filteredOrders.reduce((s, o) => s + (o.total ?? 0), 0);
     const subtotal = filteredOrders.reduce((s, o) => s + (o.subtotal ?? 0), 0);
     const delivery = filteredOrders.reduce((s, o) => s + (o.delivery_fee ?? 0), 0);
@@ -101,11 +185,16 @@ export default function FinancialReports({ orders }: Props) {
     const netMargin = ht - commissionPaid;
     return {
       revenue,
+      paidSales: revenue,
+      pendingSales: 0,
       subtotal,
       delivery,
       discount,
       ht,
       tva,
+      productCost: 0,
+      providerFees: 0,
+      refunds: 0,
       commissionTotal,
       commissionPaid,
       withdrawalsPaid,
@@ -113,7 +202,7 @@ export default function FinancialReports({ orders }: Props) {
       netMargin,
       orderCount: filteredOrders.length,
     };
-  }, [filteredOrders, filteredCommissions, filteredWithdrawals, vatRate]);
+  }, [filteredAccounting, filteredOrders, filteredCommissions, filteredWithdrawals, hasAccountingSnapshots, vatRate]);
 
   // ---------- Aggregations per tab ----------
   const pnlRows = [
@@ -131,6 +220,22 @@ export default function FinancialReports({ orders }: Props) {
   ];
 
   const vatRows = useMemo(() => {
+    if (hasAccountingSnapshots) {
+      const map = new Map<string, { mois: string; ttc: number; ht: number; tva: number; orders: number }>();
+      filteredAccounting.forEach((r) => {
+        if (!r.order_created_at) return;
+        const d = new Date(r.order_created_at);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const cur = map.get(key) ?? { mois: key, ttc: 0, ht: 0, tva: 0, orders: 0 };
+        cur.ttc += Number(r.amount_including_tax ?? 0);
+        cur.ht += Number(r.amount_excluding_tax ?? 0);
+        cur.tva += Number(r.tax_amount ?? 0);
+        cur.orders += 1;
+        map.set(key, cur);
+      });
+      return Array.from(map.values()).sort((a, b) => a.mois.localeCompare(b.mois));
+    }
+
     const ratio = 1 + vatRate / 100;
     const map = new Map<string, { mois: string; ttc: number; ht: number; tva: number; orders: number }>();
     filteredOrders.forEach((o) => {
@@ -145,9 +250,21 @@ export default function FinancialReports({ orders }: Props) {
     return Array.from(map.values())
       .map((r) => ({ ...r, ht: r.ttc / ratio, tva: r.ttc - r.ttc / ratio }))
       .sort((a, b) => a.mois.localeCompare(b.mois));
-  }, [filteredOrders, vatRate]);
+  }, [filteredAccounting, filteredOrders, hasAccountingSnapshots, vatRate]);
 
   const discountRows = useMemo(() => {
+    if (hasAccountingSnapshots) {
+      return filteredAccounting
+        .filter((r) => Number(r.discount_amount ?? 0) > 0)
+        .map((r) => ({
+          order: r.order_number ?? String(r.order_id).slice(0, 8),
+          date: r.order_created_at,
+          total: Number(r.amount_including_tax ?? 0),
+          discount: Number(r.discount_amount ?? 0),
+          promo_code: "snapshot",
+        }));
+    }
+
     return filteredOrders
       .filter((o) => (o.discount_amount ?? 0) > 0)
       .map((o) => ({
@@ -157,10 +274,21 @@ export default function FinancialReports({ orders }: Props) {
         discount: o.discount_amount ?? 0,
         promo_code: (o as any).promo_code ?? "—",
       }));
-  }, [filteredOrders]);
+  }, [filteredAccounting, filteredOrders, hasAccountingSnapshots]);
 
   const shippingRows = useMemo(() => {
     const map = new Map<string, { ville: string; orders: number; fees: number }>();
+    if (hasAccountingSnapshots) {
+      filteredAccounting.forEach((r) => {
+        const city = r.shipping_city ?? "â€”";
+        const cur = map.get(city) ?? { ville: city, orders: 0, fees: 0 };
+        cur.orders += 1;
+        cur.fees += Number(r.delivery_fee ?? 0);
+        map.set(city, cur);
+      });
+      return Array.from(map.values()).sort((a, b) => b.fees - a.fees);
+    }
+
     filteredOrders.forEach((o) => {
       const city = (o as any).shipping_city ?? (o as any).city ?? "—";
       const cur = map.get(city) ?? { ville: city, orders: 0, fees: 0 };
@@ -169,7 +297,7 @@ export default function FinancialReports({ orders }: Props) {
       map.set(city, cur);
     });
     return Array.from(map.values()).sort((a, b) => b.fees - a.fees);
-  }, [filteredOrders]);
+  }, [filteredAccounting, filteredOrders, hasAccountingSnapshots]);
 
   const commissionRows = useMemo(() => {
     const map = new Map<string, { mois: string; level1: number; level2: number; level3: number; total: number; count: number }>();
