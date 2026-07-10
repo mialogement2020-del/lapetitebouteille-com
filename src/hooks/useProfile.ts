@@ -5,10 +5,24 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Profile = Tables<"profiles">;
 type Order = Tables<"orders">;
-type OrderItem = Tables<"order_items">;
+type CustomerOrderItem = Pick<
+  Tables<"order_items">,
+  | "id"
+  | "order_id"
+  | "product_id"
+  | "product_name"
+  | "product_image"
+  | "quantity"
+  | "unit_price"
+  | "total_price"
+  | "vendor_id"
+  | "vendor_status"
+  | "vendor_updated_at"
+  | "created_at"
+>;
 
 export interface OrderWithItems extends Order {
-  items: OrderItem[];
+  items: CustomerOrderItem[];
 }
 
 export function useProfile() {
@@ -18,19 +32,7 @@ export function useProfile() {
   const [loading, setLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-      fetchOrders();
-    } else {
-      setProfile(null);
-      setOrders([]);
-      setLoading(false);
-      setOrdersLoading(false);
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -47,9 +49,9 @@ export function useProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -66,13 +68,13 @@ export function useProfile() {
       const ordersWithItems: OrderWithItems[] = await Promise.all(
         (ordersData || []).map(async (order) => {
           const { data: items } = await supabase
-            .from("order_items")
+            .from("customer_order_items" as never)
             .select("*")
             .eq("order_id", order.id);
 
           return {
             ...order,
-            items: items || [],
+            items: (items || []) as unknown as CustomerOrderItem[],
           };
         })
       );
@@ -83,7 +85,19 @@ export function useProfile() {
     } finally {
       setOrdersLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchOrders();
+    } else {
+      setProfile(null);
+      setOrders([]);
+      setLoading(false);
+      setOrdersLoading(false);
+    }
+  }, [fetchOrders, fetchProfile, user]);
 
   const updateProfile = useCallback(async (updates: Partial<Profile>) => {
     if (!user) return { error: { message: "Non authentifié" } };
@@ -101,7 +115,7 @@ export function useProfile() {
 
       setProfile((prev) => (prev ? { ...prev, ...updates } : null));
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return { error };
     }
   }, [user]);

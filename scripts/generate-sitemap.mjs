@@ -65,7 +65,7 @@ const fetchProducts = async () => {
     throw new Error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY");
   }
 
-  const endpoint = new URL(`${supabaseUrl}/rest/v1/products`);
+  const endpoint = new URL(`${supabaseUrl}/rest/v1/public_products`);
   endpoint.searchParams.set("select", "slug,updated_at,created_at");
   endpoint.searchParams.set("is_active", "eq.true");
   endpoint.searchParams.set("order", "updated_at.desc");
@@ -78,7 +78,8 @@ const fetchProducts = async () => {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch products for sitemap: ${response.status}`);
+    console.warn(`Skipping products in sitemap because public_products is unavailable: ${response.status}`);
+    return [];
   }
 
   return response.json();

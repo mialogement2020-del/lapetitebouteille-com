@@ -21,7 +21,7 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ slug }) => {
     const { data, error } = await sb()
-      .from("products")
+      .from("public_products")
       .select(
         "id, name, slug, price, original_price, description, short_description, tasting_notes, food_pairing, grape_variety, origin_country, region, vintage_year, volume_ml, alcohol_percentage, serving_temperature, stock_quantity, image_url, average_rating, review_count",
       )

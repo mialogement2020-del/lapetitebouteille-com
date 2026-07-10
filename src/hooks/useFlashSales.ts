@@ -30,6 +30,8 @@ export interface FlashSaleProduct {
   };
 }
 
+type FlashSaleProductSummary = NonNullable<FlashSaleProduct["product"]>;
+
 export function useActiveFlashSales() {
   return useQuery({
     queryKey: ["flash-sales-active"],
@@ -59,22 +61,24 @@ export function useFlashSaleProducts(flashSaleId?: string) {
 
       const { data, error } = await supabase
         .from("flash_sale_products")
-        .select(`
-          *,
-          product:products (
-            id,
-            name,
-            slug,
-            price,
-            original_price,
-            image_url,
-            stock_quantity
-          )
-        `)
+        .select("*")
         .eq("flash_sale_id", flashSaleId);
 
       if (error) throw error;
-      return (data as any) || [];
+      const rows = (data as FlashSaleProduct[]) || [];
+      const productIds = rows.map((row) => row.product_id);
+      if (productIds.length === 0) return rows;
+
+      const { data: products, error: productsError } = await supabase
+        .from("public_products" as never)
+        .select("id, name, slug, price, original_price, image_url, stock_quantity")
+        .in("id", productIds);
+      if (productsError) throw productsError;
+
+      const productById = new Map(
+        ((products ?? []) as unknown as FlashSaleProductSummary[]).map((product) => [product.id, product]),
+      );
+      return rows.map((row) => ({ ...row, product: productById.get(row.product_id) }));
     },
     enabled: !!flashSaleId,
   });
@@ -107,9 +111,18 @@ export function useProductFlashPrice(productId: string) {
       if (error) return null;
       
       if (data) {
+        const row = data as typeof data & {
+          flash_sale: {
+            id: string;
+            name: string;
+            ends_at: string;
+            is_active: boolean;
+            starts_at: string;
+          };
+        };
         return {
           flashPrice: data.flash_price,
-          flashSale: (data as any).flash_sale,
+          flashSale: row.flash_sale,
         };
       }
       

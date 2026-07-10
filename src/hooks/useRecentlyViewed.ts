@@ -18,6 +18,8 @@ export interface RecentlyViewedProduct {
   };
 }
 
+type RecentlyViewedProductSummary = NonNullable<RecentlyViewedProduct["product"]>;
+
 const LOCAL_STORAGE_KEY = "recently_viewed_products";
 const MAX_ITEMS = 12;
 
@@ -50,34 +52,33 @@ export function useRecentlyViewed() {
         // Authenticated user - fetch from database
         const { data, error } = await supabase
           .from("recently_viewed")
-          .select(`
-            id,
-            product_id,
-            viewed_at,
-            view_count,
-            product:products (
-              id,
-              name,
-              slug,
-              price,
-              original_price,
-              image_url,
-              average_rating
-            )
-          `)
+          .select("id, product_id, viewed_at, view_count")
           .eq("user_id", user.id)
           .order("viewed_at", { ascending: false })
           .limit(MAX_ITEMS);
 
         if (error) throw error;
-        return (data as any) || [];
+        const rows = (data as RecentlyViewedProduct[]) || [];
+        const productIds = rows.map((row) => row.product_id);
+        if (productIds.length === 0) return rows;
+
+        const { data: products, error: productsError } = await supabase
+          .from("public_products" as never)
+          .select("id, name, slug, price, original_price, image_url, average_rating")
+          .in("id", productIds);
+        if (productsError) throw productsError;
+
+        const productById = new Map(
+          ((products ?? []) as unknown as RecentlyViewedProductSummary[]).map((product) => [product.id, product]),
+        );
+        return rows.map((row) => ({ ...row, product: productById.get(row.product_id) }));
       } else {
         // Anonymous user - fetch from localStorage + get product details
         const productIds = getLocalRecentlyViewed();
         if (productIds.length === 0) return [];
 
         const { data: products, error } = await supabase
-          .from("products")
+          .from("public_products" as never)
           .select("id, name, slug, price, original_price, image_url, average_rating")
           .in("id", productIds)
           .eq("is_active", true);

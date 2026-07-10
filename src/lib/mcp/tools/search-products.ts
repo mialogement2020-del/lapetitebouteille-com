@@ -10,6 +10,13 @@ function sb() {
   );
 }
 
+interface ProductSearchRow {
+  name: string;
+  price: number;
+  slug: string;
+  short_description: string | null;
+}
+
 export default defineTool({
   name: "search_products",
   title: "Search products",
@@ -22,7 +29,7 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ query, limit }) => {
     const { data, error } = await sb()
-      .from("products")
+      .from("public_products")
       .select("id, name, slug, price, short_description, image_url, stock_quantity")
       .eq("is_active", true)
       .ilike("name", `%${query}%`)
@@ -36,7 +43,7 @@ export default defineTool({
     const text = rows.length
       ? rows
           .map(
-            (p: any) =>
+            (p: ProductSearchRow) =>
               `- ${p.name} (${p.price} FCFA) — /produit/${p.slug}${p.short_description ? ` — ${p.short_description}` : ""}`,
           )
           .join("\n")

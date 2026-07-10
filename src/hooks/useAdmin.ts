@@ -5,6 +5,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { logAuditAction } from "@/hooks/useAuditLogs";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
+const ADMIN_PRODUCTS_VIEW = "admin_products_secure" as never;
 
 export interface AdminOrder {
   id: string;
@@ -220,13 +221,13 @@ export function useAdmin() {
       const ordersWithItems: AdminOrder[] = await Promise.all(
         (ordersData || []).map(async (order) => {
           const { data: items } = await supabase
-            .from("order_items")
+            .from("customer_order_items" as never)
             .select("*")
             .eq("order_id", order.id);
 
           return {
             ...order,
-            items: items || [],
+            items: (items || []) as unknown as AdminOrder["items"],
           };
         })
       );
@@ -241,11 +242,8 @@ export function useAdmin() {
     queryKey: ["admin-products"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("products")
-        .select(`
-          *,
-          category:categories(id, name)
-        `)
+        .from(ADMIN_PRODUCTS_VIEW)
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -573,8 +571,6 @@ export function useAdmin() {
           tasting_notes: data.tasting_notes || null,
           food_pairing: data.food_pairing || null,
           serving_temperature: data.serving_temperature || null,
-          purchase_price: data.purchase_price ?? null,
-          markup_percent_override: data.markup_percent_override ?? null,
           available_as_case: data.available_as_case ?? false,
           units_per_case: data.units_per_case ?? null,
           case_price: data.case_price ?? null,
@@ -583,6 +579,22 @@ export function useAdmin() {
         .single();
 
       if (error) throw error;
+
+      if (
+        data.purchase_price != null ||
+        data.markup_percent_override != null ||
+        data.points_override != null ||
+        data.points_tiers_override != null
+      ) {
+        const { error: sensitiveError } = await supabase.rpc("admin_set_product_sensitive_pricing" as never, {
+          _product_id: insertedData.id,
+          _purchase_price: data.purchase_price ?? null,
+          _markup_percent_override: data.markup_percent_override ?? null,
+          _points_override: data.points_override ?? null,
+          _points_tiers_override: (data.points_tiers_override ?? null) as never,
+        });
+        if (sensitiveError) throw sensitiveError;
+      }
       
       // Log audit action
       await logAuditAction(
@@ -626,8 +638,6 @@ export function useAdmin() {
           tasting_notes: data.tasting_notes,
           food_pairing: data.food_pairing,
           serving_temperature: data.serving_temperature,
-          purchase_price: data.purchase_price,
-          markup_percent_override: data.markup_percent_override,
           available_as_case: data.available_as_case,
           units_per_case: data.units_per_case,
           case_price: data.case_price,
@@ -635,6 +645,22 @@ export function useAdmin() {
         .eq("id", id);
 
       if (error) throw error;
+
+      if (
+        "purchase_price" in data ||
+        "markup_percent_override" in data ||
+        "points_override" in data ||
+        "points_tiers_override" in data
+      ) {
+        const { error: sensitiveError } = await supabase.rpc("admin_set_product_sensitive_pricing" as never, {
+          _product_id: id,
+          _purchase_price: data.purchase_price ?? null,
+          _markup_percent_override: data.markup_percent_override ?? null,
+          _points_override: data.points_override ?? null,
+          _points_tiers_override: (data.points_tiers_override ?? null) as never,
+        });
+        if (sensitiveError) throw sensitiveError;
+      }
       
       // Log audit action
       await logAuditAction(

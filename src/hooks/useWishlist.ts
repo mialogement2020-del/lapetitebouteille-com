@@ -4,6 +4,10 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { Product } from "./useProducts";
 
+interface MutationError {
+  code?: string;
+}
+
 interface WishlistItem {
   id: string;
   product_id: string;
@@ -24,19 +28,40 @@ export function useWishlist() {
 
       const { data, error } = await supabase
         .from("wishlist")
-        .select(`
-          *,
-          product:products(
-            id, name, slug, price, original_price, image_url, 
-            stock_quantity, average_rating, review_count,
-            category:categories(id, name, slug)
-          )
-        `)
+        .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as WishlistItem[];
+      const items = (data ?? []) as WishlistItem[];
+      const productIds = items.map((item) => item.product_id);
+      if (productIds.length === 0) return items;
+
+      const { data: products, error: productsError } = await supabase
+        .from("public_products" as never)
+        .select("id, name, slug, price, original_price, image_url, stock_quantity, average_rating, review_count, category_id")
+        .in("id", productIds);
+
+      if (productsError) throw productsError;
+
+      const categoryIds = [
+        ...new Set(((products ?? []) as unknown as Product[]).map((product) => product.category_id).filter(Boolean)),
+      ] as string[];
+      const { data: categories } = categoryIds.length
+        ? await supabase.from("categories").select("id, name, slug").in("id", categoryIds)
+        : { data: [] };
+      const categoryById = new Map((categories ?? []).map((category) => [category.id, category]));
+      const productById = new Map(
+        ((products ?? []) as unknown as Product[]).map((product) => [
+          product.id,
+          {
+            ...product,
+            category: product.category_id ? categoryById.get(product.category_id) : undefined,
+          } as Product,
+        ]),
+      );
+
+      return items.map((item) => ({ ...item, product: productById.get(item.product_id) }));
     },
     enabled: !!user?.id,
   });
@@ -61,7 +86,7 @@ export function useWishlist() {
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       toast.success("Ajouté à vos favoris");
     },
-    onError: (error: any) => {
+    onError: (error: MutationError) => {
       if (error.code === "23505") {
         toast.info("Ce produit est déjà dans vos favoris");
       } else {
