@@ -6,6 +6,10 @@ const migration = readFileSync(
   join(process.cwd(), "supabase/migrations/20260711093000_restore_stock_on_failed_or_cancelled_orders.sql"),
   "utf8"
 );
+const triggerFixMigration = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260711102000_fix_stock_restore_trigger_before_update.sql"),
+  "utf8"
+);
 
 describe("finance stock restoration migration", () => {
   it("restores reserved stock only once for failed or cancelled orders", () => {
@@ -17,15 +21,23 @@ describe("finance stock restoration migration", () => {
   });
 
   it("restores stock on cancelled orders and failed payments", () => {
-    expect(migration).toContain("NEW.status = 'cancelled'");
-    expect(migration).toContain("NEW.payment_status = 'failed'");
-    expect(migration).toContain("public.restore_order_stock_once(NEW.id, 'order_cancelled')");
-    expect(migration).toContain("public.restore_order_stock_once(NEW.id, 'payment_failed')");
+    expect(triggerFixMigration).toContain("NEW.status = 'cancelled'");
+    expect(triggerFixMigration).toContain("NEW.payment_status = 'failed'");
+    expect(triggerFixMigration).toContain("v_reason := 'order_cancelled'");
+    expect(triggerFixMigration).toContain("v_reason := 'payment_failed'");
   });
 
   it("records an idempotent ledger entry for auditability", () => {
     expect(migration).toContain("'stock_restored'");
     expect(migration).toContain("'stock_restored:' || v_order.id::text");
     expect(migration).toContain("restored_units");
+  });
+
+  it("uses a before update trigger to avoid recursive order updates", () => {
+    expect(triggerFixMigration).toContain("BEFORE UPDATE OF status, payment_status ON public.orders");
+    expect(triggerFixMigration).toContain("NEW.stock_restored_at := now()");
+    expect(triggerFixMigration).toContain("NEW.stock_restore_reason := v_reason");
+    expect(triggerFixMigration).toContain("'trigger_timing', 'before_update'");
+    expect(triggerFixMigration).not.toContain("PERFORM public.restore_order_stock_once(NEW.id");
   });
 });
