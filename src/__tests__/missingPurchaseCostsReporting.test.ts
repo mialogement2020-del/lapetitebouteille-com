@@ -24,10 +24,13 @@ describe("missing purchase costs reporting", () => {
     expect(report).toContain("admin_missing_purchase_costs");
     expect(report).toContain("produit(s) actif(s) sans prix d'achat");
     expect(report).toContain("topProducts");
+    expect(report).toContain("Fiabilité marge");
+    expect(report).toContain("costCoverageSummary");
   });
 
   it("excludes cancelled orders from pending accounting sales", () => {
     expect(report).toContain('r.order_status !== "cancelled"');
     expect(report).toContain('o.payment_status === "pending" && o.status !== "cancelled"');
+    expect(report).toContain("activeAnomalies");
   });
 });
