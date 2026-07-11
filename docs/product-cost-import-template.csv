@@ -1,0 +1,2 @@
+sku,nom_produit,prix_achat,devise,fournisseur,date_effet,frais_transport,frais_douane,autres_frais,commentaire
+EXEMPLE-SKU,Nom exact du produit,1000,XAF,Fournisseur exemple,2026-07-11,0,0,0,Remplacer cette ligne par vos produits
