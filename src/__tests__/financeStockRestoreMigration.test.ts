@@ -10,6 +10,10 @@ const triggerFixMigration = readFileSync(
   join(process.cwd(), "supabase/migrations/20260711102000_fix_stock_restore_trigger_before_update.sql"),
   "utf8"
 );
+const resilientStatusMigration = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260711113000_make_admin_order_status_updates_resilient.sql"),
+  "utf8"
+);
 
 describe("finance stock restoration migration", () => {
   it("restores reserved stock only once for failed or cancelled orders", () => {
@@ -39,5 +43,16 @@ describe("finance stock restoration migration", () => {
     expect(triggerFixMigration).toContain("NEW.stock_restore_reason := v_reason");
     expect(triggerFixMigration).toContain("'trigger_timing', 'before_update'");
     expect(triggerFixMigration).not.toContain("PERFORM public.restore_order_stock_once(NEW.id");
+  });
+
+  it("keeps admin status updates resilient when side effects fail", () => {
+    expect(resilientStatusMigration).toContain("CREATE OR REPLACE FUNCTION public.log_order_status_change");
+    expect(resilientStatusMigration).toContain("CREATE OR REPLACE FUNCTION public.notify_order_status_change");
+    expect(resilientStatusMigration).toContain("CREATE OR REPLACE FUNCTION public.trg_restore_stock_on_order_failure");
+    expect(resilientStatusMigration).toContain("CREATE OR REPLACE FUNCTION public.refresh_order_accounting_on_status_change");
+    expect(resilientStatusMigration).toContain("RAISE WARNING 'Order status history logging failed");
+    expect(resilientStatusMigration).toContain("RAISE WARNING 'Order in-app notification insert failed");
+    expect(resilientStatusMigration).toContain("RAISE WARNING 'Stock restore ledger logging failed");
+    expect(resilientStatusMigration).toContain("'ledger_mode', 'best_effort'");
   });
 });
