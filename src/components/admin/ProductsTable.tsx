@@ -76,6 +76,13 @@ export function ProductsTable({
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState<AdminProduct | null>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
+  const hasMissingPurchaseCost = (product: AdminProduct) =>
+    product.purchase_price == null || Number(product.purchase_price) <= 0;
+
+  const missingPurchaseCostCount = products.filter(
+    (product) => product.is_active !== false && hasMissingPurchaseCost(product),
+  ).length;
+
   const filteredProducts = products.filter((product) => {
     const matchesSearch = 
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -88,7 +95,8 @@ export function ProductsTable({
       (statusFilter === "active" && product.is_active) ||
       (statusFilter === "inactive" && !product.is_active) ||
       (statusFilter === "featured" && product.is_featured) ||
-      (statusFilter === "low_stock" && (product.stock_quantity || 0) <= 5);
+      (statusFilter === "low_stock" && (product.stock_quantity || 0) <= 5) ||
+      (statusFilter === "missing_cost" && hasMissingPurchaseCost(product));
 
     const minPrice = priceMin ? parseFloat(priceMin) : 0;
     const maxPrice = priceMax ? parseFloat(priceMax) : Infinity;
@@ -117,6 +125,8 @@ export function ProductsTable({
       { key: "slug" as const, header: "Slug" },
       { key: "categoryName" as const, header: "Catégorie" },
       { key: "price" as const, header: "Prix" },
+      { key: "purchasePrice" as const, header: "Prix d'achat" },
+      { key: "marginStatus" as const, header: "Statut marge" },
       { key: "original_price" as const, header: "Prix original" },
       { key: "stock_quantity" as const, header: "Stock" },
       { key: "is_active" as const, header: "Actif" },
@@ -133,6 +143,8 @@ export function ProductsTable({
       ...p,
       categoryName: p.category?.name || "",
       price: formatPriceForCSV(p.price),
+      purchasePrice: p.purchase_price ? formatPriceForCSV(p.purchase_price) : "",
+      marginStatus: hasMissingPurchaseCost(p) ? "Prix d'achat manquant" : "OK",
       original_price: p.original_price ? formatPriceForCSV(p.original_price) : "",
       is_active: p.is_active ? "Oui" : "Non",
       is_featured: p.is_featured ? "Oui" : "Non",
@@ -197,6 +209,7 @@ export function ProductsTable({
             <SelectItem value="inactive" className="text-cream">{t("adminProducts.table.statusInactive")}</SelectItem>
             <SelectItem value="featured" className="text-cream">{t("adminProducts.table.statusFeatured")}</SelectItem>
             <SelectItem value="low_stock" className="text-cream">{t("adminProducts.table.statusLowStock")}</SelectItem>
+            <SelectItem value="missing_cost" className="text-cream">Prix d'achat manquant</SelectItem>
           </SelectContent>
         </Select>
         <Button
@@ -277,6 +290,30 @@ export function ProductsTable({
         </motion.div>
       )}
 
+      {missingPurchaseCostCount > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-400 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-red-100">
+                {missingPurchaseCostCount} produit(s) actif(s) sans prix d'achat
+              </p>
+              <p className="text-xs text-red-100/70">
+                Les marges restent incomplètes tant que ces coûts ne sont pas renseignés.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setStatusFilter("missing_cost")}
+            className="border-red-400/40 text-red-100 hover:bg-red-500/20"
+          >
+            Voir les produits
+          </Button>
+        </div>
+      )}
+
       {/* Active Filters Summary */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 text-xs">
@@ -292,7 +329,7 @@ export function ProductsTable({
           )}
           {statusFilter !== "all" && (
             <Badge variant="outline" className="border-gold/30 text-cream/70">
-              Statut: {statusFilter === "active" ? "Actifs" : statusFilter === "inactive" ? "Inactifs" : statusFilter === "featured" ? "En vedette" : "Stock faible"}
+              Statut: {statusFilter === "active" ? "Actifs" : statusFilter === "inactive" ? "Inactifs" : statusFilter === "featured" ? "En vedette" : statusFilter === "missing_cost" ? "Prix d'achat manquant" : "Stock faible"}
             </Badge>
           )}
           {priceMin && (
@@ -354,6 +391,11 @@ export function ProductsTable({
                           {product.name}
                           {product.is_featured && (
                             <Star className="h-3 w-3 text-primary fill-primary" />
+                          )}
+                          {hasMissingPurchaseCost(product) && (
+                            <Badge className="bg-red-500/20 text-red-300 border border-red-500/30 text-[10px]">
+                              Coût manquant
+                            </Badge>
                           )}
                         </p>
                         <p className="text-cream/50 text-xs">{product.slug}</p>
