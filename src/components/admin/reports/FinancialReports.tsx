@@ -25,6 +25,7 @@ type AccountingReportRow = {
   order_id: string;
   order_number: string;
   order_created_at: string | null;
+  order_status: string | null;
   payment_status: string | null;
   shipping_city: string | null;
   gross_sales: number | null;
@@ -56,6 +57,18 @@ type AccountingAnomalyRow = {
   estimated_net_margin: number | null;
   cost_missing_count: number | null;
   cost_missing_sales_total: number | null;
+};
+
+type MissingPurchaseCostRow = {
+  product_id: string;
+  name: string;
+  category_name: string | null;
+  price: number | null;
+  stock_quantity: number | null;
+  snapshot_order_count: number | null;
+  snapshot_units: number | null;
+  snapshot_sales_total: number | null;
+  priority: "critical" | "high" | "medium" | "low" | string;
 };
 
 export default function FinancialReports({ orders }: Props) {
@@ -94,6 +107,23 @@ export default function FinancialReports({ orders }: Props) {
         return [];
       }
       return (data ?? []) as unknown as AccountingAnomalyRow[];
+    },
+  });
+
+  const { data: missingPurchaseCosts = [] } = useQuery({
+    queryKey: ["admin-missing-purchase-costs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_missing_purchase_costs" as never)
+        .select("*")
+        .order("snapshot_sales_total", { ascending: false })
+        .order("price", { ascending: false })
+        .limit(100);
+      if (error) {
+        console.warn("Missing purchase cost report unavailable", error);
+        return [];
+      }
+      return (data ?? []) as unknown as MissingPurchaseCostRow[];
     },
   });
 
@@ -140,6 +170,10 @@ export default function FinancialReports({ orders }: Props) {
     () => accountingRows.filter((r) => inRange(r.order_created_at)),
     [accountingRows, inRange]
   );
+  const activeAccounting = useMemo(
+    () => filteredAccounting.filter((r) => r.order_status !== "cancelled"),
+    [filteredAccounting]
+  );
   const filteredAnomalies = useMemo(
     () => accountingAnomalies.filter((r) => inRange(r.order_created_at)),
     [accountingAnomalies, inRange]
@@ -157,9 +191,9 @@ export default function FinancialReports({ orders }: Props) {
   // ---------- KPI / P&L ----------
   const fin = useMemo(() => {
     if (hasAccountingSnapshots) {
-      const recognizedAccounting = filteredAccounting.filter((r) => r.payment_status === "completed");
-      const paidSales = filteredAccounting.reduce((s, r) => s + Number(r.paid_sales ?? 0), 0);
-      const pendingSales = filteredAccounting.reduce((s, r) => s + Number(r.pending_sales ?? 0), 0);
+      const recognizedAccounting = activeAccounting.filter((r) => r.payment_status === "completed");
+      const paidSales = activeAccounting.reduce((s, r) => s + Number(r.paid_sales ?? 0), 0);
+      const pendingSales = activeAccounting.reduce((s, r) => s + Number(r.pending_sales ?? 0), 0);
       const subtotal = recognizedAccounting.reduce((s, r) => s + Number(r.gross_sales ?? 0), 0);
       const delivery = recognizedAccounting.reduce((s, r) => s + Number(r.delivery_fee ?? 0), 0);
       const discount = recognizedAccounting.reduce((s, r) => s + Number(r.discount_amount ?? 0), 0);
@@ -168,9 +202,9 @@ export default function FinancialReports({ orders }: Props) {
       const productCost = recognizedAccounting.reduce((s, r) => s + Number(r.product_cost_total ?? 0), 0);
       const providerFees = recognizedAccounting.reduce((s, r) => s + Number(r.payment_provider_fee ?? 0), 0);
       const refunds = recognizedAccounting.reduce((s, r) => s + Number(r.refunded_amount ?? 0), 0);
-      const commissionTotal = filteredAccounting.reduce((s, r) => s + Number(r.mlm_commissions ?? 0), 0);
-      const withdrawalsPaid = filteredAccounting.reduce((s, r) => s + Number(r.completed_withdrawals ?? 0), 0);
-      const withdrawalsPending = filteredAccounting.reduce((s, r) => s + Number(r.pending_withdrawals ?? 0), 0);
+      const commissionTotal = activeAccounting.reduce((s, r) => s + Number(r.mlm_commissions ?? 0), 0);
+      const withdrawalsPaid = activeAccounting.reduce((s, r) => s + Number(r.completed_withdrawals ?? 0), 0);
+      const withdrawalsPending = activeAccounting.reduce((s, r) => s + Number(r.pending_withdrawals ?? 0), 0);
       const revenue = Math.max(0, paidSales - refunds);
       const netMargin =
         recognizedAccounting.reduce((s, r) => s + Number(r.estimated_net_margin ?? 0), 0) -
@@ -193,13 +227,13 @@ export default function FinancialReports({ orders }: Props) {
         withdrawalsPaid,
         withdrawalsPending,
         netMargin,
-        orderCount: filteredAccounting.length,
+        orderCount: activeAccounting.length,
       };
     }
 
     const recognizedOrders = filteredOrders.filter((o) => o.payment_status === "completed");
     const pendingSales = filteredOrders
-      .filter((o) => o.payment_status === "pending")
+      .filter((o) => o.payment_status === "pending" && o.status !== "cancelled")
       .reduce((s, o) => s + (o.total ?? 0), 0);
     const revenue = recognizedOrders.reduce((s, o) => s + (o.total ?? 0), 0);
     const subtotal = recognizedOrders.reduce((s, o) => s + (o.subtotal ?? 0), 0);
@@ -242,7 +276,7 @@ export default function FinancialReports({ orders }: Props) {
       netMargin,
       orderCount: filteredOrders.length,
     };
-  }, [filteredAccounting, filteredOrders, filteredCommissions, filteredWithdrawals, hasAccountingSnapshots, vatRate]);
+  }, [activeAccounting, filteredOrders, filteredCommissions, filteredWithdrawals, hasAccountingSnapshots, vatRate]);
 
   // ---------- Aggregations per tab ----------
   const pnlRows = [
@@ -263,7 +297,7 @@ export default function FinancialReports({ orders }: Props) {
   const vatRows = useMemo(() => {
     if (hasAccountingSnapshots) {
       const map = new Map<string, { mois: string; ttc: number; ht: number; tva: number; orders: number }>();
-      filteredAccounting.forEach((r) => {
+      activeAccounting.forEach((r) => {
         if (!r.order_created_at) return;
         const d = new Date(r.order_created_at);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -291,11 +325,11 @@ export default function FinancialReports({ orders }: Props) {
     return Array.from(map.values())
       .map((r) => ({ ...r, ht: r.ttc / ratio, tva: r.ttc - r.ttc / ratio }))
       .sort((a, b) => a.mois.localeCompare(b.mois));
-  }, [filteredAccounting, filteredOrders, hasAccountingSnapshots, vatRate]);
+  }, [activeAccounting, filteredOrders, hasAccountingSnapshots, vatRate]);
 
   const discountRows = useMemo(() => {
     if (hasAccountingSnapshots) {
-      return filteredAccounting
+      return activeAccounting
         .filter((r) => Number(r.discount_amount ?? 0) > 0)
         .map((r) => ({
           order: r.order_number ?? String(r.order_id).slice(0, 8),
@@ -315,12 +349,12 @@ export default function FinancialReports({ orders }: Props) {
         discount: o.discount_amount ?? 0,
         promo_code: (o as any).promo_code ?? "—",
       }));
-  }, [filteredAccounting, filteredOrders, hasAccountingSnapshots]);
+  }, [activeAccounting, filteredOrders, hasAccountingSnapshots]);
 
   const shippingRows = useMemo(() => {
     const map = new Map<string, { ville: string; orders: number; fees: number }>();
     if (hasAccountingSnapshots) {
-      filteredAccounting.forEach((r) => {
+      activeAccounting.forEach((r) => {
         const city = r.shipping_city ?? "â€”";
         const cur = map.get(city) ?? { ville: city, orders: 0, fees: 0 };
         cur.orders += 1;
@@ -338,7 +372,7 @@ export default function FinancialReports({ orders }: Props) {
       map.set(city, cur);
     });
     return Array.from(map.values()).sort((a, b) => b.fees - a.fees);
-  }, [filteredAccounting, filteredOrders, hasAccountingSnapshots]);
+  }, [activeAccounting, filteredOrders, hasAccountingSnapshots]);
 
   const commissionRows = useMemo(() => {
     const map = new Map<string, { mois: string; level1: number; level2: number; level3: number; total: number; count: number }>();
@@ -393,6 +427,22 @@ export default function FinancialReports({ orders }: Props) {
       affectedSales,
     };
   }, [filteredAnomalies]);
+
+  const missingCostSummary = useMemo(() => {
+    const critical = missingPurchaseCosts.filter((p) => p.priority === "critical").length;
+    const high = missingPurchaseCosts.filter((p) => p.priority === "high").length;
+    const affectedSales = missingPurchaseCosts.reduce(
+      (s, p) => s + Number(p.snapshot_sales_total ?? 0),
+      0
+    );
+    return {
+      total: missingPurchaseCosts.length,
+      critical,
+      high,
+      affectedSales,
+      topProducts: missingPurchaseCosts.slice(0, 5),
+    };
+  }, [missingPurchaseCosts]);
 
   // ---------- Columns ----------
   const pnlCols: ReportColumn<any>[] = [
@@ -492,6 +542,49 @@ export default function FinancialReports({ orders }: Props) {
                     Coûts d'achat manquants sur {formatPrice(anomalySummary.missingCostSales)} de ventes.
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {missingCostSummary.total > 0 && (
+          <div className="border border-red-400/30 bg-red-500/10 rounded-lg p-4 text-sm text-cream">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-300 mt-0.5" />
+              <div className="space-y-2">
+                <div className="font-semibold text-red-200">
+                  {missingCostSummary.total} produit(s) actif(s) sans prix d'achat
+                </div>
+                <div className="text-cream/70">
+                  {missingCostSummary.critical} critique(s), {missingCostSummary.high} prioritaire(s).
+                  {" "}Les marges restent non fiables tant que ces coûts ne sont pas renseignés.
+                </div>
+                {missingCostSummary.affectedSales > 0 && (
+                  <div className="text-cream/60">
+                    Ventes snapshotées avec coût manquant : {formatPrice(missingCostSummary.affectedSales)}.
+                  </div>
+                )}
+                <div className="grid gap-1 pt-1">
+                  {missingCostSummary.topProducts.map((product) => (
+                    <div
+                      key={product.product_id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded border border-red-300/10 bg-noir/30 px-3 py-2"
+                    >
+                      <span className="text-cream/85">
+                        {product.name}
+                        {product.category_name ? (
+                          <span className="text-cream/45"> - {product.category_name}</span>
+                        ) : null}
+                      </span>
+                      <span className="text-primary font-medium">
+                        {formatPrice(Number(product.price ?? 0))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-cream/55">
+                  Ouvre le produit, renseigne "Prix d'achat (FCFA)", puis enregistre. Les nouvelles commandes auront une marge fiable.
+                </div>
               </div>
             </div>
           </div>
