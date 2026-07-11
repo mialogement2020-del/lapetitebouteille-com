@@ -50,6 +50,8 @@ type AccountingAnomalyRow = {
   order_id: string;
   order_number: string;
   order_created_at: string | null;
+  order_status: string | null;
+  payment_status: string | null;
   anomaly_status: string | null;
   anomaly_codes: string[] | null;
   amount_including_tax: number | null;
@@ -177,6 +179,10 @@ export default function FinancialReports({ orders }: Props) {
   const filteredAnomalies = useMemo(
     () => accountingAnomalies.filter((r) => inRange(r.order_created_at)),
     [accountingAnomalies, inRange]
+  );
+  const activeAnomalies = useMemo(
+    () => filteredAnomalies.filter((r) => r.order_status !== "cancelled"),
+    [filteredAnomalies]
   );
   const hasAccountingSnapshots = filteredAccounting.length > 0;
   const filteredCommissions = useMemo(
@@ -405,28 +411,51 @@ export default function FinancialReports({ orders }: Props) {
   );
 
   const anomalySummary = useMemo(() => {
-    const marginUnreliable = filteredAnomalies.filter(
+    const marginUnreliable = activeAnomalies.filter(
       (r) => r.anomaly_status === "margin_unreliable"
     ).length;
-    const ledgerChecks = filteredAnomalies.filter(
+    const ledgerChecks = activeAnomalies.filter(
       (r) => r.anomaly_status === "ledger_check_required"
     ).length;
-    const missingCostSales = filteredAnomalies.reduce(
+    const missingCostSales = activeAnomalies.reduce(
       (s, r) => s + Number(r.cost_missing_sales_total ?? 0),
       0
     );
-    const affectedSales = filteredAnomalies.reduce(
+    const affectedSales = activeAnomalies.reduce(
       (s, r) => s + Number(r.amount_including_tax ?? 0),
       0
     );
     return {
-      total: filteredAnomalies.length,
+      total: activeAnomalies.length,
       marginUnreliable,
       ledgerChecks,
       missingCostSales,
       affectedSales,
     };
-  }, [filteredAnomalies]);
+  }, [activeAnomalies]);
+
+  const costCoverageSummary = useMemo(() => {
+    const snapshotSales = activeAccounting.reduce(
+      (s, r) => s + Number(r.amount_including_tax ?? 0),
+      0
+    );
+    const missingCostSales = activeAnomalies.reduce(
+      (s, r) => s + Number(r.cost_missing_sales_total ?? 0),
+      0
+    );
+    const coveredSales = Math.max(0, snapshotSales - missingCostSales);
+    const coveragePercent = snapshotSales > 0
+      ? Math.round((coveredSales / snapshotSales) * 100)
+      : 100;
+
+    return {
+      snapshotSales,
+      missingCostSales,
+      coveredSales,
+      coveragePercent,
+      isComplete: snapshotSales === 0 || missingCostSales === 0,
+    };
+  }, [activeAccounting, activeAnomalies]);
 
   const missingCostSummary = useMemo(() => {
     const critical = missingPurchaseCosts.filter((p) => p.priority === "critical").length;
@@ -523,6 +552,28 @@ export default function FinancialReports({ orders }: Props) {
           <Kpi label="TVA collectée" value={formatPrice(fin.tva)} />
           <Kpi label="Marge nette" value={formatPrice(fin.netMargin)} />
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <Kpi label="Fiabilité marge" value={`${costCoverageSummary.coveragePercent}%`} />
+          <Kpi label="Ventes à coût complet" value={formatPrice(costCoverageSummary.coveredSales)} />
+          <Kpi label="Ventes à coût manquant" value={formatPrice(costCoverageSummary.missingCostSales)} />
+        </div>
+
+        {!costCoverageSummary.isComplete && (
+          <div className="border border-yellow-400/30 bg-yellow-500/10 rounded-lg p-4 text-sm text-cream">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-yellow-300 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-semibold text-yellow-200">
+                  Fiabilité marge incomplète : {costCoverageSummary.coveragePercent}% des ventes actives ont un coût connu
+                </div>
+                <div className="text-cream/70">
+                  Les commandes annulées sont exclues de ce calcul. Renseigne les prix d'achat manquants avant d'utiliser la marge nette pour une décision comptable.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {anomalySummary.total > 0 && (
           <div className="border border-orange-400/30 bg-orange-500/10 rounded-lg p-4 text-sm text-cream">
