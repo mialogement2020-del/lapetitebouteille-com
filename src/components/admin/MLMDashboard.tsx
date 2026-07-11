@@ -80,6 +80,8 @@ import { TwoFAVerifyDialog } from "./TwoFAVerifyDialog";
    phone_number: string;
    status: string;
    created_at: string;
+   processed_at: string | null;
+   transaction_reference: string | null;
    rejection_reason: string | null;
    profile: {
      first_name: string | null;
@@ -111,7 +113,9 @@ export function MLMDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [rankFilter, setRankFilter] = useState<string>("all");
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<WithdrawalRequest | null>(null);
+  const [selectedCompletion, setSelectedCompletion] = useState<WithdrawalRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [transactionReference, setTransactionReference] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
   // 2FA protection for sensitive operations
@@ -212,6 +216,8 @@ export function MLMDashboard() {
            phone_number,
            status,
            created_at,
+           processed_at,
+           transaction_reference,
            rejection_reason
          `)
          .order("created_at", { ascending: false });
@@ -234,12 +240,12 @@ export function MLMDashboard() {
  
    // Process withdrawal mutation
    const processWithdrawal = useMutation({
-     mutationFn: async ({ id, action, reason }: { id: string; action: "approve" | "reject"; reason?: string }) => {
+     mutationFn: async ({ id, action, reason, transactionReference }: { id: string; action: "approve" | "complete" | "reject"; reason?: string; transactionReference?: string }) => {
        const { error } = await supabase.rpc("process_withdrawal_request" as never, {
          _withdrawal_id: id,
          _action: action,
          _reason: reason || null,
-         _transaction_reference: null,
+         _transaction_reference: transactionReference || null,
        } as never);
  
        if (error) throw error;
@@ -256,7 +262,11 @@ export function MLMDashboard() {
      totalRevenue: ambassadors.reduce((sum, a) => sum + a.total_revenue, 0),
      totalCommissions: ambassadors.reduce((sum, a) => sum + a.total_earned, 0),
      pendingWithdrawals: withdrawals.filter(w => w.status === "pending").length,
+     approvedWithdrawals: withdrawals.filter(w => w.status === "approved").length,
    };
+
+   const pendingWithdrawals = withdrawals.filter(w => w.status === "pending");
+   const approvedWithdrawals = withdrawals.filter(w => w.status === "approved");
  
    // Filter ambassadors
    const filteredAmbassadors = ambassadors.filter(a => {
@@ -285,6 +295,42 @@ export function MLMDashboard() {
         toast({
           title: t("mlmDashboard.toastError"),
           description: t("mlmDashboard.toastProcessError"),
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    });
+  };
+
+  const handleCompleteWithdrawal = async () => {
+    if (!selectedCompletion || !transactionReference.trim()) {
+      toast({
+        title: "Référence requise",
+        description: "Ajoutez la référence Mobile Money avant de marquer le retrait comme payé.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await executeSensitiveOperation(async () => {
+      setIsProcessing(true);
+      try {
+        await processWithdrawal.mutateAsync({
+          id: selectedCompletion.id,
+          action: "complete",
+          transactionReference,
+        });
+        toast({
+          title: "Retrait payé",
+          description: `${selectedCompletion.amount.toLocaleString()} FCFA confirmé avec référence ${transactionReference}.`,
+        });
+        setSelectedCompletion(null);
+        setTransactionReference("");
+      } catch (error) {
+        toast({
+          title: t("mlmDashboard.toastError"),
+          description: "Impossible de finaliser le retrait. Vérifiez le solde réservé et la référence.",
           variant: "destructive",
         });
       } finally {
@@ -377,13 +423,15 @@ export function MLMDashboard() {
            </CardHeader>
            <CardContent>
              <div className="text-2xl font-bold text-cream">{stats.pendingWithdrawals}</div>
-             <p className="text-xs text-cream/50">{t("mlmDashboard.kpiPendingWithdrawalsSub")}</p>
+             <p className="text-xs text-cream/50">
+               {stats.approvedWithdrawals} approuvé(s) à payer
+             </p>
            </CardContent>
          </Card>
        </div>
  
        {/* Pending Withdrawals */}
-       {withdrawals.filter(w => w.status === "pending").length > 0 && (
+       {pendingWithdrawals.length > 0 && (
          <motion.div
            initial={{ opacity: 0, y: 10 }}
            animate={{ opacity: 1, y: 0 }}
@@ -391,10 +439,10 @@ export function MLMDashboard() {
          >
            <h3 className="font-semibold text-warning mb-3 flex items-center gap-2">
              <Wallet className="h-5 w-5" />
-             {t("mlmDashboard.pendingTitle", { count: withdrawals.filter(w => w.status === "pending").length })}
+             {t("mlmDashboard.pendingTitle", { count: pendingWithdrawals.length })}
            </h3>
            <div className="space-y-2">
-             {withdrawals.filter(w => w.status === "pending").map(withdrawal => (
+             {pendingWithdrawals.map(withdrawal => (
                <div 
                  key={withdrawal.id} 
                  className="flex items-center justify-between bg-noir/50 rounded-lg p-3"
@@ -430,6 +478,49 @@ export function MLMDashboard() {
                      <X className="h-4 w-4" />
                    </Button>
                  </div>
+               </div>
+             ))}
+           </div>
+         </motion.div>
+       )}
+
+       {/* Approved Withdrawals awaiting real payout */}
+       {approvedWithdrawals.length > 0 && (
+         <motion.div
+           initial={{ opacity: 0, y: 10 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="bg-info/10 border border-info/30 rounded-lg p-4"
+         >
+           <h3 className="font-semibold text-info mb-3 flex items-center gap-2">
+             <Shield className="h-5 w-5" />
+             {approvedWithdrawals.length} retrait(s) approuvé(s) à payer
+           </h3>
+           <div className="space-y-2">
+             {approvedWithdrawals.map(withdrawal => (
+               <div
+                 key={withdrawal.id}
+                 className="flex items-center justify-between bg-noir/50 rounded-lg p-3"
+               >
+                 <div>
+                   <p className="text-cream font-medium">
+                     {withdrawal.profile?.first_name} {withdrawal.profile?.last_name}
+                   </p>
+                   <p className="text-sm text-cream/60">
+                     {withdrawal.amount.toLocaleString()} FCFA via {withdrawal.payment_method === "mtn_money" ? t("mlmDashboard.paymentMtn") : t("mlmDashboard.paymentOrange")}
+                   </p>
+                   <p className="text-xs text-cream/40">
+                     Approuvé le {withdrawal.processed_at ? format(new Date(withdrawal.processed_at), "dd MMM yyyy à HH:mm", { locale: dateLocale }) : "date inconnue"}
+                   </p>
+                 </div>
+                 <Button
+                   size="sm"
+                   variant="outline"
+                   className="border-info/50 text-info hover:bg-info/10"
+                   onClick={() => setSelectedCompletion(withdrawal)}
+                   disabled={isProcessing}
+                 >
+                   Marquer payé
+                 </Button>
                </div>
              ))}
            </div>
@@ -590,7 +681,56 @@ export function MLMDashboard() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+       </Dialog>
+
+       {/* Complete payout Dialog */}
+       <Dialog open={!!selectedCompletion} onOpenChange={(open) => {
+         if (!open) {
+           setSelectedCompletion(null);
+           setTransactionReference("");
+         }
+       }}>
+         <DialogContent className="bg-noir border-gold/30">
+           <DialogHeader>
+             <DialogTitle className="text-cream">Confirmer le paiement du retrait</DialogTitle>
+             <DialogDescription className="text-cream/60">
+               Marquez ce retrait comme payé uniquement après envoi réel Mobile Money à{" "}
+               <strong>{selectedCompletion?.profile?.first_name} {selectedCompletion?.profile?.last_name}</strong>
+               {" "}({selectedCompletion?.amount.toLocaleString()} FCFA).
+             </DialogDescription>
+           </DialogHeader>
+           <div className="space-y-3">
+             <Input
+               placeholder="Référence transaction Mobile Money"
+               value={transactionReference}
+               onChange={(e) => setTransactionReference(e.target.value)}
+               className="bg-cream/5 border-gold/30 text-cream"
+             />
+             <p className="text-xs text-cream/50">
+               Cette référence sera enregistrée sur la demande de retrait pour l’audit.
+             </p>
+           </div>
+           <DialogFooter>
+             <Button
+               variant="outline"
+               onClick={() => {
+                 setSelectedCompletion(null);
+                 setTransactionReference("");
+               }}
+               className="border-gold/30"
+             >
+               Annuler
+             </Button>
+             <Button
+               onClick={handleCompleteWithdrawal}
+               disabled={isProcessing || !transactionReference.trim()}
+             >
+               {isProcessing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+               Confirmer payé
+             </Button>
+           </DialogFooter>
+         </DialogContent>
+       </Dialog>
 
         {/* 2FA Verification Dialog */}
         <TwoFAVerifyDialog
