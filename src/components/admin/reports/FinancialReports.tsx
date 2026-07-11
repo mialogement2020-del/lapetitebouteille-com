@@ -10,7 +10,7 @@ import { ExportButtonGroup } from "./ExportButtonGroup";
 import type { ReportColumn } from "@/lib/reporting";
 import type { AdminOrder } from "@/hooks/useAdmin";
 import { useAuth } from "@/hooks/useAuth";
-import { Calculator, FileBarChart2, Percent, Truck, Wallet, Banknote } from "lucide-react";
+import { AlertTriangle, Calculator, FileBarChart2, Percent, Truck, Wallet, Banknote } from "lucide-react";
 
 interface Props {
   orders: AdminOrder[];
@@ -44,6 +44,20 @@ type AccountingReportRow = {
   completed_withdrawals: number | null;
 };
 
+type AccountingAnomalyRow = {
+  snapshot_id: string;
+  order_id: string;
+  order_number: string;
+  order_created_at: string | null;
+  anomaly_status: string | null;
+  anomaly_codes: string[] | null;
+  amount_including_tax: number | null;
+  product_cost_total: number | null;
+  estimated_net_margin: number | null;
+  cost_missing_count: number | null;
+  cost_missing_sales_total: number | null;
+};
+
 export default function FinancialReports({ orders }: Props) {
   const { user } = useAuth();
   const [tab, setTab] = useState<TabId>("pnl");
@@ -64,6 +78,22 @@ export default function FinancialReports({ orders }: Props) {
         return [];
       }
       return (data ?? []) as unknown as AccountingReportRow[];
+    },
+  });
+
+  const { data: accountingAnomalies = [] } = useQuery({
+    queryKey: ["admin-accounting-anomalies"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_accounting_anomalies" as never)
+        .select("*")
+        .order("order_created_at", { ascending: false })
+        .limit(500);
+      if (error) {
+        console.warn("Accounting anomaly report unavailable", error);
+        return [];
+      }
+      return (data ?? []) as unknown as AccountingAnomalyRow[];
     },
   });
 
@@ -109,6 +139,10 @@ export default function FinancialReports({ orders }: Props) {
   const filteredAccounting = useMemo(
     () => accountingRows.filter((r) => inRange(r.order_created_at)),
     [accountingRows, inRange]
+  );
+  const filteredAnomalies = useMemo(
+    () => accountingAnomalies.filter((r) => inRange(r.order_created_at)),
+    [accountingAnomalies, inRange]
   );
   const hasAccountingSnapshots = filteredAccounting.length > 0;
   const filteredCommissions = useMemo(
@@ -336,6 +370,30 @@ export default function FinancialReports({ orders }: Props) {
     [filteredWithdrawals]
   );
 
+  const anomalySummary = useMemo(() => {
+    const marginUnreliable = filteredAnomalies.filter(
+      (r) => r.anomaly_status === "margin_unreliable"
+    ).length;
+    const ledgerChecks = filteredAnomalies.filter(
+      (r) => r.anomaly_status === "ledger_check_required"
+    ).length;
+    const missingCostSales = filteredAnomalies.reduce(
+      (s, r) => s + Number(r.cost_missing_sales_total ?? 0),
+      0
+    );
+    const affectedSales = filteredAnomalies.reduce(
+      (s, r) => s + Number(r.amount_including_tax ?? 0),
+      0
+    );
+    return {
+      total: filteredAnomalies.length,
+      marginUnreliable,
+      ledgerChecks,
+      missingCostSales,
+      affectedSales,
+    };
+  }, [filteredAnomalies]);
+
   // ---------- Columns ----------
   const pnlCols: ReportColumn<any>[] = [
     { key: "libelle", label: "Libellé" },
@@ -415,6 +473,29 @@ export default function FinancialReports({ orders }: Props) {
           <Kpi label="TVA collectée" value={formatPrice(fin.tva)} />
           <Kpi label="Marge nette" value={formatPrice(fin.netMargin)} />
         </div>
+
+        {anomalySummary.total > 0 && (
+          <div className="border border-orange-400/30 bg-orange-500/10 rounded-lg p-4 text-sm text-cream">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-orange-300 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-semibold text-orange-200">
+                  {anomalySummary.total} anomalie(s) comptable(s) à contrôler
+                </div>
+                <div className="text-cream/70">
+                  {anomalySummary.marginUnreliable} marge(s) peu fiable(s),
+                  {" "}{anomalySummary.ledgerChecks} contrôle(s) ledger,
+                  {" "}{formatPrice(anomalySummary.affectedSales)} de ventes concernées.
+                </div>
+                {anomalySummary.missingCostSales > 0 && (
+                  <div className="text-cream/60">
+                    Coûts d'achat manquants sur {formatPrice(anomalySummary.missingCostSales)} de ventes.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
