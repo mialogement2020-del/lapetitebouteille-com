@@ -63,6 +63,10 @@ export interface AdminProduct {
   serving_temperature: string | null;
   created_at: string | null;
   category?: { id: string; name: string } | null;
+  purchase_price?: number | null;
+  markup_percent_override?: number | null;
+  points_override?: number | null;
+  points_tiers_override?: { max: number | null; points: number }[] | null;
 }
 
 // Extra pricing/case fields available on admin products
