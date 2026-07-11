@@ -385,32 +385,16 @@ export function useAdmin() {
       customerEmail?: string | null;
       userId?: string | null;
     }) => {
-      // First, update the order status
-      const { error: orderError } = await supabase
-        .from("orders")
-        .update({ status: newStatus })
-        .eq("id", orderId);
+      const { error: orderError } = await supabase.rpc(
+        "admin_update_order_status" as never,
+        {
+          _order_id: orderId,
+          _new_status: newStatus,
+          _notes: notes || null,
+        } as never
+      );
 
       if (orderError) throw orderError;
-
-      // If notes are provided, update the latest history entry with the notes
-      if (notes) {
-        // Find the most recent history entry for this order and update it with the notes
-        const { data: historyEntries, error: historyFetchError } = await supabase
-          .from("order_status_history")
-          .select("id")
-          .eq("order_id", orderId)
-          .eq("new_status", newStatus)
-          .order("changed_at", { ascending: false })
-          .limit(1);
-
-        if (!historyFetchError && historyEntries && historyEntries.length > 0) {
-          await supabase
-            .from("order_status_history")
-            .update({ notes })
-            .eq("id", historyEntries[0].id);
-        }
-      }
 
       // Create in-app notification for user
       if (userId && orderNumber) {
