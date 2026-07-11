@@ -123,23 +123,25 @@ export default function FinancialReports({ orders }: Props) {
   // ---------- KPI / P&L ----------
   const fin = useMemo(() => {
     if (hasAccountingSnapshots) {
-      const revenue = filteredAccounting.reduce((s, r) => s + Number(r.amount_including_tax ?? 0), 0);
+      const recognizedAccounting = filteredAccounting.filter((r) => r.payment_status === "completed");
       const paidSales = filteredAccounting.reduce((s, r) => s + Number(r.paid_sales ?? 0), 0);
       const pendingSales = filteredAccounting.reduce((s, r) => s + Number(r.pending_sales ?? 0), 0);
-      const subtotal = filteredAccounting.reduce((s, r) => s + Number(r.gross_sales ?? 0), 0);
-      const delivery = filteredAccounting.reduce((s, r) => s + Number(r.delivery_fee ?? 0), 0);
-      const discount = filteredAccounting.reduce((s, r) => s + Number(r.discount_amount ?? 0), 0);
-      const ht = filteredAccounting.reduce((s, r) => s + Number(r.amount_excluding_tax ?? 0), 0);
-      const tva = filteredAccounting.reduce((s, r) => s + Number(r.tax_amount ?? 0), 0);
-      const productCost = filteredAccounting.reduce((s, r) => s + Number(r.product_cost_total ?? 0), 0);
-      const providerFees = filteredAccounting.reduce((s, r) => s + Number(r.payment_provider_fee ?? 0), 0);
-      const refunds = filteredAccounting.reduce((s, r) => s + Number(r.refunded_amount ?? 0), 0);
+      const subtotal = recognizedAccounting.reduce((s, r) => s + Number(r.gross_sales ?? 0), 0);
+      const delivery = recognizedAccounting.reduce((s, r) => s + Number(r.delivery_fee ?? 0), 0);
+      const discount = recognizedAccounting.reduce((s, r) => s + Number(r.discount_amount ?? 0), 0);
+      const ht = recognizedAccounting.reduce((s, r) => s + Number(r.amount_excluding_tax ?? 0), 0);
+      const tva = recognizedAccounting.reduce((s, r) => s + Number(r.tax_amount ?? 0), 0);
+      const productCost = recognizedAccounting.reduce((s, r) => s + Number(r.product_cost_total ?? 0), 0);
+      const providerFees = recognizedAccounting.reduce((s, r) => s + Number(r.payment_provider_fee ?? 0), 0);
+      const refunds = recognizedAccounting.reduce((s, r) => s + Number(r.refunded_amount ?? 0), 0);
       const commissionTotal = filteredAccounting.reduce((s, r) => s + Number(r.mlm_commissions ?? 0), 0);
       const withdrawalsPaid = filteredAccounting.reduce((s, r) => s + Number(r.completed_withdrawals ?? 0), 0);
       const withdrawalsPending = filteredAccounting.reduce((s, r) => s + Number(r.pending_withdrawals ?? 0), 0);
+      const revenue = Math.max(0, paidSales - refunds);
       const netMargin =
-        filteredAccounting.reduce((s, r) => s + Number(r.estimated_net_margin ?? 0), 0) -
-        commissionTotal;
+        recognizedAccounting.reduce((s, r) => s + Number(r.estimated_net_margin ?? 0), 0) -
+        commissionTotal -
+        refunds;
       return {
         revenue,
         paidSales,
@@ -161,10 +163,14 @@ export default function FinancialReports({ orders }: Props) {
       };
     }
 
-    const revenue = filteredOrders.reduce((s, o) => s + (o.total ?? 0), 0);
-    const subtotal = filteredOrders.reduce((s, o) => s + (o.subtotal ?? 0), 0);
-    const delivery = filteredOrders.reduce((s, o) => s + (o.delivery_fee ?? 0), 0);
-    const discount = filteredOrders.reduce((s, o) => s + (o.discount_amount ?? 0), 0);
+    const recognizedOrders = filteredOrders.filter((o) => o.payment_status === "completed");
+    const pendingSales = filteredOrders
+      .filter((o) => o.payment_status === "pending")
+      .reduce((s, o) => s + (o.total ?? 0), 0);
+    const revenue = recognizedOrders.reduce((s, o) => s + (o.total ?? 0), 0);
+    const subtotal = recognizedOrders.reduce((s, o) => s + (o.subtotal ?? 0), 0);
+    const delivery = recognizedOrders.reduce((s, o) => s + (o.delivery_fee ?? 0), 0);
+    const discount = recognizedOrders.reduce((s, o) => s + (o.discount_amount ?? 0), 0);
     // TVA included formula: HT = TTC / (1 + rate/100)
     const ratio = 1 + vatRate / 100;
     const ht = revenue / ratio;
@@ -186,7 +192,7 @@ export default function FinancialReports({ orders }: Props) {
     return {
       revenue,
       paidSales: revenue,
-      pendingSales: 0,
+      pendingSales,
       subtotal,
       delivery,
       discount,
@@ -206,7 +212,8 @@ export default function FinancialReports({ orders }: Props) {
 
   // ---------- Aggregations per tab ----------
   const pnlRows = [
-    { libelle: "Chiffre d'affaires TTC", montant: formatPrice(fin.revenue) },
+    { libelle: "Chiffre d'affaires TTC reconnu", montant: formatPrice(fin.revenue) },
+    { libelle: "Ventes en attente non reconnues", montant: formatPrice(fin.pendingSales) },
     { libelle: `TVA collectée (${vatRate}%)`, montant: formatPrice(fin.tva) },
     { libelle: "Chiffre d'affaires HT", montant: formatPrice(fin.ht) },
     { libelle: "Sous-total produits", montant: formatPrice(fin.subtotal) },
