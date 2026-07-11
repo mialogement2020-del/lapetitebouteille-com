@@ -73,6 +73,16 @@ serve(async (req: Request): Promise<Response> => {
     if (intent.status === "succeeded") {
       return jsonResponse({ success: true, alreadyProcessed: true });
     }
+    if (["failed", "cancelled", "refunded"].includes(String(intent.status))) {
+      return jsonResponse(
+        {
+          error: "payment_intent_already_finalized",
+          status: intent.status,
+          requires_manual_review: true,
+        },
+        409,
+      );
+    }
 
     const succeeded = ["success", "succeeded", "completed", "paid"].includes(providerStatus.toLowerCase());
     const failed = ["failed", "cancelled", "canceled", "expired"].includes(providerStatus.toLowerCase());
@@ -97,9 +107,27 @@ serve(async (req: Request): Promise<Response> => {
     if (succeeded && intent.order_id) {
       const { error: updateOrderError } = await supabase
         .from("orders")
-        .update({ payment_status: "completed", status: "confirmed" })
+        .update({
+          payment_status: "completed",
+          status: "confirmed",
+          payment_reference: providerReference,
+        })
         .eq("id", intent.order_id)
+        .eq("payment_status", "pending")
         .neq("status", "cancelled");
+
+      if (updateOrderError) return jsonResponse({ error: updateOrderError.message }, 400);
+    } else if (failed && intent.order_id) {
+      const { error: updateOrderError } = await supabase
+        .from("orders")
+        .update({
+          payment_status: "failed",
+          status: "cancelled",
+          payment_reference: providerReference,
+        })
+        .eq("id", intent.order_id)
+        .eq("payment_status", "pending")
+        .neq("status", "delivered");
 
       if (updateOrderError) return jsonResponse({ error: updateOrderError.message }, 400);
     }
