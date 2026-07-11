@@ -13,7 +13,8 @@ import {
   X,
   Loader2,
   Eye,
-  Shield
+  Shield,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,6 +89,23 @@ import { TwoFAVerifyDialog } from "./TwoFAVerifyDialog";
      last_name: string | null;
      email: string | null;
    } | null;
+ };
+
+ type MlmCommissionAnomaly = {
+   commission_id: string;
+   order_id: string;
+   order_number: string | null;
+   beneficiary_id: string;
+   level: number;
+   commission_status: string | null;
+   order_status: string | null;
+   payment_status: string | null;
+   commission_amount: number | null;
+   reversal_wallet_recovered_amount: number | null;
+   unrecovered_amount: number | null;
+   anomaly_codes: string[] | null;
+   created_at: string | null;
+   reversed_at: string | null;
  };
  
  const rankColors: Record<string, string> = {
@@ -237,6 +255,24 @@ export function MLMDashboard() {
        })) as WithdrawalRequest[];
      },
    });
+
+   const { data: commissionAnomalies = [], refetch: refetchCommissionAnomalies } = useQuery({
+     queryKey: ["admin-mlm-commission-anomalies"],
+     queryFn: async () => {
+       const { data, error } = await supabase
+         .from("admin_mlm_commission_anomalies" as never)
+         .select("*")
+         .order("created_at", { ascending: false })
+         .limit(100);
+
+       if (error) {
+         console.warn("MLM commission anomaly report unavailable", error);
+         return [];
+       }
+
+       return (data ?? []) as unknown as MlmCommissionAnomaly[];
+     },
+   });
  
    // Process withdrawal mutation
    const processWithdrawal = useMutation({
@@ -263,6 +299,11 @@ export function MLMDashboard() {
      totalCommissions: ambassadors.reduce((sum, a) => sum + a.total_earned, 0),
      pendingWithdrawals: withdrawals.filter(w => w.status === "pending").length,
      approvedWithdrawals: withdrawals.filter(w => w.status === "approved").length,
+     commissionAnomalies: commissionAnomalies.length,
+     unrecoveredCommissionAmount: commissionAnomalies.reduce(
+       (sum, a) => sum + Number(a.unrecovered_amount ?? 0),
+       0
+     ),
    };
 
    const pendingWithdrawals = withdrawals.filter(w => w.status === "pending");
@@ -429,6 +470,63 @@ export function MLMDashboard() {
            </CardContent>
          </Card>
        </div>
+
+       {commissionAnomalies.length > 0 && (
+         <motion.div
+           initial={{ opacity: 0, y: 10 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="bg-destructive/10 border border-destructive/30 rounded-lg p-4"
+         >
+           <div className="flex items-start justify-between gap-4">
+             <div className="flex items-start gap-3">
+               <AlertTriangle className="h-5 w-5 text-destructive mt-0.5" />
+               <div className="space-y-2">
+                 <div>
+                   <h3 className="font-semibold text-destructive">
+                     {stats.commissionAnomalies} anomalie(s) MLM a controler
+                   </h3>
+                   <p className="text-sm text-cream/70">
+                     Commissions actives sur commandes annulees/remboursees, doublons, ou montants non recuperes.
+                   </p>
+                 </div>
+                 <div className="text-sm text-cream/60">
+                   Montant non recupere estime :{" "}
+                   <span className="font-semibold text-cream">
+                     {stats.unrecoveredCommissionAmount.toLocaleString()} FCFA
+                   </span>
+                 </div>
+                 <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                   {commissionAnomalies.slice(0, 6).map((anomaly) => (
+                     <div
+                       key={anomaly.commission_id}
+                       className="rounded-md border border-destructive/20 bg-noir/50 p-3"
+                     >
+                       <div className="text-sm font-medium text-cream">
+                         {anomaly.order_number || anomaly.order_id.slice(0, 8)}
+                       </div>
+                       <div className="text-xs text-cream/60">
+                         Niveau {anomaly.level} - {Number(anomaly.commission_amount ?? 0).toLocaleString()} FCFA
+                       </div>
+                       <div className="text-xs text-destructive/80 mt-1">
+                         {(anomaly.anomaly_codes ?? []).join(", ") || "anomalie_mlm"}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             </div>
+             <Button
+               variant="outline"
+               size="sm"
+               onClick={() => refetchCommissionAnomalies()}
+               className="border-destructive/40 text-destructive hover:bg-destructive/10"
+             >
+               <RefreshCw className="h-4 w-4 mr-2" />
+               Recharger
+             </Button>
+           </div>
+         </motion.div>
+       )}
  
        {/* Pending Withdrawals */}
        {pendingWithdrawals.length > 0 && (
