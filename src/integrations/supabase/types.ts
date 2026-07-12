@@ -322,6 +322,27 @@ export type Database = {
             foreignKeyName: "back_in_stock_alerts_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "back_in_stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "back_in_stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "back_in_stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -428,6 +449,27 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cart_items_product_id_fkey"
             columns: ["product_id"]
@@ -588,6 +630,9 @@ export type Database = {
           order_id: string | null
           paid_at: string | null
           purchaser_id: string | null
+          reversal_reason: string | null
+          reversal_wallet_recovered_amount: number
+          reversed_at: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
         }
         Insert: {
@@ -603,6 +648,9 @@ export type Database = {
           order_id?: string | null
           paid_at?: string | null
           purchaser_id?: string | null
+          reversal_reason?: string | null
+          reversal_wallet_recovered_amount?: number
+          reversed_at?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
         }
         Update: {
@@ -618,6 +666,9 @@ export type Database = {
           order_id?: string | null
           paid_at?: string | null
           purchaser_id?: string | null
+          reversal_reason?: string | null
+          reversal_wallet_recovered_amount?: number
+          reversed_at?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
         }
         Relationships: [
@@ -724,14 +775,68 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_zones: {
+        Row: {
+          city: string
+          created_at: string
+          delivery_fee: number
+          estimated_delay: string | null
+          free_delivery_threshold: number | null
+          id: string
+          is_active: boolean
+          metadata: Json
+          neighborhood: string | null
+          priority: number
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          delivery_fee: number
+          estimated_delay?: string | null
+          free_delivery_threshold?: number | null
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          neighborhood?: string | null
+          priority?: number
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          delivery_fee?: number
+          estimated_delay?: string | null
+          free_delivery_threshold?: number | null
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          neighborhood?: string | null
+          priority?: number
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       domain_events: {
         Row: {
           actor_id: string | null
           aggregate_id: string | null
           aggregate_type: string
+          attempt_count: number
+          dead_letter_at: string | null
           error: string | null
           event_type: string
           id: number
+          last_attempt_at: string | null
+          locked_at: string | null
+          locked_by: string | null
+          next_attempt_at: string | null
           occurred_at: string
           payload: Json
           processed_at: string | null
@@ -742,9 +847,15 @@ export type Database = {
           actor_id?: string | null
           aggregate_id?: string | null
           aggregate_type: string
+          attempt_count?: number
+          dead_letter_at?: string | null
           error?: string | null
           event_type: string
           id?: number
+          last_attempt_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          next_attempt_at?: string | null
           occurred_at?: string
           payload?: Json
           processed_at?: string | null
@@ -755,9 +866,15 @@ export type Database = {
           actor_id?: string | null
           aggregate_id?: string | null
           aggregate_type?: string
+          attempt_count?: number
+          dead_letter_at?: string | null
           error?: string | null
           event_type?: string
           id?: number
+          last_attempt_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          next_attempt_at?: string | null
           occurred_at?: string
           payload?: Json
           processed_at?: string | null
@@ -765,6 +882,89 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      financial_ledger_entries: {
+        Row: {
+          actor_id: string | null
+          amount: number
+          balance_after: number | null
+          balance_before: number | null
+          created_at: string
+          credit_wallet_id: string | null
+          currency: string
+          debit_wallet_id: string | null
+          id: string
+          idempotency_key: string
+          metadata: Json
+          movement_type: string
+          order_id: string | null
+          payment_reference: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          amount: number
+          balance_after?: number | null
+          balance_before?: number | null
+          created_at?: string
+          credit_wallet_id?: string | null
+          currency?: string
+          debit_wallet_id?: string | null
+          id?: string
+          idempotency_key: string
+          metadata?: Json
+          movement_type: string
+          order_id?: string | null
+          payment_reference?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          amount?: number
+          balance_after?: number | null
+          balance_before?: number | null
+          created_at?: string
+          credit_wallet_id?: string | null
+          currency?: string
+          debit_wallet_id?: string | null
+          id?: string
+          idempotency_key?: string
+          metadata?: Json
+          movement_type?: string
+          order_id?: string | null
+          payment_reference?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_ledger_entries_credit_wallet_id_fkey"
+            columns: ["credit_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_ledger_entries_debit_wallet_id_fkey"
+            columns: ["debit_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_ledger_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "financial_ledger_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       flash_sale_products: {
         Row: {
@@ -800,6 +1000,27 @@ export type Database = {
             columns: ["flash_sale_id"]
             isOneToOne: false
             referencedRelation: "flash_sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flash_sale_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "flash_sale_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "flash_sale_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
             referencedColumns: ["id"]
           },
           {
@@ -1061,6 +1282,27 @@ export type Database = {
             foreignKeyName: "home_featured_products_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: true
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "home_featured_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "home_featured_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "home_featured_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -1288,6 +1530,127 @@ export type Database = {
         }
         Relationships: []
       }
+      order_accounting_snapshots: {
+        Row: {
+          ambassador_commission_estimate: number
+          amount_excluding_tax: number
+          amount_including_tax: number
+          captured_amount: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          delivery_fee: number
+          delivery_zone_id: string | null
+          discount_amount: number
+          estimated_net_margin: number
+          gross_margin: number
+          guest_email: string | null
+          id: string
+          items: Json
+          metadata: Json
+          order_id: string
+          order_number: string
+          payment_provider_fee: number
+          platform_commission_amount: number
+          product_cost_total: number
+          promo_code: string | null
+          refunded_amount: number
+          rules: Json
+          service_fee: number
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          user_id: string | null
+          vendor_commission_amount: number
+        }
+        Insert: {
+          ambassador_commission_estimate?: number
+          amount_excluding_tax?: number
+          amount_including_tax?: number
+          captured_amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          delivery_fee?: number
+          delivery_zone_id?: string | null
+          discount_amount?: number
+          estimated_net_margin?: number
+          gross_margin?: number
+          guest_email?: string | null
+          id?: string
+          items: Json
+          metadata?: Json
+          order_id: string
+          order_number: string
+          payment_provider_fee?: number
+          platform_commission_amount?: number
+          product_cost_total?: number
+          promo_code?: string | null
+          refunded_amount?: number
+          rules?: Json
+          service_fee?: number
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          user_id?: string | null
+          vendor_commission_amount?: number
+        }
+        Update: {
+          ambassador_commission_estimate?: number
+          amount_excluding_tax?: number
+          amount_including_tax?: number
+          captured_amount?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          delivery_fee?: number
+          delivery_zone_id?: string | null
+          discount_amount?: number
+          estimated_net_margin?: number
+          gross_margin?: number
+          guest_email?: string | null
+          id?: string
+          items?: Json
+          metadata?: Json
+          order_id?: string
+          order_number?: string
+          payment_provider_fee?: number
+          platform_commission_amount?: number
+          product_cost_total?: number
+          promo_code?: string | null
+          refunded_amount?: number
+          rules?: Json
+          service_fee?: number
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          user_id?: string | null
+          vendor_commission_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_accounting_snapshots_delivery_zone_id_fkey"
+            columns: ["delivery_zone_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_zones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_accounting_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_accounting_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_escrows: {
         Row: {
           amount: number
@@ -1365,12 +1728,16 @@ export type Database = {
       }
       order_items: {
         Row: {
+          accounting_metadata: Json
+          category_id: string | null
           created_at: string | null
           id: string
+          line_cost_total: number | null
           order_id: string
           product_id: string | null
           product_image: string | null
           product_name: string
+          purchase_unit_cost: number | null
           quantity: number
           total_price: number
           unit_price: number
@@ -1379,12 +1746,16 @@ export type Database = {
           vendor_updated_at: string
         }
         Insert: {
+          accounting_metadata?: Json
+          category_id?: string | null
           created_at?: string | null
           id?: string
+          line_cost_total?: number | null
           order_id: string
           product_id?: string | null
           product_image?: string | null
           product_name: string
+          purchase_unit_cost?: number | null
           quantity: number
           total_price: number
           unit_price: number
@@ -1393,12 +1764,16 @@ export type Database = {
           vendor_updated_at?: string
         }
         Update: {
+          accounting_metadata?: Json
+          category_id?: string | null
           created_at?: string | null
           id?: string
+          line_cost_total?: number | null
           order_id?: string
           product_id?: string | null
           product_image?: string | null
           product_name?: string
+          purchase_unit_cost?: number | null
           quantity?: number
           total_price?: number
           unit_price?: number
@@ -1407,6 +1782,13 @@ export type Database = {
           vendor_updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "order_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
@@ -1419,6 +1801,27 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
             referencedColumns: ["id"]
           },
           {
@@ -1533,6 +1936,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          accounting_snapshot_created_at: string | null
+          accounting_snapshot_id: string | null
           created_at: string | null
           currency: string
           delivery_fee: number | null
@@ -1551,10 +1956,13 @@ export type Database = {
           order_number: string
           parrain_id: string | null
           payment_method: Database["public"]["Enums"]["payment_method"] | null
+          payment_provider_fee: number
           payment_reference: string | null
           payment_status: Database["public"]["Enums"]["payment_status"] | null
           referral_code_used: string | null
           referrer_id: string | null
+          refunded_amount: number
+          service_fee: number
           shipping_address_id: string | null
           shipping_city: string | null
           shipping_full_name: string | null
@@ -1563,12 +1971,18 @@ export type Database = {
           shipping_phone: string | null
           shipping_street: string | null
           status: Database["public"]["Enums"]["order_status"] | null
+          stock_restore_reason: string | null
+          stock_restored_at: string | null
           subtotal: number
+          tax_amount: number
+          tax_rate: number
           total: number
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          accounting_snapshot_created_at?: string | null
+          accounting_snapshot_id?: string | null
           created_at?: string | null
           currency?: string
           delivery_fee?: number | null
@@ -1587,10 +2001,13 @@ export type Database = {
           order_number: string
           parrain_id?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          payment_provider_fee?: number
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
           referral_code_used?: string | null
           referrer_id?: string | null
+          refunded_amount?: number
+          service_fee?: number
           shipping_address_id?: string | null
           shipping_city?: string | null
           shipping_full_name?: string | null
@@ -1599,12 +2016,18 @@ export type Database = {
           shipping_phone?: string | null
           shipping_street?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
+          stock_restore_reason?: string | null
+          stock_restored_at?: string | null
           subtotal: number
+          tax_amount?: number
+          tax_rate?: number
           total: number
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          accounting_snapshot_created_at?: string | null
+          accounting_snapshot_id?: string | null
           created_at?: string | null
           currency?: string
           delivery_fee?: number | null
@@ -1623,10 +2046,13 @@ export type Database = {
           order_number?: string
           parrain_id?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          payment_provider_fee?: number
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"] | null
           referral_code_used?: string | null
           referrer_id?: string | null
+          refunded_amount?: number
+          service_fee?: number
           shipping_address_id?: string | null
           shipping_city?: string | null
           shipping_full_name?: string | null
@@ -1635,7 +2061,11 @@ export type Database = {
           shipping_phone?: string | null
           shipping_street?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
+          stock_restore_reason?: string | null
+          stock_restored_at?: string | null
           subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
           total?: number
           updated_at?: string | null
           user_id?: string | null
@@ -1908,6 +2338,27 @@ export type Database = {
             foreignKeyName: "product_affinities_product_a_fkey"
             columns: ["product_a"]
             isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_a_fkey"
+            columns: ["product_a"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_a_fkey"
+            columns: ["product_a"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_a_fkey"
+            columns: ["product_a"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -1922,6 +2373,27 @@ export type Database = {
             foreignKeyName: "product_affinities_product_b_fkey"
             columns: ["product_b"]
             isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_b_fkey"
+            columns: ["product_b"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_b_fkey"
+            columns: ["product_b"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_affinities_product_b_fkey"
+            columns: ["product_b"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -1930,6 +2402,134 @@ export type Database = {
             columns: ["product_b"]
             isOneToOne: false
             referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_cost_import_batches: {
+        Row: {
+          applied_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          source_filename: string | null
+          status: string
+          summary: Json
+        }
+        Insert: {
+          applied_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          source_filename?: string | null
+          status?: string
+          summary?: Json
+        }
+        Update: {
+          applied_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          source_filename?: string | null
+          status?: string
+          summary?: Json
+        }
+        Relationships: []
+      }
+      product_cost_import_rows: {
+        Row: {
+          applied_at: string | null
+          autres_frais: number
+          batch_id: string
+          commentaire: string | null
+          created_at: string
+          current_purchase_price: number | null
+          date_effet: string | null
+          devise: string | null
+          estimated_margin: number | null
+          fournisseur: string | null
+          frais_douane: number
+          frais_transport: number
+          id: string
+          landed_purchase_price: number | null
+          line_number: number
+          nom_produit: string | null
+          prix_achat: number | null
+          product_id: string | null
+          product_name: string | null
+          recent_revenue: number
+          recent_sales_count: number
+          rejection_reasons: string[]
+          sale_price: number | null
+          sku: string | null
+          status: string
+          stock_quantity: number | null
+          warnings: string[]
+        }
+        Insert: {
+          applied_at?: string | null
+          autres_frais?: number
+          batch_id: string
+          commentaire?: string | null
+          created_at?: string
+          current_purchase_price?: number | null
+          date_effet?: string | null
+          devise?: string | null
+          estimated_margin?: number | null
+          fournisseur?: string | null
+          frais_douane?: number
+          frais_transport?: number
+          id?: string
+          landed_purchase_price?: number | null
+          line_number: number
+          nom_produit?: string | null
+          prix_achat?: number | null
+          product_id?: string | null
+          product_name?: string | null
+          recent_revenue?: number
+          recent_sales_count?: number
+          rejection_reasons?: string[]
+          sale_price?: number | null
+          sku?: string | null
+          status: string
+          stock_quantity?: number | null
+          warnings?: string[]
+        }
+        Update: {
+          applied_at?: string | null
+          autres_frais?: number
+          batch_id?: string
+          commentaire?: string | null
+          created_at?: string
+          current_purchase_price?: number | null
+          date_effet?: string | null
+          devise?: string | null
+          estimated_margin?: number | null
+          fournisseur?: string | null
+          frais_douane?: number
+          frais_transport?: number
+          id?: string
+          landed_purchase_price?: number | null
+          line_number?: number
+          nom_produit?: string | null
+          prix_achat?: number | null
+          product_id?: string | null
+          product_name?: string | null
+          recent_revenue?: number
+          recent_sales_count?: number
+          rejection_reasons?: string[]
+          sale_price?: number | null
+          sku?: string | null
+          status?: string
+          stock_quantity?: number | null
+          warnings?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_cost_import_rows_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "product_cost_import_batches"
             referencedColumns: ["id"]
           },
         ]
@@ -2170,51 +2770,154 @@ export type Database = {
       }
       promo_codes: {
         Row: {
+          allow_negative_margin: boolean
           code: string
           created_at: string | null
           description: string | null
           discount_type: string
           discount_value: number
+          eligible_category_ids: string[] | null
+          eligible_product_ids: string[] | null
+          eligible_user_ids: string[] | null
+          first_order_only: boolean
           id: string
+          incompatible_coupon_ids: string[] | null
           is_active: boolean | null
           max_discount_amount: number | null
+          max_discount_percent: number | null
+          max_uses_per_order: number
+          max_uses_per_user: number | null
+          metadata: Json
+          min_margin_after_discount: number | null
           min_order_amount: number | null
+          stackable: boolean
           usage_limit: number | null
           used_count: number | null
           valid_from: string | null
           valid_until: string | null
         }
         Insert: {
+          allow_negative_margin?: boolean
           code: string
           created_at?: string | null
           description?: string | null
           discount_type: string
           discount_value: number
+          eligible_category_ids?: string[] | null
+          eligible_product_ids?: string[] | null
+          eligible_user_ids?: string[] | null
+          first_order_only?: boolean
           id?: string
+          incompatible_coupon_ids?: string[] | null
           is_active?: boolean | null
           max_discount_amount?: number | null
+          max_discount_percent?: number | null
+          max_uses_per_order?: number
+          max_uses_per_user?: number | null
+          metadata?: Json
+          min_margin_after_discount?: number | null
           min_order_amount?: number | null
+          stackable?: boolean
           usage_limit?: number | null
           used_count?: number | null
           valid_from?: string | null
           valid_until?: string | null
         }
         Update: {
+          allow_negative_margin?: boolean
           code?: string
           created_at?: string | null
           description?: string | null
           discount_type?: string
           discount_value?: number
+          eligible_category_ids?: string[] | null
+          eligible_product_ids?: string[] | null
+          eligible_user_ids?: string[] | null
+          first_order_only?: boolean
           id?: string
+          incompatible_coupon_ids?: string[] | null
           is_active?: boolean | null
           max_discount_amount?: number | null
+          max_discount_percent?: number | null
+          max_uses_per_order?: number
+          max_uses_per_user?: number | null
+          metadata?: Json
+          min_margin_after_discount?: number | null
           min_order_amount?: number | null
+          stackable?: boolean
           usage_limit?: number | null
           used_count?: number | null
           valid_from?: string | null
           valid_until?: string | null
         }
         Relationships: []
+      }
+      promo_redemptions: {
+        Row: {
+          code: string
+          discount_amount: number
+          guest_email: string | null
+          guest_identity_hash: string | null
+          guest_phone: string | null
+          id: string
+          metadata: Json
+          order_id: string | null
+          order_subtotal: number
+          promo_code_id: string
+          redeemed_at: string
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          discount_amount?: number
+          guest_email?: string | null
+          guest_identity_hash?: string | null
+          guest_phone?: string | null
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          order_subtotal?: number
+          promo_code_id: string
+          redeemed_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          discount_amount?: number
+          guest_email?: string | null
+          guest_identity_hash?: string | null
+          guest_phone?: string | null
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          order_subtotal?: number
+          promo_code_id?: string
+          redeemed_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "promo_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_redemptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
@@ -2327,6 +3030,27 @@ export type Database = {
             foreignKeyName: "quote_requests_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "quote_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "quote_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -2398,6 +3122,27 @@ export type Database = {
           viewed_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "recently_viewed_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "recently_viewed_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "recently_viewed_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "recently_viewed_product_id_fkey"
             columns: ["product_id"]
@@ -2660,6 +3405,27 @@ export type Database = {
             foreignKeyName: "reviews_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -2752,6 +3518,27 @@ export type Database = {
           threshold?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "stock_alerts_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "stock_alerts_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "stock_alerts_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "stock_alerts_history_product_id_fkey"
             columns: ["product_id"]
@@ -2962,6 +3749,27 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "user_recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "user_recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_recommendations_product_id_fkey"
             columns: ["product_id"]
@@ -3379,6 +4187,27 @@ export type Database = {
             foreignKeyName: "wholesale_pricing_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "wholesale_pricing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "wholesale_pricing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wholesale_pricing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -3558,6 +4387,27 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "wishlist_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "wishlist_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "wishlist_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wishlist_product_id_fkey"
             columns: ["product_id"]
@@ -3767,6 +4617,91 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_accounting_anomalies: {
+        Row: {
+          amount_including_tax: number | null
+          anomaly_codes: string[] | null
+          anomaly_status: string | null
+          cost_missing_count: number | null
+          cost_missing_sales_total: number | null
+          estimated_net_margin: number | null
+          order_created_at: string | null
+          order_created_ledger_amount: number | null
+          order_created_ledger_entries: number | null
+          order_id: string | null
+          order_number: string | null
+          order_status: Database["public"]["Enums"]["order_status"] | null
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          product_cost_total: number | null
+          refund_ledger_amount: number | null
+          refund_ledger_entries: number | null
+          snapshot_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_accounting_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_accounting_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_accounting_report: {
+        Row: {
+          amount_excluding_tax: number | null
+          amount_including_tax: number | null
+          completed_withdrawals: number | null
+          currency: string | null
+          delivery_fee: number | null
+          discount_amount: number | null
+          estimated_net_margin: number | null
+          gross_margin: number | null
+          gross_sales: number | null
+          mlm_commissions: number | null
+          order_created_at: string | null
+          order_id: string | null
+          order_number: string | null
+          order_status: Database["public"]["Enums"]["order_status"] | null
+          paid_sales: number | null
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          payment_provider_fee: number | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          pending_sales: number | null
+          pending_withdrawals: number | null
+          product_cost_total: number | null
+          refunded_amount: number | null
+          service_fee: number | null
+          shipping_city: string | null
+          snapshot_created_at: string | null
+          snapshot_id: string | null
+          tax_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_accounting_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_accounting_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_finance_overview: {
         Row: {
           buyer_id: string | null
@@ -3800,6 +4735,394 @@ export type Database = {
           risk_score: number | null
         }
         Relationships: []
+      }
+      admin_missing_purchase_costs: {
+        Row: {
+          category_id: string | null
+          category_name: string | null
+          is_active: boolean | null
+          name: string | null
+          price: number | null
+          priority: string | null
+          product_id: string | null
+          purchase_price: number | null
+          slug: string | null
+          snapshot_order_count: number | null
+          snapshot_sales_total: number | null
+          snapshot_units: number | null
+          stock_quantity: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_mlm_commission_anomalies: {
+        Row: {
+          anomaly_codes: string[] | null
+          beneficiary_id: string | null
+          commission_amount: number | null
+          commission_id: string | null
+          commission_status:
+            | Database["public"]["Enums"]["payment_status"]
+            | null
+          created_at: string | null
+          level: number | null
+          order_id: string | null
+          order_number: string | null
+          order_status: Database["public"]["Enums"]["order_status"] | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          purchaser_id: string | null
+          reversal_wallet_recovered_amount: number | null
+          reversed_at: string | null
+          unrecovered_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_orchestration_health: {
+        Row: {
+          dead_letter_events: number | null
+          events_24h: number | null
+          executions_24h: number | null
+          failed_events: number | null
+          failed_executions_24h: number | null
+          oldest_pending_at: string | null
+          pending_events: number | null
+        }
+        Relationships: []
+      }
+      admin_product_cost_import_template: {
+        Row: {
+          autres_frais: number | null
+          commentaire: string | null
+          date_effet: string | null
+          devise: string | null
+          fournisseur: string | null
+          frais_douane: number | null
+          frais_transport: number | null
+          nom_produit: string | null
+          prix_achat: number | null
+          sku: string | null
+        }
+        Insert: {
+          autres_frais?: never
+          commentaire?: never
+          date_effet?: never
+          devise?: never
+          fournisseur?: never
+          frais_douane?: never
+          frais_transport?: never
+          nom_produit?: string | null
+          prix_achat?: never
+          sku?: never
+        }
+        Update: {
+          autres_frais?: never
+          commentaire?: never
+          date_effet?: never
+          devise?: never
+          fournisseur?: never
+          frais_douane?: never
+          frais_transport?: never
+          nom_produit?: string | null
+          prix_achat?: never
+          sku?: never
+        }
+        Relationships: []
+      }
+      admin_product_cost_validation_report: {
+        Row: {
+          category_name: string | null
+          correction_bucket: string | null
+          correction_priority: number | null
+          estimated_margin: number | null
+          estimated_margin_percent: number | null
+          issues: string[] | null
+          last_sold_at: string | null
+          name: string | null
+          product_id: string | null
+          purchase_price: number | null
+          recent_revenue: number | null
+          recent_sales_count: number | null
+          recent_units_sold: number | null
+          sale_price: number | null
+          sku: string | null
+          sold_recently_without_reliable_cost: boolean | null
+          stock_quantity: number | null
+        }
+        Relationships: []
+      }
+      admin_products_secure: {
+        Row: {
+          alcohol_percentage: number | null
+          available_as_case: boolean | null
+          average_rating: number | null
+          case_price: number | null
+          category: Json | null
+          category_id: string | null
+          created_at: string | null
+          description: string | null
+          embedding: string | null
+          embedding_source: string | null
+          embedding_updated_at: string | null
+          food_pairing: string | null
+          gallery_urls: string[] | null
+          grape_variety: string | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          low_stock_threshold: number | null
+          markup_percent_override: number | null
+          moderation_status:
+            | Database["public"]["Enums"]["product_moderation_status"]
+            | null
+          name: string | null
+          origin_country: string | null
+          original_price: number | null
+          points_override: number | null
+          points_tiers_override: Json | null
+          price: number | null
+          purchase_price: number | null
+          region: string | null
+          review_count: number | null
+          serving_temperature: string | null
+          short_description: string | null
+          sku: string | null
+          slug: string | null
+          stock_quantity: number | null
+          tasting_notes: string | null
+          units_per_case: number | null
+          updated_at: string | null
+          vendor_id: string | null
+          vintage_year: number | null
+          volume_ml: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_promo_code_anomalies: {
+        Row: {
+          anomaly_codes: string[] | null
+          code: string | null
+          discount_amount: number | null
+          guest_identity_hash: string | null
+          metadata: Json | null
+          order_id: string | null
+          order_number: string | null
+          order_status: Database["public"]["Enums"]["order_status"] | null
+          order_subtotal: number | null
+          order_total: number | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          promo_code_id: string | null
+          redeemed_at: string | null
+          redemption_id: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "promo_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_redemptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_order_accounting_summary: {
+        Row: {
+          amount_excluding_tax: number | null
+          amount_including_tax: number | null
+          captured_amount: number | null
+          created_at: string | null
+          currency: string | null
+          delivery_fee: number | null
+          discount_amount: number | null
+          guest_email: string | null
+          order_id: string | null
+          order_number: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          refunded_amount: number | null
+          service_fee: number | null
+          status: Database["public"]["Enums"]["order_status"] | null
+          subtotal: number | null
+          tax_amount: number | null
+          tax_rate: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_accounting_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_accounting_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_order_items: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          order_id: string | null
+          product_id: string | null
+          product_image: string | null
+          product_name: string | null
+          quantity: number | null
+          total_price: number | null
+          unit_price: number | null
+          vendor_id: string | null
+          vendor_status:
+            | Database["public"]["Enums"]["vendor_fulfillment_status"]
+            | null
+          vendor_updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          order_id?: string | null
+          product_id?: string | null
+          product_image?: string | null
+          product_name?: string | null
+          quantity?: number | null
+          total_price?: number | null
+          unit_price?: number | null
+          vendor_id?: string | null
+          vendor_status?:
+            | Database["public"]["Enums"]["vendor_fulfillment_status"]
+            | null
+          vendor_updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          order_id?: string | null
+          product_id?: string | null
+          product_image?: string | null
+          product_name?: string | null
+          quantity?: number | null
+          total_price?: number | null
+          unit_price?: number | null
+          vendor_id?: string | null
+          vendor_status?:
+            | Database["public"]["Enums"]["vendor_fulfillment_status"]
+            | null
+          vendor_updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "admin_finance_overview"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_shops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       monthly_leaderboard: {
         Row: {
@@ -3845,6 +5168,8 @@ export type Database = {
           stock_quantity: number | null
           tasting_notes: string | null
           units_per_case: number | null
+          updated_at: string | null
+          vendor_id: string | null
           vintage_year: number | null
           volume_ml: number | null
         }
@@ -3876,6 +5201,8 @@ export type Database = {
           stock_quantity?: number | null
           tasting_notes?: string | null
           units_per_case?: number | null
+          updated_at?: string | null
+          vendor_id?: string | null
           vintage_year?: number | null
           volume_ml?: number | null
         }
@@ -3907,6 +5234,8 @@ export type Database = {
           stock_quantity?: number | null
           tasting_notes?: string | null
           units_per_case?: number | null
+          updated_at?: string | null
+          vendor_id?: string | null
           vintage_year?: number | null
           volume_ml?: number | null
         }
@@ -3916,6 +5245,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_shops"
             referencedColumns: ["id"]
           },
         ]
@@ -3959,6 +5295,27 @@ export type Database = {
             foreignKeyName: "reviews_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -3973,6 +5330,32 @@ export type Database = {
       }
     }
     Functions: {
+      admin_apply_product_cost_import: {
+        Args: { _batch_id: string }
+        Returns: Json
+      }
+      admin_preview_product_cost_import: {
+        Args: { _rows: Json; _source_filename?: string }
+        Returns: Json
+      }
+      admin_set_product_sensitive_pricing: {
+        Args: {
+          _markup_percent_override?: number
+          _points_override?: number
+          _points_tiers_override?: Json
+          _product_id: string
+          _purchase_price?: number
+        }
+        Returns: undefined
+      }
+      admin_update_order_status: {
+        Args: {
+          _new_status: Database["public"]["Enums"]["order_status"]
+          _notes?: string
+          _order_id: string
+        }
+        Returns: Json
+      }
       analytics_customer_cohorts: {
         Args: { _months_back?: number }
         Returns: {
@@ -4199,6 +5582,24 @@ export type Database = {
         Args: { _f: number; _m: number; _r: number }
         Returns: string
       }
+      log_financial_ledger_entry: {
+        Args: {
+          _actor_id?: string
+          _amount: number
+          _balance_after?: number
+          _balance_before?: number
+          _credit_wallet_id?: string
+          _currency?: string
+          _debit_wallet_id?: string
+          _idempotency_key: string
+          _metadata?: Json
+          _movement_type: string
+          _order_id?: string
+          _payment_reference?: string
+          _user_id?: string
+        }
+        Returns: string
+      }
       lookup_guest_order: {
         Args: { _identifier: string; _method?: string; _order_number: string }
         Returns: Json
@@ -4295,10 +5696,26 @@ export type Database = {
         }
         Returns: Json
       }
+      resolve_delivery_zone: {
+        Args: { _city: string; _neighborhood: string; _subtotal: number }
+        Returns: {
+          estimated_delay: string
+          fee: number
+          free_threshold: number
+          matched_rule: string
+          zone_id: string
+        }[]
+      }
+      restore_order_stock_once: {
+        Args: { _order_id: string; _reason?: string }
+        Returns: Json
+      }
       reverse_mlm_commissions_for_order: {
         Args: { _order_id: string }
         Returns: Json
       }
+      safe_date_from_text: { Args: { _value: string }; Returns: string }
+      safe_numeric_from_text: { Args: { _value: string }; Returns: number }
       score_order_risk: { Args: { _order_id: string }; Returns: string }
       upsert_payment_reconciliation: {
         Args: { _intent_id: string }
