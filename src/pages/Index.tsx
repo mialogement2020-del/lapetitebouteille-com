@@ -1,13 +1,29 @@
+import { lazy, Suspense } from "react";
+import type { ReactNode } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/home/HeroSection";
-import CategoriesSection from "@/components/home/CategoriesSection";
-import FeaturedProducts from "@/components/home/FeaturedProducts";
-import CategoryProductsSection from "@/components/home/CategoryProductsSection";
-import MLMTeaser from "@/components/home/MLMTeaser";
-import RecommendedForYou from "@/components/home/RecommendedForYou";
-import MagazineTeaser from "@/components/home/MagazineTeaser";
 import Seo from "@/components/seo/Seo";
+import { DeferredSection } from "@/components/performance/DeferredSection";
+
+const CategoriesSection = lazy(() => import("@/components/home/CategoriesSection"));
+const FeaturedProducts = lazy(() => import("@/components/home/FeaturedProducts"));
+const RecommendedForYou = lazy(() => import("@/components/home/RecommendedForYou"));
+const CategoryProductsSection = lazy(() => import("@/components/home/CategoryProductsSection"));
+const MagazineTeaser = lazy(() => import("@/components/home/MagazineTeaser"));
+const MLMTeaser = lazy(() => import("@/components/home/MLMTeaser"));
+
+const DeferredHomeSection = ({
+  children,
+  minHeight = 1,
+}: {
+  children: ReactNode;
+  minHeight?: number;
+}) => (
+  <DeferredSection minHeight={minHeight}>
+    <Suspense fallback={null}>{children}</Suspense>
+  </DeferredSection>
+);
 
 const Index = () => {
   return (
@@ -20,12 +36,24 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
-        <CategoriesSection />
-        <FeaturedProducts />
-        <RecommendedForYou />
-        <CategoryProductsSection />
-        <MagazineTeaser />
-        <MLMTeaser />
+        <DeferredHomeSection minHeight={320}>
+          <CategoriesSection />
+        </DeferredHomeSection>
+        <DeferredHomeSection minHeight={360}>
+          <FeaturedProducts />
+        </DeferredHomeSection>
+        <DeferredHomeSection>
+          <RecommendedForYou />
+        </DeferredHomeSection>
+        <DeferredHomeSection>
+          <CategoryProductsSection />
+        </DeferredHomeSection>
+        <DeferredHomeSection>
+          <MagazineTeaser />
+        </DeferredHomeSection>
+        <DeferredHomeSection>
+          <MLMTeaser />
+        </DeferredHomeSection>
       </main>
       <Footer />
     </div>
