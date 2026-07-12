@@ -44,6 +44,8 @@ export default defineConfig(({ mode }) => ({
           "vendor-i18n": ["i18next", "react-i18next", "i18next-browser-languagedetector"],
           "vendor-supabase": ["@supabase/supabase-js"],
           "vendor-charts": ["recharts"],
+          "vendor-pdf": ["jspdf", "jspdf-autotable", "html2canvas"],
+          "vendor-excel": ["xlsx"],
         },
       },
     },
