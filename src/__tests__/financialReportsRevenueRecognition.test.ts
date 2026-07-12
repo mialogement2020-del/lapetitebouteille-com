@@ -10,7 +10,7 @@ const financialReports = readFileSync(
 describe("admin financial reports revenue recognition", () => {
   it("recognizes only completed payments as revenue", () => {
     expect(financialReports).toContain(
-      'filteredAccounting.filter((r) => r.payment_status === "completed")'
+      'activeAccounting.filter((r) => r.payment_status === "completed")'
     );
     expect(financialReports).toContain(
       'filteredOrders.filter((o) => o.payment_status === "completed")'
