@@ -22,6 +22,9 @@ type DomainEvent = {
   error: string | null;
   occurred_at: string;
   processed_at: string | null;
+  attempt_count?: number | null;
+  next_attempt_at?: string | null;
+  dead_letter_at?: string | null;
 };
 
 type WorkflowRule = {
@@ -53,6 +56,7 @@ const STATUS_COLORS: Record<string, string> = {
   processed: "bg-success/20 text-success border-success/30",
   success: "bg-success/20 text-success border-success/30",
   failed: "bg-destructive/20 text-destructive border-destructive/30",
+  dead_letter: "bg-destructive text-destructive-foreground border-destructive",
   skipped: "bg-muted text-muted-foreground border-border",
 };
 
@@ -152,7 +156,7 @@ export const OrchestrationDashboard = () => {
     }
   };
 
-  const pendingCount = events.filter((e) => e.status === "pending").length;
+  const pendingCount = events.filter((e) => e.status === "pending" || e.status === "failed").length;
 
   return (
     <div className="space-y-6">
@@ -215,11 +219,12 @@ export const OrchestrationDashboard = () => {
                     <th className="py-2 pr-3">Type</th>
                     <th className="py-2 pr-3">Agrégat</th>
                     <th className="py-2 pr-3">Statut</th>
+                    <th className="py-2 pr-3">Essais</th>
                     <th className="py-2 pr-3">Payload</th>
                   </tr></thead>
                   <tbody>
                     {events.length === 0 && !loading && (
-                      <tr><td colSpan={5} className="py-8 text-center text-muted-foreground">Aucun événement encore — passez une commande ou changez un statut pour voir le bus s'animer.</td></tr>
+                      <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">Aucun événement encore — passez une commande ou changez un statut pour voir le bus s'animer.</td></tr>
                     )}
                     {events.map((e) => (
                       <tr key={e.id} className="border-b border-gold/5 align-top">
@@ -227,6 +232,7 @@ export const OrchestrationDashboard = () => {
                         <td className="py-2 pr-3 font-mono text-xs text-primary">{e.event_type}</td>
                         <td className="py-2 pr-3 text-xs">{e.aggregate_type}<div className="text-muted-foreground truncate max-w-[140px]">{e.aggregate_id}</div></td>
                         <td className="py-2 pr-3"><StatusBadge status={e.status} /></td>
+                        <td className="py-2 pr-3 text-xs text-muted-foreground">{e.attempt_count ?? 0}</td>
                         <td className="py-2 pr-3 max-w-md"><code className="text-xs text-muted-foreground break-all">{JSON.stringify(e.payload).slice(0, 160)}</code></td>
                       </tr>
                     ))}

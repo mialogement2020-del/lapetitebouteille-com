@@ -2,8 +2,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-orchestrator-secret",
 };
+
+const MAX_ATTEMPTS = 5;
 
 type Rule = {
   id: string;
@@ -23,7 +25,42 @@ type Event = {
   source: string | null;
   actor_id: string | null;
   status: string;
+  attempt_count?: number | null;
+  next_attempt_at?: string | null;
 };
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+async function isAuthorized(req: Request, supabase: ReturnType<typeof createClient>) {
+  const internalSecret = Deno.env.get("ORCHESTRATOR_INTERNAL_SECRET");
+  const providedSecret = req.headers.get("x-orchestrator-secret");
+  if (internalSecret && providedSecret && providedSecret === internalSecret) {
+    return { ok: true, mode: "internal" };
+  }
+
+  const authHeader = req.headers.get("authorization") ?? "";
+  const token = authHeader.toLowerCase().startsWith("bearer ") ? authHeader.slice(7) : "";
+  if (!token) return { ok: false, reason: "missing_authorization" };
+
+  const { data: userData, error: userError } = await supabase.auth.getUser(token);
+  const userId = userData.user?.id;
+  if (userError || !userId) return { ok: false, reason: "invalid_authorization" };
+
+  const { data: role, error: roleError } = await supabase
+    .from("user_roles")
+    .select("user_id")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  if (roleError || !role) return { ok: false, reason: "admin_required" };
+  return { ok: true, mode: "admin", userId };
+}
 
 function getByPath(obj: unknown, path: string): unknown {
   return path.split(".").reduce<unknown>((acc, key) => {
@@ -102,13 +139,34 @@ async function runAction(
 }
 
 async function processEvent(supabase: ReturnType<typeof createClient>, eventId: number) {
+  const lockedBy = `orchestrator-${crypto.randomUUID()}`;
+  const now = new Date().toISOString();
+
   const { data: event, error } = await supabase
     .from("domain_events")
     .select("*")
     .eq("id", eventId)
     .maybeSingle<Event>();
   if (error || !event) return { processed: 0, error: error?.message ?? "event not found" };
-  if (event.status !== "pending") return { processed: 0, skipped: true };
+  if (!["pending", "failed"].includes(event.status)) return { processed: 0, skipped: true };
+
+  if (event.next_attempt_at && new Date(event.next_attempt_at).getTime() > Date.now()) {
+    return { processed: 0, skipped: true, reason: "backoff_wait" };
+  }
+
+  const attemptCount = Number(event.attempt_count ?? 0) + 1;
+  const { error: claimError } = await supabase
+    .from("domain_events")
+    .update({
+      locked_at: now,
+      locked_by: lockedBy,
+      last_attempt_at: now,
+      attempt_count: attemptCount,
+      error: null,
+    })
+    .eq("id", event.id)
+    .in("status", ["pending", "failed"]);
+  if (claimError) return { processed: 0, error: claimError.message };
 
   const { data: rules } = await supabase
     .from("workflow_rules")
@@ -163,16 +221,41 @@ async function processEvent(supabase: ReturnType<typeof createClient>, eventId: 
       .eq("id", rule.id);
   }
 
-  await supabase
-    .from("domain_events")
-    .update({
-      status: firstError ? "failed" : "processed",
-      processed_at: new Date().toISOString(),
-      error: firstError,
-    })
-    .eq("id", event.id);
+  const finishedAt = new Date().toISOString();
+  const failedPermanently = Boolean(firstError) && attemptCount >= MAX_ATTEMPTS;
+  const retryDelayMinutes = Math.min(60, 2 ** Math.max(0, attemptCount - 1));
 
-  return { processed: 1, actionsRun, error: firstError };
+  await supabase.from("domain_events").update(
+    firstError
+      ? {
+          status: failedPermanently ? "dead_letter" : "failed",
+          processed_at: null,
+          error: firstError,
+          next_attempt_at: failedPermanently
+            ? null
+            : new Date(Date.now() + retryDelayMinutes * 60_000).toISOString(),
+          dead_letter_at: failedPermanently ? finishedAt : null,
+          locked_at: null,
+          locked_by: null,
+        }
+      : {
+          status: "processed",
+          processed_at: finishedAt,
+          error: null,
+          next_attempt_at: null,
+          dead_letter_at: null,
+          locked_at: null,
+          locked_by: null,
+        },
+  ).eq("id", event.id);
+
+  return {
+    processed: 1,
+    actionsRun,
+    error: firstError,
+    attemptCount,
+    deadLetter: failedPermanently,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -183,21 +266,26 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceKey);
 
   try {
+    const auth = await isAuthorized(req, supabase);
+    if (!auth.ok) {
+      return jsonResponse({ error: auth.reason }, 401);
+    }
+
     let body: { event_id?: number; backfill?: boolean } = {};
     try { body = await req.json(); } catch { /* GET or empty body */ }
 
     if (body.event_id) {
       const res = await processEvent(supabase, body.event_id);
-      return new Response(JSON.stringify(res), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse(res);
     }
 
-    // Backfill: process pending events (max 50)
+    // Backfill: process pending and retryable failed events (max 50)
+    const retryCutoff = new Date().toISOString();
     const { data: pending } = await supabase
       .from("domain_events")
       .select("id")
-      .eq("status", "pending")
+      .in("status", ["pending", "failed"])
+      .or(`next_attempt_at.is.null,next_attempt_at.lte.${retryCutoff}`)
       .order("id", { ascending: true })
       .limit(50);
 
@@ -207,13 +295,8 @@ Deno.serve(async (req) => {
       total += r.processed ?? 0;
     }
 
-    return new Response(JSON.stringify({ processed: total }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ processed: total });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String((e as Error).message) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ error: String((e as Error).message) }, 500);
   }
 });
