@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { lazy, Suspense, useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -37,63 +37,71 @@ import { useAdmin, type AdminOrder, type AdminProduct, type AdminCategory, type 
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { AdminStats } from "@/components/admin/AdminStats";
-import { OrdersTable } from "@/components/admin/OrdersTable";
-import { OrderStatusDialog } from "@/components/admin/OrderStatusDialog";
-import { ProductsTable } from "@/components/admin/ProductsTable";
-import { ProductFormDialog } from "@/components/admin/ProductFormDialog";
-import { CategoriesTable } from "@/components/admin/CategoriesTable";
-import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
-import { PerformanceCharts } from "@/components/admin/PerformanceCharts";
-import { InfrastructureMonitoring } from "@/components/admin/InfrastructureMonitoring";
-import { OrchestrationDashboard } from "@/components/admin/OrchestrationDashboard";
-import { DataPlatformDashboard } from "@/components/admin/DataPlatformDashboard";
-import { ReputationDashboard } from "@/components/admin/ReputationDashboard";
-import { MediaEngineManager } from "@/components/admin/MediaEngineManager";
-import { RetentionDashboard } from "@/components/admin/RetentionDashboard";
-import { PromoCodesTable } from "@/components/admin/PromoCodesTable";
-import { PromoCodeFormDialog } from "@/components/admin/PromoCodeFormDialog";
-import { ReviewsTable } from "@/components/admin/ReviewsTable";
-import { ReviewModerationDialog } from "@/components/admin/ReviewModerationDialog";
-import { LowStockDashboard } from "@/components/admin/LowStockDashboard";
-import InventoryReports from "@/components/admin/reports/InventoryReports";
-import SalesReports from "@/components/admin/reports/SalesReports";
-import FinancialReports from "@/components/admin/reports/FinancialReports";
 import { OrderNotifications } from "@/components/admin/OrderNotifications";
 import { StockNotifications } from "@/components/admin/StockNotifications";
 import { PushNotificationToggle } from "@/components/admin/PushNotificationToggle";
-import { StockAlertsHistory } from "@/components/admin/StockAlertsHistory";
-import { StockAlertsChart } from "@/components/admin/StockAlertsChart";
-import { StockAlertSettings } from "@/components/admin/StockAlertSettings";
-import { StockAlertsPDFExport } from "@/components/admin/StockAlertsPDFExport";
-import { WeeklyReportSettings } from "@/components/admin/WeeklyReportSettings";
-import { AuditLogsTable } from "@/components/admin/AuditLogsTable";
-import { MLMDashboard } from "@/components/admin/MLMDashboard";
-import { AdminPermissionsManager } from "@/components/admin/AdminPermissionsManager";
-import { MarketplaceRolesManager } from "@/components/admin/MarketplaceRolesManager";
-import { WholesalerApplicationsManager } from "@/components/admin/WholesalerApplicationsManager";
-import { WholesaleInvoicesManager } from "@/components/admin/WholesaleInvoicesManager";
-import { EmbeddingsManager } from "@/components/admin/EmbeddingsManager";
-import { FraudManager } from "@/components/admin/FraudManager";
-import { EscrowsManager } from "@/components/admin/EscrowsManager";
-import { FinanceReconciliationManager } from "@/components/admin/FinanceReconciliationManager";
-import { ProductModerationManager } from "@/components/admin/ProductModerationManager";
-import { BusinessAnalyticsDashboard } from "@/components/admin/BusinessAnalyticsDashboard";
-import { HomeCategoriesManager } from "@/components/admin/HomeCategoriesManager";
-import { HeroConfigManager } from "@/components/admin/HeroConfigManager";
-import { FeaturedProductsManager } from "@/components/admin/FeaturedProductsManager";
 import { ShieldAlert, Sparkles, LineChart } from "lucide-react";
-import { TwoFASettings } from "@/components/admin/TwoFASettings";
-import { TwoFAVerifyDialog } from "@/components/admin/TwoFAVerifyDialog";
-import { LoyaltyDashboard } from "@/components/admin/LoyaltyDashboard";
-import { ProductImageManager } from "@/components/admin/ProductImageManager";
-import { QuotesTable } from "@/components/admin/QuotesTable";
-import { WholesaleSettings } from "@/components/admin/WholesaleSettings";
-import { PricingSettings } from "@/components/admin/PricingSettings";
 import { useSensitiveOperation } from "@/hooks/useSensitiveOperation";
 import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
+
+const OrdersTable = lazy(() => import("@/components/admin/OrdersTable").then((module) => ({ default: module.OrdersTable })));
+const OrderStatusDialog = lazy(() => import("@/components/admin/OrderStatusDialog").then((module) => ({ default: module.OrderStatusDialog })));
+const ProductsTable = lazy(() => import("@/components/admin/ProductsTable").then((module) => ({ default: module.ProductsTable })));
+const ProductFormDialog = lazy(() => import("@/components/admin/ProductFormDialog").then((module) => ({ default: module.ProductFormDialog })));
+const CategoriesTable = lazy(() => import("@/components/admin/CategoriesTable").then((module) => ({ default: module.CategoriesTable })));
+const CategoryFormDialog = lazy(() => import("@/components/admin/CategoryFormDialog").then((module) => ({ default: module.CategoryFormDialog })));
+const PerformanceCharts = lazy(() => import("@/components/admin/PerformanceCharts").then((module) => ({ default: module.PerformanceCharts })));
+const InfrastructureMonitoring = lazy(() => import("@/components/admin/InfrastructureMonitoring"));
+const OrchestrationDashboard = lazy(() => import("@/components/admin/OrchestrationDashboard"));
+const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
+const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
+const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
+const RetentionDashboard = lazy(() => import("@/components/admin/RetentionDashboard"));
+const PromoCodesTable = lazy(() => import("@/components/admin/PromoCodesTable").then((module) => ({ default: module.PromoCodesTable })));
+const PromoCodeFormDialog = lazy(() => import("@/components/admin/PromoCodeFormDialog").then((module) => ({ default: module.PromoCodeFormDialog })));
+const ReviewsTable = lazy(() => import("@/components/admin/ReviewsTable").then((module) => ({ default: module.ReviewsTable })));
+const ReviewModerationDialog = lazy(() => import("@/components/admin/ReviewModerationDialog").then((module) => ({ default: module.ReviewModerationDialog })));
+const LowStockDashboard = lazy(() => import("@/components/admin/LowStockDashboard").then((module) => ({ default: module.LowStockDashboard })));
+const InventoryReports = lazy(() => import("@/components/admin/reports/InventoryReports"));
+const SalesReports = lazy(() => import("@/components/admin/reports/SalesReports"));
+const FinancialReports = lazy(() => import("@/components/admin/reports/FinancialReports"));
+const StockAlertsHistory = lazy(() => import("@/components/admin/StockAlertsHistory").then((module) => ({ default: module.StockAlertsHistory })));
+const StockAlertsChart = lazy(() => import("@/components/admin/StockAlertsChart").then((module) => ({ default: module.StockAlertsChart })));
+const StockAlertSettings = lazy(() => import("@/components/admin/StockAlertSettings").then((module) => ({ default: module.StockAlertSettings })));
+const StockAlertsPDFExport = lazy(() => import("@/components/admin/StockAlertsPDFExport").then((module) => ({ default: module.StockAlertsPDFExport })));
+const WeeklyReportSettings = lazy(() => import("@/components/admin/WeeklyReportSettings").then((module) => ({ default: module.WeeklyReportSettings })));
+const AuditLogsTable = lazy(() => import("@/components/admin/AuditLogsTable").then((module) => ({ default: module.AuditLogsTable })));
+const MLMDashboard = lazy(() => import("@/components/admin/MLMDashboard").then((module) => ({ default: module.MLMDashboard })));
+const AdminPermissionsManager = lazy(() => import("@/components/admin/AdminPermissionsManager").then((module) => ({ default: module.AdminPermissionsManager })));
+const MarketplaceRolesManager = lazy(() => import("@/components/admin/MarketplaceRolesManager").then((module) => ({ default: module.MarketplaceRolesManager })));
+const WholesalerApplicationsManager = lazy(() => import("@/components/admin/WholesalerApplicationsManager").then((module) => ({ default: module.WholesalerApplicationsManager })));
+const WholesaleInvoicesManager = lazy(() => import("@/components/admin/WholesaleInvoicesManager").then((module) => ({ default: module.WholesaleInvoicesManager })));
+const EmbeddingsManager = lazy(() => import("@/components/admin/EmbeddingsManager").then((module) => ({ default: module.EmbeddingsManager })));
+const FraudManager = lazy(() => import("@/components/admin/FraudManager").then((module) => ({ default: module.FraudManager })));
+const EscrowsManager = lazy(() => import("@/components/admin/EscrowsManager").then((module) => ({ default: module.EscrowsManager })));
+const FinanceReconciliationManager = lazy(() => import("@/components/admin/FinanceReconciliationManager").then((module) => ({ default: module.FinanceReconciliationManager })));
+const ProductModerationManager = lazy(() => import("@/components/admin/ProductModerationManager").then((module) => ({ default: module.ProductModerationManager })));
+const BusinessAnalyticsDashboard = lazy(() => import("@/components/admin/BusinessAnalyticsDashboard").then((module) => ({ default: module.BusinessAnalyticsDashboard })));
+const HomeCategoriesManager = lazy(() => import("@/components/admin/HomeCategoriesManager").then((module) => ({ default: module.HomeCategoriesManager })));
+const HeroConfigManager = lazy(() => import("@/components/admin/HeroConfigManager").then((module) => ({ default: module.HeroConfigManager })));
+const FeaturedProductsManager = lazy(() => import("@/components/admin/FeaturedProductsManager").then((module) => ({ default: module.FeaturedProductsManager })));
+const TwoFASettings = lazy(() => import("@/components/admin/TwoFASettings").then((module) => ({ default: module.TwoFASettings })));
+const TwoFAVerifyDialog = lazy(() => import("@/components/admin/TwoFAVerifyDialog").then((module) => ({ default: module.TwoFAVerifyDialog })));
+const LoyaltyDashboard = lazy(() => import("@/components/admin/LoyaltyDashboard").then((module) => ({ default: module.LoyaltyDashboard })));
+const ProductImageManager = lazy(() => import("@/components/admin/ProductImageManager").then((module) => ({ default: module.ProductImageManager })));
+const QuotesTable = lazy(() => import("@/components/admin/QuotesTable").then((module) => ({ default: module.QuotesTable })));
+const WholesaleSettings = lazy(() => import("@/components/admin/WholesaleSettings").then((module) => ({ default: module.WholesaleSettings })));
+const PricingSettings = lazy(() => import("@/components/admin/PricingSettings").then((module) => ({ default: module.PricingSettings })));
+
+const AdminModuleFallback = () => (
+  <div className="flex min-h-[220px] items-center justify-center rounded-lg border border-gold/20 bg-noir/40 text-cream">
+    <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary" />
+    Chargement du module...
+  </div>
+);
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -137,8 +145,7 @@ const Admin = () => {
   const { 
     canAccessTab, 
     hasFullAccess, 
-    isLoadingMyPermissions,
-    myPermissions 
+    isLoadingMyPermissions
   } = useAdminPermissions();
   
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
@@ -216,7 +223,7 @@ const Admin = () => {
       if (tab.id === 'security') return canAccessTab('permissions') || hasFullAccess;
       return canAccessTab(tab.id);
     });
-  }, [canAccessTab, hasFullAccess, myPermissions]);
+  }, [canAccessTab, hasFullAccess]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -623,6 +630,7 @@ const Admin = () => {
                 })}
               </TabsList>
 
+              <Suspense fallback={<AdminModuleFallback />}>
               <TabsContent value="performance" className="space-y-8">
                 <PerformanceCharts orders={orders} products={products} />
               </TabsContent>
@@ -879,68 +887,77 @@ const Admin = () => {
                   <TwoFASettings />
                 </div>
               </TabsContent>
+              </Suspense>
             </Tabs>
           </motion.div>
         </div>
       </main>
 
-      {/* Order Status Dialog */}
-      <OrderStatusDialog
-        order={selectedOrder}
-        open={isStatusDialogOpen}
-        onOpenChange={setIsStatusDialogOpen}
-        onUpdateStatus={handleUpdateStatus}
-        isUpdating={updateOrderStatus.isPending}
-      />
+      <Suspense fallback={null}>
+        {isStatusDialogOpen && (
+          <OrderStatusDialog
+            order={selectedOrder}
+            open={isStatusDialogOpen}
+            onOpenChange={setIsStatusDialogOpen}
+            onUpdateStatus={handleUpdateStatus}
+            isUpdating={updateOrderStatus.isPending}
+          />
+        )}
 
-      {/* Product Form Dialog */}
-      <ProductFormDialog
-        product={selectedProduct}
-        open={isProductDialogOpen}
-        onOpenChange={setIsProductDialogOpen}
-        categories={categories}
-        onSave={handleSaveProduct}
-        isSaving={createProduct.isPending || updateProduct.isPending}
-      />
+        {isProductDialogOpen && (
+          <ProductFormDialog
+            product={selectedProduct}
+            open={isProductDialogOpen}
+            onOpenChange={setIsProductDialogOpen}
+            categories={categories}
+            onSave={handleSaveProduct}
+            isSaving={createProduct.isPending || updateProduct.isPending}
+          />
+        )}
 
-      {/* Category Form Dialog */}
-      <CategoryFormDialog
-        category={selectedCategory}
-        allCategories={allCategories}
-        open={isCategoryDialogOpen}
-        onOpenChange={setIsCategoryDialogOpen}
-        onSave={handleSaveCategory}
-        isSaving={createCategory.isPending || updateCategory.isPending}
-      />
+        {isCategoryDialogOpen && (
+          <CategoryFormDialog
+            category={selectedCategory}
+            allCategories={allCategories}
+            open={isCategoryDialogOpen}
+            onOpenChange={setIsCategoryDialogOpen}
+            onSave={handleSaveCategory}
+            isSaving={createCategory.isPending || updateCategory.isPending}
+          />
+        )}
 
-      {/* Promo Code Form Dialog */}
-      <PromoCodeFormDialog
-        promoCode={selectedPromoCode}
-        open={isPromoCodeDialogOpen}
-        onOpenChange={setIsPromoCodeDialogOpen}
-        onSave={handleSavePromoCode}
-        isSaving={createPromoCode.isPending || updatePromoCode.isPending}
-      />
+        {isPromoCodeDialogOpen && (
+          <PromoCodeFormDialog
+            promoCode={selectedPromoCode}
+            open={isPromoCodeDialogOpen}
+            onOpenChange={setIsPromoCodeDialogOpen}
+            onSave={handleSavePromoCode}
+            isSaving={createPromoCode.isPending || updatePromoCode.isPending}
+          />
+        )}
 
-      {/* Review Moderation Dialog */}
-      <ReviewModerationDialog
-        review={selectedReview}
-        open={isReviewDialogOpen}
-        onOpenChange={setIsReviewDialogOpen}
-        onApprove={handleApproveReview}
-        onReject={handleRejectReview}
-        isUpdating={approveReview.isPending || deleteReview.isPending}
-      />
+        {isReviewDialogOpen && (
+          <ReviewModerationDialog
+            review={selectedReview}
+            open={isReviewDialogOpen}
+            onOpenChange={setIsReviewDialogOpen}
+            onApprove={handleApproveReview}
+            onReject={handleRejectReview}
+            isUpdating={approveReview.isPending || deleteReview.isPending}
+          />
+        )}
 
-      {/* 2FA Verification Dialog */}
-      <TwoFAVerifyDialog
-        open={showVerifyDialog}
-        onOpenChange={setShowVerifyDialog}
-        onVerify={handleVerify}
-        loading={twoFALoading}
-        title={operationName}
-        description={operationDescription}
-      />
+        {showVerifyDialog && (
+          <TwoFAVerifyDialog
+            open={showVerifyDialog}
+            onOpenChange={setShowVerifyDialog}
+            onVerify={handleVerify}
+            loading={twoFALoading}
+            title={operationName}
+            description={operationDescription}
+          />
+        )}
+      </Suspense>
 
       <Footer />
     </div>
