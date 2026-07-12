@@ -12,6 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { ProductImageBulkZipUpload } from "./ProductImageBulkZipUpload";
 
 interface ProductWithoutImage {
   id: string;
@@ -297,6 +298,9 @@ export const ProductImageManager = () => {
           {totalCount !== undefined && <span className="text-primary font-medium">{totalCount}</span>} produits sans image
         </p>
       </div>
+
+      {/* Bulk ZIP upload */}
+      <ProductImageBulkZipUpload />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
