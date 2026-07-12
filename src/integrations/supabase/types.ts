@@ -2534,6 +2534,75 @@ export type Database = {
           },
         ]
       }
+      product_image_history: {
+        Row: {
+          batch_id: string | null
+          created_at: string
+          id: string
+          new_image_url: string
+          previous_image_url: string | null
+          product_id: string
+          replaced_by: string | null
+          source: string
+        }
+        Insert: {
+          batch_id?: string | null
+          created_at?: string
+          id?: string
+          new_image_url: string
+          previous_image_url?: string | null
+          product_id: string
+          replaced_by?: string | null
+          source?: string
+        }
+        Update: {
+          batch_id?: string | null
+          created_at?: string
+          id?: string
+          new_image_url?: string
+          previous_image_url?: string | null
+          product_id?: string
+          replaced_by?: string | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_image_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_image_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_image_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_image_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_image_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_moderations: {
         Row: {
           analyzed_image_url: string | null
