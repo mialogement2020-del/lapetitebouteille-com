@@ -1,4 +1,4 @@
-﻿-- Product-level wholesale packaging options.
+-- Product-level wholesale packaging options.
 -- Additive migration: keeps legacy product case columns, stops relying on automatic global discounts.
 
 CREATE TABLE IF NOT EXISTS public.product_packaging_options (
