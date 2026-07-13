@@ -21,7 +21,7 @@ describe("report export lazy loading", () => {
   it("keeps heavy export dependencies in dedicated chunks", () => {
     expect(viteConfig).toContain('"vendor-pdf"');
     expect(viteConfig).toContain('"vendor-excel"');
-    expect(viteConfig).toContain('"jspdf"');
-    expect(viteConfig).toContain('"xlsx"');
+    expect(viteConfig).toContain("jspdf|jspdf-autotable|html2canvas");
+    expect(viteConfig).toContain("[\\\\/]xlsx[\\\\/]");
   });
 });
