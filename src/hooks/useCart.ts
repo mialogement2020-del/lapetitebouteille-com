@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { calculateCartItemCount, calculateCartSubtotal } from "@/lib/cartTotals";
+import type { ProductPackagingOption } from "@/lib/packagingPricing";
 
 const getSupabase = () => import("@/integrations/supabase/client").then((m) => m.supabase);
 
@@ -22,6 +23,8 @@ export interface CartItem {
   id: string;
   product_id: string;
   quantity: number;
+  packaging_option_id?: string | null;
+  packaging_option?: ProductPackagingOption | null;
   product?: CartProduct;
 }
 
@@ -33,6 +36,8 @@ type CartItemRow = {
   id: string;
   product_id: string;
   quantity: number;
+  packaging_option_id?: string | null;
+  packaging_option?: ProductPackagingOption | null;
   products?: CartProductRow | null;
 };
 
@@ -70,6 +75,25 @@ export function useCart(userId: string | null) {
           id,
           product_id,
           quantity,
+          packaging_option_id,
+          packaging_option:packaging_option_id (
+            id,
+            product_id,
+            packaging_type,
+            packaging_label,
+            bottle_quantity,
+            pricing_mode,
+            total_price,
+            discount_percent,
+            calculated_unit_price,
+            calculated_savings,
+            show_discount,
+            stock_quantity,
+            sku,
+            weight_kg,
+            discount_tiers,
+            is_active
+          ),
           products:product_id (
             id,
             name,
@@ -92,6 +116,8 @@ export function useCart(userId: string | null) {
           id: item.id,
           product_id: item.product_id,
           quantity: item.quantity,
+          packaging_option_id: item.packaging_option_id || null,
+          packaging_option: item.packaging_option || null,
           product: item.products ? {
             ...item.products,
             category: item.products.category,
@@ -106,6 +132,9 @@ export function useCart(userId: string | null) {
       if (localItems.length > 0) {
         const supabase = await getSupabase();
         const productIds = localItems.map((item) => item.product_id);
+        const packagingOptionIds = localItems
+          .map((item) => item.packaging_option_id)
+          .filter(Boolean) as string[];
         const { data: products } = await supabase
           .from("products")
           .select(`
@@ -123,10 +152,17 @@ export function useCart(userId: string | null) {
             )
           `)
           .in("id", productIds);
+        const { data: packagingOptions } = packagingOptionIds.length
+          ? await supabase
+              .from("active_product_packaging_options" as never)
+              .select("*")
+              .in("id", packagingOptionIds)
+          : { data: [] };
 
         const hydratedItems = localItems.map((item) => ({
           ...item,
           product: (products as CartProductRow[] | null)?.find((p) => p.id === item.product_id),
+          packaging_option: (packagingOptions as ProductPackagingOption[] | null)?.find((option) => option.id === item.packaging_option_id) || null,
         }));
         setItems(hydratedItems);
       } else {
@@ -144,8 +180,11 @@ export function useCart(userId: string | null) {
 
   // Add item to cart
   const addItem = useCallback(
-    async (productId: string, quantity: number = 1) => {
-      const existingItem = items.find((item) => item.product_id === productId);
+    async (productId: string, quantity: number = 1, options?: { packagingOptionId?: string | null }) => {
+      const packagingOptionId = options?.packagingOptionId || null;
+      const existingItem = items.find(
+        (item) => item.product_id === productId && (item.packaging_option_id || null) === packagingOptionId,
+      );
 
       if (userId) {
         const supabase = await getSupabase();
@@ -162,12 +201,15 @@ export function useCart(userId: string | null) {
             user_id: userId,
             product_id: productId,
             quantity,
+            packaging_option_id: packagingOptionId,
           });
         }
       } else {
         // Guest user - update localStorage
         const localItems = getLocalCart();
-        const existingLocal = localItems.find((item) => item.product_id === productId);
+        const existingLocal = localItems.find(
+          (item) => item.product_id === productId && (item.packaging_option_id || null) === packagingOptionId,
+        );
 
         if (existingLocal) {
           existingLocal.quantity += quantity;
@@ -176,6 +218,7 @@ export function useCart(userId: string | null) {
             id: `local_${Date.now()}`,
             product_id: productId,
             quantity,
+            packaging_option_id: packagingOptionId,
           });
         }
         setLocalCart(localItems);
@@ -253,16 +296,22 @@ export function useCart(userId: string | null) {
         user_id: newUserId,
         product_id: item.product_id,
         quantity: item.quantity,
+        packaging_option_id: item.packaging_option_id || null,
       }));
 
       for (const item of itemsToInsert) {
         // Check if item already exists
-        const { data: existing } = await supabase
+        let existingQuery = supabase
           .from("cart_items")
           .select("id, quantity")
           .eq("user_id", newUserId)
-          .eq("product_id", item.product_id)
-          .maybeSingle();
+          .eq("product_id", item.product_id);
+
+        existingQuery = item.packaging_option_id
+          ? existingQuery.eq("packaging_option_id", item.packaging_option_id)
+          : existingQuery.is("packaging_option_id", null);
+
+        const { data: existing } = await existingQuery.maybeSingle();
 
         if (existing) {
           // Update quantity

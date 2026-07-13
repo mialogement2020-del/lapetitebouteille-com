@@ -5,7 +5,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 interface CartContextType {
   items: CartItem[];
   isLoading: boolean;
-  addItem: (productId: string, quantity?: number) => Promise<void>;
+  addItem: (productId: string, quantity?: number, options?: { packagingOptionId?: string | null }) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;

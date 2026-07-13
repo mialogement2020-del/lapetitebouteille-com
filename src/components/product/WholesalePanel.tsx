@@ -1,58 +1,56 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, ChevronDown, ChevronUp, Check, FileText, ShoppingCart, Building2 } from "lucide-react";
+import { Package, ChevronDown, ChevronUp, Check, ShoppingCart, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Product } from "@/hooks/useProducts";
-import { useWholesalePricing, calculateWholesalePrices, WholesaleTierPrice, PackagingType } from "@/hooks/useWholesale";
+import { useActiveProductPackagingOptions } from "@/hooks/useProductPackagingOptions";
 import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { useCartContext } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
-import { QuoteRequestDialog } from "./QuoteRequestDialog";
 import { useTranslation } from "react-i18next";
+import {
+  calculatePackagingDiscount,
+  calculatePackagingLineTotal,
+  getPackagingIcon,
+  type ProductPackagingOption,
+} from "@/lib/packagingPricing";
 
 interface WholesalePanelProps {
   product: Product;
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("fr-FR").format(price);
-};
+const formatPrice = (price: number) => new Intl.NumberFormat("fr-FR").format(price);
 
 export function WholesalePanel({ product }: WholesalePanelProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<PackagingType | null>(null);
-  const [buyerType, setBuyerType] = useState<"individual" | "business">("individual");
-  const [hasNIU, setHasNIU] = useState(false);
-  const [niuValue, setNiuValue] = useState("");
-  const [showQuoteDialog, setShowQuoteDialog] = useState(false);
-  const { data: customPricing } = useWholesalePricing(product.id);
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const { data: tierConfig } = useWholesaleTierConfig();
+  const { data: options = [] } = useActiveProductPackagingOptions(product.id);
   const { addItem } = useCartContext();
 
-  const allTiers = calculateWholesalePrices(
-    product.price,
-    customPricing || [],
-    hasNIU && niuValue.length >= 10,
-    {
-      discountOverrides: tierConfig?.discount_overrides,
-      tvaRate: tierConfig?.tva_rate,
-      labels: tierConfig?.labels,
-      lang: i18n.language,
-    }
+  const activeOptions = useMemo(
+    () => options.filter((option) => option.is_active && option.total_price > 0 && option.bottle_quantity > 0),
+    [options],
   );
-  const tiers = allTiers.filter((t) => tierConfig?.visible_tiers?.includes(t.type));
+  const selectedOption = activeOptions.find((option) => option.id === selectedOptionId) || null;
+  const maxVisibleDiscount = Math.max(
+    0,
+    ...activeOptions
+      .filter((option) => option.show_discount)
+      .map((option) => calculatePackagingDiscount(option, 999)),
+  );
 
-  const handleAddToCart = async (tier: WholesaleTierPrice) => {
+  if (tierConfig && tierConfig.enabled === false) return null;
+  if (activeOptions.length === 0) return null;
+
+  const handleAddToCart = async (option: ProductPackagingOption) => {
     try {
-      await addItem(product.id, tier.quantity);
+      await addItem(product.id, option.bottle_quantity, { packagingOptionId: option.id });
       toast({
         title: t("wholesale.addedTitle"),
-        description: t("wholesale.addedDesc", { label: tier.label, name: product.name }),
+        description: t("wholesale.addedDesc", { label: option.packaging_label, name: product.name }),
       });
     } catch {
       toast({
@@ -63,214 +61,127 @@ export function WholesalePanel({ product }: WholesalePanelProps) {
     }
   };
 
-  const selectedTierData = tiers.find((t) => t.type === selectedTier);
-
-  if (tierConfig && tierConfig.enabled === false) return null;
-  if (tiers.length === 0) return null;
-
   return (
-    <>
-      <div className="mt-4">
-        <Button
-          onClick={() => setIsOpen(!isOpen)}
-          variant="outline"
-          className="w-full justify-between border-[#2c3e50] bg-[#2c3e50]/10 text-cream hover:bg-[#2c3e50]/20 hover:border-[#2c3e50] h-12 rounded-full font-semibold"
-        >
-          <span className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            {t("wholesale.cta")}
-          </span>
-          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </Button>
+    <div className="mt-4">
+      <Button
+        onClick={() => setIsOpen(!isOpen)}
+        variant="outline"
+        className="w-full justify-between border-[#2c3e50] bg-[#2c3e50]/10 text-cream hover:bg-[#2c3e50]/20 hover:border-[#2c3e50] h-12 rounded-full font-semibold"
+      >
+        <span className="flex items-center gap-2">
+          <Package className="h-5 w-5" />
+          {t("wholesale.cta")}
+        </span>
+        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </Button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-4 p-5 rounded-2xl border border-cream/10 bg-cream/5 space-y-4">
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-2">
-                  <Building2 className="h-5 w-5 text-primary" />
-                  <h3 className="font-display text-lg font-semibold text-cream">
-                    {t("wholesale.proTitle")}
-                  </h3>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-4 p-5 rounded-2xl border border-cream/10 bg-cream/5 space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                <h3 className="font-display text-lg font-semibold text-cream">
+                  {t("wholesale.proTitle")}
+                </h3>
+                {maxVisibleDiscount > 0 && (
                   <Badge className="bg-primary/20 text-primary border-0 text-xs">
-                    {t("wholesale.upTo")}
+                    {t("product.wholesaleDiscount", { percent: maxVisibleDiscount })}
                   </Badge>
-                </div>
+                )}
+              </div>
 
-                {/* Tiers */}
-                <div className="space-y-3">
-                  {tiers.map((tier) => (
+              <div className="space-y-3">
+                {activeOptions.map((option) => {
+                  const selected = selectedOptionId === option.id;
+                  return (
                     <motion.div
-                      key={tier.type}
+                      key={option.id}
                       className={`relative p-4 rounded-xl border cursor-pointer transition-all ${
-                        selectedTier === tier.type
+                        selected
                           ? "border-primary bg-primary/10"
                           : "border-cream/10 bg-cream/5 hover:border-cream/20"
                       }`}
-                      onClick={() => setSelectedTier(tier.type)}
+                      onClick={() => setSelectedOptionId(option.id)}
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            selectedTier === tier.type
-                              ? "border-primary bg-primary"
-                              : "border-cream/30"
-                          }`}>
-                            {selectedTier === tier.type && (
-                              <Check className="h-3.5 w-3.5 text-noir" />
-                            )}
+                          <div
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                              selected ? "border-primary bg-primary" : "border-cream/30"
+                            }`}
+                          >
+                            {selected && <Check className="h-3.5 w-3.5 text-noir" />}
                           </div>
                           <div>
                             <p className="font-medium text-cream text-sm">
-                              {tier.icon} {tier.label}
+                              {getPackagingIcon(option.packaging_type)} {option.packaging_label}
                             </p>
                             <p className="text-xs text-cream/50">
-                              {tier.quantity} {t("wholesale.bottles")} × {formatPrice(Math.round(tier.totalPrice / tier.quantity))} FCFA
+                              {option.bottle_quantity} {t("wholesale.bottles")} x{" "}
+                              {formatPrice(Math.round(option.total_price / option.bottle_quantity))} FCFA
                             </p>
+                            {option.stock_quantity !== null && (
+                              <p className="text-[11px] text-cream/40">
+                                Stock indicatif: {option.stock_quantity}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-cream">
-                            {formatPrice(tier.totalPrice)} FCFA
-                            {hasNIU && niuValue.length >= 10 && (
-                              <span className="text-xs text-cream/40 ml-1">{t("wholesale.ht")}</span>
-                            )}
-                          </p>
-                          <p className="text-xs font-semibold text-green-400">
-                            {t("wholesale.savings", { amount: formatPrice(tier.savings), percent: tier.discountPercent })}
-                          </p>
+                          <p className="font-bold text-cream">{formatPrice(option.total_price)} FCFA</p>
+                          {option.show_discount && (option.calculated_savings || 0) > 0 && (
+                            <p className="text-xs font-semibold text-green-400">
+                              {t("wholesale.savings", {
+                                amount: formatPrice(option.calculated_savings || 0),
+                                percent: calculatePackagingDiscount(option, 1),
+                              })}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      {tier.isCustom && (
-                        <Badge className="absolute top-2 right-2 bg-secondary/20 text-secondary border-0 text-[10px]">
-                          {t("wholesale.specialPrice")}
-                        </Badge>
+
+                      {option.show_discount && option.discount_tiers && option.discount_tiers.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-cream/60">
+                          {option.discount_tiers.map((tier) => {
+                            const line = calculatePackagingLineTotal(option, tier.min_quantity);
+                            return (
+                              <span
+                                key={`${option.id}-${tier.min_quantity}-${tier.discount_percent}`}
+                                className="rounded-full bg-cream/5 border border-cream/10 px-2 py-1"
+                              >
+                                -{tier.discount_percent}% des {tier.min_quantity} lots:{" "}
+                                {formatPrice(line.total)} FCFA
+                              </span>
+                            );
+                          })}
+                        </div>
                       )}
                     </motion.div>
-                  ))}
-                </div>
-
-                {/* Buyer Type Section */}
-                <div className="p-4 rounded-xl border border-cream/10 bg-cream/5 space-y-3">
-                  <p className="text-sm font-medium text-cream">{t("wholesale.youAre")}</p>
-                  <div className="flex gap-3">
-                    {[
-                      { value: "individual" as const, label: t("wholesale.individualLabel"), desc: t("wholesale.individualDesc") },
-                      { value: "business" as const, label: t("wholesale.businessLabel"), desc: t("wholesale.businessDesc") },
-                    ].map((option) => (
-                      <div
-                        key={option.value}
-                        onClick={() => setBuyerType(option.value)}
-                        className={`flex-1 p-3 rounded-xl border cursor-pointer transition-all text-center ${
-                          buyerType === option.value
-                            ? "border-primary bg-primary/10"
-                            : "border-cream/10 bg-cream/5 hover:border-cream/20"
-                        }`}
-                      >
-                        <p className="text-sm font-medium text-cream">{option.label}</p>
-                        <p className="text-[10px] text-cream/50 mt-0.5">{option.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <AnimatePresence>
-                    {buyerType === "business" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-2"
-                      >
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            id="has-niu"
-                            checked={hasNIU}
-                            onCheckedChange={(checked) => setHasNIU(!!checked)}
-                            className="mt-0.5 border-cream/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                          />
-                          <div className="flex-1">
-                            <Label htmlFor="has-niu" className="text-sm font-medium text-cream cursor-pointer">
-                              {t("wholesale.hasNiu")}
-                            </Label>
-                            <p className="text-xs text-cream/50 mt-0.5">
-                              {t("wholesale.niuHint")}
-                            </p>
-                          </div>
-                        </div>
-                        <AnimatePresence>
-                          {hasNIU && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              exit={{ opacity: 0, height: 0 }}
-                            >
-                              <Input
-                                placeholder={t("wholesale.niuPlaceholder")}
-                                value={niuValue}
-                                onChange={(e) => setNiuValue(e.target.value.toUpperCase())}
-                                className="bg-cream/5 border-cream/20 text-cream placeholder:text-cream/30 font-mono"
-                                maxLength={20}
-                              />
-                              {niuValue && niuValue.length < 10 && (
-                                <p className="text-xs text-secondary mt-1">
-                                  {t("wholesale.niuTooShort")}
-                                </p>
-                              )}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => selectedTierData && handleAddToCart(selectedTierData)}
-                    disabled={!selectedTier || product.stock_quantity <= 0}
-                    className="flex-1 bg-gradient-gold text-noir font-semibold gap-2 rounded-full h-11"
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    {t("wholesale.addToCart")}
-                  </Button>
-                  <Button
-                    onClick={() => setShowQuoteDialog(true)}
-                    disabled={!selectedTier}
-                    variant="outline"
-                    className="flex-1 border-cream/20 text-cream hover:bg-cream/10 gap-2 rounded-full h-11"
-                  >
-                    <FileText className="h-4 w-4" />
-                    {t("wholesale.requestQuote")}
-                  </Button>
-                </div>
+                  );
+                })}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
-      {/* Quote Request Dialog */}
-      {selectedTierData && (
-        <QuoteRequestDialog
-          open={showQuoteDialog}
-          onOpenChange={setShowQuoteDialog}
-          product={product}
-          tier={selectedTierData}
-          buyerType={buyerType}
-          hasNIU={hasNIU}
-          niuValue={niuValue}
-        />
-      )}
-    </>
+              <Button
+                onClick={() => selectedOption && handleAddToCart(selectedOption)}
+                disabled={!selectedOption || product.stock_quantity < (selectedOption?.bottle_quantity || 1)}
+                className="w-full bg-gradient-gold text-noir font-semibold gap-2 rounded-full h-11"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {t("wholesale.addToCart")}
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

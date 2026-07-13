@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCartContext } from "@/contexts/CartContext";
 import { useProductReferral } from "@/hooks/useProductReferral";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
-import { calculateCartTotals } from "@/lib/cartTotals";
+import { calculateCartLineTotal, calculateCartTotals } from "@/lib/cartTotals";
 import { useTranslation } from "react-i18next";
 
 interface CartDrawerProps {
@@ -136,6 +136,10 @@ export function CartDrawer({ children, open, onOpenChange }: CartDrawerProps) {
             <ScrollArea className="flex-1 p-6">
               <AnimatePresence mode="popLayout">
                 {items.map((item) => (
+                  (() => {
+                    const quantityStep = item.packaging_option?.bottle_quantity || 1;
+                    const lineTotal = calculateCartLineTotal(item);
+                    return (
                   <motion.div
                     key={item.id}
                     layout
@@ -162,8 +166,13 @@ export function CartDrawer({ children, open, onOpenChange }: CartDrawerProps) {
                       </Link>
                       
                       <p className="text-primary font-semibold mt-1">
-                        {formatPrice(item.product?.price || 0)}
+                        {formatPrice(lineTotal)}
                       </p>
+                      {item.packaging_option && (
+                        <p className="text-xs text-cream/50 mt-1">
+                          {item.packaging_option.packaging_label} · {item.quantity} bouteilles
+                        </p>
+                      )}
 
                       {/* Quantity Controls */}
                       <div className="flex items-center justify-between mt-3">
@@ -172,7 +181,7 @@ export function CartDrawer({ children, open, onOpenChange }: CartDrawerProps) {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-cream hover:text-primary hover:bg-cream/10"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.id, item.quantity - quantityStep)}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -183,7 +192,7 @@ export function CartDrawer({ children, open, onOpenChange }: CartDrawerProps) {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-cream hover:text-primary hover:bg-cream/10"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.id, item.quantity + quantityStep)}
                             disabled={item.quantity >= (item.product?.stock_quantity || 99)}
                           >
                             <Plus className="h-3 w-3" />
@@ -201,6 +210,8 @@ export function CartDrawer({ children, open, onOpenChange }: CartDrawerProps) {
                       </div>
                     </div>
                   </motion.div>
+                    );
+                  })()
                 ))}
               </AnimatePresence>
             </ScrollArea>

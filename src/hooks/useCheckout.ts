@@ -135,6 +135,7 @@ export function useCheckout() {
       const cartPayload = items.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
+        packaging_option_id: item.packaging_option_id || null,
       }));
 
       const { data: rpcData, error: rpcError } = await supabase.rpc("create_order_from_checkout", {
