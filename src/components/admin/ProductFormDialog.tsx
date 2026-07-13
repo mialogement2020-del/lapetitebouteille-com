@@ -32,6 +32,11 @@ import {
   type PointsTier,
 } from "@/hooks/usePricingConfig";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
+import {
+  useAdminProductPackagingOptions,
+  type ProductPackagingFormOption,
+} from "@/hooks/useProductPackagingOptions";
+import { calculatePackagingLineTotal, calculatePackagingUnitPrice } from "@/lib/packagingPricing";
 
 interface ProductFormDialogProps {
   product: AdminProduct | null;
@@ -50,6 +55,30 @@ const generateSlug = (name: string) => {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 };
+
+const emptyPackagingOption = (
+  type: ProductPackagingFormOption["packaging_type"],
+  quantity: number,
+  label: string,
+): ProductPackagingFormOption => ({
+  packaging_type: type,
+  packaging_label: label,
+  bottle_quantity: quantity,
+  pricing_mode: "manual_total",
+  total_price: 0,
+  discount_percent: null,
+  show_discount: true,
+  stock_quantity: null,
+  sku: null,
+  weight_kg: null,
+  discount_tiers: [],
+  is_active: true,
+});
+
+const defaultCartonOption = (quantity: number) =>
+  emptyPackagingOption("carton", quantity, `Carton de ${quantity} bouteilles`);
+
+const defaultCaseOption = () => emptyPackagingOption("wooden_case", 6, "Caisse bois de 6 bouteilles");
 
 const uploadImageToStorage = async (file: File): Promise<string> => {
   const ext = file.name.split(".").pop() || "jpg";
@@ -81,6 +110,8 @@ export function ProductFormDialog({
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const { data: pricingConfig } = usePricingConfig();
   const formatPrice = useFormatPrice();
+  const { data: savedPackagingOptions = [] } = useAdminProductPackagingOptions(product?.id);
+  const [wholesaleEnabled, setWholesaleEnabled] = useState(false);
   
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
@@ -111,6 +142,7 @@ export function ProductFormDialog({
     available_as_case: false,
     units_per_case: null,
     case_price: null,
+    packaging_options: [],
   });
 
   useEffect(() => {
@@ -147,6 +179,7 @@ export function ProductFormDialog({
         available_as_case: (p.available_as_case as boolean) ?? false,
         units_per_case: (p.units_per_case as number | null) ?? null,
         case_price: (p.case_price as number | null) ?? null,
+        packaging_options: [],
       });
     } else {
       setFormData({
@@ -178,9 +211,34 @@ export function ProductFormDialog({
         available_as_case: false,
         units_per_case: null,
         case_price: null,
+        packaging_options: [],
       });
     }
   }, [product, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (product) {
+      const options = savedPackagingOptions.map((option) => ({
+        packaging_type: option.packaging_type,
+        packaging_label: option.packaging_label,
+        bottle_quantity: option.bottle_quantity,
+        pricing_mode: option.pricing_mode,
+        total_price: option.total_price,
+        discount_percent: option.discount_percent,
+        show_discount: option.show_discount,
+        stock_quantity: option.stock_quantity,
+        sku: option.sku,
+        weight_kg: option.weight_kg,
+        discount_tiers: option.discount_tiers || [],
+        is_active: option.is_active,
+      }));
+      setWholesaleEnabled(options.length > 0);
+      setFormData((prev) => ({ ...prev, packaging_options: options }));
+    } else {
+      setWholesaleEnabled(false);
+    }
+  }, [open, product, savedPackagingOptions]);
 
   const handleNameChange = (name: string) => {
     setFormData((prev) => ({
@@ -246,12 +304,22 @@ export function ProductFormDialog({
       formData.purchase_price < 0
     )
       errs.purchase_price = "Le prix d'achat ne peut pas être négatif.";
-    if (formData.available_as_case) {
-      if (!formData.units_per_case || formData.units_per_case <= 0)
-        errs.units_per_case =
-          "Indiquez un nombre d'unités par caisse supérieur à 0.";
-      if (!formData.case_price || formData.case_price <= 0)
-        errs.case_price = "Le prix de la caisse est requis et doit être > 0.";
+    if (wholesaleEnabled) {
+      const activePackaging = formData.packaging_options?.filter((option) => option.is_active) || [];
+      if (activePackaging.length === 0) {
+        errs.packaging_options = "Activez au moins un carton ou une caisse, ou desactivez la vente en gros.";
+      }
+      activePackaging.forEach((option, index) => {
+        if (!option.bottle_quantity || option.bottle_quantity <= 0) {
+          errs[`packaging_${index}_quantity`] = "La quantite de bouteilles doit etre superieure a 0.";
+        }
+        if (!option.total_price || option.total_price <= 0) {
+          errs[`packaging_${index}_price`] = "Le prix total du conditionnement est requis.";
+        }
+        if (option.pricing_mode === "discount_percent" && option.discount_percent == null) {
+          errs[`packaging_${index}_discount`] = "Indiquez la remise utilisee pour ce mode de prix.";
+        }
+      });
     }
     if (
       formData.points_override != null &&
@@ -259,7 +327,7 @@ export function ProductFormDialog({
     )
       errs.points_override = "Les points ne peuvent pas être négatifs.";
     return errs;
-  }, [formData]);
+  }, [formData, wholesaleEnabled]);
 
   const hasErrors = Object.keys(validationErrors).length > 0;
 
@@ -294,6 +362,30 @@ export function ProductFormDialog({
       ...prev,
       points_tiers_override: productTiers.filter((_, i) => i !== idx),
     }));
+
+  const packagingOptions = formData.packaging_options || [];
+  const setPackagingOptions = (updater: (options: ProductPackagingFormOption[]) => ProductPackagingFormOption[]) => {
+    setFormData((prev) => ({ ...prev, packaging_options: updater(prev.packaging_options || []) }));
+  };
+  const upsertPackagingOption = (option: ProductPackagingFormOption) => {
+    setPackagingOptions((options) => {
+      const index = options.findIndex(
+        (existing) =>
+          existing.packaging_type === option.packaging_type &&
+          existing.bottle_quantity === option.bottle_quantity,
+      );
+      if (index === -1) return [...options, option];
+      return options.map((existing, idx) => (idx === index ? { ...existing, ...option, is_active: true } : existing));
+    });
+  };
+  const patchPackagingOption = (index: number, patch: Partial<ProductPackagingFormOption>) => {
+    setPackagingOptions((options) => options.map((option, idx) => (idx === index ? { ...option, ...patch } : option)));
+  };
+  const removePackagingOption = (index: number) => {
+    setPackagingOptions((options) => options.filter((_, idx) => idx !== index));
+  };
+  const hasCarton = packagingOptions.some((option) => option.packaging_type === "carton");
+  const hasCase = packagingOptions.some((option) => option.packaging_type !== "carton");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -596,8 +688,236 @@ export function ProductFormDialog({
                 </Select>
               </div>
 
+              <div className="rounded-lg border border-gold/20 p-3 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
+                    <div>
+                      <p className="text-cream text-sm font-medium">Conditionnements et vente en gros</p>
+                      <p className="text-cream/50 text-xs">
+                        Activez uniquement les cartons ou caisses réellement disponibles pour ce produit.
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={wholesaleEnabled}
+                    onCheckedChange={(checked) => {
+                      setWholesaleEnabled(checked);
+                      if (!checked) setFormData((prev) => ({ ...prev, packaging_options: [] }));
+                    }}
+                  />
+                </div>
+
+                {wholesaleEnabled && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-lg border border-gold/10 p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-cream font-medium">Disponible en carton</p>
+                            <p className="text-[11px] text-cream/50">Formats 3, 6 ou 12 bouteilles.</p>
+                          </div>
+                          <Switch
+                            checked={hasCarton}
+                            onCheckedChange={(checked) => {
+                              if (!checked) setPackagingOptions((options) => options.filter((option) => option.packaging_type !== "carton"));
+                              else upsertPackagingOption(defaultCartonOption(6));
+                            }}
+                          />
+                        </div>
+                        {hasCarton && (
+                          <div className="flex flex-wrap gap-2">
+                            {[3, 6, 12].map((quantity) => {
+                              const active = packagingOptions.some((option) => option.packaging_type === "carton" && option.bottle_quantity === quantity);
+                              return (
+                                <Button
+                                  key={quantity}
+                                  type="button"
+                                  size="sm"
+                                  variant={active ? "default" : "outline"}
+                                  className={active ? "bg-primary text-noir" : "border-gold/20 text-cream"}
+                                  onClick={() =>
+                                    active
+                                      ? setPackagingOptions((options) => options.filter((option) => !(option.packaging_type === "carton" && option.bottle_quantity === quantity)))
+                                      : upsertPackagingOption(defaultCartonOption(quantity))
+                                  }
+                                >
+                                  {quantity} bouteilles
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="rounded-lg border border-gold/10 p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-cream font-medium">Disponible en caisse</p>
+                            <p className="text-[11px] text-cream/50">Bois, standard ou autre.</p>
+                          </div>
+                          <Switch
+                            checked={hasCase}
+                            onCheckedChange={(checked) => {
+                              if (!checked) setPackagingOptions((options) => options.filter((option) => option.packaging_type === "carton"));
+                              else upsertPackagingOption(defaultCaseOption());
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {validationErrors.packaging_options && (
+                      <p className="text-[11px] text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {validationErrors.packaging_options}
+                      </p>
+                    )}
+
+                    <div className="space-y-3">
+                      {packagingOptions.map((option, index) => {
+                        const unitPrice = calculatePackagingUnitPrice(option);
+                        const line = calculatePackagingLineTotal(option, 1);
+                        return (
+                          <div key={`${option.packaging_type}-${option.bottle_quantity}-${index}`} className="rounded-lg border border-gold/10 p-3 space-y-3 bg-cream/5">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2">
+                                <Switch checked={option.is_active} onCheckedChange={(checked) => patchPackagingOption(index, { is_active: checked })} />
+                                <Input
+                                  value={option.packaging_label}
+                                  onChange={(e) => patchPackagingOption(index, { packaging_label: e.target.value })}
+                                  className="bg-noir/50 border-gold/20 text-cream h-9"
+                                />
+                              </div>
+                              <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => removePackagingOption(index)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              {option.packaging_type !== "carton" && (
+                                <div className="space-y-1">
+                                  <Label className="text-cream/70 text-xs">Type de caisse</Label>
+                                  <Select
+                                    value={option.packaging_type}
+                                    onValueChange={(value) => patchPackagingOption(index, { packaging_type: value as ProductPackagingFormOption["packaging_type"] })}
+                                  >
+                                    <SelectTrigger className="bg-noir/50 border-gold/20 text-cream h-9"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="bg-noir border-gold/20">
+                                      <SelectItem value="wooden_case">Caisse bois</SelectItem>
+                                      <SelectItem value="standard_case">Caisse standard</SelectItem>
+                                      <SelectItem value="custom">Autre</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+                              <div className="space-y-1">
+                                <Label className="text-cream/70 text-xs">Bouteilles</Label>
+                                <Input type="number" value={option.bottle_quantity || ""} onChange={(e) => patchPackagingOption(index, { bottle_quantity: Number(e.target.value) })} className="bg-noir/50 border-gold/20 text-cream h-9" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-cream/70 text-xs">Mode de prix</Label>
+                                <Select value={option.pricing_mode} onValueChange={(value) => patchPackagingOption(index, { pricing_mode: value as ProductPackagingFormOption["pricing_mode"] })}>
+                                  <SelectTrigger className="bg-noir/50 border-gold/20 text-cream h-9"><SelectValue /></SelectTrigger>
+                                  <SelectContent className="bg-noir border-gold/20">
+                                    <SelectItem value="manual_total">Prix total manuel</SelectItem>
+                                    <SelectItem value="discount_percent">Remise en pourcentage</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-cream/70 text-xs">Prix total</Label>
+                                <Input type="number" value={option.total_price || ""} onChange={(e) => patchPackagingOption(index, { total_price: Number(e.target.value) })} className="bg-noir/50 border-gold/20 text-cream h-9" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-cream/70 text-xs">Remise (%)</Label>
+                                <Input type="number" value={option.discount_percent ?? ""} onChange={(e) => patchPackagingOption(index, { discount_percent: e.target.value ? Number(e.target.value) : null })} className="bg-noir/50 border-gold/20 text-cream h-9" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-cream/70 text-xs">Stock lots</Label>
+                                <Input type="number" value={option.stock_quantity ?? ""} onChange={(e) => patchPackagingOption(index, { stock_quantity: e.target.value ? Number(e.target.value) : null })} className="bg-noir/50 border-gold/20 text-cream h-9" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-cream/70 text-xs">SKU</Label>
+                                <Input value={option.sku ?? ""} onChange={(e) => patchPackagingOption(index, { sku: e.target.value || null })} className="bg-noir/50 border-gold/20 text-cream h-9" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-cream/70 text-xs">Poids kg</Label>
+                                <Input type="number" step="0.1" value={option.weight_kg ?? ""} onChange={(e) => patchPackagingOption(index, { weight_kg: e.target.value ? Number(e.target.value) : null })} className="bg-noir/50 border-gold/20 text-cream h-9" />
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-3 rounded-md bg-noir/40 border border-gold/10 p-2">
+                              <p className="text-xs text-cream/60">
+                                Prix unitaire: <span className="text-primary font-semibold">{formatPrice(unitPrice)}</span>
+                                {" "}· Economie: <span className="text-green-400 font-semibold">{formatPrice(line.discountAmount || 0)}</span>
+                              </p>
+                              <Label className="text-xs text-cream/70 flex items-center gap-2">
+                                <Switch checked={option.show_discount} onCheckedChange={(checked) => patchPackagingOption(index, { show_discount: checked })} />
+                                Afficher la reduction
+                              </Label>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-cream/70 text-xs">Paliers de reduction</Label>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-gold/20 text-cream h-8"
+                                  onClick={() => patchPackagingOption(index, { discount_tiers: [...(option.discount_tiers || []), { min_quantity: 2, discount_percent: Number(option.discount_percent || 0) }] })}
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Palier
+                                </Button>
+                              </div>
+                              {(option.discount_tiers || []).map((tier, tierIndex) => (
+                                <div key={tierIndex} className="grid grid-cols-12 gap-2">
+                                  <Input
+                                    type="number"
+                                    value={tier.min_quantity}
+                                    onChange={(e) => {
+                                      const tiers = [...(option.discount_tiers || [])];
+                                      tiers[tierIndex] = { ...tiers[tierIndex], min_quantity: Number(e.target.value) };
+                                      patchPackagingOption(index, { discount_tiers: tiers });
+                                    }}
+                                    className="col-span-5 bg-noir/50 border-gold/20 text-cream h-8"
+                                    placeholder="Min lots"
+                                  />
+                                  <Input
+                                    type="number"
+                                    value={tier.discount_percent}
+                                    onChange={(e) => {
+                                      const tiers = [...(option.discount_tiers || [])];
+                                      tiers[tierIndex] = { ...tiers[tierIndex], discount_percent: Number(e.target.value) };
+                                      patchPackagingOption(index, { discount_tiers: tiers });
+                                    }}
+                                    className="col-span-5 bg-noir/50 border-gold/20 text-cream h-8"
+                                    placeholder="Remise %"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="col-span-2 h-8 text-destructive"
+                                    onClick={() => patchPackagingOption(index, { discount_tiers: (option.discount_tiers || []).filter((_, idx) => idx !== tierIndex) })}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Caisse / carton */}
-              <div className="rounded-lg border border-gold/20 p-3 space-y-3">
+              <div className="hidden rounded-lg border border-gold/20 p-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4 text-primary" />

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Star, Sparkles, Share2, Check, QrCode, Download, Copy, Package, TrendingUp, Coins } from "lucide-react";
+import { Star, Sparkles, Share2, Check, QrCode, Download, Copy, TrendingUp, Coins } from "lucide-react";
 import { useState } from "react";
 import type { SyntheticEvent } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +10,6 @@ import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { ComparatorButton } from "@/components/product/ComparatorButton";
 import { Product } from "@/hooks/useProducts";
 import { toast } from "sonner";
-import { WHOLESALE_TIERS } from "@/hooks/useWholesale";
-import { useWholesaleTierConfig } from "@/hooks/useWholesaleTierConfig";
 import { usePricingConfig, computeProductPricing } from "@/hooks/usePricingConfig";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { optimizeProductImage } from "@/lib/imageOptimization";
@@ -40,7 +38,6 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const formatPrice = useFormatPrice();
   const [copied, setCopied] = useState(false);
   const [qrCopied, setQrCopied] = useState(false);
-  const { data: tierConfig } = useWholesaleTierConfig();
   const { data: pricingConfig } = usePricingConfig();
   const { isAdmin, isAmbassador } = useUserRoles();
   const canSeeBreakdown = isAdmin || isAmbassador;
@@ -328,31 +325,6 @@ export const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             </div>
           </div>
         )}
-
-        {/* Wholesale CTA */}
-        {(() => {
-          if (tierConfig && tierConfig.enabled === false) return null;
-          const enabledCardTiers = WHOLESALE_TIERS.filter(t => tierConfig?.card_tiers?.includes(t.type));
-          if (enabledCardTiers.length === 0) return null;
-          const overrides = (tierConfig?.discount_overrides || {}) as Record<string, number>;
-          const maxDiscount = Math.max(
-            ...enabledCardTiers.map((t) => overrides[t.type] ?? t.discountPercent)
-          );
-          return (
-            <Link
-              to={`/produit/${product.slug}#wholesale`}
-              className="mt-3 flex items-center justify-between gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 hover:border-primary/60 hover:from-primary/30 hover:to-primary/20 transition-all group/wholesale"
-            >
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-primary" />
-                <span className="text-xs font-bold text-primary tracking-wide">{t("productCard.wholesaleCta")}</span>
-              </div>
-              <Badge className="bg-green-500/20 text-green-400 border-0 text-[10px] px-2 py-0.5 h-5 group-hover/wholesale:bg-green-500/30 transition-colors">
-                {t("productCard.wholesaleDiscount", { percent: maxDiscount })}
-              </Badge>
-            </Link>
-          );
-        })()}
 
         {/* Action Buttons - Always visible at bottom */}
         <div className="flex items-center gap-2 mt-auto pt-4 border-t border-cream/10">

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import type { Database } from "@/integrations/supabase/types";
 import { logAuditAction } from "@/hooks/useAuditLogs";
+import type { ProductPackagingFormOption } from "@/hooks/useProductPackagingOptions";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 const ADMIN_PRODUCTS_VIEW = "admin_products_secure" as never;
@@ -181,7 +182,41 @@ export interface ProductFormData {
   available_as_case?: boolean;
   units_per_case?: number | null;
   case_price?: number | null;
+  packaging_options?: ProductPackagingFormOption[];
 }
+
+const saveProductPackagingOptions = async (productId: string, options?: ProductPackagingFormOption[]) => {
+  if (!options) return;
+
+  const { error: deleteError } = await supabase
+    .from("product_packaging_options" as never)
+    .delete()
+    .eq("product_id", productId);
+  if (deleteError) throw deleteError;
+
+  const rows = options
+    .filter((option) => option.is_active || option.total_price > 0)
+    .map((option) => ({
+      product_id: productId,
+      packaging_type: option.packaging_type,
+      packaging_label: option.packaging_label,
+      bottle_quantity: option.bottle_quantity,
+      pricing_mode: option.pricing_mode,
+      total_price: option.total_price,
+      discount_percent: option.discount_percent,
+      show_discount: option.show_discount,
+      stock_quantity: option.stock_quantity,
+      sku: option.sku,
+      weight_kg: option.weight_kg,
+      discount_tiers: option.discount_tiers || [],
+      is_active: option.is_active,
+    }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabase.from("product_packaging_options" as never).insert(rows as never);
+  if (error) throw error;
+};
 
 export function useAdmin() {
   const { user } = useAuthContext();
@@ -583,6 +618,8 @@ export function useAdmin() {
         });
         if (sensitiveError) throw sensitiveError;
       }
+
+      await saveProductPackagingOptions(insertedData.id, data.packaging_options);
       
       // Log audit action
       await logAuditAction(
@@ -649,6 +686,8 @@ export function useAdmin() {
         });
         if (sensitiveError) throw sensitiveError;
       }
+
+      await saveProductPackagingOptions(id, data.packaging_options);
       
       // Log audit action
       await logAuditAction(
