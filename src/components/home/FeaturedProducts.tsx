@@ -1,7 +1,8 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart, Star, ArrowRight } from "lucide-react";
+import { Heart, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { useRef } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
@@ -171,13 +172,12 @@ const FeaturedProducts = () => {
                         <motion.div 
                           className="absolute bottom-0 left-0 right-0 p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
                         >
-                          <Button
-                            className="w-full bg-noir text-cream hover:bg-noir/90 h-12 rounded-xl font-medium"
+                          <AddToCartButton
+                            productId={product.id}
+                            productName={product.name}
                             disabled={!inStock}
-                          >
-                            <ShoppingCart className="h-4 w-4 mr-2" />
-                            {inStock ? t("featuredSection.addToCart") : t("featuredSection.unavailable")}
-                          </Button>
+                            className="w-full bg-noir text-cream hover:bg-noir/90 h-12 rounded-xl font-medium"
+                          />
                         </motion.div>
                       </div>
 
