@@ -427,6 +427,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          packaging_option_id: string | null
           product_id: string
           quantity: number
           updated_at: string | null
@@ -435,6 +436,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          packaging_option_id?: string | null
           product_id: string
           quantity?: number
           updated_at?: string | null
@@ -443,12 +445,27 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          packaging_option_id?: string | null
           product_id?: string
           quantity?: number
           updated_at?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cart_items_packaging_option_id_fkey"
+            columns: ["packaging_option_id"]
+            isOneToOne: false
+            referencedRelation: "active_product_packaging_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_packaging_option_id_fkey"
+            columns: ["packaging_option_id"]
+            isOneToOne: false
+            referencedRelation: "product_packaging_options"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cart_items_product_id_fkey"
             columns: ["product_id"]
@@ -1734,6 +1751,14 @@ export type Database = {
           id: string
           line_cost_total: number | null
           order_id: string
+          packaging_bottle_quantity: number | null
+          packaging_discount_amount: number | null
+          packaging_discount_percent: number | null
+          packaging_label: string | null
+          packaging_option_id: string | null
+          packaging_type: string | null
+          packaging_unit_price: number | null
+          packaging_units: number | null
           product_id: string | null
           product_image: string | null
           product_name: string
@@ -1752,6 +1777,14 @@ export type Database = {
           id?: string
           line_cost_total?: number | null
           order_id: string
+          packaging_bottle_quantity?: number | null
+          packaging_discount_amount?: number | null
+          packaging_discount_percent?: number | null
+          packaging_label?: string | null
+          packaging_option_id?: string | null
+          packaging_type?: string | null
+          packaging_unit_price?: number | null
+          packaging_units?: number | null
           product_id?: string | null
           product_image?: string | null
           product_name: string
@@ -1770,6 +1803,14 @@ export type Database = {
           id?: string
           line_cost_total?: number | null
           order_id?: string
+          packaging_bottle_quantity?: number | null
+          packaging_discount_amount?: number | null
+          packaging_discount_percent?: number | null
+          packaging_label?: string | null
+          packaging_option_id?: string | null
+          packaging_type?: string | null
+          packaging_unit_price?: number | null
+          packaging_units?: number | null
           product_id?: string | null
           product_image?: string | null
           product_name?: string
@@ -2650,6 +2691,111 @@ export type Database = {
           verdict?: Database["public"]["Enums"]["product_moderation_verdict"]
         }
         Relationships: []
+      }
+      product_packaging_options: {
+        Row: {
+          bottle_quantity: number
+          calculated_savings: number | null
+          calculated_unit_price: number | null
+          created_at: string
+          created_by: string | null
+          discount_percent: number | null
+          discount_tiers: Json
+          id: string
+          is_active: boolean
+          packaging_label: string
+          packaging_type: string
+          pricing_mode: string
+          product_id: string
+          show_discount: boolean
+          sku: string | null
+          stock_quantity: number | null
+          total_price: number
+          updated_at: string
+          updated_by: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          bottle_quantity: number
+          calculated_savings?: number | null
+          calculated_unit_price?: number | null
+          created_at?: string
+          created_by?: string | null
+          discount_percent?: number | null
+          discount_tiers?: Json
+          id?: string
+          is_active?: boolean
+          packaging_label: string
+          packaging_type: string
+          pricing_mode?: string
+          product_id: string
+          show_discount?: boolean
+          sku?: string | null
+          stock_quantity?: number | null
+          total_price: number
+          updated_at?: string
+          updated_by?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          bottle_quantity?: number
+          calculated_savings?: number | null
+          calculated_unit_price?: number | null
+          created_at?: string
+          created_by?: string | null
+          discount_percent?: number | null
+          discount_tiers?: Json
+          id?: string
+          is_active?: boolean
+          packaging_label?: string
+          packaging_type?: string
+          pricing_mode?: string
+          product_id?: string
+          show_discount?: boolean
+          sku?: string | null
+          stock_quantity?: number | null
+          total_price?: number
+          updated_at?: string
+          updated_by?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -4656,6 +4802,105 @@ export type Database = {
       }
     }
     Views: {
+      active_product_packaging_options: {
+        Row: {
+          bottle_quantity: number | null
+          calculated_savings: number | null
+          calculated_unit_price: number | null
+          created_at: string | null
+          discount_percent: number | null
+          discount_tiers: Json | null
+          id: string | null
+          is_active: boolean | null
+          packaging_label: string | null
+          packaging_type: string | null
+          pricing_mode: string | null
+          product_id: string | null
+          show_discount: boolean | null
+          sku: string | null
+          stock_quantity: number | null
+          total_price: number | null
+          updated_at: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          bottle_quantity?: number | null
+          calculated_savings?: number | null
+          calculated_unit_price?: number | null
+          created_at?: string | null
+          discount_percent?: number | null
+          discount_tiers?: Json | null
+          id?: string | null
+          is_active?: boolean | null
+          packaging_label?: string | null
+          packaging_type?: string | null
+          pricing_mode?: string | null
+          product_id?: string | null
+          show_discount?: boolean | null
+          sku?: string | null
+          stock_quantity?: number | null
+          total_price?: number | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          bottle_quantity?: number | null
+          calculated_savings?: number | null
+          calculated_unit_price?: number | null
+          created_at?: string | null
+          discount_percent?: number | null
+          discount_tiers?: Json | null
+          id?: string | null
+          is_active?: boolean | null
+          packaging_label?: string | null
+          packaging_type?: string | null
+          pricing_mode?: string | null
+          product_id?: string | null
+          show_discount?: boolean | null
+          sku?: string | null
+          stock_quantity?: number | null
+          total_price?: number | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_missing_purchase_costs"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_product_cost_validation_report"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_products_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_packaging_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_2fa_status: {
         Row: {
           created_at: string | null
