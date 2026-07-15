@@ -25,6 +25,7 @@ import {
   FileBarChart2,
   Activity,
   Workflow,
+  GitCompareArrows,
   Database as DatabaseIcon,
   Shield as ShieldIcon,
   Calculator
@@ -56,6 +57,7 @@ const CategoryFormDialog = lazy(() => import("@/components/admin/CategoryFormDia
 const PerformanceCharts = lazy(() => import("@/components/admin/PerformanceCharts").then((module) => ({ default: module.PerformanceCharts })));
 const InfrastructureMonitoring = lazy(() => import("@/components/admin/InfrastructureMonitoring"));
 const OrchestrationDashboard = lazy(() => import("@/components/admin/OrchestrationDashboard"));
+const SimulationEngineDashboard = lazy(() => import("@/components/admin/SimulationEngineDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -181,6 +183,7 @@ const Admin = () => {
       { id: 'performance', label: 'Performance', icon: BarChart3 },
       { id: 'infrastructure', label: 'Infrastructure', icon: Activity },
       { id: 'orchestration', label: 'Orchestration', icon: Workflow },
+      { id: 'simulation-engine', label: 'Simulation Engine', icon: GitCompareArrows },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -641,6 +644,10 @@ const Admin = () => {
 
               <TabsContent value="orchestration" className="space-y-8">
                 <OrchestrationDashboard />
+              </TabsContent>
+
+              <TabsContent value="simulation-engine" className="space-y-8">
+                <SimulationEngineDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">
