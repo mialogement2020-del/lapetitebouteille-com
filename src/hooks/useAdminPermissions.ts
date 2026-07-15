@@ -13,6 +13,7 @@ export type AdminPermission =
   | 'reviews'
   | 'loyalty'
   | 'crm'
+  | 'commercial_calendar'
   | 'full_access';
 
 export interface AdminUser {
@@ -42,6 +43,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   reviews: ['reviews'],
   loyalty: ['loyalty'],
   'advisor-crm': ['crm', 'mlm', 'orders'],
+  'opportunity-calendar': ['commercial_calendar', 'crm'],
   restock: ['stock', 'products'],
   'stock-alerts': ['stock'],
   audit: ['audit'],
@@ -61,6 +63,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   reviews: '⭐ Modération des avis',
   loyalty: '🎁 Gestion fidélité & points',
   crm: 'CRM Conseiller LPB',
+  commercial_calendar: 'Calendrier IA commercial',
 };
 
 export const useAdminPermissions = () => {
