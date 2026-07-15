@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { AlertTriangle, GitCompareArrows, Loader2, Play, RefreshCw, ShieldCheck, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle2, GitCompareArrows, Loader2, Play, RefreshCw, ShieldCheck, TrendingUp, XCircle } from "lucide-react";
 
 type SimulationRun = {
   run_id: string;
@@ -46,6 +46,31 @@ type SimulationComparison = {
   differences: string[];
 };
 
+type ReadinessAction = {
+  step: string;
+  count: number;
+  impact: string;
+  done: boolean;
+};
+
+type ReadinessDashboard = {
+  latest_run_id: string | null;
+  simulation_confidence_score: number;
+  simulation_accuracy: number;
+  orders_analyzed: number;
+  active_products_missing_purchase_cost: number;
+  pending_payment_simulated_count: number;
+  anomalies_detected: number;
+  p0_readiness_components: Record<string, number>;
+  p0_readiness_score: number;
+  go_live_score: number;
+  ready_for_production: boolean;
+  confidence_explanations: Record<string, unknown>;
+  production_blockers: Record<string, unknown>;
+  action_plan: ReadinessAction[];
+  activation_rule: string;
+};
+
 const formatPrice = (value: number | null | undefined) =>
   `${new Intl.NumberFormat("fr-FR").format(Math.round(Number(value ?? 0)))} FCFA`;
 
@@ -58,6 +83,18 @@ const confidenceLabel: Record<string, string> = {
   pret_test_controle: "Prêt test contrôlé",
   surveillance: "Surveillance",
   insuffisant: "Insuffisant",
+};
+
+const explanationLabels: Record<string, string> = {
+  produits_sans_prix_achat: "produits sans prix d'achat",
+  commandes_pending: "commandes avec paiement pending",
+  marge_reelle_incomplete: "marge reelle impossible a calculer",
+  commission_pool_bloque: "Commission Pool bloque ou non fiable",
+  marge_minimale_non_verifiable: "marge minimale non verifiable",
+  anomalies_detectees: "anomalies detectees",
+  activation_production_interdite: "activation Production interdite",
+  simulation_confidence_sous_seuil: "Simulation Confidence sous le seuil",
+  anomalies_critiques: "anomalies critiques",
 };
 
 export default function SimulationEngineDashboard() {
@@ -109,6 +146,23 @@ export default function SimulationEngineDashboard() {
       return (data ?? []) as unknown as SimulationComparison[];
     },
     enabled: !!activeRunId,
+  });
+
+  const { data: readiness } = useQuery({
+    queryKey: ["admin-p05-readiness-dashboard", latestRun?.run_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_p05_readiness_dashboard" as never)
+        .select("*")
+        .maybeSingle();
+
+      if (error) {
+        console.warn("P0.5 readiness dashboard unavailable", error);
+        return null;
+      }
+
+      return data as unknown as ReadinessDashboard | null;
+    },
   });
 
   const replayMutation = useMutation({
@@ -201,8 +255,17 @@ export default function SimulationEngineDashboard() {
               <p className="text-2xl font-semibold text-warning">{latestRun?.anomalies_detected ?? 0}</p>
             </div>
           </div>
+          <ReadinessExplanations explanations={readiness?.confidence_explanations} />
         </CardContent>
       </Card>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <ReadinessScoreCard readiness={readiness} />
+        <ReadyForProductionCard readiness={readiness} />
+        <GoLiveScoreCard readiness={readiness} />
+      </div>
+
+      <ActionPlanCard actions={readiness?.action_plan ?? []} />
 
       <div className="grid gap-4 md:grid-cols-4">
         <Metric title="Commandes identiques" value={latestRun?.commandes_identiques ?? 0} />
@@ -291,6 +354,143 @@ export default function SimulationEngineDashboard() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function ReadinessExplanations({ explanations }: { explanations?: Record<string, unknown> }) {
+  const entries = Object.entries(explanations ?? {}).filter(([, value]) => value !== null && value !== false && value !== undefined);
+
+  if (entries.length === 0) {
+    return (
+      <div className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm text-emerald-300">
+        Aucune raison bloquante detectee sur le dernier run.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-5 rounded-lg border border-gold/10 bg-black/20 p-4">
+      <p className="mb-3 text-sm font-semibold text-cream">Pourquoi ?</p>
+      <div className="grid gap-2 md:grid-cols-2">
+        {entries.map(([key, value]) => (
+          <div key={key} className="flex items-start gap-2 text-sm text-muted-foreground">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <span>
+              {typeof value === "number" ? `${value} ` : ""}
+              {explanationLabels[key] ?? key.replaceAll("_", " ")}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReadinessScoreCard({ readiness }: { readiness?: ReadinessDashboard | null }) {
+  const components = Object.entries(readiness?.p0_readiness_components ?? {});
+
+  return (
+    <Card className="border-gold/20 bg-noir/50 lg:col-span-1">
+      <CardHeader>
+        <CardTitle className="text-base text-primary">P0 Readiness Score</CardTitle>
+        <CardDescription>Lecture separee de chaque composant du moteur.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="text-3xl font-bold text-cream">{formatPercent(readiness?.p0_readiness_score)}</div>
+        <div className="space-y-2">
+          {components.map(([name, score]) => (
+            <div key={name} className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">{name}</span>
+                <span className="font-semibold text-cream">{formatPercent(score)}</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted">
+                <div className="h-1.5 rounded-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, Number(score)))}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReadyForProductionCard({ readiness }: { readiness?: ReadinessDashboard | null }) {
+  const blockers = Object.entries(readiness?.production_blockers ?? {}).filter(([, value]) => value !== null && value !== false && value !== undefined);
+  const ready = Boolean(readiness?.ready_for_production);
+
+  return (
+    <Card className="border-gold/20 bg-noir/50">
+      <CardHeader>
+        <CardTitle className="text-base text-primary">Ready for Production ?</CardTitle>
+        <CardDescription>Decision explicite avant toute activation reelle.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className={`flex items-center gap-2 text-3xl font-bold ${ready ? "text-emerald-400" : "text-red-400"}`}>
+          {ready ? <CheckCircle2 className="h-7 w-7" /> : <XCircle className="h-7 w-7" />}
+          {ready ? "OUI" : "NON"}
+        </div>
+        <div className="mt-4 space-y-2">
+          <p className="text-sm font-semibold text-cream">Blocages restants</p>
+          {blockers.length > 0 ? (
+            blockers.map(([key, value]) => (
+              <div key={key} className="text-sm text-muted-foreground">
+                - {typeof value === "number" ? `${value} ` : ""}
+                {explanationLabels[key] ?? key.replaceAll("_", " ")}
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-emerald-300">Aucun blocage detecte sur le dernier run.</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function GoLiveScoreCard({ readiness }: { readiness?: ReadinessDashboard | null }) {
+  return (
+    <Card className="border-gold/20 bg-noir/50">
+      <CardHeader>
+        <CardTitle className="text-base text-primary">Go Live Score</CardTitle>
+        <CardDescription>Niveau reel de preparation avant activation.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="text-4xl font-bold text-cream">{formatPercent(readiness?.go_live_score)}</div>
+        <div className="rounded-lg border border-gold/10 p-3 text-xs text-muted-foreground">
+          {readiness?.activation_rule ??
+            "Activation automatique interdite. Seul un Super Admin peut autoriser une transition volontaire."}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActionPlanCard({ actions }: { actions: ReadinessAction[] }) {
+  return (
+    <Card className="border-gold/20 bg-noir/50">
+      <CardHeader>
+        <CardTitle className="text-base text-primary">Plan d'action automatique</CardTitle>
+        <CardDescription>Etapes restantes pour faire monter le niveau de confiance du P0.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        {actions.map((action, index) => (
+          <div key={`${action.step}-${index}`} className="rounded-lg border border-gold/10 p-3">
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <p className="text-sm font-semibold text-cream">{index + 1}. {action.step}</p>
+              {action.done ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" /> : <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />}
+            </div>
+            <p className="text-xs text-muted-foreground">Valeur : {typeof action.count === "number" ? formatPercent(action.count).replace(" %", "") : action.count}</p>
+            <Badge className="mt-2" variant={action.impact === "Critique" ? "destructive" : "outline"}>
+              Impact : {action.impact}
+            </Badge>
+          </div>
+        ))}
+        {actions.length === 0 && (
+          <p className="text-sm text-muted-foreground">Aucun plan d'action disponible avant le prochain replay.</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
