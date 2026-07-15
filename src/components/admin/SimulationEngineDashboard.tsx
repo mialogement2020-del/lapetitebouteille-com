@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { AlertTriangle, CheckCircle2, GitCompareArrows, Loader2, Play, RefreshCw, ShieldCheck, TrendingUp, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, FileClock, GitCompareArrows, Loader2, Play, RefreshCw, ShieldCheck, TrendingUp, XCircle } from "lucide-react";
 
 type SimulationRun = {
   run_id: string;
@@ -71,6 +71,29 @@ type ReadinessDashboard = {
   activation_rule: string;
 };
 
+type FlightRecorderEvent = {
+  id: string;
+  replay_run_id: string | null;
+  event_time: string;
+  engine_version: string;
+  business_rules_version: string;
+  event_type: string;
+  event_sequence: number;
+  order_id: string | null;
+  order_number: string | null;
+  decision: string;
+  final_decision: string | null;
+  margin_amount: number | null;
+  product_cost_total: number | null;
+  commission_pool_amount: number | null;
+  attribution_user_id: string | null;
+  fraud_risk_level: string | null;
+  block_reason: string | null;
+  commission_reduction_reason: string | null;
+  refusal_reason: string | null;
+  explanation: Record<string, any>;
+};
+
 const formatPrice = (value: number | null | undefined) =>
   `${new Intl.NumberFormat("fr-FR").format(Math.round(Number(value ?? 0)))} FCFA`;
 
@@ -101,6 +124,8 @@ export default function SimulationEngineDashboard() {
   const queryClient = useQueryClient();
   const [limit, setLimit] = useState(500);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [flightOrderRef, setFlightOrderRef] = useState("");
+  const [activeReplayRunId, setActiveReplayRunId] = useState<string | null>(null);
 
   const { data: runs = [], isLoading: runsLoading, refetch } = useQuery({
     queryKey: ["admin-p05-simulation-dashboard"],
@@ -165,6 +190,28 @@ export default function SimulationEngineDashboard() {
     },
   });
 
+  const { data: flightEvents = [], isLoading: flightLoading } = useQuery({
+    queryKey: ["admin-business-flight-recorder-events", activeReplayRunId],
+    queryFn: async () => {
+      const query = supabase
+        .from("admin_business_flight_recorder_events" as never)
+        .select("*")
+        .order("event_time", { ascending: false })
+        .limit(80);
+
+      const { data, error } = activeReplayRunId
+        ? await query.eq("replay_run_id", activeReplayRunId)
+        : await query;
+
+      if (error) {
+        console.warn("Business Flight Recorder unavailable", error);
+        return [];
+      }
+
+      return (data ?? []) as unknown as FlightRecorderEvent[];
+    },
+  });
+
   const replayMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.rpc("run_p05_simulation_replay" as never, {
@@ -186,6 +233,35 @@ export default function SimulationEngineDashboard() {
     onError: (error) => {
       toast({
         title: "Erreur Simulation Engine",
+        description: String((error as Error).message),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const flightReplayMutation = useMutation({
+    mutationFn: async () => {
+      const orderRef = flightOrderRef.trim() || comparisons[0]?.order_number;
+      if (!orderRef) throw new Error("Indique un numero de commande a rejouer.");
+
+      const { data, error } = await supabase.rpc("admin_replay_business_flight_order" as never, {
+        _order_ref: orderRef,
+      } as never);
+
+      if (error) throw error;
+      return data as { replay_run_id?: string; order_number?: string; event_count?: number; final_decision?: string };
+    },
+    onSuccess: async (data) => {
+      toast({
+        title: "Flight Recorder genere",
+        description: `${data?.event_count ?? 0} evenement(s) pour ${data?.order_number ?? "la commande"}.`,
+      });
+      if (data?.replay_run_id) setActiveReplayRunId(data.replay_run_id);
+      await queryClient.invalidateQueries({ queryKey: ["admin-business-flight-recorder-events"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur Flight Recorder",
         description: String((error as Error).message),
         variant: "destructive",
       });
@@ -292,6 +368,10 @@ export default function SimulationEngineDashboard() {
             <AlertTriangle className="mr-2 h-4 w-4" />
             Anomalies
           </TabsTrigger>
+          <TabsTrigger value="flight-recorder">
+            <FileClock className="mr-2 h-4 w-4" />
+            Flight Recorder
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="runs">
@@ -351,6 +431,17 @@ export default function SimulationEngineDashboard() {
 
         <TabsContent value="anomalies">
           <ComparisonTable rows={differenceRows} loading={comparisonsLoading} />
+        </TabsContent>
+
+        <TabsContent value="flight-recorder">
+          <FlightRecorderPanel
+            events={flightEvents}
+            loading={flightLoading}
+            orderRef={flightOrderRef}
+            onOrderRefChange={setFlightOrderRef}
+            onReplay={() => flightReplayMutation.mutate()}
+            replaying={flightReplayMutation.isPending}
+          />
         </TabsContent>
       </Tabs>
     </div>
@@ -568,4 +659,106 @@ function ComparisonTable({ rows, loading }: { rows: SimulationComparison[]; load
       </CardContent>
     </Card>
   );
+}
+
+function FlightRecorderPanel({
+  events,
+  loading,
+  orderRef,
+  onOrderRefChange,
+  onReplay,
+  replaying,
+}: {
+  events: FlightRecorderEvent[];
+  loading: boolean;
+  orderRef: string;
+  onOrderRefChange: (value: string) => void;
+  onReplay: () => void;
+  replaying: boolean;
+}) {
+  const orderedEvents = [...events].sort((a, b) => a.event_sequence - b.event_sequence);
+
+  return (
+    <Card className="border-gold/20 bg-noir/50">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base text-primary">
+          <FileClock className="h-5 w-5" />
+          LPB Business Flight Recorder
+        </CardTitle>
+        <CardDescription>
+          Boite noire append-only du moteur financier : replay complet, explications et decision finale.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            value={orderRef}
+            onChange={(event) => onOrderRefChange(event.target.value)}
+            placeholder="Numero de commande, ex: CMD-20260711-7525"
+            className="max-w-md"
+          />
+          <Button onClick={onReplay} disabled={replaying}>
+            {replaying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+            Rejouer la commande
+          </Button>
+        </div>
+
+        <div className="rounded-lg border border-gold/10 p-4">
+          <p className="mb-3 text-sm font-semibold text-cream">Raisonnement reconstruit</p>
+          <div className="space-y-3">
+            {orderedEvents.map((event) => (
+              <div key={event.id} className="grid gap-3 rounded-lg border border-gold/10 bg-black/20 p-3 md:grid-cols-[auto_1fr_auto]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                  {event.event_sequence}
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-semibold text-cream">{formatFlightEventType(event.event_type)}</p>
+                    <Badge variant={event.final_decision === "approved" ? "default" : "outline"}>
+                      {event.decision}
+                    </Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {String(event.explanation?.step ?? "")}
+                    {event.block_reason ? ` - Blocage: ${event.block_reason}` : ""}
+                    {event.refusal_reason ? ` - Refus: ${event.refusal_reason}` : ""}
+                  </p>
+                  <div className="mt-2 grid gap-2 text-xs text-muted-foreground md:grid-cols-4">
+                    <span>Marge: {formatPrice(event.margin_amount)}</span>
+                    <span>Cout: {formatPrice(event.product_cost_total)}</span>
+                    <span>Pool: {formatPrice(event.commission_pool_amount)}</span>
+                    <span>Risque: {event.fraud_risk_level ?? "n/a"}</span>
+                  </div>
+                </div>
+                <div className="text-right text-xs text-muted-foreground">
+                  <div>{event.order_number}</div>
+                  <div>{event.engine_version}</div>
+                </div>
+              </div>
+            ))}
+            {orderedEvents.length === 0 && (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                {loading ? "Chargement..." : "Entre un numero de commande puis clique sur Rejouer la commande."}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function formatFlightEventType(eventType: string) {
+  const labels: Record<string, string> = {
+    order_created: "Commande creee",
+    payment_status_checked: "Paiement verifie",
+    product_cost_loaded: "Cout produit recupere",
+    margin_calculated: "Marge calculee",
+    commission_pool_calculated: "Commission Pool calcule",
+    attribution_determined: "Attribution determinee",
+    fraud_checked: "Fraude verifiee",
+    ai_governance_decision: "Decision AI Governance",
+  };
+
+  return labels[eventType] ?? eventType.replaceAll("_", " ");
 }
