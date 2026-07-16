@@ -14,6 +14,7 @@ export type AdminPermission =
   | 'loyalty'
   | 'crm'
   | 'commercial_calendar'
+  | 'ai_goals'
   | 'full_access';
 
 export interface AdminUser {
@@ -44,6 +45,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   loyalty: ['loyalty'],
   'advisor-crm': ['crm', 'mlm', 'orders'],
   'opportunity-calendar': ['commercial_calendar', 'crm'],
+  'ai-goals': ['ai_goals', 'commercial_calendar', 'crm'],
   restock: ['stock', 'products'],
   'stock-alerts': ['stock'],
   audit: ['audit'],
@@ -64,6 +66,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   loyalty: '🎁 Gestion fidélité & points',
   crm: 'CRM Conseiller LPB',
   commercial_calendar: 'Calendrier IA commercial',
+  ai_goals: 'Objectifs IA Conseiller',
 };
 
 export const useAdminPermissions = () => {
