@@ -15,6 +15,7 @@ export type AdminPermission =
   | 'crm'
   | 'commercial_calendar'
   | 'ai_goals'
+  | 'conversation_coach'
   | 'full_access';
 
 export interface AdminUser {
@@ -46,6 +47,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   'advisor-crm': ['crm', 'mlm', 'orders'],
   'opportunity-calendar': ['commercial_calendar', 'crm'],
   'ai-goals': ['ai_goals', 'commercial_calendar', 'crm'],
+  'conversation-coach': ['conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
   restock: ['stock', 'products'],
   'stock-alerts': ['stock'],
   audit: ['audit'],
@@ -67,6 +69,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   crm: 'CRM Conseiller LPB',
   commercial_calendar: 'Calendrier IA commercial',
   ai_goals: 'Objectifs IA Conseiller',
+  conversation_coach: 'Coach IA Conversationnel',
 };
 
 export const useAdminPermissions = () => {
