@@ -29,7 +29,8 @@ import {
   Database as DatabaseIcon,
   Shield as ShieldIcon,
   Calculator,
-  CalendarDays
+  CalendarDays,
+  ClipboardList
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -61,6 +62,7 @@ const OrchestrationDashboard = lazy(() => import("@/components/admin/Orchestrati
 const SimulationEngineDashboard = lazy(() => import("@/components/admin/SimulationEngineDashboard"));
 const AdvisorCrmDashboard = lazy(() => import("@/components/admin/AdvisorCrmDashboard"));
 const CommercialOpportunityCalendar = lazy(() => import("@/components/admin/CommercialOpportunityCalendar"));
+const AdvisorAiGoalsDashboard = lazy(() => import("@/components/admin/AdvisorAiGoalsDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -189,6 +191,7 @@ const Admin = () => {
       { id: 'simulation-engine', label: 'Simulation Engine', icon: GitCompareArrows },
       { id: 'advisor-crm', label: 'CRM Conseiller', icon: Users },
       { id: 'opportunity-calendar', label: 'Calendrier IA', icon: CalendarDays },
+      { id: 'ai-goals', label: 'Objectifs IA', icon: ClipboardList },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -661,6 +664,10 @@ const Admin = () => {
 
               <TabsContent value="opportunity-calendar" className="space-y-8">
                 <CommercialOpportunityCalendar />
+              </TabsContent>
+
+              <TabsContent value="ai-goals" className="space-y-8">
+                <AdvisorAiGoalsDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">
