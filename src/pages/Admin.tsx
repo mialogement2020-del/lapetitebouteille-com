@@ -19,6 +19,7 @@ import {
   Shield,
   Lock,
   Award,
+  GraduationCap,
   ImageIcon,
   FileText,
   Building2,
@@ -67,6 +68,7 @@ const CommercialOpportunityCalendar = lazy(() => import("@/components/admin/Comm
 const AdvisorAiGoalsDashboard = lazy(() => import("@/components/admin/AdvisorAiGoalsDashboard"));
 const ConversationCoachDashboard = lazy(() => import("@/components/admin/ConversationCoachDashboard"));
 const CommercialAssetGeneratorDashboard = lazy(() => import("@/components/admin/CommercialAssetGeneratorDashboard"));
+const AcademyCertificationDashboard = lazy(() => import("@/components/admin/AcademyCertificationDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -198,6 +200,7 @@ const Admin = () => {
       { id: 'ai-goals', label: 'Objectifs IA', icon: ClipboardList },
       { id: 'conversation-coach', label: 'Coach IA', icon: Bot },
       { id: 'commercial-assets', label: 'Supports IA', icon: Megaphone },
+      { id: 'academy', label: 'Academy', icon: GraduationCap },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -682,6 +685,10 @@ const Admin = () => {
 
               <TabsContent value="commercial-assets" className="space-y-8">
                 <CommercialAssetGeneratorDashboard />
+              </TabsContent>
+
+              <TabsContent value="academy" className="space-y-8">
+                <AcademyCertificationDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">
