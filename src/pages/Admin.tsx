@@ -33,7 +33,8 @@ import {
   CalendarDays,
   ClipboardList,
   Bot,
-  Megaphone
+  Megaphone,
+  Gauge
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -69,6 +70,7 @@ const AdvisorAiGoalsDashboard = lazy(() => import("@/components/admin/AdvisorAiG
 const ConversationCoachDashboard = lazy(() => import("@/components/admin/ConversationCoachDashboard"));
 const CommercialAssetGeneratorDashboard = lazy(() => import("@/components/admin/CommercialAssetGeneratorDashboard"));
 const AcademyCertificationDashboard = lazy(() => import("@/components/admin/AcademyCertificationDashboard"));
+const BusinessTrustScoreDashboard = lazy(() => import("@/components/admin/BusinessTrustScoreDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -201,6 +203,7 @@ const Admin = () => {
       { id: 'conversation-coach', label: 'Coach IA', icon: Bot },
       { id: 'commercial-assets', label: 'Supports IA', icon: Megaphone },
       { id: 'academy', label: 'Academy', icon: GraduationCap },
+      { id: 'business-scores', label: 'Scores IA', icon: Gauge },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -689,6 +692,10 @@ const Admin = () => {
 
               <TabsContent value="academy" className="space-y-8">
                 <AcademyCertificationDashboard />
+              </TabsContent>
+
+              <TabsContent value="business-scores" className="space-y-8">
+                <BusinessTrustScoreDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">

@@ -18,6 +18,7 @@ export type AdminPermission =
   | 'conversation_coach'
   | 'commercial_assets'
   | 'academy'
+  | 'business_scores'
   | 'full_access';
 
 export interface AdminUser {
@@ -52,6 +53,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   'conversation-coach': ['conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
   'commercial-assets': ['commercial_assets', 'conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
   academy: ['academy', 'commercial_assets', 'conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
+  'business-scores': ['business_scores', 'academy', 'commercial_assets', 'conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
   restock: ['stock', 'products'],
   'stock-alerts': ['stock'],
   audit: ['audit'],
@@ -76,6 +78,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   conversation_coach: 'Coach IA Conversationnel',
   commercial_assets: 'Generateur IA de supports commerciaux',
   academy: 'LPB Academy & Certification',
+  business_scores: 'Business Score & Trust Score',
 };
 
 export const useAdminPermissions = () => {
