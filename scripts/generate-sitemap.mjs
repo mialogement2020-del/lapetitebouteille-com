@@ -113,6 +113,33 @@ const fetchCategories = async () => {
   return response.json();
 };
 
+const fetchMarketplaceEntries = async () => {
+  const env = await readEnv();
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL;
+  const supabaseKey =
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) return [];
+
+  const endpoint = new URL(`${supabaseUrl}/rest/v1/public_marketplace_sitemap_entries`);
+  endpoint.searchParams.set("select", "entry_type,path,updated_at,priority");
+  endpoint.searchParams.set("order", "updated_at.desc");
+
+  const response = await fetch(endpoint, {
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    console.warn(`Skipping marketplace sitemap entries: ${response.status}`);
+    return [];
+  }
+
+  return response.json();
+};
+
 const toUrlEntry = ({ loc, changefreq, priority, lastmod }) => {
   const rows = [
     `  <url>`,
@@ -128,6 +155,7 @@ const toUrlEntry = ({ loc, changefreq, priority, lastmod }) => {
 
 const products = await fetchProducts();
 const categories = await fetchCategories();
+const marketplaceEntries = await fetchMarketplaceEntries();
 const categoryRoutes = Array.from(
   new Map(
     [
@@ -151,6 +179,14 @@ const productRoutes = products
     changefreq: "weekly",
     priority: "0.8",
   }));
+const marketplaceRoutes = marketplaceEntries
+  .filter((entry) => entry.path)
+  .map((entry) => ({
+    loc: entry.path,
+    lastmod: entry.updated_at ? new Date(entry.updated_at).toISOString().slice(0, 10) : undefined,
+    changefreq: entry.entry_type === "shop" ? "weekly" : "daily",
+    priority: String(entry.priority || (entry.entry_type === "shop" ? "0.7" : "0.8")),
+  }));
 
 const sitemap = [
   `<?xml version="1.0" encoding="UTF-8"?>`,
@@ -158,9 +194,10 @@ const sitemap = [
   ...staticRoutes.map(toUrlEntry),
   ...categoryRoutes.map(toUrlEntry),
   ...productRoutes.map(toUrlEntry),
+  ...marketplaceRoutes.map(toUrlEntry),
   `</urlset>`,
   ``,
 ].join("\n");
 
 await writeFile(path.join(ROOT, "public", "sitemap.xml"), sitemap, "utf8");
-console.log(`Generated sitemap.xml with ${staticRoutes.length + categoryRoutes.length + productRoutes.length} URLs.`);
+console.log(`Generated sitemap.xml with ${staticRoutes.length + categoryRoutes.length + productRoutes.length + marketplaceRoutes.length} URLs.`);
