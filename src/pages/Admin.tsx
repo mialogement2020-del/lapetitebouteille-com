@@ -35,7 +35,8 @@ import {
   Bot,
   Megaphone,
   Gauge,
-  Brain
+  Brain,
+  Globe2
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -75,6 +76,7 @@ const BusinessTrustScoreDashboard = lazy(() => import("@/components/admin/Busine
 const BusinessAssistantDashboard = lazy(() => import("@/components/admin/BusinessAssistantDashboard"));
 const MarketplaceImageStudioDashboard = lazy(() => import("@/components/admin/MarketplaceImageStudioDashboard"));
 const MarketplaceCoachDashboard = lazy(() => import("@/components/admin/MarketplaceCoachDashboard"));
+const MarketplaceSeoDashboard = lazy(() => import("@/components/admin/MarketplaceSeoDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -211,6 +213,7 @@ const Admin = () => {
       { id: 'business-assistant', label: 'Assistant IA', icon: Brain },
       { id: 'marketplace-image-studio', label: 'Studio Images', icon: ImageIcon },
       { id: 'marketplace-coach', label: 'Coach Marketplace', icon: Bot },
+      { id: 'marketplace-seo', label: 'SEO Marketplace', icon: Globe2 },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -715,6 +718,10 @@ const Admin = () => {
 
               <TabsContent value="marketplace-coach" className="space-y-8">
                 <MarketplaceCoachDashboard />
+              </TabsContent>
+
+              <TabsContent value="marketplace-seo" className="space-y-8">
+                <MarketplaceSeoDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">

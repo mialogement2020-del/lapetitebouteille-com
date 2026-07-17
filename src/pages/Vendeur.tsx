@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Store, Loader2, Save, ExternalLink, Plus, Package, Shield, BadgeCheck, ShoppingBag, TrendingUp, Brain } from "lucide-react";
+import { Store, Loader2, Save, ExternalLink, Plus, Package, Shield, BadgeCheck, ShoppingBag, TrendingUp, Brain, Globe2 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { toast } from "@/hooks/use-toast";
 import VendorReports from "@/components/reports/VendorReports";
 import Seo from "@/components/seo/Seo";
 import VendorMarketplaceCoachPanel from "@/components/vendor/VendorMarketplaceCoachPanel";
+import VendorMarketplaceSeoPanel from "@/components/vendor/VendorMarketplaceSeoPanel";
 import type { VendorProduct, VendorShop } from "@/hooks/useVendorShop";
 
 type ShopCreatePayload = {
@@ -110,6 +111,10 @@ const VendeurPage = () => {
                     <Brain className="mr-2 h-4 w-4" />
                     Coach Marketplace
                   </TabsTrigger>
+                  <TabsTrigger value="seo" className="flex-shrink-0">
+                    <Globe2 className="mr-2 h-4 w-4" />
+                    SEO Marketplace
+                  </TabsTrigger>
                   <TabsTrigger value="reports" className="flex-shrink-0">
                     <TrendingUp className="mr-2 h-4 w-4" />
                     Rapports
@@ -124,6 +129,10 @@ const VendeurPage = () => {
 
                 <TabsContent value="coach">
                   <VendorMarketplaceCoachPanel shop={shop} products={products} />
+                </TabsContent>
+
+                <TabsContent value="seo">
+                  <VendorMarketplaceSeoPanel shop={shop} products={products} />
                 </TabsContent>
 
                 <TabsContent value="reports">

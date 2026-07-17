@@ -39,13 +39,54 @@ const BoutiquePage = () => {
     );
   }
 
+  const shopUrl = `https://www.lapetitebouteille.com/boutique/${shop.slug}`;
+  const shopDescription = shop.description?.slice(0, 158) || `Découvrez la boutique ${shop.name} sur La Petite Bouteille.`;
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      name: shop.name,
+      description: shopDescription,
+      url: shopUrl,
+      image: shop.logo_url || shop.banner_url || undefined,
+      address: shop.city ? {
+        "@type": "PostalAddress",
+        addressLocality: shop.city,
+        addressCountry: shop.country || "CM",
+      } : undefined,
+      telephone: shop.contact_phone || undefined,
+      email: shop.contact_email || undefined,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.lapetitebouteille.com/" },
+        { "@type": "ListItem", position: 2, name: "Boutiques", item: "https://www.lapetitebouteille.com/catalogue" },
+        { "@type": "ListItem", position: 3, name: shop.name, item: shopUrl },
+      ],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Produits de ${shop.name}`,
+      itemListElement: products.slice(0, 24).map((product, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `https://www.lapetitebouteille.com/produit/${product.slug}`,
+        name: product.name,
+      })),
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-noir">
       <Seo
         title={`${shop.name} – Boutique partenaire | La Petite Bouteille`}
-        description={shop.description?.slice(0,158) || `Découvrez la boutique ${shop.name} sur La Petite Bouteille.`}
+        description={shopDescription}
         path={`/boutique/${shop.slug}`}
         image={shop.logo_url || undefined}
+        jsonLd={jsonLd}
       />
       <Header />
       <main className="pt-20 pb-16">
