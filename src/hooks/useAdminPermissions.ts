@@ -21,6 +21,7 @@ export type AdminPermission =
   | 'business_scores'
   | 'business_assistant'
   | 'marketplace_image_studio'
+  | 'marketplace_coach'
   | 'full_access';
 
 export interface AdminUser {
@@ -58,6 +59,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   'business-scores': ['business_scores', 'academy', 'commercial_assets', 'conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
   'business-assistant': ['business_assistant', 'business_scores', 'academy', 'commercial_assets', 'conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
   'marketplace-image-studio': ['marketplace_image_studio', 'products'],
+  'marketplace-coach': ['marketplace_coach', 'marketplace_image_studio', 'business_scores', 'products'],
   restock: ['stock', 'products'],
   'stock-alerts': ['stock'],
   audit: ['audit'],
@@ -85,6 +87,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   business_scores: 'Business Score & Trust Score',
   business_assistant: 'LPB Business Assistant IA',
   marketplace_image_studio: 'Studio Image Marketplace LPB',
+  marketplace_coach: 'Coach IA Marketplace',
 };
 
 export const useAdminPermissions = () => {

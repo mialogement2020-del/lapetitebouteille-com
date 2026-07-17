@@ -74,6 +74,7 @@ const AcademyCertificationDashboard = lazy(() => import("@/components/admin/Acad
 const BusinessTrustScoreDashboard = lazy(() => import("@/components/admin/BusinessTrustScoreDashboard"));
 const BusinessAssistantDashboard = lazy(() => import("@/components/admin/BusinessAssistantDashboard"));
 const MarketplaceImageStudioDashboard = lazy(() => import("@/components/admin/MarketplaceImageStudioDashboard"));
+const MarketplaceCoachDashboard = lazy(() => import("@/components/admin/MarketplaceCoachDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -209,6 +210,7 @@ const Admin = () => {
       { id: 'business-scores', label: 'Scores IA', icon: Gauge },
       { id: 'business-assistant', label: 'Assistant IA', icon: Brain },
       { id: 'marketplace-image-studio', label: 'Studio Images', icon: ImageIcon },
+      { id: 'marketplace-coach', label: 'Coach Marketplace', icon: Bot },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -709,6 +711,10 @@ const Admin = () => {
 
               <TabsContent value="marketplace-image-studio" className="space-y-8">
                 <MarketplaceImageStudioDashboard />
+              </TabsContent>
+
+              <TabsContent value="marketplace-coach" className="space-y-8">
+                <MarketplaceCoachDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">
