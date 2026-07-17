@@ -22,6 +22,17 @@ export interface VendorShop {
   updated_at: string;
 }
 
+export interface VendorProduct {
+  id: string;
+  name: string;
+  slug?: string | null;
+  image_url: string | null;
+  price: number;
+  stock_quantity: number | null;
+  is_active: boolean | null;
+  created_at?: string | null;
+}
+
 const slugify = (input: string) =>
   input
     .toLowerCase()
@@ -131,6 +142,6 @@ export const useVendorShopProducts = (shopId: string | undefined) =>
         .eq("vendor_id", shopId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as VendorProduct[];
     },
   });
