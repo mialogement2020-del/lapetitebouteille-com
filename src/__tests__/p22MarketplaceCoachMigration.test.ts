@@ -46,6 +46,8 @@ describe("P2.2 marketplace coach migration", () => {
     expect(migration).toContain("ENABLE ROW LEVEL SECURITY");
     expect(migration).toContain("vendor_owner_id = auth.uid()");
     expect(migration).toContain("public.marketplace_coach_is_admin()");
+    expect(migration).toContain("vs.name AS shop_name");
+    expect(migration).not.toContain("vs.shop_name");
     expect(migration).toContain("GRANT SELECT ON public.my_marketplace_coach_dashboard TO authenticated");
     expect(migration).toContain("GRANT SELECT ON public.admin_marketplace_coach_overview TO authenticated");
   });
