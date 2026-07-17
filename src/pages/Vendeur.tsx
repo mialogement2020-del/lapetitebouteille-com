@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Store, Loader2, Save, ExternalLink, Plus, Package, Shield, BadgeCheck, ShoppingBag, TrendingUp } from "lucide-react";
+import { Store, Loader2, Save, ExternalLink, Plus, Package, Shield, BadgeCheck, ShoppingBag, TrendingUp, Brain } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,28 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { useMyVendorShop, useVendorShopProducts } from "@/hooks/useVendorShop";
 import { useVendorOrders, type VendorFulfillmentStatus, type VendorOrderLine } from "@/hooks/useVendorOrders";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import VendorReports from "@/components/reports/VendorReports";
 import Seo from "@/components/seo/Seo";
+import VendorMarketplaceCoachPanel from "@/components/vendor/VendorMarketplaceCoachPanel";
+import type { VendorProduct, VendorShop } from "@/hooks/useVendorShop";
+
+type ShopCreatePayload = {
+  name: string;
+  description?: string;
+  city?: string;
+  contact_email?: string;
+  contact_phone?: string;
+};
+
+type ShopUpdatePayload = Partial<Pick<
+  VendorShop,
+  "name" | "description" | "city" | "contact_email" | "contact_phone" | "logo_url" | "banner_url" | "is_active"
+>>;
+
+const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : "Action impossible";
 
 const VendeurPage = () => {
   const navigate = useNavigate();
@@ -82,10 +100,36 @@ const VendeurPage = () => {
 
           {!shop ? <CreateShopCard onCreate={(d) => createShop.mutateAsync(d)} loading={createShop.isPending} /> : (
             <>
-              <ShopSettingsCard shop={shop} onSave={(d) => updateShop.mutateAsync(d)} loading={updateShop.isPending} />
-              <OrdersCard lines={orderLines} loading={ordersLoading} onUpdate={(itemId, status) => updateStatus.mutateAsync({ itemId, status })} updating={updateStatus.isPending} />
-              <ProductsCard shopId={shop.id} products={products} loading={productsLoading} />
-              <VendorReports lines={orderLines} shopName={shop.name} />
+              <Tabs defaultValue="dashboard" className="space-y-6">
+                <TabsList className="flex h-auto w-full flex-nowrap justify-start overflow-x-auto border border-gold/20 bg-noir/50 p-1">
+                  <TabsTrigger value="dashboard" className="flex-shrink-0">
+                    <Store className="mr-2 h-4 w-4" />
+                    Boutique
+                  </TabsTrigger>
+                  <TabsTrigger value="coach" className="flex-shrink-0">
+                    <Brain className="mr-2 h-4 w-4" />
+                    Coach Marketplace
+                  </TabsTrigger>
+                  <TabsTrigger value="reports" className="flex-shrink-0">
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    Rapports
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="dashboard" className="space-y-8">
+                  <ShopSettingsCard shop={shop} onSave={(d) => updateShop.mutateAsync(d)} loading={updateShop.isPending} />
+                  <OrdersCard lines={orderLines} loading={ordersLoading} onUpdate={(itemId, status) => updateStatus.mutateAsync({ itemId, status })} updating={updateStatus.isPending} />
+                  <ProductsCard products={products} loading={productsLoading} />
+                </TabsContent>
+
+                <TabsContent value="coach">
+                  <VendorMarketplaceCoachPanel shop={shop} products={products} />
+                </TabsContent>
+
+                <TabsContent value="reports">
+                  <VendorReports lines={orderLines} shopName={shop.name} />
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </div>
@@ -95,7 +139,7 @@ const VendeurPage = () => {
   );
 };
 
-const CreateShopCard = ({ onCreate, loading }: { onCreate: (d: any) => Promise<any>; loading: boolean }) => {
+const CreateShopCard = ({ onCreate, loading }: { onCreate: (payload: ShopCreatePayload) => Promise<unknown>; loading: boolean }) => {
   const [form, setForm] = useState({ name: "", description: "", city: "", contact_email: "", contact_phone: "" });
 
   const submit = async () => {
@@ -103,8 +147,8 @@ const CreateShopCard = ({ onCreate, loading }: { onCreate: (d: any) => Promise<a
     try {
       await onCreate(form);
       toast({ title: "Boutique créée 🎉" });
-    } catch (e: any) {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Erreur", description: getErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -133,7 +177,7 @@ const CreateShopCard = ({ onCreate, loading }: { onCreate: (d: any) => Promise<a
   );
 };
 
-const ShopSettingsCard = ({ shop, onSave, loading }: { shop: any; onSave: (d: any) => Promise<any>; loading: boolean }) => {
+const ShopSettingsCard = ({ shop, onSave, loading }: { shop: VendorShop; onSave: (payload: ShopUpdatePayload) => Promise<unknown>; loading: boolean }) => {
   const [form, setForm] = useState({
     name: shop.name,
     description: shop.description ?? "",
@@ -149,8 +193,8 @@ const ShopSettingsCard = ({ shop, onSave, loading }: { shop: any; onSave: (d: an
     try {
       await onSave(form);
       toast({ title: "Boutique mise à jour" });
-    } catch (e: any) {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Erreur", description: getErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -195,7 +239,7 @@ const ShopSettingsCard = ({ shop, onSave, loading }: { shop: any; onSave: (d: an
   );
 };
 
-const ProductsCard = ({ shopId, products, loading }: { shopId: string; products: any[]; loading: boolean }) => (
+const ProductsCard = ({ products, loading }: { products: VendorProduct[]; loading: boolean }) => (
   <Card className="bg-noir/50 border-gold/20">
     <CardHeader>
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -268,7 +312,7 @@ const OrdersCard = ({
 }: {
   lines: VendorOrderLine[];
   loading: boolean;
-  onUpdate: (itemId: string, status: VendorFulfillmentStatus) => Promise<any>;
+  onUpdate: (itemId: string, status: VendorFulfillmentStatus) => Promise<unknown>;
   updating: boolean;
 }) => {
   const pendingCount = lines.filter((l) => l.vendor_status === "pending" || l.vendor_status === "preparing").length;
