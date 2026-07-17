@@ -633,7 +633,7 @@ $$;
 CREATE OR REPLACE VIEW public.my_marketplace_coach_dashboard AS
 SELECT DISTINCT ON (s.vendor_shop_id)
   s.*,
-  vs.shop_name,
+  vs.name AS shop_name,
   vs.slug AS shop_slug
 FROM public.marketplace_coach_shop_snapshots s
 JOIN public.vendor_shops vs ON vs.id = s.vendor_shop_id
@@ -666,7 +666,7 @@ WHERE a.vendor_owner_id = auth.uid()
 CREATE OR REPLACE VIEW public.admin_marketplace_coach_overview AS
 SELECT
   s.vendor_shop_id,
-  vs.shop_name,
+  vs.name AS shop_name,
   vs.owner_id AS vendor_owner_id,
   s.shop_score,
   s.product_quality_score,
