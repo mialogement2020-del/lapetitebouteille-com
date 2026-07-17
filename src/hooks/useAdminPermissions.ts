@@ -20,6 +20,7 @@ export type AdminPermission =
   | 'academy'
   | 'business_scores'
   | 'business_assistant'
+  | 'marketplace_image_studio'
   | 'full_access';
 
 export interface AdminUser {
@@ -56,6 +57,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   academy: ['academy', 'commercial_assets', 'conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
   'business-scores': ['business_scores', 'academy', 'commercial_assets', 'conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
   'business-assistant': ['business_assistant', 'business_scores', 'academy', 'commercial_assets', 'conversation_coach', 'ai_goals', 'commercial_calendar', 'crm'],
+  'marketplace-image-studio': ['marketplace_image_studio', 'products'],
   restock: ['stock', 'products'],
   'stock-alerts': ['stock'],
   audit: ['audit'],
@@ -82,6 +84,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   academy: 'LPB Academy & Certification',
   business_scores: 'Business Score & Trust Score',
   business_assistant: 'LPB Business Assistant IA',
+  marketplace_image_studio: 'Studio Image Marketplace LPB',
 };
 
 export const useAdminPermissions = () => {
@@ -179,7 +182,7 @@ export const useAdminPermissions = () => {
         .from("admin_permissions")
         .insert({
           user_id: userId,
-          permission: permission as any, // Type assertion - loyalty enum added via migration
+          permission: permission as never, // Enum values are extended by migrations before generated types catch up.
           granted_by: user?.id,
         });
 
@@ -197,7 +200,7 @@ export const useAdminPermissions = () => {
         .from("admin_permissions")
         .delete()
         .eq("user_id", userId)
-        .eq("permission", permission as any); // Type assertion - loyalty enum added via migration
+        .eq("permission", permission as never); // Enum values are extended by migrations before generated types catch up.
 
       if (error) throw error;
     },
@@ -224,7 +227,7 @@ export const useAdminPermissions = () => {
           .insert(
             permissions.map(p => ({
               user_id: userId,
-              permission: p as any, // Type assertion - loyalty enum added via migration
+              permission: p as never, // Enum values are extended by migrations before generated types catch up.
               granted_by: user?.id,
             }))
           );
