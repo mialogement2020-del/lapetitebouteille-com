@@ -16,7 +16,7 @@ AS $$
       SELECT 1
       FROM public.admin_permissions ap
       WHERE ap.user_id = auth.uid()
-        AND ap.permission IN (
+        AND ap.permission::text IN (
           'full_access',
           'marketplace_seo',
           'marketplace_coach',
