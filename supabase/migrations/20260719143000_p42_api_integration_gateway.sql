@@ -242,7 +242,7 @@ VALUES
     'p4.2',
     'active',
     'architecture',
-    ARRAY['p4_extension_framework','platform_observability'],
+    ARRAY['p4_extension_framework','p3_governance_operations'],
     ARRAY['api.gateway.route','api.registry.manage','webhook.subscription.manage','rate_limit.evaluate','api.documentation.generate'],
     ARRAY['api.request.logged','webhook.event.queued','webhook.delivery.failed'],
     ARRAY['architecture.registry.updated','observability.alert.created'],
@@ -325,7 +325,7 @@ VALUES
   ('gateway.health.v1', 'p42_api_integration_gateway', 'api.gateway.route', '/gateway/v1/health', 'GET', 'v1', 'active', 'documentation', 'gateway_health', ARRAY['jwt','api_key'], ARRAY[]::text[], ARRAY[]::text[], '{"type":"object"}'::jsonb, '{"type":"object","required":["ok"]}'::jsonb, '{"window_seconds":60,"max_requests":120}'::jsonb, '{"summary":"Health check gateway"}'::jsonb),
   ('gateway.registry.v1', 'p42_api_integration_gateway', 'api.registry.manage', '/gateway/v1/registry', 'GET', 'v1', 'active', 'read_view', 'admin_api_gateway_endpoints', ARRAY['jwt'], ARRAY['admin'], ARRAY['admin'], '{"type":"object"}'::jsonb, '{"type":"array"}'::jsonb, '{"window_seconds":60,"max_requests":60}'::jsonb, '{"summary":"Liste les endpoints declares"}'::jsonb),
   ('webhooks.enqueue.v1', 'p42_api_integration_gateway', 'webhook.subscription.manage', '/gateway/v1/webhooks/enqueue', 'POST', 'v1', 'active', 'rpc', 'api_gateway_enqueue_webhook_event', ARRAY['jwt'], ARRAY['admin'], ARRAY['admin'], '{"type":"object","required":["event_key","payload"]}'::jsonb, '{"type":"object","required":["event_id","deliveries"]}'::jsonb, '{"window_seconds":60,"max_requests":40}'::jsonb, '{"summary":"Ajoute un evenement webhook compatible Event Catalog"}'::jsonb),
-  ('observability.scan.v1', 'platform_observability', 'observability.metric.record', '/gateway/v1/observability/scan', 'POST', 'v1', 'active', 'rpc', 'scan_platform_observability', ARRAY['jwt'], ARRAY['admin'], ARRAY['admin'], '{"type":"object"}'::jsonb, '{"type":"object"}'::jsonb, '{"window_seconds":60,"max_requests":10}'::jsonb, '{"summary":"Declenche un scan observability via gateway"}'::jsonb),
+  ('observability.scan.v1', 'p3_governance_operations', 'observability.metric.record', '/gateway/v1/observability/scan', 'POST', 'v1', 'active', 'rpc', 'scan_platform_observability', ARRAY['jwt'], ARRAY['admin'], ARRAY['admin'], '{"type":"object"}'::jsonb, '{"type":"object"}'::jsonb, '{"window_seconds":60,"max_requests":10}'::jsonb, '{"summary":"Declenche un scan observability via gateway"}'::jsonb),
   ('extension.flags.read.v1', 'p4_extension_framework', 'feature.flag.evaluate', '/gateway/v1/extensions/flags', 'GET', 'v1', 'active', 'read_view', 'admin_platform_feature_flags', ARRAY['jwt'], ARRAY['admin'], ARRAY['admin'], '{"type":"object"}'::jsonb, '{"type":"array"}'::jsonb, '{"window_seconds":60,"max_requests":60}'::jsonb, '{"summary":"Expose les feature flags P4.1 en lecture admin"}'::jsonb)
 ON CONFLICT (endpoint_key) DO UPDATE
 SET module_key = EXCLUDED.module_key,
