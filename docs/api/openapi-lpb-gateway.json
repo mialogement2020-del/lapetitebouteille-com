@@ -1,0 +1,69 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "La Petite Bouteille API Gateway",
+    "version": "v1",
+    "description": "P4.2 progressive API Gateway. La specification runtime est aussi generee depuis admin_api_gateway_openapi."
+  },
+  "paths": {
+    "/gateway/v1/health": {
+      "get": {
+        "operationId": "gateway.health.v1",
+        "summary": "Gateway health check",
+        "responses": {
+          "200": {
+            "description": "Gateway status"
+          }
+        }
+      }
+    },
+    "/gateway/v1/registry": {
+      "get": {
+        "operationId": "gateway.registry.v1",
+        "summary": "Admin endpoint registry",
+        "security": [{ "jwt": [] }],
+        "responses": {
+          "200": {
+            "description": "Registered API endpoints"
+          }
+        }
+      }
+    },
+    "/gateway/v1/webhooks/enqueue": {
+      "post": {
+        "operationId": "webhooks.enqueue.v1",
+        "summary": "Queue a declared Event Catalog webhook event",
+        "security": [{ "jwt": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["event_key", "payload"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook event queued"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  }
+}

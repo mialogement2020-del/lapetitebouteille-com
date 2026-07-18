@@ -84,6 +84,7 @@ const MarketplaceAnalyticsDashboard = lazy(() => import("@/components/admin/Mark
 const MarketplaceGovernanceDashboard = lazy(() => import("@/components/admin/MarketplaceGovernanceDashboard"));
 const PlatformObservabilityDashboard = lazy(() => import("@/components/admin/PlatformObservabilityDashboard"));
 const PlatformExtensionDashboard = lazy(() => import("@/components/admin/PlatformExtensionDashboard"));
+const ApiGatewayDashboard = lazy(() => import("@/components/admin/ApiGatewayDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -226,6 +227,7 @@ const Admin = () => {
       { id: 'marketplace-governance', label: 'Gouvernance Marketplace', icon: ShieldCheck },
       { id: 'platform-observability', label: 'Observabilite', icon: MonitorCog },
       { id: 'platform-extension', label: 'Extensions', icon: Puzzle },
+      { id: 'api-gateway', label: 'API Gateway', icon: Globe2 },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -754,6 +756,10 @@ const Admin = () => {
 
               <TabsContent value="platform-extension" className="space-y-8">
                 <PlatformExtensionDashboard />
+              </TabsContent>
+
+              <TabsContent value="api-gateway" className="space-y-8">
+                <ApiGatewayDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">
