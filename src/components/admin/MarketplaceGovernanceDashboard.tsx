@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Bot,
-  CheckCircle2,
   Clock,
+  ListChecks,
   Loader2,
   MessageSquare,
+  Play,
   RefreshCw,
   ShieldCheck,
   UserCheck,
+  Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -130,6 +132,70 @@ type NotificationRow = {
   created_at: string;
 };
 
+type AutomationOverview = {
+  active_rules: number;
+  inactive_rules: number;
+  pending_jobs: number;
+  failed_jobs: number;
+  executions_24h: number;
+  failed_executions_24h: number;
+  avg_duration_ms_7d: number;
+  open_tasks: number;
+};
+
+type AutomationRule = {
+  id: string;
+  name: string;
+  description: string | null;
+  trigger_event: string;
+  actions: unknown[];
+  priority: number;
+  is_active: boolean;
+  run_count: number;
+  last_run_at: string | null;
+  last_error: string | null;
+  pending_jobs: number;
+  failed_executions: number;
+  avg_duration_ms: number;
+};
+
+type AutomationQueueItem = {
+  id: string;
+  rule_name: string;
+  case_number: string | null;
+  trigger_event: string;
+  status: string;
+  scheduled_for: string;
+  attempt_count: number;
+  last_error: string | null;
+  created_at: string;
+};
+
+type AutomationExecution = {
+  id: string;
+  rule_name: string | null;
+  case_number: string | null;
+  trigger_event: string;
+  status: string;
+  duration_ms: number | null;
+  error_message: string | null;
+  created_at: string;
+};
+
+type AutomationTask = {
+  id: string;
+  title: string;
+  description: string | null;
+  task_type: string;
+  status: string;
+  due_at: string | null;
+  case_number: string | null;
+  rule_name: string | null;
+  created_at: string;
+};
+
+type AutomationActionType = "send_notification" | "create_task" | "schedule_reminder" | "assign_checklist" | "request_information" | "propose_escalation";
+
 const db = supabase as unknown as QueryClient;
 const toArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 
@@ -164,11 +230,20 @@ export default function MarketplaceGovernanceDashboard() {
   const [comments, setComments] = useState<WorkflowComment[]>([]);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [escalations, setEscalations] = useState<EscalationRow[]>([]);
+  const [automationOverview, setAutomationOverview] = useState<AutomationOverview | null>(null);
+  const [automationRules, setAutomationRules] = useState<AutomationRule[]>([]);
+  const [automationQueue, setAutomationQueue] = useState<AutomationQueueItem[]>([]);
+  const [automationExecutions, setAutomationExecutions] = useState<AutomationExecution[]>([]);
+  const [automationTasks, setAutomationTasks] = useState<AutomationTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isWorking, setIsWorking] = useState(false);
   const [workflowStatus, setWorkflowStatus] = useState("to_analyze");
   const [internalComment, setInternalComment] = useState("");
   const [vendorComment, setVendorComment] = useState("");
+  const [newRuleName, setNewRuleName] = useState("");
+  const [newRuleTrigger, setNewRuleTrigger] = useState("case_created");
+  const [newRuleAction, setNewRuleAction] = useState<AutomationActionType>("send_notification");
+  const [newRulePriority, setNewRulePriority] = useState(100);
 
   const openCases = useMemo(
     () => cases.filter((item) => !["resolved", "closed"].includes(item.workflow_status_code)),
@@ -177,19 +252,42 @@ export default function MarketplaceGovernanceDashboard() {
 
   const loadData = async () => {
     setIsLoading(true);
-    const [overviewResult, casesResult, trendsResult, notificationsResult] = await Promise.all([
+    const [
+      overviewResult,
+      casesResult,
+      trendsResult,
+      notificationsResult,
+      automationOverviewResult,
+      automationRulesResult,
+      automationQueueResult,
+      automationExecutionsResult,
+      automationTasksResult,
+    ] = await Promise.all([
       db.from("admin_marketplace_case_resolution_overview").select("*").maybeSingle(),
       db.from("admin_marketplace_case_resolution_queue").select("*").order("created_at", { ascending: false }).limit(150),
       db.from("admin_marketplace_governance_trends").select("*").order("day", { ascending: false }).limit(90),
       db.from("admin_marketplace_governance_notifications").select("*").order("created_at", { ascending: false }).limit(80),
+      db.from("admin_marketplace_workflow_automation_overview").select("*").maybeSingle(),
+      db.from("admin_marketplace_workflow_automation_rules").select("*").order("priority", { ascending: true }).limit(80),
+      db.from("admin_marketplace_workflow_automation_queue").select("*").order("scheduled_for", { ascending: true }).limit(80),
+      db.from("admin_marketplace_workflow_automation_executions").select("*").order("created_at", { ascending: false }).limit(80),
+      db.from("admin_marketplace_workflow_automation_tasks").select("*").order("created_at", { ascending: false }).limit(80),
     ]);
 
     if (!overviewResult.error) setOverview((overviewResult.data as Overview | null) ?? null);
     if (!casesResult.error) setCases(toArray<WorkflowCase>(casesResult.data));
     if (!trendsResult.error) setTrends(toArray<TrendRow>(trendsResult.data));
     if (!notificationsResult.error) setNotifications(toArray<NotificationRow>(notificationsResult.data));
+    if (!automationOverviewResult.error) setAutomationOverview((automationOverviewResult.data as AutomationOverview | null) ?? null);
+    if (!automationRulesResult.error) setAutomationRules(toArray<AutomationRule>(automationRulesResult.data));
+    if (!automationQueueResult.error) setAutomationQueue(toArray<AutomationQueueItem>(automationQueueResult.data));
+    if (!automationExecutionsResult.error) setAutomationExecutions(toArray<AutomationExecution>(automationExecutionsResult.data));
+    if (!automationTasksResult.error) setAutomationTasks(toArray<AutomationTask>(automationTasksResult.data));
     if (overviewResult.error) {
       toast({ title: "Workflow Marketplace indisponible", description: overviewResult.error.message, variant: "destructive" });
+    }
+    if (automationOverviewResult.error) {
+      toast({ title: "Automations Marketplace indisponibles", description: automationOverviewResult.error.message, variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -329,6 +427,94 @@ export default function MarketplaceGovernanceDashboard() {
     if (selectedCase) await loadCaseResolution(selectedCase.id);
   };
 
+  const buildAutomationActions = (actionType: AutomationActionType) => {
+    if (actionType === "send_notification") {
+      return [{
+        type: "send_notification",
+        recipient_role: "admin",
+        title: newRuleName.trim() || "Automation Marketplace",
+        message: "Evenement detecte par le moteur P3.3. Revue humaine requise si la decision est sensible.",
+        severity: "normal",
+      }];
+    }
+    if (actionType === "create_task") {
+      return [{ type: "create_task", title: newRuleName.trim() || "Tache automatique", description: "Tache preparee par le moteur P3.3." }];
+    }
+    if (actionType === "schedule_reminder") {
+      return [{ type: "schedule_reminder", title: newRuleName.trim() || "Rappel automatique", description: "Rappel de suivi Marketplace.", delay_hours: 24 }];
+    }
+    if (actionType === "assign_checklist") {
+      return [{ type: "assign_checklist" }];
+    }
+    if (actionType === "request_information") {
+      return [{ type: "request_information", title: "Information vendeur requise", description: newRuleName.trim() || "Demander une precision au vendeur." }];
+    }
+    return [{
+      type: "propose_escalation",
+      escalation_type: "workflow_review",
+      severity: "high",
+      reason: newRuleName.trim() || "Le workflow demande une revue humaine.",
+      recommended_action: "Examiner le dossier et valider manuellement la suite.",
+    }];
+  };
+
+  const createAutomationRule = async () => {
+    const name = newRuleName.trim();
+    if (!name) {
+      toast({ title: "Nom requis", description: "Donne un nom clair a la regle d'automation.", variant: "destructive" });
+      return;
+    }
+    setIsWorking(true);
+    const { error } = await db.rpc("admin_create_marketplace_workflow_automation_rule", {
+      _name: name,
+      _description: "Regle P3.3 creee depuis la console admin. Elle prepare uniquement une action non sensible.",
+      _trigger_event: newRuleTrigger,
+      _conditions: {},
+      _actions: buildAutomationActions(newRuleAction),
+      _priority: newRulePriority,
+      _is_active: true,
+    });
+    setIsWorking(false);
+    if (error) {
+      toast({ title: "Creation impossible", description: error.message, variant: "destructive" });
+      return;
+    }
+    setNewRuleName("");
+    toast({ title: "Regle creee", description: "Elle est active, auditable et limitee aux actions non sensibles." });
+    await loadData();
+  };
+
+  const toggleAutomationRule = async (rule: AutomationRule) => {
+    setIsWorking(true);
+    const { error } = await db.rpc("admin_toggle_marketplace_workflow_automation_rule", {
+      _rule_id: rule.id,
+      _is_active: !rule.is_active,
+    });
+    setIsWorking(false);
+    if (error) {
+      toast({ title: "Changement impossible", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: rule.is_active ? "Regle desactivee" : "Regle activee", description: "La modification est journalisee cote base." });
+    await loadData();
+  };
+
+  const processAutomationQueue = async () => {
+    setIsWorking(true);
+    const { data, error } = await db.rpc("process_marketplace_workflow_automation_queue", { _limit: 50 });
+    setIsWorking(false);
+    if (error) {
+      toast({ title: "Traitement impossible", description: error.message, variant: "destructive" });
+      return;
+    }
+    const result = data as { processed?: number; success?: number; failed?: number } | null;
+    toast({
+      title: "Automations traitees",
+      description: `${result?.processed ?? 0} job(s), ${result?.success ?? 0} reussi(s), ${result?.failed ?? 0} erreur(s).`,
+    });
+    await loadData();
+  };
+
   const refreshSelectedCase = async (caseId: string) => {
     await loadData();
     await loadCaseResolution(caseId);
@@ -355,7 +541,7 @@ export default function MarketplaceGovernanceDashboard() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="font-serif text-3xl text-primary">P3.2 Workflow & Case Resolution</h2>
+          <h2 className="font-serif text-3xl text-primary">P3.2/P3.3 Workflow Governance</h2>
           <p className="mt-2 max-w-3xl text-muted-foreground">
             Dossiers Marketplace assignables, commentes, controles par checklist et escalades proposees. Aucune validation sensible n'est automatique.
           </p>
@@ -387,6 +573,7 @@ export default function MarketplaceGovernanceDashboard() {
         <TabsList className="border border-gold/20 bg-noir-light/60">
           <TabsTrigger value="queue">File de resolution</TabsTrigger>
           <TabsTrigger value="case">Dossier</TabsTrigger>
+          <TabsTrigger value="automation">Automations</TabsTrigger>
           <TabsTrigger value="trends">Tendances</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
@@ -530,6 +717,178 @@ export default function MarketplaceGovernanceDashboard() {
               </div>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="automation" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-4">
+            <MetricCard label="Regles actives" value={automationOverview?.active_rules || 0} icon={<Zap className="h-5 w-5" />} />
+            <MetricCard label="Jobs en attente" value={automationOverview?.pending_jobs || 0} icon={<Clock className="h-5 w-5" />} />
+            <MetricCard label="Executions 24h" value={automationOverview?.executions_24h || 0} icon={<Play className="h-5 w-5" />} />
+            <MetricCard label="Taches ouvertes" value={automationOverview?.open_tasks || 0} icon={<ListChecks className="h-5 w-5" />} />
+          </div>
+
+          <Card className="border-gold/20 bg-noir/60">
+            <CardHeader>
+              <CardTitle className="text-cream">P3.3 Workflow Automation & Orchestration</CardTitle>
+              <CardDescription>
+                Automations limitees aux notifications, rappels, checklists, taches et propositions. Aucune decision sensible n'est appliquee automatiquement.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 lg:grid-cols-[1fr_200px_220px_120px_auto]">
+                <Input
+                  value={newRuleName}
+                  onChange={(event) => setNewRuleName(event.target.value)}
+                  placeholder="Nom de la regle, ex. Relance dossier vendeur"
+                  className="border-gold/20 bg-noir/60 text-cream"
+                />
+                <Select value={newRuleTrigger} onValueChange={setNewRuleTrigger}>
+                  <SelectTrigger className="border-gold/20 bg-noir/60 text-cream"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="case_created">Dossier cree</SelectItem>
+                    <SelectItem value="status_changed">Statut change</SelectItem>
+                    <SelectItem value="case_assigned">Assigne</SelectItem>
+                    <SelectItem value="comment_added">Commentaire</SelectItem>
+                    <SelectItem value="vendor_replied">Reponse vendeur</SelectItem>
+                    <SelectItem value="due_reached">Echeance</SelectItem>
+                    <SelectItem value="manual">Manuel</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={newRuleAction} onValueChange={(value) => setNewRuleAction(value as AutomationActionType)}>
+                  <SelectTrigger className="border-gold/20 bg-noir/60 text-cream"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="send_notification">Notifier admin</SelectItem>
+                    <SelectItem value="create_task">Creer tache</SelectItem>
+                    <SelectItem value="schedule_reminder">Programmer rappel</SelectItem>
+                    <SelectItem value="assign_checklist">Ajouter checklist</SelectItem>
+                    <SelectItem value="request_information">Demander info</SelectItem>
+                    <SelectItem value="propose_escalation">Proposer escalade</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  min={1}
+                  value={newRulePriority}
+                  onChange={(event) => setNewRulePriority(Number(event.target.value || 100))}
+                  className="border-gold/20 bg-noir/60 text-cream"
+                />
+                <Button onClick={createAutomationRule} disabled={isWorking} className="bg-gradient-gold text-noir">
+                  Creer
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" onClick={processAutomationQueue} disabled={isWorking} className="border-gold/30">
+                  {isWorking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                  Traiter la file
+                </Button>
+                <Button variant="outline" onClick={loadData} disabled={isWorking} className="border-gold/30">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Rafraichir
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <Card className="border-gold/20 bg-noir/60">
+              <CardHeader>
+                <CardTitle className="text-cream">Regles d'orchestration</CardTitle>
+                <CardDescription>Activation manuelle et suivi des erreurs.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {automationRules.length === 0 ? <EmptyState text="Aucune regle P3.3." /> : automationRules.map((rule) => (
+                  <div key={rule.id} className="rounded-lg border border-gold/10 bg-noir/40 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="font-medium text-cream">{rule.name}</div>
+                        <div className="text-xs text-muted-foreground">{rule.trigger_event} - priorite {rule.priority}</div>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => toggleAutomationRule(rule)} disabled={isWorking} className="border-gold/30">
+                        {rule.is_active ? "Desactiver" : "Activer"}
+                      </Button>
+                    </div>
+                    <div className="mt-3 grid gap-2 text-sm md:grid-cols-4">
+                      <MetricInline label="Etat" value={rule.is_active ? "Active" : "Inactive"} />
+                      <MetricInline label="Runs" value={rule.run_count || 0} />
+                      <MetricInline label="Attente" value={rule.pending_jobs || 0} />
+                      <MetricInline label="Erreurs" value={rule.failed_executions || 0} />
+                    </div>
+                    {rule.last_error && <div className="mt-2 rounded border border-red-500/20 bg-red-500/10 p-2 text-xs text-red-200">{rule.last_error}</div>}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border-gold/20 bg-noir/60">
+              <CardHeader>
+                <CardTitle className="text-cream">File d'attente</CardTitle>
+                <CardDescription>Jobs prepares par les evenements, traitement explicite.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {automationQueue.length === 0 ? <EmptyState text="Aucun job en file." /> : automationQueue.map((job) => (
+                  <div key={job.id} className="rounded-lg border border-gold/10 bg-noir/40 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-cream">{job.rule_name}</span>
+                      <Badge variant={job.status === "failed" ? "destructive" : "outline"}>{job.status}</Badge>
+                    </div>
+                    <div className="mt-2 grid gap-2 text-sm md:grid-cols-3">
+                      <MetricInline label="Dossier" value={job.case_number || "-"} />
+                      <MetricInline label="Trigger" value={job.trigger_event} />
+                      <MetricInline label="Tentatives" value={job.attempt_count || 0} />
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">Planifie : {new Date(job.scheduled_for).toLocaleString("fr-FR")}</div>
+                    {job.last_error && <div className="mt-2 rounded border border-red-500/20 bg-red-500/10 p-2 text-xs text-red-200">{job.last_error}</div>}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border-gold/20 bg-noir/60">
+              <CardHeader>
+                <CardTitle className="text-cream">Executions recentes</CardTitle>
+                <CardDescription>Journal append-only des traitements P3.3.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {automationExecutions.length === 0 ? <EmptyState text="Aucune execution." /> : automationExecutions.map((execution) => (
+                  <div key={execution.id} className="rounded-lg border border-gold/10 bg-noir/40 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-cream">{execution.rule_name || "Regle supprimee"}</span>
+                      <Badge variant={execution.status === "failed" ? "destructive" : "secondary"}>{execution.status}</Badge>
+                    </div>
+                    <div className="mt-2 grid gap-2 text-sm md:grid-cols-3">
+                      <MetricInline label="Dossier" value={execution.case_number || "-"} />
+                      <MetricInline label="Duree" value={`${execution.duration_ms || 0} ms`} />
+                      <MetricInline label="Date" value={new Date(execution.created_at).toLocaleString("fr-FR")} />
+                    </div>
+                    {execution.error_message && <div className="mt-2 rounded border border-red-500/20 bg-red-500/10 p-2 text-xs text-red-200">{execution.error_message}</div>}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border-gold/20 bg-noir/60">
+              <CardHeader>
+                <CardTitle className="text-cream">Taches et rappels</CardTitle>
+                <CardDescription>Travail prepare pour une validation humaine.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {automationTasks.length === 0 ? <EmptyState text="Aucune tache automation." /> : automationTasks.map((task) => (
+                  <div key={task.id} className="rounded-lg border border-gold/10 bg-noir/40 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-cream">{task.title}</span>
+                      <Badge variant={task.status === "open" ? "outline" : "secondary"}>{task.status}</Badge>
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground">{task.description || "Sans description"}</div>
+                    <div className="mt-2 grid gap-2 text-sm md:grid-cols-3">
+                      <MetricInline label="Type" value={task.task_type} />
+                      <MetricInline label="Dossier" value={task.case_number || "-"} />
+                      <MetricInline label="Echeance" value={task.due_at ? new Date(task.due_at).toLocaleDateString("fr-FR") : "-"} />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-3">
