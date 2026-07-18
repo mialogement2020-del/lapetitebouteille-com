@@ -37,7 +37,8 @@ import {
   Gauge,
   Brain,
   Globe2,
-  MonitorCog
+  MonitorCog,
+  Puzzle
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -82,6 +83,7 @@ const CatalogueIntelligenceDashboard = lazy(() => import("@/components/admin/Cat
 const MarketplaceAnalyticsDashboard = lazy(() => import("@/components/admin/MarketplaceAnalyticsDashboard"));
 const MarketplaceGovernanceDashboard = lazy(() => import("@/components/admin/MarketplaceGovernanceDashboard"));
 const PlatformObservabilityDashboard = lazy(() => import("@/components/admin/PlatformObservabilityDashboard"));
+const PlatformExtensionDashboard = lazy(() => import("@/components/admin/PlatformExtensionDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -223,6 +225,7 @@ const Admin = () => {
       { id: 'marketplace-analytics', label: 'Insights Marketplace', icon: LineChart },
       { id: 'marketplace-governance', label: 'Gouvernance Marketplace', icon: ShieldCheck },
       { id: 'platform-observability', label: 'Observabilite', icon: MonitorCog },
+      { id: 'platform-extension', label: 'Extensions', icon: Puzzle },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -747,6 +750,10 @@ const Admin = () => {
 
               <TabsContent value="platform-observability" className="space-y-8">
                 <PlatformObservabilityDashboard />
+              </TabsContent>
+
+              <TabsContent value="platform-extension" className="space-y-8">
+                <PlatformExtensionDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">
