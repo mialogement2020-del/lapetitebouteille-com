@@ -44,6 +44,7 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   'marketplace_seo',
   'catalogue_intelligence',
   'marketplace_analytics',
+  'marketplace_governance',
 ];
 
 interface SearchResult {
