@@ -277,43 +277,44 @@ SET name = EXCLUDED.name,
     updated_at = now();
 
 INSERT INTO public.platform_capability_registry(
-  capability_key, module_key, name, description, version, access_type, required_permission, status, documentation_path, metadata
+  capability_key, module_key, description, version, access_type, required_permission, status, dependencies, input_contract, output_contract, documentation_path
 )
 VALUES
-  ('api.gateway.route', 'p42_api_integration_gateway', 'Gateway Routing', 'Route les requetes integration vers des contrats declares.', 'v1', 'edge_function', 'admin', 'active', 'docs/architecture/api-gateway.md#routing', '{"p0_safe":true}'::jsonb),
-  ('api.registry.manage', 'p42_api_integration_gateway', 'API Registry', 'Declare endpoints, schemas, permissions et versions.', 'v1', 'rpc', 'admin', 'active', 'docs/architecture/api-gateway.md#registry', '{"p0_safe":true}'::jsonb),
-  ('webhook.subscription.manage', 'p42_api_integration_gateway', 'Webhook Subscriptions', 'Gere abonnements, signatures, retries et desactivation automatique.', 'v1', 'rpc', 'admin', 'active', 'docs/architecture/api-gateway.md#webhooks', '{"p0_safe":true}'::jsonb),
-  ('rate_limit.evaluate', 'p42_api_integration_gateway', 'Rate Limiting', 'Evalue quotas par endpoint et identite.', 'v1', 'rpc', 'admin', 'active', 'docs/architecture/api-gateway.md#rate-limits', '{"p0_safe":true}'::jsonb),
-  ('api.documentation.generate', 'p42_api_integration_gateway', 'API Documentation', 'Expose une documentation OpenAPI issue du registre.', 'v1', 'read_view', 'admin', 'active', 'docs/api/openapi-lpb-gateway.json', '{"p0_safe":true}'::jsonb)
+  ('api.gateway.route', 'p42_api_integration_gateway', 'Route les requetes integration vers des contrats declares.', 'v1', 'service', 'admin', 'active', ARRAY[]::text[], '{"path":"text","method":"text"}'::jsonb, '{"ok":"boolean"}'::jsonb, 'docs/architecture/api-gateway.md#routing'),
+  ('api.registry.manage', 'p42_api_integration_gateway', 'Declare endpoints, schemas, permissions et versions.', 'v1', 'admin', 'admin', 'active', ARRAY[]::text[], '{"endpoint":"object"}'::jsonb, '{"endpoint_key":"text"}'::jsonb, 'docs/architecture/api-gateway.md#registry'),
+  ('webhook.subscription.manage', 'p42_api_integration_gateway', 'Gere abonnements, signatures, retries et desactivation automatique.', 'v1', 'admin', 'admin', 'active', ARRAY['api.gateway.route'], '{"event_key":"text","payload":"object"}'::jsonb, '{"event_id":"uuid","deliveries":"integer"}'::jsonb, 'docs/architecture/api-gateway.md#webhooks'),
+  ('rate_limit.evaluate', 'p42_api_integration_gateway', 'Evalue quotas par endpoint et identite.', 'v1', 'service', 'admin', 'active', ARRAY['api.gateway.route'], '{"identity":"text","endpoint":"text"}'::jsonb, '{"allowed":"boolean","remaining":"integer"}'::jsonb, 'docs/architecture/api-gateway.md#rate-limits'),
+  ('api.documentation.generate', 'p42_api_integration_gateway', 'Expose une documentation OpenAPI issue du registre.', 'v1', 'admin', 'admin', 'active', ARRAY['api.registry.manage'], '{"format":"openapi"}'::jsonb, '{"spec":"object"}'::jsonb, 'docs/api/openapi-lpb-gateway.json')
 ON CONFLICT (capability_key) DO UPDATE
 SET module_key = EXCLUDED.module_key,
-    name = EXCLUDED.name,
     description = EXCLUDED.description,
     version = EXCLUDED.version,
     access_type = EXCLUDED.access_type,
     required_permission = EXCLUDED.required_permission,
     status = EXCLUDED.status,
+    dependencies = EXCLUDED.dependencies,
+    input_contract = EXCLUDED.input_contract,
+    output_contract = EXCLUDED.output_contract,
     documentation_path = EXCLUDED.documentation_path,
-    metadata = EXCLUDED.metadata,
     updated_at = now();
 
 INSERT INTO public.platform_event_catalog(
-  event_key, version, producer_module_key, description, payload_schema, sensitivity_level, retention_policy, known_consumers, status, documentation_path, metadata
+  event_key, version, producer_module_key, description, payload_schema, required_fields, optional_fields, sensitivity_level, retention_policy, known_consumers, status
 )
 VALUES
-  ('api.request.logged', 'v1', 'p42_api_integration_gateway', 'Une requete API gateway a ete journalisee.', '{"type":"object","required":["endpoint_key","status_code"]}'::jsonb, 'internal', '24 months', ARRAY['platform_observability'], 'active', 'docs/architecture/event-catalog.md#api', '{}'::jsonb),
-  ('webhook.event.queued', 'v1', 'p42_api_integration_gateway', 'Un evenement webhook a ete mis en file.', '{"type":"object","required":["event_key"]}'::jsonb, 'internal', '24 months', ARRAY['platform_observability'], 'active', 'docs/architecture/event-catalog.md#api', '{}'::jsonb),
-  ('webhook.delivery.failed', 'v1', 'p42_api_integration_gateway', 'Une livraison webhook a echoue.', '{"type":"object","required":["subscription_id","attempt_count"]}'::jsonb, 'internal', '24 months', ARRAY['platform_observability'], 'active', 'docs/architecture/event-catalog.md#api', '{}'::jsonb)
+  ('api.request.logged', 'v1', 'p42_api_integration_gateway', 'Une requete API gateway a ete journalisee.', '{"type":"object","required":["endpoint_key","status_code"]}'::jsonb, ARRAY['endpoint_key','status_code'], ARRAY['latency_ms','user_id','api_key_id'], 'internal', '24 months', ARRAY['platform_observability'], 'active'),
+  ('webhook.event.queued', 'v1', 'p42_api_integration_gateway', 'Un evenement webhook a ete mis en file.', '{"type":"object","required":["event_key"]}'::jsonb, ARRAY['event_key'], ARRAY['aggregate_id','source_module_key'], 'internal', '24 months', ARRAY['platform_observability'], 'active'),
+  ('webhook.delivery.failed', 'v1', 'p42_api_integration_gateway', 'Une livraison webhook a echoue.', '{"type":"object","required":["subscription_id","attempt_count"]}'::jsonb, ARRAY['subscription_id','attempt_count'], ARRAY['last_status_code','last_error'], 'internal', '24 months', ARRAY['platform_observability'], 'active')
 ON CONFLICT (event_key, version) DO UPDATE
 SET producer_module_key = EXCLUDED.producer_module_key,
     description = EXCLUDED.description,
     payload_schema = EXCLUDED.payload_schema,
+    required_fields = EXCLUDED.required_fields,
+    optional_fields = EXCLUDED.optional_fields,
     sensitivity_level = EXCLUDED.sensitivity_level,
     retention_policy = EXCLUDED.retention_policy,
     known_consumers = EXCLUDED.known_consumers,
     status = EXCLUDED.status,
-    documentation_path = EXCLUDED.documentation_path,
-    metadata = EXCLUDED.metadata,
     updated_at = now();
 
 INSERT INTO public.api_gateway_endpoints(
@@ -345,32 +346,32 @@ SET module_key = EXCLUDED.module_key,
     updated_at = now();
 
 INSERT INTO public.platform_rpc_contracts(
-  rpc_name, module_key, purpose, version, status, required_permissions, input_schema, output_schema, side_effects, idempotency_notes, documentation_path, metadata
+  rpc_name, module_key, purpose, version, status, parameters, return_contract, required_permissions, error_behavior, idempotency, logging_policy, documentation_path
 )
 VALUES
-  ('admin_register_api_gateway_endpoint', 'p42_api_integration_gateway', 'Cree ou met a jour un endpoint gateway declare.', 'v1', 'active', ARRAY['admin'], '{"endpoint_key":"text","path":"text"}'::jsonb, '{"endpoint_key":"text","status":"registered"}'::jsonb, ARRAY['api_gateway_endpoints'], 'Upsert par endpoint_key.', 'docs/architecture/api-gateway.md#registry', '{}'::jsonb),
-  ('api_gateway_check_rate_limit', 'p42_api_integration_gateway', 'Evalue et incremente un bucket de rate limiting.', 'v1', 'active', ARRAY['service_role'], '{"endpoint_key":"text","identity_type":"text","identity_value":"text"}'::jsonb, '{"allowed":"boolean","remaining":"number"}'::jsonb, ARRAY['api_gateway_rate_limit_buckets'], 'Bucket unique par fenetre.', 'docs/architecture/api-gateway.md#rate-limits', '{}'::jsonb),
-  ('api_gateway_log_request', 'p42_api_integration_gateway', 'Journalise une requete gateway de maniere append-only.', 'v1', 'active', ARRAY['service_role'], '{"endpoint_key":"text","status_code":"number"}'::jsonb, '{"request_id":"uuid"}'::jsonb, ARRAY['api_gateway_request_logs'], 'Append-only.', 'docs/architecture/api-gateway.md#logs', '{}'::jsonb),
-  ('api_gateway_enqueue_webhook_event', 'p42_api_integration_gateway', 'Cree un evenement webhook et les livraisons associees.', 'v1', 'active', ARRAY['admin','service_role'], '{"event_key":"text","payload":"jsonb"}'::jsonb, '{"event_id":"uuid","deliveries":"number"}'::jsonb, ARRAY['api_gateway_webhook_events','api_gateway_webhook_deliveries'], 'Idempotence a ajouter via cle metier si necessaire.', 'docs/architecture/api-gateway.md#webhooks', '{}'::jsonb)
+  ('admin_register_api_gateway_endpoint', 'p42_api_integration_gateway', 'Cree ou met a jour un endpoint gateway declare.', 'v1', 'active', '{"endpoint_key":"text","path":"text"}'::jsonb, '{"endpoint_key":"text","status":"registered"}'::jsonb, ARRAY['admin'], '{"raises":["admin_required","endpoint_key_required"]}'::jsonb, 'supported', 'standard', 'docs/architecture/api-gateway.md#registry'),
+  ('api_gateway_check_rate_limit', 'p42_api_integration_gateway', 'Evalue et incremente un bucket de rate limiting.', 'v1', 'active', '{"endpoint_key":"text","identity_type":"text","identity_value":"text"}'::jsonb, '{"allowed":"boolean","remaining":"number"}'::jsonb, ARRAY['service_role'], '{"raises":[]}'::jsonb, 'supported', 'standard', 'docs/architecture/api-gateway.md#rate-limits'),
+  ('api_gateway_log_request', 'p42_api_integration_gateway', 'Journalise une requete gateway de maniere append-only.', 'v1', 'active', '{"endpoint_key":"text","status_code":"number"}'::jsonb, '{"request_id":"uuid"}'::jsonb, ARRAY['service_role'], '{"append_only":true}'::jsonb, 'not_required', 'audit', 'docs/architecture/api-gateway.md#logs'),
+  ('api_gateway_enqueue_webhook_event', 'p42_api_integration_gateway', 'Cree un evenement webhook et les livraisons associees.', 'v1', 'active', '{"event_key":"text","payload":"jsonb"}'::jsonb, '{"event_id":"uuid","deliveries":"number"}'::jsonb, ARRAY['admin','service_role'], '{"raises":["event_not_declared_in_catalog"]}'::jsonb, 'supported', 'audit', 'docs/architecture/api-gateway.md#webhooks')
 ON CONFLICT (rpc_name) DO UPDATE
 SET module_key = EXCLUDED.module_key,
     purpose = EXCLUDED.purpose,
     version = EXCLUDED.version,
     status = EXCLUDED.status,
+    parameters = EXCLUDED.parameters,
+    return_contract = EXCLUDED.return_contract,
     required_permissions = EXCLUDED.required_permissions,
-    input_schema = EXCLUDED.input_schema,
-    output_schema = EXCLUDED.output_schema,
-    side_effects = EXCLUDED.side_effects,
-    idempotency_notes = EXCLUDED.idempotency_notes,
+    error_behavior = EXCLUDED.error_behavior,
+    idempotency = EXCLUDED.idempotency,
+    logging_policy = EXCLUDED.logging_policy,
     documentation_path = EXCLUDED.documentation_path,
-    metadata = EXCLUDED.metadata,
     updated_at = now();
 
 INSERT INTO public.platform_edge_function_contracts(
-  function_name, module_key, purpose, version, status, auth_policy, authorization_policy, input_schema, output_schema, observability, documentation_path, metadata
+  function_name, module_key, purpose, version, status, auth_policy, authorization_policy, input_contract, output_contract, timeout_ms, retry_policy, metrics, documentation_path
 )
 VALUES
-  ('api-gateway', 'p42_api_integration_gateway', 'Point entree unifie pour integrations versionnees.', 'v1', 'active', 'JWT or x-api-key', 'Endpoint registry + RLS target + role checks', '{"path":"string","method":"string","body":"object"}'::jsonb, '{"ok":"boolean"}'::jsonb, '{"logs":true,"latency":true,"rate_limits":true}'::jsonb, 'docs/architecture/api-gateway.md#edge-function', '{"p0_mutation_allowed":false}'::jsonb)
+  ('api-gateway', 'p42_api_integration_gateway', 'Point entree unifie pour integrations versionnees.', 'v1', 'active', 'JWT or x-api-key', 'Endpoint registry + RLS target + role checks', '{"path":"string","method":"string","body":"object"}'::jsonb, '{"ok":"boolean"}'::jsonb, 30000, '{"mode":"caller_retry"}'::jsonb, '{"logs":true,"latency":true,"rate_limits":true}'::jsonb, 'docs/architecture/api-gateway.md#edge-function')
 ON CONFLICT (function_name) DO UPDATE
 SET module_key = EXCLUDED.module_key,
     purpose = EXCLUDED.purpose,
@@ -378,11 +379,12 @@ SET module_key = EXCLUDED.module_key,
     status = EXCLUDED.status,
     auth_policy = EXCLUDED.auth_policy,
     authorization_policy = EXCLUDED.authorization_policy,
-    input_schema = EXCLUDED.input_schema,
-    output_schema = EXCLUDED.output_schema,
-    observability = EXCLUDED.observability,
+    input_contract = EXCLUDED.input_contract,
+    output_contract = EXCLUDED.output_contract,
+    timeout_ms = EXCLUDED.timeout_ms,
+    retry_policy = EXCLUDED.retry_policy,
+    metrics = EXCLUDED.metrics,
     documentation_path = EXCLUDED.documentation_path,
-    metadata = EXCLUDED.metadata,
     updated_at = now();
 
 CREATE OR REPLACE FUNCTION public.admin_register_api_gateway_endpoint(_endpoint jsonb)
@@ -602,7 +604,7 @@ SELECT
 WHERE public.api_gateway_is_admin();
 
 CREATE OR REPLACE VIEW public.admin_api_gateway_endpoints AS
-SELECT e.*, m.name AS module_name, c.name AS capability_name
+SELECT e.*, m.name AS module_name, c.description AS capability_name
 FROM public.api_gateway_endpoints e
 JOIN public.platform_extension_modules m ON m.module_key = e.module_key
 LEFT JOIN public.platform_capability_registry c ON c.capability_key = e.capability_key
