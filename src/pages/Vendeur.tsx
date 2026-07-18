@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Store, Loader2, Save, ExternalLink, Plus, Package, Shield, BadgeCheck, ShoppingBag, TrendingUp, Brain, Globe2 } from "lucide-react";
+import { Store, Loader2, Save, ExternalLink, Plus, Package, Shield, BadgeCheck, ShoppingBag, TrendingUp, Brain, Globe2, Database } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import VendorReports from "@/components/reports/VendorReports";
 import Seo from "@/components/seo/Seo";
 import VendorMarketplaceCoachPanel from "@/components/vendor/VendorMarketplaceCoachPanel";
 import VendorMarketplaceSeoPanel from "@/components/vendor/VendorMarketplaceSeoPanel";
+import VendorCatalogueIntelligencePanel from "@/components/vendor/VendorCatalogueIntelligencePanel";
 import type { VendorProduct, VendorShop } from "@/hooks/useVendorShop";
 
 type ShopCreatePayload = {
@@ -115,6 +116,10 @@ const VendeurPage = () => {
                     <Globe2 className="mr-2 h-4 w-4" />
                     SEO Marketplace
                   </TabsTrigger>
+                  <TabsTrigger value="catalogue-intelligence" className="flex-shrink-0">
+                    <Database className="mr-2 h-4 w-4" />
+                    Catalogue IA
+                  </TabsTrigger>
                   <TabsTrigger value="reports" className="flex-shrink-0">
                     <TrendingUp className="mr-2 h-4 w-4" />
                     Rapports
@@ -133,6 +138,10 @@ const VendeurPage = () => {
 
                 <TabsContent value="seo">
                   <VendorMarketplaceSeoPanel shop={shop} products={products} />
+                </TabsContent>
+
+                <TabsContent value="catalogue-intelligence">
+                  <VendorCatalogueIntelligencePanel shop={shop} products={products} />
                 </TabsContent>
 
                 <TabsContent value="reports">
