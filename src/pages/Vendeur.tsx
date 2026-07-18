@@ -23,6 +23,7 @@ import Seo from "@/components/seo/Seo";
 import VendorMarketplaceCoachPanel from "@/components/vendor/VendorMarketplaceCoachPanel";
 import VendorMarketplaceSeoPanel from "@/components/vendor/VendorMarketplaceSeoPanel";
 import VendorCatalogueIntelligencePanel from "@/components/vendor/VendorCatalogueIntelligencePanel";
+import VendorMarketplaceAnalyticsPanel from "@/components/vendor/VendorMarketplaceAnalyticsPanel";
 import type { VendorProduct, VendorShop } from "@/hooks/useVendorShop";
 
 type ShopCreatePayload = {
@@ -120,6 +121,10 @@ const VendeurPage = () => {
                     <Database className="mr-2 h-4 w-4" />
                     Catalogue IA
                   </TabsTrigger>
+                  <TabsTrigger value="analytics" className="flex-shrink-0">
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    Insights
+                  </TabsTrigger>
                   <TabsTrigger value="reports" className="flex-shrink-0">
                     <TrendingUp className="mr-2 h-4 w-4" />
                     Rapports
@@ -142,6 +147,10 @@ const VendeurPage = () => {
 
                 <TabsContent value="catalogue-intelligence">
                   <VendorCatalogueIntelligencePanel shop={shop} products={products} />
+                </TabsContent>
+
+                <TabsContent value="analytics">
+                  <VendorMarketplaceAnalyticsPanel shop={shop} />
                 </TabsContent>
 
                 <TabsContent value="reports">
