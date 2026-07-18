@@ -71,6 +71,22 @@ type NotificationRow = {
   created_at: string;
 };
 
+type ComplianceFinding = {
+  id: string;
+  finding_number: string;
+  created_at: string;
+  queue_status: string;
+  severity: string;
+  compliance_score: number;
+  title: string;
+  justification: string;
+  recommended_actions: unknown[];
+  product_name: string | null;
+  product_image_url: string | null;
+  policy_name: string;
+  policy_category: string;
+};
+
 const db = supabase as unknown as QueryClient;
 const toArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 
@@ -97,6 +113,7 @@ const workflowStatusLabel: Record<string, string> = {
 export default function VendorMarketplaceGovernancePanel({ shop }: { shop: VendorShop }) {
   const [cases, setCases] = useState<WorkflowCase[]>([]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
+  const [complianceFindings, setComplianceFindings] = useState<ComplianceFinding[]>([]);
   const [selectedCase, setSelectedCase] = useState<WorkflowCase | null>(null);
   const [comments, setComments] = useState<WorkflowComment[]>([]);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
@@ -115,9 +132,10 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
-    const [casesResult, notificationsResult] = await Promise.all([
+    const [casesResult, notificationsResult, complianceResult] = await Promise.all([
       db.from("my_marketplace_case_resolution_cases").select("*").eq("vendor_shop_id", shop.id).order("created_at", { ascending: false }).limit(80),
       db.from("my_marketplace_governance_notifications").select("*").order("created_at", { ascending: false }).limit(80),
+      db.from("my_marketplace_compliance_findings").select("*").order("created_at", { ascending: false }).limit(80),
     ]);
 
     if (!casesResult.error) {
@@ -128,6 +146,7 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
       if (nextCase) await loadCaseDetails(nextCase.id);
     }
     if (!notificationsResult.error) setNotifications(toArray<NotificationRow>(notificationsResult.data));
+    if (!complianceResult.error) setComplianceFindings(toArray<ComplianceFinding>(complianceResult.data));
     if (casesResult.error) {
       toast({ title: "Workflow Marketplace indisponible", description: casesResult.error.message, variant: "destructive" });
     }
@@ -191,7 +210,7 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
         <CardContent className="grid gap-4 md:grid-cols-3">
           <Metric label="Dossiers visibles" value={cases.length} />
           <Metric label="Actions attendues" value={cases.filter((item) => ["waiting_vendor", "info_requested"].includes(item.workflow_status_code)).length} />
-          <Metric label="Notifications" value={notifications.filter((item) => !item.read_at).length} />
+          <Metric label="Alertes conformite" value={complianceFindings.filter((item) => !["compliant", "archived"].includes(item.queue_status)).length} />
         </CardContent>
       </Card>
 
@@ -206,6 +225,7 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
         <TabsList className="border border-gold/20 bg-noir-light/60">
           <TabsTrigger value="cases">Dossiers</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="compliance">Conformite</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
 
@@ -291,6 +311,34 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="compliance" className="space-y-3">
+          {complianceFindings.length === 0 ? <EmptyState text="Aucune alerte de conformite visible pour votre boutique." /> : complianceFindings.map((finding) => (
+            <Card key={finding.id} className="border-gold/10 bg-noir/40">
+              <CardContent className="space-y-3 p-4">
+                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium text-cream">{finding.finding_number}</span>
+                      <Badge variant={finding.severity === "critical" ? "destructive" : "outline"}>{finding.severity}</Badge>
+                      <Badge variant="secondary">{finding.queue_status}</Badge>
+                    </div>
+                    <div className="mt-2 text-sm font-medium text-cream">{finding.title}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{finding.product_name || shop.name} - {finding.policy_name}</div>
+                  </div>
+                  <Metric label="Score" value={`${Number(finding.compliance_score || 0).toFixed(0)}%`} />
+                </div>
+                <p className="text-sm text-muted-foreground">{finding.justification}</p>
+                <div className="rounded-lg border border-gold/10 bg-noir/50 p-3">
+                  <div className="mb-2 text-sm font-medium text-primary">Actions attendues</div>
+                  <ul className="space-y-1 text-sm text-muted-foreground">
+                    {finding.recommended_actions.map((action, index) => <li key={`${finding.id}-${index}`}>- {String(action)}</li>)}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-3">
