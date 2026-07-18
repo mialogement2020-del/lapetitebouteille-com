@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, MessageSquare, RefreshCw, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ClipboardCheck, Loader2, MessageSquare, RefreshCw, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ type QueryClient = {
   rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
 };
 
-type GovernanceCase = {
+type WorkflowCase = {
   id: string;
   case_number: string;
   created_at: string;
@@ -29,12 +29,37 @@ type GovernanceCase = {
   priority: "critical" | "high" | "normal" | "low";
   confidence_score: number;
   status: string;
+  workflow_status_code: string;
+  workflow_status_label: string | null;
   vendor_shop_id: string;
   product_name: string | null;
   problem: string;
   explanation: string;
   recommended_actions: string[];
   final_decision: string | null;
+  due_at: string | null;
+  comments_count: number;
+  checklist_count: number;
+  checklist_completed_count: number;
+};
+
+type WorkflowComment = {
+  id: string;
+  case_id: string;
+  created_at: string;
+  author_type: string;
+  comment_type: string;
+  body: string;
+};
+
+type ChecklistItem = {
+  id: string;
+  case_id: string;
+  label: string;
+  description: string | null;
+  is_required: boolean;
+  is_completed: boolean;
+  sort_order: number;
 };
 
 type NotificationRow = {
@@ -56,61 +81,88 @@ const priorityLabel: Record<string, string> = {
   low: "Faible",
 };
 
-const statusLabel: Record<string, string> = {
+const workflowStatusLabel: Record<string, string> = {
   new: "Nouveau",
+  to_analyze: "A analyser",
   in_progress: "En cours",
-  waiting: "En attente",
-  validated: "Valide",
-  refused: "Refuse",
-  archived: "Archive",
+  info_requested: "Info demandee",
+  waiting_vendor: "Action attendue",
+  vendor_replied: "Reponse envoyee",
+  to_validate: "A valider",
+  resolved: "Resolu",
+  closed: "Cloture",
+  reopened: "Reouvert",
 };
 
 export default function VendorMarketplaceGovernancePanel({ shop }: { shop: VendorShop }) {
-  const [cases, setCases] = useState<GovernanceCase[]>([]);
+  const [cases, setCases] = useState<WorkflowCase[]>([]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
-  const [selectedCase, setSelectedCase] = useState<GovernanceCase | null>(null);
+  const [selectedCase, setSelectedCase] = useState<WorkflowCase | null>(null);
+  const [comments, setComments] = useState<WorkflowComment[]>([]);
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [comment, setComment] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isWorking, setIsWorking] = useState(false);
 
+  const loadCaseDetails = useCallback(async (caseId: string) => {
+    const [commentsResult, checklistResult] = await Promise.all([
+      db.from("my_marketplace_case_comments").select("*").eq("case_id", caseId).order("created_at", { ascending: false }).limit(80),
+      db.from("my_marketplace_case_checklist_items").select("*").eq("case_id", caseId).order("sort_order", { ascending: true }).limit(80),
+    ]);
+    if (!commentsResult.error) setComments(toArray<WorkflowComment>(commentsResult.data));
+    if (!checklistResult.error) setChecklist(toArray<ChecklistItem>(checklistResult.data));
+  }, []);
+
   const loadData = useCallback(async () => {
     setIsLoading(true);
     const [casesResult, notificationsResult] = await Promise.all([
-      db.from("my_marketplace_governance_cases").select("*").eq("vendor_shop_id", shop.id).order("created_at", { ascending: false }).limit(80),
+      db.from("my_marketplace_case_resolution_cases").select("*").eq("vendor_shop_id", shop.id).order("created_at", { ascending: false }).limit(80),
       db.from("my_marketplace_governance_notifications").select("*").order("created_at", { ascending: false }).limit(80),
     ]);
 
     if (!casesResult.error) {
-      const rows = toArray<GovernanceCase>(casesResult.data);
+      const rows = toArray<WorkflowCase>(casesResult.data);
       setCases(rows);
-      setSelectedCase((current) => current ?? rows[0] ?? null);
+      const nextCase = rows[0] ?? null;
+      setSelectedCase((current) => current ?? nextCase);
+      if (nextCase) await loadCaseDetails(nextCase.id);
     }
     if (!notificationsResult.error) setNotifications(toArray<NotificationRow>(notificationsResult.data));
     if (casesResult.error) {
-      toast({ title: "Gouvernance Marketplace indisponible", description: casesResult.error.message, variant: "destructive" });
+      toast({ title: "Workflow Marketplace indisponible", description: casesResult.error.message, variant: "destructive" });
     }
     setIsLoading(false);
-  }, [shop.id]);
+  }, [loadCaseDetails, shop.id]);
 
   useEffect(() => {
     void loadData();
   }, [loadData]);
 
+  const selectCase = async (item: WorkflowCase) => {
+    setSelectedCase(item);
+    setComment("");
+    await loadCaseDetails(item.id);
+  };
+
   const sendComment = async () => {
     if (!selectedCase || !comment.trim()) return;
     setIsWorking(true);
-    const { error } = await db.rpc("comment_marketplace_governance_case", {
+    const { error } = await db.rpc("add_marketplace_case_comment", {
       _case_id: selectedCase.id,
-      _comment: comment.trim(),
+      _body: comment.trim(),
+      _visibility: "vendor",
+      _comment_type: "evidence",
+      _attachments: [],
     });
     setIsWorking(false);
     if (error) {
       toast({ title: "Reponse impossible", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Reponse envoyee", description: "L'administration LPB verra votre commentaire dans le dossier." });
+    toast({ title: "Reponse envoyee", description: "L'administration LPB verra votre message dans le dossier." });
     setComment("");
     await loadData();
+    await loadCaseDetails(selectedCase.id);
   };
 
   if (isLoading) {
@@ -118,7 +170,7 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
       <Card className="border-gold/20 bg-noir/50">
         <CardContent className="flex min-h-[220px] items-center justify-center text-cream">
           <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary" />
-          Chargement de la gouvernance Marketplace...
+          Chargement du workflow Marketplace...
         </CardContent>
       </Card>
     );
@@ -130,15 +182,15 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-cream">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            Gouvernance Marketplace
+            Workflow Marketplace
           </CardTitle>
           <CardDescription>
-            Dossiers de qualite ou de revision visibles pour votre boutique. Aucune action automatique n'est executee sans validation admin.
+            Dossiers de qualite ou de revision visibles pour votre boutique. Les notes internes LPB ne sont jamais affichees ici.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <Metric label="Dossiers visibles" value={cases.length} />
-          <Metric label="A traiter" value={cases.filter((item) => ["new", "in_progress", "waiting"].includes(item.status)).length} />
+          <Metric label="Actions attendues" value={cases.filter((item) => ["waiting_vendor", "info_requested"].includes(item.workflow_status_code)).length} />
           <Metric label="Notifications" value={notifications.filter((item) => !item.read_at).length} />
         </CardContent>
       </Card>
@@ -161,16 +213,16 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
           {cases.length === 0 ? <EmptyState text="Aucun dossier visible pour votre boutique." /> : cases.map((item) => (
             <Card key={item.id} className="border-gold/10 bg-noir/40">
               <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                <button type="button" onClick={() => setSelectedCase(item)} className="text-left">
+                <button type="button" onClick={() => selectCase(item)} className="text-left">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium text-cream">{item.case_number}</span>
                     <Badge variant={item.priority === "critical" ? "destructive" : "outline"}>{priorityLabel[item.priority]}</Badge>
-                    <Badge variant="secondary">{statusLabel[item.status] || item.status}</Badge>
+                    <Badge variant="secondary">{item.workflow_status_label || workflowStatusLabel[item.workflow_status_code] || item.workflow_status_code}</Badge>
                   </div>
                   <div className="mt-2 text-sm text-cream">{item.problem}</div>
                   <div className="mt-1 text-xs text-muted-foreground">{item.product_name || shop.name}</div>
                 </button>
-                <Button variant="outline" onClick={() => setSelectedCase(item)} className="border-gold/30">
+                <Button variant="outline" onClick={() => selectCase(item)} className="border-gold/30">
                   Voir
                 </Button>
               </CardContent>
@@ -187,11 +239,31 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">{selectedCase.explanation}</p>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Metric label="Statut" value={selectedCase.workflow_status_label || workflowStatusLabel[selectedCase.workflow_status_code] || selectedCase.workflow_status_code} />
+                  <Metric label="Checklist" value={`${selectedCase.checklist_completed_count}/${selectedCase.checklist_count}`} />
+                  <Metric label="Commentaires" value={selectedCase.comments_count} />
+                </div>
                 <div className="rounded-lg border border-gold/10 bg-noir/40 p-3">
                   <div className="mb-2 text-sm font-medium text-primary">Actions recommandees</div>
                   <ul className="space-y-1 text-sm text-muted-foreground">
                     {(selectedCase.recommended_actions || []).map((action) => <li key={action}>- {action}</li>)}
                   </ul>
+                </div>
+                <div className="rounded-lg border border-gold/10 bg-noir/40 p-3">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
+                    <ClipboardCheck className="h-4 w-4" />
+                    Checklist visible
+                  </div>
+                  {checklist.length === 0 ? <div className="text-sm text-muted-foreground">Aucune checklist partagee.</div> : checklist.map((item) => (
+                    <div key={item.id} className="flex items-start gap-2 py-2 text-sm">
+                      {item.is_completed ? <CheckCircle2 className="h-4 w-4 text-green-400" /> : <span className="mt-1 h-3 w-3 rounded-full border border-gold/40" />}
+                      <div>
+                        <div className="text-cream">{item.label}{item.is_required ? " *" : ""}</div>
+                        {item.description && <div className="text-xs text-muted-foreground">{item.description}</div>}
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 {selectedCase.final_decision && (
                   <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm text-green-200">
@@ -199,6 +271,18 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
                     {selectedCase.final_decision}
                   </div>
                 )}
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-primary">Messages du dossier</div>
+                  {comments.length === 0 ? <EmptyState text="Aucun message visible." /> : comments.map((row) => (
+                    <div key={row.id} className="rounded-lg border border-gold/10 bg-noir/40 p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="secondary">{row.author_type === "vendor" ? "Vous" : "LPB"}</Badge>
+                        <span className="text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString("fr-FR")}</span>
+                      </div>
+                      <div className="mt-2 text-sm text-cream">{row.body}</div>
+                    </div>
+                  ))}
+                </div>
                 <Textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Ajouter une reponse pour l'administration LPB..." className="min-h-28 border-gold/20 bg-noir/60 text-cream" />
                 <Button onClick={sendComment} disabled={isWorking || !comment.trim()} className="bg-gradient-gold text-noir">
                   {isWorking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquare className="mr-2 h-4 w-4" />}
@@ -228,15 +312,15 @@ export default function VendorMarketplaceGovernancePanel({ shop }: { shop: Vendo
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
+function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-lg border border-gold/10 bg-noir/40 p-4">
       <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="mt-2 text-2xl font-bold text-cream">{value}</div>
+      <div className="mt-2 text-xl font-bold text-cream">{value}</div>
     </div>
   );
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-lg border border-dashed border-gold/20 bg-noir/30 p-8 text-center text-muted-foreground">{text}</div>;
+  return <div className="rounded-lg border border-dashed border-gold/20 bg-noir/30 p-6 text-center text-sm text-muted-foreground">{text}</div>;
 }

@@ -19,15 +19,15 @@ describe("P3.1 marketplace governance UI integration", () => {
   it("adds a vendor governance panel with read/comment workflow", () => {
     expect(vendorPage).toContain("VendorMarketplaceGovernancePanel");
     expect(vendorPage).toContain('value="governance"');
-    expect(vendorComponent).toContain("my_marketplace_governance_cases");
-    expect(vendorComponent).toContain("comment_marketplace_governance_case");
+    expect(vendorComponent).toMatch(/my_marketplace_(governance_cases|case_resolution_cases)/);
+    expect(vendorComponent).toMatch(/(comment_marketplace_governance_case|add_marketplace_case_comment)/);
     expect(vendorComponent).not.toContain("update_marketplace_governance_case");
   });
 
   it("admin UI scans, reviews and updates cases without direct table writes", () => {
     expect(adminComponent).toContain("scan_marketplace_governance_cases");
-    expect(adminComponent).toContain("update_marketplace_governance_case");
-    expect(adminComponent).toContain("admin_marketplace_governance_queue");
+    expect(adminComponent).toMatch(/(update_marketplace_governance_case|transition_marketplace_governance_case)/);
+    expect(adminComponent).toMatch(/(admin_marketplace_governance_queue|admin_marketplace_case_resolution_queue)/);
     expect(adminComponent).not.toContain('.from("marketplace_governance_cases").update');
     expect(adminComponent).not.toContain('.from("marketplace_governance_cases").insert');
   });
