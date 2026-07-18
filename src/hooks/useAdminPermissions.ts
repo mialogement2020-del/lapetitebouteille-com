@@ -25,6 +25,7 @@ export type AdminPermission =
   | 'marketplace_seo'
   | 'catalogue_intelligence'
   | 'marketplace_analytics'
+  | 'marketplace_governance'
   | 'full_access';
 
 export interface AdminUser {
@@ -66,6 +67,7 @@ export const TAB_PERMISSIONS: Record<string, AdminPermission[]> = {
   'marketplace-seo': ['marketplace_seo', 'marketplace_coach', 'marketplace_image_studio', 'products'],
   'catalogue-intelligence': ['catalogue_intelligence', 'marketplace_seo', 'marketplace_coach', 'products', 'categories'],
   'marketplace-analytics': ['marketplace_analytics', 'catalogue_intelligence', 'marketplace_seo', 'marketplace_coach', 'marketplace_image_studio'],
+  'marketplace-governance': ['marketplace_governance', 'marketplace_analytics', 'catalogue_intelligence', 'marketplace_seo', 'marketplace_coach', 'marketplace_image_studio'],
   restock: ['stock', 'products'],
   'stock-alerts': ['stock'],
   audit: ['audit'],
@@ -97,6 +99,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   marketplace_seo: 'SEO & Discoverability Marketplace',
   catalogue_intelligence: 'Catalogue Intelligence Engine',
   marketplace_analytics: 'Marketplace Analytics & Insights',
+  marketplace_governance: 'Marketplace Governance & Automation',
 };
 
 export const useAdminPermissions = () => {
