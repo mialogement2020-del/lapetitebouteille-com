@@ -196,6 +196,60 @@ type AutomationTask = {
 
 type AutomationActionType = "send_notification" | "create_task" | "schedule_reminder" | "assign_checklist" | "request_information" | "propose_escalation";
 
+type ComplianceOverview = {
+  global_compliance_score: number;
+  open_findings: number;
+  critical_findings: number;
+  rejection_proposed: number;
+  findings_24h: number;
+  active_policies: number;
+  avg_resolution_hours: number;
+};
+
+type ComplianceFinding = {
+  id: string;
+  finding_number: string;
+  created_at: string;
+  queue_status: string;
+  severity: string;
+  confidence_score: number;
+  compliance_score: number;
+  title: string;
+  justification: string;
+  analyzed_elements: Record<string, unknown>;
+  estimated_impact: Record<string, unknown>;
+  recommended_actions: unknown[];
+  governance_case_id: string | null;
+  product_name: string | null;
+  product_image_url: string | null;
+  shop_name: string | null;
+  policy_code: string;
+  policy_name: string;
+  policy_category: string;
+};
+
+type CompliancePolicyStat = {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  severity: string;
+  priority: number;
+  is_active: boolean;
+  total_findings: number;
+  open_findings: number;
+  findings_7d: number;
+};
+
+type ComplianceShopStat = {
+  vendor_shop_id: string;
+  shop_name: string;
+  avg_compliance_score: number;
+  open_findings: number;
+  critical_findings: number;
+  flagged_products: number;
+};
+
 const db = supabase as unknown as QueryClient;
 const toArray = <T,>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 
@@ -235,6 +289,11 @@ export default function MarketplaceGovernanceDashboard() {
   const [automationQueue, setAutomationQueue] = useState<AutomationQueueItem[]>([]);
   const [automationExecutions, setAutomationExecutions] = useState<AutomationExecution[]>([]);
   const [automationTasks, setAutomationTasks] = useState<AutomationTask[]>([]);
+  const [complianceOverview, setComplianceOverview] = useState<ComplianceOverview | null>(null);
+  const [complianceFindings, setComplianceFindings] = useState<ComplianceFinding[]>([]);
+  const [compliancePolicies, setCompliancePolicies] = useState<CompliancePolicyStat[]>([]);
+  const [complianceShops, setComplianceShops] = useState<ComplianceShopStat[]>([]);
+  const [complianceStatusFilter, setComplianceStatusFilter] = useState("open");
   const [isLoading, setIsLoading] = useState(true);
   const [isWorking, setIsWorking] = useState(false);
   const [workflowStatus, setWorkflowStatus] = useState("to_analyze");
@@ -250,6 +309,14 @@ export default function MarketplaceGovernanceDashboard() {
     [cases],
   );
 
+  const filteredComplianceFindings = useMemo(() => {
+    if (complianceStatusFilter === "all") return complianceFindings;
+    if (complianceStatusFilter === "open") {
+      return complianceFindings.filter((item) => !["compliant", "archived"].includes(item.queue_status));
+    }
+    return complianceFindings.filter((item) => item.queue_status === complianceStatusFilter);
+  }, [complianceFindings, complianceStatusFilter]);
+
   const loadData = async () => {
     setIsLoading(true);
     const [
@@ -262,6 +329,10 @@ export default function MarketplaceGovernanceDashboard() {
       automationQueueResult,
       automationExecutionsResult,
       automationTasksResult,
+      complianceOverviewResult,
+      complianceFindingsResult,
+      compliancePoliciesResult,
+      complianceShopsResult,
     ] = await Promise.all([
       db.from("admin_marketplace_case_resolution_overview").select("*").maybeSingle(),
       db.from("admin_marketplace_case_resolution_queue").select("*").order("created_at", { ascending: false }).limit(150),
@@ -272,6 +343,10 @@ export default function MarketplaceGovernanceDashboard() {
       db.from("admin_marketplace_workflow_automation_queue").select("*").order("scheduled_for", { ascending: true }).limit(80),
       db.from("admin_marketplace_workflow_automation_executions").select("*").order("created_at", { ascending: false }).limit(80),
       db.from("admin_marketplace_workflow_automation_tasks").select("*").order("created_at", { ascending: false }).limit(80),
+      db.from("admin_marketplace_compliance_overview").select("*").maybeSingle(),
+      db.from("admin_marketplace_compliance_queue").select("*").order("created_at", { ascending: false }).limit(120),
+      db.from("admin_marketplace_compliance_policy_stats").select("*").order("open_findings", { ascending: false }).limit(80),
+      db.from("admin_marketplace_compliance_shop_stats").select("*").order("open_findings", { ascending: false }).limit(80),
     ]);
 
     if (!overviewResult.error) setOverview((overviewResult.data as Overview | null) ?? null);
@@ -283,11 +358,18 @@ export default function MarketplaceGovernanceDashboard() {
     if (!automationQueueResult.error) setAutomationQueue(toArray<AutomationQueueItem>(automationQueueResult.data));
     if (!automationExecutionsResult.error) setAutomationExecutions(toArray<AutomationExecution>(automationExecutionsResult.data));
     if (!automationTasksResult.error) setAutomationTasks(toArray<AutomationTask>(automationTasksResult.data));
+    if (!complianceOverviewResult.error) setComplianceOverview((complianceOverviewResult.data as ComplianceOverview | null) ?? null);
+    if (!complianceFindingsResult.error) setComplianceFindings(toArray<ComplianceFinding>(complianceFindingsResult.data));
+    if (!compliancePoliciesResult.error) setCompliancePolicies(toArray<CompliancePolicyStat>(compliancePoliciesResult.data));
+    if (!complianceShopsResult.error) setComplianceShops(toArray<ComplianceShopStat>(complianceShopsResult.data));
     if (overviewResult.error) {
       toast({ title: "Workflow Marketplace indisponible", description: overviewResult.error.message, variant: "destructive" });
     }
     if (automationOverviewResult.error) {
       toast({ title: "Automations Marketplace indisponibles", description: automationOverviewResult.error.message, variant: "destructive" });
+    }
+    if (complianceOverviewResult.error) {
+      toast({ title: "Compliance Marketplace indisponible", description: complianceOverviewResult.error.message, variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -515,6 +597,39 @@ export default function MarketplaceGovernanceDashboard() {
     await loadData();
   };
 
+  const scanCompliance = async () => {
+    setIsWorking(true);
+    const { data, error } = await db.rpc("scan_marketplace_compliance", { _limit: 150 });
+    setIsWorking(false);
+    if (error) {
+      toast({ title: "Scan compliance impossible", description: error.message, variant: "destructive" });
+      return;
+    }
+    const result = data as { scanned_products?: number; findings_touched?: number } | null;
+    toast({
+      title: "Scan compliance termine",
+      description: `${result?.scanned_products ?? 0} produit(s), ${result?.findings_touched ?? 0} detection(s). Aucune suppression automatique.`,
+    });
+    await loadData();
+  };
+
+  const updateComplianceFinding = async (finding: ComplianceFinding, status: string, createCase = false) => {
+    setIsWorking(true);
+    const { error } = await db.rpc("update_marketplace_compliance_finding_status", {
+      _finding_id: finding.id,
+      _queue_status: status,
+      _resolution_note: `Decision humaine admin : ${status}`,
+      _create_governance_case: createCase,
+    });
+    setIsWorking(false);
+    if (error) {
+      toast({ title: "Decision compliance impossible", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Moderation mise a jour", description: createCase ? "Un dossier Governance a ete prepare." : "Decision journalisee en append-only." });
+    await loadData();
+  };
+
   const refreshSelectedCase = async (caseId: string) => {
     await loadData();
     await loadCaseResolution(caseId);
@@ -574,6 +689,7 @@ export default function MarketplaceGovernanceDashboard() {
           <TabsTrigger value="queue">File de resolution</TabsTrigger>
           <TabsTrigger value="case">Dossier</TabsTrigger>
           <TabsTrigger value="automation">Automations</TabsTrigger>
+          <TabsTrigger value="compliance">Compliance IA</TabsTrigger>
           <TabsTrigger value="trends">Tendances</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
@@ -883,6 +999,147 @@ export default function MarketplaceGovernanceDashboard() {
                       <MetricInline label="Type" value={task.task_type} />
                       <MetricInline label="Dossier" value={task.case_number || "-"} />
                       <MetricInline label="Echeance" value={task.due_at ? new Date(task.due_at).toLocaleDateString("fr-FR") : "-"} />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="compliance" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-4">
+            <MetricCard label="Compliance globale" value={complianceOverview?.global_compliance_score || 0} icon={<ShieldCheck className="h-5 w-5" />} />
+            <MetricCard label="Anomalies ouvertes" value={complianceOverview?.open_findings || 0} icon={<AlertTriangle className="h-5 w-5" />} />
+            <MetricCard label="Critiques" value={complianceOverview?.critical_findings || 0} icon={<AlertTriangle className="h-5 w-5" />} tone="danger" />
+            <MetricCard label="Politiques actives" value={complianceOverview?.active_policies || 0} icon={<ListChecks className="h-5 w-5" />} />
+          </div>
+
+          <Card className="border-gold/20 bg-noir/60">
+            <CardHeader>
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <CardTitle className="text-cream">P3.4 AI Moderation & Compliance Engine</CardTitle>
+                  <CardDescription>
+                    Detection et scoring uniquement. Toute suppression, suspension ou decision sensible reste humaine.
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Select value={complianceStatusFilter} onValueChange={setComplianceStatusFilter}>
+                    <SelectTrigger className="w-[190px] border-gold/20 bg-noir/60 text-cream"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="open">Ouvertes</SelectItem>
+                      <SelectItem value="to_review">A verifier</SelectItem>
+                      <SelectItem value="to_fix">A corriger</SelectItem>
+                      <SelectItem value="to_complete">A completer</SelectItem>
+                      <SelectItem value="to_validate">A valider</SelectItem>
+                      <SelectItem value="compliant">Conforme</SelectItem>
+                      <SelectItem value="rejection_proposed">Rejet propose</SelectItem>
+                      <SelectItem value="archived">Archive</SelectItem>
+                      <SelectItem value="all">Toutes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" onClick={scanCompliance} disabled={isWorking} className="border-gold/30">
+                    {isWorking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
+                    Scanner
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {filteredComplianceFindings.length === 0 ? <EmptyState text="Aucune anomalie de compliance pour ce filtre." /> : filteredComplianceFindings.map((finding) => (
+                <div key={finding.id} className="rounded-lg border border-gold/10 bg-noir/40 p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-cream">{finding.finding_number}</span>
+                        <Badge variant={finding.severity === "critical" ? "destructive" : "outline"}>{finding.severity}</Badge>
+                        <Badge variant="secondary">{finding.queue_status}</Badge>
+                        <Badge variant="outline">{finding.policy_category}</Badge>
+                      </div>
+                      <div className="mt-2 text-lg font-medium text-cream">{finding.title}</div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {finding.product_name || "Produit"} - {finding.shop_name || "Boutique Marketplace"} - {finding.policy_name}
+                      </div>
+                      <div className="mt-3 text-sm text-muted-foreground">{finding.justification}</div>
+                    </div>
+                    <div className="grid min-w-[220px] gap-2 text-sm">
+                      <MetricInline label="Score" value={`${Number(finding.compliance_score || 0).toFixed(0)}%`} />
+                      <MetricInline label="Confiance" value={`${Number(finding.confidence_score || 0).toFixed(0)}%`} />
+                      <MetricInline label="Cree" value={new Date(finding.created_at).toLocaleDateString("fr-FR")} />
+                    </div>
+                  </div>
+                  <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                    <InfoBlock title="Elements analyses" value={finding.analyzed_elements} />
+                    <InfoBlock title="Impact estime" value={finding.estimated_impact} />
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={() => updateComplianceFinding(finding, "to_fix")} disabled={isWorking} className="border-gold/30">
+                      A corriger
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => updateComplianceFinding(finding, "to_complete")} disabled={isWorking} className="border-gold/30">
+                      A completer
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => updateComplianceFinding(finding, "to_validate")} disabled={isWorking} className="border-gold/30">
+                      A valider
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => updateComplianceFinding(finding, "compliant")} disabled={isWorking} className="border-green-500/30 text-green-300">
+                      Conforme
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => updateComplianceFinding(finding, "rejection_proposed", true)} disabled={isWorking} className="border-red-500/30 text-red-300">
+                      Rejet propose
+                    </Button>
+                    <Button size="sm" onClick={() => updateComplianceFinding(finding, finding.queue_status, true)} disabled={isWorking || Boolean(finding.governance_case_id)} className="bg-gradient-gold text-noir">
+                      Ouvrir dossier
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <Card className="border-gold/20 bg-noir/60">
+              <CardHeader>
+                <CardTitle className="text-cream">Regles les plus declenchees</CardTitle>
+                <CardDescription>Referentiel de politiques P3.4 administrable cote SQL.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {compliancePolicies.length === 0 ? <EmptyState text="Aucune statistique de politique." /> : compliancePolicies.map((policy) => (
+                  <div key={policy.id} className="rounded-lg border border-gold/10 bg-noir/40 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <div className="font-medium text-cream">{policy.name}</div>
+                        <div className="text-xs text-muted-foreground">{policy.code} - {policy.category}</div>
+                      </div>
+                      <Badge variant={policy.severity === "critical" ? "destructive" : "outline"}>{policy.severity}</Badge>
+                    </div>
+                    <div className="mt-2 grid gap-2 text-sm md:grid-cols-3">
+                      <MetricInline label="Ouvertes" value={policy.open_findings || 0} />
+                      <MetricInline label="7 jours" value={policy.findings_7d || 0} />
+                      <MetricInline label="Total" value={policy.total_findings || 0} />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border-gold/20 bg-noir/60">
+              <CardHeader>
+                <CardTitle className="text-cream">Boutiques les plus concernees</CardTitle>
+                <CardDescription>Priorisation d'accompagnement, sans sanction automatique.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {complianceShops.length === 0 ? <EmptyState text="Aucune statistique boutique." /> : complianceShops.map((shop) => (
+                  <div key={shop.vendor_shop_id} className="rounded-lg border border-gold/10 bg-noir/40 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="font-medium text-cream">{shop.shop_name || "Boutique"}</div>
+                      <Badge variant={shop.critical_findings > 0 ? "destructive" : "outline"}>{shop.avg_compliance_score || 0}%</Badge>
+                    </div>
+                    <div className="mt-2 grid gap-2 text-sm md:grid-cols-3">
+                      <MetricInline label="Ouvertes" value={shop.open_findings || 0} />
+                      <MetricInline label="Critiques" value={shop.critical_findings || 0} />
+                      <MetricInline label="Produits" value={shop.flagged_products || 0} />
                     </div>
                   </div>
                 ))}
