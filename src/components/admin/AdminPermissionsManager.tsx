@@ -31,6 +31,18 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   'mlm',
   'reviews',
   'loyalty',
+  'crm',
+  'commercial_calendar',
+  'ai_goals',
+  'conversation_coach',
+  'commercial_assets',
+  'academy',
+  'business_scores',
+  'business_assistant',
+  'marketplace_image_studio',
+  'marketplace_coach',
+  'marketplace_seo',
+  'catalogue_intelligence',
 ];
 
 interface SearchResult {
@@ -143,9 +155,9 @@ export const AdminPermissionsManager = () => {
       setSearchQuery("");
       setSearchResults([]);
       refetchAdminUsers();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check if it's a duplicate key error
-      if (error.code === '23505') {
+      if (typeof error === "object" && error !== null && "code" in error && error.code === '23505') {
         toast({
           title: t("adminPermissions.toast.alreadyAdmin"),
           description: t("adminPermissions.toast.alreadyAdminDesc"),
