@@ -40,7 +40,8 @@ import {
   MonitorCog,
   Puzzle,
   Cable,
-  Code2
+  Code2,
+  Store
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -89,6 +90,7 @@ const PlatformExtensionDashboard = lazy(() => import("@/components/admin/Platfor
 const ApiGatewayDashboard = lazy(() => import("@/components/admin/ApiGatewayDashboard"));
 const IntegrationHubDashboard = lazy(() => import("@/components/admin/IntegrationHubDashboard"));
 const DeveloperPortalDashboard = lazy(() => import("@/components/admin/DeveloperPortalDashboard"));
+const ExtensionMarketplaceDashboard = lazy(() => import("@/components/admin/ExtensionMarketplaceDashboard"));
 const DataPlatformDashboard = lazy(() => import("@/components/admin/DataPlatformDashboard"));
 const ReputationDashboard = lazy(() => import("@/components/admin/ReputationDashboard"));
 const MediaEngineManager = lazy(() => import("@/components/admin/MediaEngineManager").then((module) => ({ default: module.MediaEngineManager })));
@@ -234,6 +236,7 @@ const Admin = () => {
       { id: 'api-gateway', label: 'API Gateway', icon: Globe2 },
       { id: 'integration-hub', label: 'Connecteurs', icon: Cable },
       { id: 'developer-portal', label: 'Portail Dev', icon: Code2 },
+      { id: 'extension-marketplace', label: 'App Store', icon: Store },
       { id: 'data-platform', label: 'Data Platform', icon: DatabaseIcon },
       { id: 'reputation', label: 'Réputation', icon: ShieldIcon },
       { id: 'media', label: 'Magazine', icon: FileText },
@@ -774,6 +777,10 @@ const Admin = () => {
 
               <TabsContent value="developer-portal" className="space-y-8">
                 <DeveloperPortalDashboard />
+              </TabsContent>
+
+              <TabsContent value="extension-marketplace" className="space-y-8">
+                <ExtensionMarketplaceDashboard />
               </TabsContent>
 
               <TabsContent value="data-platform" className="space-y-8">
