@@ -658,7 +658,8 @@ SELECT jsonb_build_object(
         'responses', jsonb_build_object('200', response_schema)
       )
     )
-  ), '{}'::jsonb) AS spec
+  ), '{}'::jsonb)
+) AS spec
 FROM public.api_gateway_endpoints
 WHERE public.api_gateway_is_admin()
   AND status IN ('active','deprecated');
