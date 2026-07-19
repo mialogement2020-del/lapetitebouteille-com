@@ -24,6 +24,7 @@ describe("P4.4 developer portal migration", () => {
     expect(migration).toContain("api_gateway_endpoints");
     expect(migration).toContain("platform_observability_services");
     expect(migration).toContain("'p44_developer_portal'");
+    expect(migration).not.toContain("'v1', 'developer', NULL, 'active'");
   });
 
   it("adds developer key lifecycle and sandbox RPCs", () => {
