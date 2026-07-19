@@ -32,6 +32,8 @@ describe("P4.2 API Integration Gateway migration", () => {
     expect(migration).toContain("CREATE OR REPLACE FUNCTION public.api_gateway_log_request");
     expect(migration).toContain("CREATE OR REPLACE FUNCTION public.api_gateway_enqueue_webhook_event");
     expect(migration).toContain("CREATE OR REPLACE VIEW public.admin_api_gateway_overview");
+    expect(migration).toContain("CREATE OR REPLACE VIEW public.admin_api_gateway_openapi");
+    expect(migration).toMatch(/COALESCE\(jsonb_object_agg\([\s\S]+?\), '\{\}'::jsonb\)\s*\)\s+AS spec/);
     expect(migration).toContain("platform_observability_services");
     expect(migration).toContain("'integration', 'p42_api_integration_gateway'");
     expect(migration).toContain("is_active = true");
