@@ -753,14 +753,14 @@ GRANT EXECUTE ON FUNCTION public.api_gateway_enqueue_webhook_event(text, jsonb, 
 
 INSERT INTO public.platform_observability_services(code, name, category, owner_module, description, health_thresholds)
 VALUES
-  ('api_gateway', 'P4.2 API Gateway', 'api', 'p42_api_integration_gateway', 'Passerelle API, rate limits, logs et webhooks.', '{"error_rate_warning":5,"webhook_dead_letter_warning":1}'::jsonb)
+  ('api_gateway', 'P4.2 API Gateway', 'integration', 'p42_api_integration_gateway', 'Passerelle API, rate limits, logs et webhooks.', '{"error_rate_warning":5,"webhook_dead_letter_warning":1}'::jsonb)
 ON CONFLICT (code) DO UPDATE
 SET name = EXCLUDED.name,
     category = EXCLUDED.category,
     owner_module = EXCLUDED.owner_module,
     description = EXCLUDED.description,
     health_thresholds = EXCLUDED.health_thresholds,
-    status = 'active',
+    is_active = true,
     updated_at = now();
 
 NOTIFY pgrst, 'reload schema';
