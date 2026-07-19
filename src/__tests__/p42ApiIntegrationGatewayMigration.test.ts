@@ -33,6 +33,10 @@ describe("P4.2 API Integration Gateway migration", () => {
     expect(migration).toContain("CREATE OR REPLACE FUNCTION public.api_gateway_enqueue_webhook_event");
     expect(migration).toContain("CREATE OR REPLACE VIEW public.admin_api_gateway_overview");
     expect(migration).toContain("platform_observability_services");
+    expect(migration).toContain("'integration', 'p42_api_integration_gateway'");
+    expect(migration).toContain("is_active = true");
+    expect(migration).not.toContain("'api', 'p42_api_integration_gateway'");
+    expect(migration).not.toContain("status = 'active',\n    updated_at = now()");
   });
 
   it("keeps P0 financial state untouched", () => {
