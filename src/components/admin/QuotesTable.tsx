@@ -24,7 +24,8 @@ const STATUS_CLASSES: Record<string, string> = {
 
 export function QuotesTable() {
   const { t } = useTranslation();
-  const { data: quotes = [], isLoading } = useQuoteRequests();
+  const { data: quotesData = [], isLoading } = useQuoteRequests();
+  const quotes = quotesData as QuoteRow[];
   const updateStatus = useUpdateQuoteStatus();
   const [selectedQuote, setSelectedQuote] = useState<any | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
