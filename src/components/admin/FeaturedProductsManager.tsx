@@ -21,7 +21,7 @@ function SortableCard({ row, onEdit, onDelete, onToggle }: {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
   const formatPrice = useFormatPrice();
-  const p = row.product;
+  const p = row.product as { image_url?: string; name?: string; price?: number } | undefined;
 
   return (
     <div ref={setNodeRef} style={style}

@@ -609,13 +609,16 @@ export function useAdmin() {
         data.points_override != null ||
         data.points_tiers_override != null
       ) {
-        const { error: sensitiveError } = await supabase.rpc("admin_set_product_sensitive_pricing" as never, {
-          _product_id: insertedData.id,
-          _purchase_price: data.purchase_price ?? null,
-          _markup_percent_override: data.markup_percent_override ?? null,
-          _points_override: data.points_override ?? null,
-          _points_tiers_override: (data.points_tiers_override ?? null) as never,
-        });
+        const { error: sensitiveError } = await (supabase.rpc as unknown as (name: string, args: unknown) => Promise<{ error: unknown }>)(
+          "admin_set_product_sensitive_pricing",
+          {
+            _product_id: insertedData.id,
+            _purchase_price: data.purchase_price ?? null,
+            _markup_percent_override: data.markup_percent_override ?? null,
+            _points_override: data.points_override ?? null,
+            _points_tiers_override: data.points_tiers_override ?? null,
+          },
+        );
         if (sensitiveError) throw sensitiveError;
       }
 
@@ -677,13 +680,16 @@ export function useAdmin() {
         "points_override" in data ||
         "points_tiers_override" in data
       ) {
-        const { error: sensitiveError } = await supabase.rpc("admin_set_product_sensitive_pricing" as never, {
-          _product_id: id,
-          _purchase_price: data.purchase_price ?? null,
-          _markup_percent_override: data.markup_percent_override ?? null,
-          _points_override: data.points_override ?? null,
-          _points_tiers_override: (data.points_tiers_override ?? null) as never,
-        });
+        const { error: sensitiveError } = await (supabase.rpc as unknown as (name: string, args: unknown) => Promise<{ error: unknown }>)(
+          "admin_set_product_sensitive_pricing",
+          {
+            _product_id: id,
+            _purchase_price: data.purchase_price ?? null,
+            _markup_percent_override: data.markup_percent_override ?? null,
+            _points_override: data.points_override ?? null,
+            _points_tiers_override: data.points_tiers_override ?? null,
+          },
+        );
         if (sensitiveError) throw sensitiveError;
       }
 

@@ -10,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuoteRequests, useUpdateQuoteStatus } from "@/hooks/useWholesale";
 import { toast } from "@/hooks/use-toast";
 
+type QuoteRow = Record<string, any>;
+
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("fr-FR").format(price);
 };
