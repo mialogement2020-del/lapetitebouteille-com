@@ -14137,6 +14137,191 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_history: {
+        Row: {
+          action: Database["public"]["Enums"]["pricing_action"]
+          actor_id: string | null
+          affected_count: number
+          affected_products: Json
+          avg_new_price: number | null
+          avg_old_price: number | null
+          created_at: string
+          id: string
+          metadata: Json
+          new_margin_retail: number | null
+          new_margin_wholesale: number | null
+          old_margin_retail: number | null
+          old_margin_wholesale: number | null
+          parent_history_id: string | null
+          reason: string | null
+          scope: Database["public"]["Enums"]["pricing_scope"] | null
+          scope_id: string | null
+          total_impact: number | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["pricing_action"]
+          actor_id?: string | null
+          affected_count?: number
+          affected_products?: Json
+          avg_new_price?: number | null
+          avg_old_price?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          new_margin_retail?: number | null
+          new_margin_wholesale?: number | null
+          old_margin_retail?: number | null
+          old_margin_wholesale?: number | null
+          parent_history_id?: string | null
+          reason?: string | null
+          scope?: Database["public"]["Enums"]["pricing_scope"] | null
+          scope_id?: string | null
+          total_impact?: number | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["pricing_action"]
+          actor_id?: string | null
+          affected_count?: number
+          affected_products?: Json
+          avg_new_price?: number | null
+          avg_old_price?: number | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          new_margin_retail?: number | null
+          new_margin_wholesale?: number | null
+          old_margin_retail?: number | null
+          old_margin_wholesale?: number | null
+          parent_history_id?: string | null
+          reason?: string | null
+          scope?: Database["public"]["Enums"]["pricing_scope"] | null
+          scope_id?: string | null
+          total_impact?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_history_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "advisor_ai_goal_source_context"
+            referencedColumns: ["advisor_id"]
+          },
+          {
+            foreignKeyName: "pricing_history_parent_history_id_fkey"
+            columns: ["parent_history_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_margin_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          margin_retail_percent: number
+          margin_wholesale_percent: number
+          notes: string | null
+          priority: number
+          scope: Database["public"]["Enums"]["pricing_scope"]
+          scope_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          margin_retail_percent?: number
+          margin_wholesale_percent?: number
+          notes?: string | null
+          priority?: number
+          scope: Database["public"]["Enums"]["pricing_scope"]
+          scope_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          margin_retail_percent?: number
+          margin_wholesale_percent?: number
+          notes?: string | null
+          priority?: number
+          scope?: Database["public"]["Enums"]["pricing_scope"]
+          scope_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_margin_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "advisor_ai_goal_source_context"
+            referencedColumns: ["advisor_id"]
+          },
+        ]
+      }
+      pricing_simulations: {
+        Row: {
+          affected_count: number
+          applied_at: string | null
+          applied_history_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          results: Json
+          rules_snapshot: Json
+          total_impact: number | null
+          updated_at: string
+        }
+        Insert: {
+          affected_count?: number
+          applied_at?: string | null
+          applied_history_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          results?: Json
+          rules_snapshot: Json
+          total_impact?: number | null
+          updated_at?: string
+        }
+        Update: {
+          affected_count?: number
+          applied_at?: string | null
+          applied_history_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          results?: Json
+          rules_snapshot?: Json
+          total_impact?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_simulations_applied_history_id_fkey"
+            columns: ["applied_history_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_simulations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "advisor_ai_goal_source_context"
+            referencedColumns: ["advisor_id"]
+          },
+        ]
+      }
       product_affinities: {
         Row: {
           co_count: number
@@ -24733,6 +24918,10 @@ export type Database = {
       api_gateway_is_admin: { Args: never; Returns: boolean }
       api_gateway_log_request: { Args: { _log: Json }; Returns: Json }
       api_gateway_mask_secret: { Args: { _value: string }; Returns: string }
+      apply_margin_change: {
+        Args: { _reason?: string; _rule: Json }
+        Returns: string
+      }
       approve_wholesaler_application: {
         Args: { _app_id: string }
         Returns: Json
@@ -25448,6 +25637,10 @@ export type Database = {
           zone_id: string
         }[]
       }
+      resolve_product_margin: {
+        Args: { _mode?: string; _product_id: string }
+        Returns: number
+      }
       restore_order_stock_once: {
         Args: { _order_id: string; _reason?: string }
         Returns: Json
@@ -25455,6 +25648,10 @@ export type Database = {
       reverse_mlm_commissions_for_order: {
         Args: { _order_id: string }
         Returns: Json
+      }
+      rollback_pricing_change: {
+        Args: { _history_id: string }
+        Returns: string
       }
       run_p0_revenue_observation_for_recent_orders: {
         Args: { _limit?: number }
@@ -25484,6 +25681,7 @@ export type Database = {
         }
         Returns: Json
       }
+      simulate_margin_change: { Args: { _rule: Json }; Returns: Json }
       simulate_p05_order: {
         Args: { _order_id: string; _run_id: string }
         Returns: Json
@@ -25638,6 +25836,12 @@ export type Database = {
         | "cash_on_delivery"
         | "credit_card"
       payment_status: "pending" | "completed" | "failed" | "refunded"
+      pricing_action:
+        | "margin_update"
+        | "price_recalc"
+        | "rollback"
+        | "simulation"
+      pricing_scope: "global" | "category" | "brand" | "supplier" | "product"
       product_moderation_status: "pending" | "approved" | "flagged" | "rejected"
       product_moderation_verdict: "approved" | "review" | "rejected"
       trust_subject_type: "customer" | "vendor" | "ambassador" | "wholesaler"
@@ -25842,6 +26046,13 @@ export const Constants = {
         "credit_card",
       ],
       payment_status: ["pending", "completed", "failed", "refunded"],
+      pricing_action: [
+        "margin_update",
+        "price_recalc",
+        "rollback",
+        "simulation",
+      ],
+      pricing_scope: ["global", "category", "brand", "supplier", "product"],
       product_moderation_status: ["pending", "approved", "flagged", "rejected"],
       product_moderation_verdict: ["approved", "review", "rejected"],
       trust_subject_type: ["customer", "vendor", "ambassador", "wholesaler"],
