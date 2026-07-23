@@ -112,7 +112,7 @@ export function useCart(userId: string | null) {
         .eq("user_id", userId);
 
       if (!error && data) {
-        const cartItems: CartItem[] = (data as CartItemRow[]).map((item) => ({
+        const cartItems: CartItem[] = (data as unknown as CartItemRow[]).map((item) => ({
           id: item.id,
           product_id: item.product_id,
           quantity: item.quantity,

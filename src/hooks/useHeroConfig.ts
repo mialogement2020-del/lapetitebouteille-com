@@ -19,6 +19,8 @@ export interface HeroData {
   cta_secondary_label_fr: string;
   cta_secondary_label_en: string;
   cta_secondary_link: string;
+  active_from?: string;
+  active_until?: string;
 }
 
 export interface HeroConfigRow {

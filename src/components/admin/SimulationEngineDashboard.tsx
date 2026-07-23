@@ -468,7 +468,7 @@ function ReadinessExplanations({ explanations }: { explanations?: Record<string,
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             <span>
               {typeof value === "number" ? `${value} ` : ""}
-              {explanationLabels[key] ?? key.replaceAll("_", " ")}
+              {explanationLabels[key] ?? key.split("_").join(" ")}
             </span>
           </div>
         ))}
@@ -527,7 +527,7 @@ function ReadyForProductionCard({ readiness }: { readiness?: ReadinessDashboard 
             blockers.map(([key, value]) => (
               <div key={key} className="text-sm text-muted-foreground">
                 - {typeof value === "number" ? `${value} ` : ""}
-                {explanationLabels[key] ?? key.replaceAll("_", " ")}
+                {explanationLabels[key] ?? key.split("_").join(" ")}
               </div>
             ))
           ) : (
@@ -760,5 +760,5 @@ function formatFlightEventType(eventType: string) {
     ai_governance_decision: "Decision AI Governance",
   };
 
-  return labels[eventType] ?? eventType.replaceAll("_", " ");
+  return labels[eventType] ?? eventType.split("_").join(" ");
 }

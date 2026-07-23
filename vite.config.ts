@@ -16,7 +16,7 @@ const securityHeaders = {
 
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => {
-  const plugins = [react()];
+  const plugins: any[] = [react() as unknown as any];
 
   if (mode === "development") {
     try {
@@ -25,7 +25,7 @@ export default defineConfig(async ({ mode }) => {
     } catch {
       // Lovable MCP is only a local development aid. Production builds must not fail without it.
     }
-    plugins.push(componentTagger());
+    plugins.push(componentTagger() as unknown as any);
   }
 
   return {
@@ -51,7 +51,7 @@ export default defineConfig(async ({ mode }) => {
       modulePreload: false,
       rollupOptions: {
         output: {
-          manualChunks(id) {
+          manualChunks(id: string) {
             if (id.includes("vite/preload-helper")) return "preload-helper";
             if (id.includes("commonjsHelpers")) return "commonjs-helpers";
             if (!id.includes("node_modules")) return undefined;

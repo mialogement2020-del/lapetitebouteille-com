@@ -15,7 +15,7 @@ const scheduleMonitoring = () => {
     return;
   }
 
-  window.setTimeout(startMonitoring, 1500);
+  (window as unknown as { setTimeout: (fn: () => void, ms: number) => number }).setTimeout(startMonitoring, 1500);
 };
 
 // Initialize app

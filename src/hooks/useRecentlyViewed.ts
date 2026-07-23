@@ -85,10 +85,12 @@ export function useRecentlyViewed() {
 
         if (error) throw error;
 
+        const typedProducts = (products ?? []) as Array<{ id: string; [k: string]: unknown }>;
+
         // Maintain order from localStorage
         return productIds
           .map((pid) => {
-            const product = products?.find((p) => p.id === pid);
+            const product = typedProducts.find((p) => p.id === pid);
             if (!product) return null;
             return {
               id: pid,

@@ -10,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuoteRequests, useUpdateQuoteStatus } from "@/hooks/useWholesale";
 import { toast } from "@/hooks/use-toast";
 
+type QuoteRow = Record<string, any>;
+
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("fr-FR").format(price);
 };
@@ -22,7 +24,8 @@ const STATUS_CLASSES: Record<string, string> = {
 
 export function QuotesTable() {
   const { t } = useTranslation();
-  const { data: quotes = [], isLoading } = useQuoteRequests();
+  const { data: quotesData = [], isLoading } = useQuoteRequests();
+  const quotes = quotesData as QuoteRow[];
   const updateStatus = useUpdateQuoteStatus();
   const [selectedQuote, setSelectedQuote] = useState<any | null>(null);
   const [adminNotes, setAdminNotes] = useState("");

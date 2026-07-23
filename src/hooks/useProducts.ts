@@ -363,7 +363,7 @@ export const useProductOrigins = () => {
 
       if (error) throw error;
       
-      const origins = [...new Set(data.map(p => p.origin_country).filter(Boolean))] as string[];
+      const origins = [...new Set((data as Array<{ origin_country: string | null }>).map((p) => p.origin_country).filter(Boolean))] as string[];
       return origins.sort();
     },
   });

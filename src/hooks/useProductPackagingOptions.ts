@@ -106,7 +106,7 @@ export function useSaveProductPackagingOptions() {
         is_active: option.is_active,
       }));
 
-      const { error } = await supabase.from(ADMIN_PACKAGING_TABLE).insert(rows);
+      const { error } = await supabase.from(ADMIN_PACKAGING_TABLE).insert(rows as never);
       if (error) throw error;
     },
     onSuccess: (_data, variables) => {
