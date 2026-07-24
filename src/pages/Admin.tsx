@@ -41,7 +41,8 @@ import {
   Puzzle,
   Cable,
   Code2,
-  Store
+  Store,
+  Percent
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
