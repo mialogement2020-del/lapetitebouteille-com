@@ -130,6 +130,7 @@ const ProductImageManager = lazy(() => import("@/components/admin/ProductImageMa
 const QuotesTable = lazy(() => import("@/components/admin/QuotesTable").then((module) => ({ default: module.QuotesTable })));
 const WholesaleSettings = lazy(() => import("@/components/admin/WholesaleSettings").then((module) => ({ default: module.WholesaleSettings })));
 const PricingSettings = lazy(() => import("@/components/admin/PricingSettings").then((module) => ({ default: module.PricingSettings })));
+const PricingManagementDashboard = lazy(() => import("@/components/admin/PricingManagementDashboard").then((module) => ({ default: module.PricingManagementDashboard })));
 
 const AdminModuleFallback = () => (
   <div className="flex min-h-[220px] items-center justify-center rounded-lg border border-gold/20 bg-noir/40 text-cream">
@@ -244,6 +245,7 @@ const Admin = () => {
       { id: 'orders', label: 'Commandes', icon: Package },
       { id: 'products', label: 'Produits', icon: Wine },
       { id: 'pricing', label: 'Marge & Points', icon: Calculator },
+      { id: 'pricing-mgmt', label: 'Pricing Management', icon: Percent },
       { id: 'categories', label: 'Catégories', icon: FolderOpen },
       { id: 'home-categories', label: 'Catégories Accueil', icon: LayoutDashboard },
       { id: 'home-hero', label: 'Héro Accueil', icon: ImageIcon },
@@ -959,6 +961,10 @@ const Admin = () => {
 
               <TabsContent value="pricing" className="space-y-6">
                 <PricingSettings />
+              </TabsContent>
+
+              <TabsContent value="pricing-mgmt" className="space-y-6">
+                <PricingManagementDashboard />
               </TabsContent>
 
               <TabsContent value="quotes" className="space-y-6">
